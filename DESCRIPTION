@@ -1,0 +1,11 @@
+Package: hisse
+Version: 1.1
+Date: 2015-06-16
+Title: Hidden State Speciation and Extinction
+Author: Jeremy M. Beaulieu <jbeaulieu@nimbios.org>, Brian O'Meara <bomeara@utk.edu>
+Maintainer: Jeremy Beaulieu <jbeaulieu@nimbios.org>
+Depends: ape, deSolve, GenSA, subplex
+Suggests: testthat, diversitree
+Imports: parallel, phytools
+Description: Sets up and executes a HiSSE model (Hidden State Speciation and Extinction) on a phylogeny and character sets to test for hidden shifts in trait dependent rates of diversification.
+License: GPL (>= 2)
