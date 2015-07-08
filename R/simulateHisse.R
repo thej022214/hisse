@@ -19,6 +19,9 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 	birth.rates <- GetBirthRate(turnover.rates, eps.rates)
 	death.rates <- GetDeathRate(turnover.rates, eps.rates)
 	diag(transition.rates) <- NA
+	birth.counts <- 0*birth.rates
+	death.counts <- 0*death.rates
+	transition.counts <- 0*transition.rates
 	all.rates <- c(birth.rates, death.rates, c(t(transition.rates))) #c(t()) so that we have first row (from 0 to 1,2,3), then second row, etc, rather than by columns
 	all.rates <- all.rates[!is.na(all.rates)] #drop the diagonals
 	keep.running <- TRUE
@@ -42,6 +45,7 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 			results[which(results$living),]$length <- results[which(results$living),]$length + min(min.times)
 
 			if(which.min(min.times)==1) { #birth
+				birth.counts[which.min(birth.wait.times)] <- birth.counts[which.min(birth.wait.times)]+1
 				potential.lucky.taxa <- subset(results, living & state==states[which.min(birth.wait.times)])$id
 				lucky.taxon <- potential.lucky.taxa[sample.int(length(potential.lucky.taxa), 1)]
 				results[which(id==lucky.taxon),]$living <- FALSE
@@ -50,6 +54,7 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 				results <- rbind(results, data.table(anc=lucky.taxon, id=max(results$id)+1, state=subset(results, id==lucky.taxon)$state, length=0, height=subset(results, id==lucky.taxon)$height, living=TRUE, descendants=FALSE))
 			}
 			if(which.min(min.times)==2) { #death
+				death.counts[which.min(death.wait.times)] <- death.counts[which.min(death.wait.times)]+1
 				potential.unlucky.taxa <- subset(results, living & state==states[which.min(death.wait.times)])$id
 				unlucky.taxon <- potential.unlucky.taxa[sample.int(length(potential.unlucky.taxa), 1)]
 				results[which(id==lucky.taxon),]$living <- FALSE
@@ -61,6 +66,7 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 				} else {
 					from.to <- from.to[1,]	
 				}
+				transition.wait.times[from.to[1], from.to[2]] <- transition.wait.times[from.to[1], from.to[2]] + 1
 				potential.changing.taxa <- subset(results, living & state==states[from.to[1]])$id
 				changed.taxon <- potential.changing.taxa[sample.int(length(potential.changing.taxa), 1)]
 				results[which(id==changed.taxon),]$state <- states[from.to[2]]
@@ -68,7 +74,7 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 			keep.running <- CheckKeepRunning(results, max.taxa, max.t, max.wall.time, start)
 		}
 	}
-	return(results)
+	return(list=c(results=results, birth.counts=birth.counts, death.counts=death.counts, transition.counts=transition.counts))
 }
 
 Multiply <- function(x, y) { #I know, this is silly. It's like the joke about Wickham's addr package
@@ -100,4 +106,15 @@ CheckKeepRunning <- function(results, max.taxa=Inf, max.t=Inf, max.wall.time=Inf
 		}
 	}	
 	return(keep.running)
+}
+
+SimToPhylo <- function(results, include.extinct=FALSE) {
+	if(!include.extinct) {
+		results <- rbind(subset(results, living), subset(results, descendants))
+	}
+	tips <- subset(results, !descendants)$id
+	results$phylo.id <- NA
+	results$phylo.id[which(!results$descendants)] <- sequence(length(tips))
+	#now, do id for nodes, in phylo order
+	#then make a phylo object
 }
