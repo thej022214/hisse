@@ -1,4 +1,4 @@
-SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1) {
+SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL) {
 	start <- Sys.time()
 	if(length(turnover.rates) != length(eps.rates)) {
 		stop("need to have same number of turnover and eps rates")	
@@ -11,21 +11,30 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 	}
 	state.levels <- c(0:(length(turnover.rates)-1))
 	states <- factor(as.character(state.levels), levels=state.levels)
-	results <- data.table(anc=NA, id=1, state=factor(x0, state.levels), length=0, height=0, living=TRUE, descendants=FALSE)
-	for(additional.row in sequence(nstart-1)) {
-		results <- rbind(results, data.table(anc=NA, id=additional.row+1, state=factor(x0, state.levels), length=0, height=0, living=TRUE, descendants=FALSE))
-	}
-	setkey(results, id, living)
+	results <- NA
 	birth.rates <- GetBirthRate(turnover.rates, eps.rates)
 	death.rates <- GetDeathRate(turnover.rates, eps.rates)
 	diag(transition.rates) <- NA
 	birth.counts <- 0*birth.rates
 	death.counts <- 0*death.rates
 	transition.counts <- 0*transition.rates
-	all.rates <- c(birth.rates, death.rates, c(t(transition.rates))) #c(t()) so that we have first row (from 0 to 1,2,3), then second row, etc, rather than by columns
-	all.rates <- all.rates[!is.na(all.rates)] #drop the diagonals
+
+	if(!is.null(checkpoint.start.object)) {
+		results <- checkpoint.start.object$results
+		birth.counts <- checkpoint.start.object$birth.counts
+		death.counts <- checkpoint.start.object$death.counts
+		transition.counts <- checkpoint.start.object$transition.counts
+	} else {
+		results <- data.table(anc=NA, id=1, state=factor(x0, state.levels), length=0, height=0, living=TRUE, descendants=FALSE)
+		for(additional.row in sequence(nstart-1)) {
+			results <- rbind(results, data.table(anc=NA, id=additional.row+1, state=factor(x0, state.levels), length=0, height=0, living=TRUE, descendants=FALSE))
+		}
+	}
+	setkey(results, id, living)
 	keep.running <- TRUE
+	rep.count <- 0
 	while(keep.running) {
+		rep.count <- rep.count+1
 		tip.state.counts <- table(subset(results, living)$state)
 		birth.rates.actual <- birth.rates * tip.state.counts
 		death.rates.actual <- death.rates * tip.state.counts
@@ -57,7 +66,7 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 				death.counts[which.min(death.wait.times)] <- death.counts[which.min(death.wait.times)]+1
 				potential.unlucky.taxa <- subset(results, living & state==states[which.min(death.wait.times)])$id
 				unlucky.taxon <- potential.unlucky.taxa[sample.int(length(potential.unlucky.taxa), 1)]
-				results[which(id==lucky.taxon),]$living <- FALSE
+				results[which(id==unlucky.taxon),]$living <- FALSE
 			}
 			if(which.min(min.times)==3) { #transition
 				from.to <- which(transition.wait.times == min(transition.wait.times, na.rm=TRUE), arr.ind=TRUE)
@@ -66,6 +75,7 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 				} else {
 					from.to <- from.to[1,]	
 				}
+				transition.counts[from.to[1], from.to[2]] <- transition.counts[from.to[1], from.to[2]] +1
 				transition.wait.times[from.to[1], from.to[2]] <- transition.wait.times[from.to[1], from.to[2]] + 1
 				potential.changing.taxa <- subset(results, living & state==states[from.to[1]])$id
 				changed.taxon <- potential.changing.taxa[sample.int(length(potential.changing.taxa), 1)]
@@ -73,8 +83,14 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 			}
 			keep.running <- CheckKeepRunning(results, max.taxa, max.t, max.wall.time, start)
 		}
+		if(!is.null(checkpoint.file)) {
+			if(rep.count %% checkpoint.frequency == 0) {
+				checkpoint.result <- list(results=as.data.frame(results), birth.counts=birth.counts, death.counts=death.counts, transition.counts=transition.counts, , n.surviving = dim(subset(results, living))[1])
+				save(checkpoint.result, file=checkpoint.file)
+			} 	
+		}
 	}
-	return(list=c(results=results, birth.counts=birth.counts, death.counts=death.counts, transition.counts=transition.counts))
+	return(list(results=as.data.frame(results), birth.counts=birth.counts, death.counts=death.counts, transition.counts=transition.counts, n.surviving = dim(subset(results, living))[1]))
 }
 
 Multiply <- function(x, y) { #I know, this is silly. It's like the joke about Wickham's addr package
@@ -93,11 +109,11 @@ CheckKeepRunning <- function(results, max.taxa=Inf, max.t=Inf, max.wall.time=Inf
 	keep.running <- TRUE
 	if(dim(subset(results, living))[1]<1) {
 		keep.running <- FALSE	
-	}
-	if(dim(subset(results, living))[1]>=max.taxa) {
+	} 
+	if(keep.running & dim(subset(results, living))[1]>=max.taxa) {
 		keep.running <- FALSE
 	}
-	if( max(subset(results, living)$height)>=max.t) {
+	if(keep.running &  suppressWarnings(max(subset(results, living)$height)>=max.t)) {
 		keep.running <- FALSE
 	}
 	if(keep.running & is.finite(max.wall.time)) { #could slow us down, so only check if needed
@@ -108,13 +124,34 @@ CheckKeepRunning <- function(results, max.taxa=Inf, max.t=Inf, max.wall.time=Inf
 	return(keep.running)
 }
 
-SimToPhylo <- function(results, include.extinct=FALSE) {
-	if(!include.extinct) {
-		results <- rbind(subset(results, living), subset(results, descendants))
-	}
+SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 	tips <- subset(results, !descendants)$id
-	results$phylo.id <- NA
-	results$phylo.id[which(!results$descendants)] <- sequence(length(tips))
-	#now, do id for nodes, in phylo order
-	#then make a phylo object
+	results$phylo.tipward.id <- NA
+	results$phylo.tipward.id[which(!results$descendants)] <- sequence(length(tips))
+	non.tips <- subset(results, descendants)$id
+	results$phylo.tipward.id[which(results$descendants)] <- seq(from=(length(tips)+1), to=length(c(tips, non.tips)), by=1)
+	results$phylo.rootward.id <- NA
+	results$phylo.rootward.id <- sapply(results$anc, GetConversionOfAncestralNode, results=results)
+	if(drop.stem) {
+		results <- results[-which(is.na(results$anc)),]	
+	} else {
+		stop("keeping the stem attached is not implemented")	
+	}
+	edge <-unname(cbind(as.numeric(results$phylo.rootward.id), as.numeric(results$phylo.tipward.id)))
+	edge <- edge[order(edge[,2], decreasing=FALSE),]
+	edge.length <- as.numeric(results$length[order(as.numeric(results$phylo.tipward.id), decreasing=FALSE)])
+	Nnode <- length(non.tips)
+	tip.label <- paste("t", sort(as.numeric(results$phylo.tipward.id[which(!results$descendants)]), decreasing=FALSE), sep="")
+	phylo.return <- list(edge=edge, edge.length=edge.length, tip.label=tip.label, Nnode=Nnode)
+	class(phylo.return)="phylo"
+	phylo.return <- reorder(phylo.return)
+	if(!include.extinct) {
+		dead.tips <- subset(results, !descendants & !living)$phylo.tipward.id
+		phylo.return <- drop.tip(phylo.return, dead.tips)	
+	}
+	return(phylo.return)
+}
+
+GetConversionOfAncestralNode <- function(anc.id, results) {
+	return(results$phylo.tipward.id[which(results$id == anc.id)])
 }
