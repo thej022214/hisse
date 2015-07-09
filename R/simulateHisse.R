@@ -1,6 +1,13 @@
-SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL) {
+SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL, override.safeties=FALSE) {
+	if(!is.finite(max.taxa) & !is.finite(max.t) & !is.finite(max.wall.time)) {
+		if(!override.safeties) {
+			stop("You have to limit the number of taxa, the tree height, and/or the actual run time. With current settings, hisse will grow a tree to infite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct.")
+		} else {
+			warning("With current settings, hisse will grow a tree to infite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct. Normally the program would throw an error, but you claim to know what you're doing (override.safeties==TRUE). We would strongly advise you to have checkpointing running")		
+		}
+	}
 	start <- Sys.time()
-	if(length(turnover.rates) != length(eps.rates)) {
+	if(length(turnover.rates) != length(eps.values)) {
 		stop("need to have same number of turnover and eps rates")	
 	}
 	if(length(turnover.rates) != dim(transition.rates)[1]) {
@@ -12,8 +19,8 @@ SimulateHisse <- function(turnover.rates, eps.rates, transition.rates, max.taxa=
 	state.levels <- c(0:(length(turnover.rates)-1))
 	states <- factor(as.character(state.levels), levels=state.levels)
 	results <- NA
-	birth.rates <- GetBirthRate(turnover.rates, eps.rates)
-	death.rates <- GetDeathRate(turnover.rates, eps.rates)
+	birth.rates <- GetBirthRate(turnover.rates, eps.values)
+	death.rates <- GetDeathRate(turnover.rates, eps.values)
 	diag(transition.rates) <- NA
 	birth.counts <- 0*birth.rates
 	death.counts <- 0*death.rates
