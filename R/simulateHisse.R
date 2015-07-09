@@ -125,6 +125,21 @@ CheckKeepRunning <- function(results, max.taxa=Inf, max.t=Inf, max.wall.time=Inf
 }
 
 SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
+	if(dim(subset(results, living))[1]==0 & !include.extinct) {
+		return(NA)
+	}
+	final.tips <- subset(results, !descendants)$id
+	if(!include.extinct) {
+		final.tips <- subset(results, living)$id
+	}
+	if(length(final.tips)==0) {
+		return(NA)	
+	}
+	if(length(final.tips)==1) {
+		return(structure(list(edge = structure(c(2L,1L), .Dim = c(1L, 2L)), edge.length = c(results[which(results$id==final.tips),]$height), tip.label = c("t1"), Nnode = 0L), .Names = c("edge", "edge.length", "tip.label", "Nnode"), class = "phylo"))
+	}
+
+	
 	tips <- subset(results, !descendants)$id
 	results$phylo.tipward.id <- NA
 	results$phylo.tipward.id[which(!results$descendants)] <- sequence(length(tips))
@@ -132,17 +147,24 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 	results$phylo.tipward.id[which(results$descendants)] <- seq(from=(length(tips)+1), to=length(c(tips, non.tips)), by=1)
 	results$phylo.rootward.id <- NA
 	results$phylo.rootward.id <- sapply(results$anc, GetConversionOfAncestralNode, results=results)
+	root.edge <- NULL
 	if(drop.stem) {
 		results <- results[-which(is.na(results$anc)),]	
 	} else {
-		stop("keeping the stem attached is not implemented")	
+		root.edge <- results$length[which(is.na(results$anc))][1]
+		results <- results[-which(is.na(results$anc)),]	
 	}
 	edge <-unname(cbind(as.numeric(results$phylo.rootward.id), as.numeric(results$phylo.tipward.id)))
 	edge <- edge[order(edge[,2], decreasing=FALSE),]
 	edge.length <- as.numeric(results$length[order(as.numeric(results$phylo.tipward.id), decreasing=FALSE)])
 	Nnode <- length(non.tips)
 	tip.label <- paste("t", sort(as.numeric(results$phylo.tipward.id[which(!results$descendants)]), decreasing=FALSE), sep="")
-	phylo.return <- list(edge=edge, edge.length=edge.length, tip.label=tip.label, Nnode=Nnode)
+	phylo.return <- NA
+	if(drop.stem) {
+		phylo.return <- list(edge=edge, edge.length=edge.length, tip.label=tip.label, Nnode=Nnode)
+	} else {
+		phylo.return <- list(edge=edge, edge.length=edge.length, tip.label=tip.label, Nnode=Nnode, root.edge=root.edge)			
+	}
 	class(phylo.return)="phylo"
 	phylo.return <- reorder(phylo.return)
 	if(!include.extinct) {
