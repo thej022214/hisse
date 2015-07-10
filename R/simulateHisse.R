@@ -3,7 +3,7 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 		if(!override.safeties) {
 			stop("You have to limit the number of taxa, the tree height, and/or the actual run time. With current settings, hisse will grow a tree to infite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct.")
 		} else {
-			warning("With current settings, hisse will grow a tree to infite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct. Normally the program would throw an error, but you claim to know what you're doing (override.safeties==TRUE). We would strongly advise you to have checkpointing running")		
+			warning("With current settings, hisse will grow a tree to infite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct. Normally the program would throw an error, but you claim to know what you're doing (override.safeties==TRUE). We would strongly advise you to have checkpointing running. You may also want to buy a carbon offset for the CPU-years you might burn through during this simulaiton.")		
 		}
 	}
 	start <- Sys.time()
@@ -132,6 +132,12 @@ CheckKeepRunning <- function(results, max.taxa=Inf, max.t=Inf, max.wall.time=Inf
 }
 
 SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
+	if(class(results)!="data.frame") {
+		try(results <- 	results$results)
+		if(class(results)!="data.frame") {
+			stop("This requires a dataframe with simulation results")	
+		}
+	}
 	if(dim(subset(results, living))[1]==0 & !include.extinct) {
 		return(NA)
 	}

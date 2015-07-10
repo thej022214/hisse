@@ -1,7 +1,7 @@
 useDynLib(hisse)
 
-export(hisse, hisse.null4, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states)
-import(ape, deSolve, GenSA, subplex)
+export(hisse, hisse.null4, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo)
+import(ape, deSolve, GenSA, subplex, data.table)
 importFrom(parallel, mclapply)
 importFrom(phytools, plot.contMap, nodeHeights, fastAnc, anc.ML)
 

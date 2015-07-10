@@ -3,7 +3,8 @@
 \title{Simulate under a HiSSE model}
 \description{Flexible simulation function allowing checkpointing}
 \usage{
-\method{SimulateHisse}(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL, override.safeties=FALSE)
+SimulateHisse(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, 
+x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL, override.safeties=FALSE)
 }       
 \arguments{
 \item{turnover.rates}{a vector of turnover rates.}
@@ -20,24 +21,30 @@
 \item{override.safeties}{simulate even if there is no limit on number of taxa, depth of tree, or wall time.}
 }
 \details{
-Note that currently, the simulator assumes turnover.rates, eps.values, and transition rates are in the same state order
+Note that currently, the simulator assumes \code{turnover.rates}, \code{eps.values}, and \code{transition rates} are in the same state order. Remember that \code{turnover.rates} are birth + death rates, and \code{eps.values} are death / birth rates. 
 
-Provides phylogeny that shows a heat map of the diversification rate parameter you specify (which could be turnover, net.div, speciation, extinction, or extinction.fraction).
-The discrete state reconstruction appears as lines on top of the heat map. If you give a single hisse.state object, it uses that; if you give it a list of them, it will 
-model-average the results (it assumes the trees are the same). Colors can be specified by sending a vector of colors to rate.colors or state.colors (the defaults
-are red to blue for rate and white to black for state). You can specify two or more colors: c("red", "gray", "blue") for example. By default the visualization uses the
-minimum rate on the tree for the minimum color, and the maximum rate for the maximum color, but you may want to use the same color scale across models, even
-if some of them have a smaller range than others. To do this, pass a vector with the minimum and maximum rate across all models to the visualization for all models
-and they will use the same scale. There are many options for adding a legend. A traditional legend showing what values a color corresponds to is dQuote{traditional}, like
-what plotSimmap will show in phytools. However, we can also use the legend to show the distribution of values, rather than just a key to color. dQuote{tips} shows a density
-plot of states or rates at tips, dQuote{internal} a distribution at internal nodes, and dQuote{all} at all nodes in the tree. For the density or histogram plots, you can
-let the package pick the best visualization or choose yourself whether to use a histogram or density plot, and if the latter, what kernel you want. The legend can be
-moved around the overall tree plot by using dQuote{legend.position}: this is a vector that specifies the dQuote{fig} argument to dQuote{par}: c(x1, x2, y1, y2), where
-the values are the starting and ending positions as a fraction of the overall plot. By default, the legend starts at the lower left corner and continues up 20% into 
-the rest of the plot (c(0, 0.2, 0, 0.2)): by changing values, you can make the legend larger or smaller and change its position. The heatmap code is modified slightly
-from Liam Revell's phytools package.
+We strongly advise putting some limits to stop the run. These can be any combination of \code{max.taxa}, \code{max.t}, and \code{max.wall.time}. For example, you could set up the run to stop when you hit 1000 taxa or 3600 seconds (one hour) of running on your computer, whichever comes first. If you want to run with no limits, you have to specify \code{override.safeties=TRUE}, and you should know what you're doing here (the runs might never finish). There is only one starting state (\code{x0}), which should be the index into the rate vectors, starting with 0: that is, if your states are 0A, 0B, 1A, and 1B, x0=0 would start in 0A, x0=3 would start in 1B. \code{nstart} lets you choose how many taxa to start with: it could be one lineage to start from a single taxon, in which case you'll have to wait some time for the first speciation event, or you could start with two, to start simulation with a clade of this size (though, if extinction is nonzero, you are not guaranteed to have the final crown group include both of these descendants). You can choose numbers higher than two, to start with, say, a 50-species polytomy. We're not sure why you would. You can add checkpointing: runs take a long time, and if it crashes, this will let you start from the same point in the last saved file (though with a different seed, unless you specify this yourself). If you want to save checkpoints as you go along, specify a file in \code{checkpoint.file}. Every \code{checkpoint.frequency} events, where an event is a speciation, extinction, or transition event, it will save current progress to a file. The smaller this value, the more frequently the simulation will be saved: fewer lost steps if you have to re-simulate, but slower during the run because it spends time writing to disk. If you want to start from a checkpointed analysis, load the file into R and then specify the object within R [not the file] containing the checkpointed results (by default, saved in an object called \code{checkpoint.result}) and the simulation will continue from that point. 
+
+Results are returned in a list, containing a dataframe with the outcome of the simulation (one row per edge in the tree, and containing information on the lengths, ancestor, tipward height from the original root, and state at the tipward end of the edge (you can get state at the rootward end by getting the tipward state of the ancestral edge). It may be of interest to know how many events of each type occurred, which is saved in \code{$birth.counts}, \code{$death.counts}, \code{$transition.counts}. The total number of surviving taxa is stored in \code{$n.surviving}. 
+
+The output can be returned as an ape \code{phylo} tree by passing the \code{$results} element of the final output to \code{SimToPhylo()}.
 }
 \value{
+	This returns a list, with the following elements:
+	\item{$results}{a dataframe containing the simulation output: states at nodes and tips, ancestor-descendant pairs, branch lengths.}
+	\item{$birth.counts}{a vector, in the same state order as turnover.rates et al., that includes the counts for the number of times species in each state speciated.}
+	\item{$death.counts}{same as birth.counts, but counting extinction events in each state.}
+	\item{$transition.counts}{matrix of counts of transitions from one state to another.}
+	\item{$n.surviving}{the number of taxa alive at the end of the simulation.}
+}
+\examples{
+\dontrun{
+simulated.result <- SimulateHisse(c(.3, .1), c(.1, 0), 
+matrix(c(NA, 0.2, .3, NA), nrow=2), max.taxa=35, x0=1)	
+par(mfcol=c(1,2))
+plot(SimToPhylo(simulated.result$results, include.extinct=TRUE))
+plot(SimToPhylo(simulated.result$results, include.extinct=FALSE))
+} 	
 }
 \references{
 Beaulieu, J.M, and B.C. O'Meara. In revision. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In revision. 
