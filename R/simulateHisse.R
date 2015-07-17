@@ -92,7 +92,7 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 		}
 		if(!is.null(checkpoint.file)) {
 			if(rep.count %% checkpoint.frequency == 0) {
-				checkpoint.result <- list(results=as.data.frame(results), birth.counts=birth.counts, death.counts=death.counts, transition.counts=transition.counts, , n.surviving = dim(subset(results, living))[1])
+				checkpoint.result <- list(results=as.data.frame(results), birth.counts=birth.counts, death.counts=death.counts, transition.counts=transition.counts, n.surviving = dim(subset(results, living))[1])
 				save(checkpoint.result, file=checkpoint.file)
 			} 	
 		}
