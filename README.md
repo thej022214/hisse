@@ -1,4 +1,6 @@
 
+hisse is currently in review; see the manuscript at [here](http://biorxiv.org/content/early/2015/06/16/016386)
+
 ### Installation
 
 #### Stable version from CRAN
