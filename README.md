@@ -17,7 +17,7 @@ Windows users install [Rtools](http://cran.r-project.org/bin/windows/Rtools/) fi
 
 ```r
 install.packages("devtools")
-devtools::install_github("hisse")
+devtools::install_github("thej022214/hisse")
 ```
 
 
