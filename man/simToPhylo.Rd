@@ -14,7 +14,7 @@ SimToPhylo(results, include.extinct=FALSE, drop.stem=TRUE)
 This takes the \code{$results} object from a \code{SimulateHisse} run and converts it to an ape \code{phylo} object. If there are no taxa on the final tree, it returns NA; if there is one taxon, it returns a one taxon tree. This is behavior different from diversitree's tree simulators, which returns NULL in both the zero and one taxon case. Extinct taxa can be pruned or not. For simulations starting with one taxon, and/or for simulations with some extinction, the final tree can have a time when there is a single lineage before it radiates into the crown group. This stem can be included or not.
 }
 \value{
-\item{phyylo}{a phylo object in cladewise order.}
+\item{phylo}{a phylo object in cladewise order.}
 }
 \examples{
 \dontrun{
