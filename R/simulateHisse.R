@@ -185,6 +185,9 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 	edge.length <- as.numeric(results$length[order(as.numeric(results$phylo.tipward.id), decreasing=FALSE)])
 	Nnode <- length(non.tips)
 	tip.label <- paste("t", sort(as.numeric(results$phylo.tipward.id[which(!results$descendants)]), decreasing=FALSE), sep="")
+	tip.results <- results[which(!results$descendants),]
+	states <- as.numeric(as.character(tip.results$state))
+	names(states) <- paste("t", tip.results$phylo.tipward.id, sep="")
 	phylo.return <- NA
 	if(drop.stem) {
 		phylo.return <- list(edge=edge, edge.length=edge.length, tip.label=tip.label, Nnode=Nnode)
@@ -196,7 +199,9 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 	if(!include.extinct) {
 		dead.tips <- subset(results, !descendants & !living)$phylo.tipward.id
 		phylo.return <- drop.tip(phylo.return, dead.tips)	
+		states <- states[!(names(states) %in% dead.tips)]
 	}
+	phylo.return$tip.state <- states
 	return(phylo.return)
 }
 

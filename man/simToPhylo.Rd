@@ -11,7 +11,7 @@ SimToPhylo(results, include.extinct=FALSE, drop.stem=TRUE)
 \item{drop.stem}{include the lineage leading to the first saved speciation even (FALSE) or cull it (TRUE).}
 }
 \details{
-This takes the \code{$results} object from a \code{SimulateHisse} run and converts it to an ape \code{phylo} object. If there are no taxa on the final tree, it returns NA; if there is one taxon, it returns a one taxon tree. This is behavior different from diversitree's tree simulators, which returns NULL in both the zero and one taxon case. Extinct taxa can be pruned or not. For simulations starting with one taxon, and/or for simulations with some extinction, the final tree can have a time when there is a single lineage before it radiates into the crown group. This stem can be included or not.
+This takes the \code{$results} object from a \code{SimulateHisse} run and converts it to an ape \code{phylo} object. If there are no taxa on the final tree, it returns NA; if there is one taxon, it returns a one taxon tree. This is behavior different from diversitree's tree simulators, which returns NULL in both the zero and one taxon case. Extinct taxa can be pruned or not. For simulations starting with one taxon, and/or for simulations with some extinction, the final tree can have a time when there is a single lineage before it radiates into the crown group. This stem can be included or not. The tip states are stored in \code{$tip.state} in the returned tree.
 }
 \value{
 \item{phylo}{a phylo object in cladewise order.}
