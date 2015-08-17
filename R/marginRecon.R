@@ -69,11 +69,10 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 			if(!hidden.states == TRUE){
 				marginal.probs[1:nb.tip,] = cache$states
 			}
+			marginal.probs <- cbind(1:(nb.node+nb.tip), marginal.probs)
 			obj$node.mat = marginal.probs[-(1:nb.tip),] 
 			obj$tip.mat = marginal.probs[1:nb.tip,]
 			if(hidden.states == TRUE){
-				obj$node.mat <- matrix(unlist(node.marginals), ncol = 5, byrow = TRUE)
-				obj$tip.mat = matrix(unlist(tip.marginals), ncol = 5, byrow = TRUE)
 				raw.rates <- ParameterTransform(x=model.vec[1:4], y=model.vec[5:8])
 				rates.mat <- matrix(0, 5, 4)
 				rates.mat[1,] <- model.vec[1:4]
@@ -85,8 +84,6 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 				colnames(rates.mat) <- c("0A", "1A", "0B", "1B")
 				colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "0B", "1B")
 			}else{
-				obj$node.mat <- matrix(unlist(node.marginals), ncol = 3, byrow = TRUE)
-				obj$tip.mat = cbind(1:Ntip(phy), cache$states)
 				raw.rates <- ParameterTransform(x=model.vec[1:4], y=model.vec[5:8])
 				rates.mat <- matrix(0, 5, 2)
 				rates.mat[1,] <- model.vec[1:2]
@@ -99,7 +96,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 				colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "0", "1")
 			}
 			obj$rates.mat = rates.mat			
-			phy$node.label = apply(marginal.probs, 1, which.max)[-(1:nb.tip)]
+			phy$node.label = apply(marginal.probs[,-1], 1, which.max)[-(1:nb.tip)]
 			obj$phy = phy
 		}else{
 			NodeEval <- function(node){
