@@ -3,7 +3,7 @@ test_that("BiSSE_HiSSE_test",{
 	pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
 	set.seed(4)
 	phy <- tree.bisse(pars, max.t=30, x0=0)
-	lik <- make.bisse(phy, phy$tip.state)
+	lik <- make.bisse(phy, phy$tip.state, sampling.f=c(.4,.6))
 	diversitree.full <- lik(pars)
 	
 	hidden.states=FALSE
@@ -12,7 +12,7 @@ test_that("BiSSE_HiSSE_test",{
 	pars.bisse <- c(0.1+0.03, 0.2+0.03, 0, 0, 0.03/0.1, 0.03/0.2, 0, 0, 0.01, 0, 0, 0.01, 0, 0, 0, 0, 0, 0, 0, 0)
 	model.vec = c(pars.bisse, rep(1,36))
 	phy$node.label = NULL
-	cache = hisse:::ParametersToPass(phy, states[,1], model.vec, f=c(1,1), timeslice=NULL, hidden.states=hidden.states) 
+	cache = hisse:::ParametersToPass(phy, states[,1], model.vec, f=c(.4,.6), timeslice=NULL, hidden.states=hidden.states)
 	cache$turnover.beta.factor0 = 1 / dbeta(0.1, 1, 1)
 	cache$eps.beta.factor0 = 1 / dbeta(0.1, 1, 1)
 	cache$turnover.beta.factor1 = 1 / dbeta(0.1, 1, 1)
