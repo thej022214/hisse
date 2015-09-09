@@ -17,7 +17,7 @@ Before getting started, be sure to load the hisse package:
 ```{r, eval=TRUE}
 library(hisse)
 ```
-And also be sure to load diversitree. We will be using it to generate a test dataset that should also help reinforce the idea behind a "hidden" state.
+And also be sure to load diversitree. We can simulate data using the multistate (MuSSE) model that can be used to create a binary character that has a relation to a "hidden" state:
 ```{r, eval=TRUE}
 library(diversitree)
 set.seed(4)
@@ -33,7 +33,11 @@ sim.dat[sim.dat[,2]==4,2] = 2
 # This next step simply forces the character to be binary:
 sim.dat[,2] = sim.dat[,2] - 1
 ```
-In the end you have a data set that has a single binary character, which evolved under a much more complex process than what would be reflected by estimates from a BiSSE model. It is this complexity that HiSSE is trying estimate.
+In the end you have a data set that has a single binary character:
+```{r, eval=TRUE}
+head(sim.dat)
+```
+However, this binary character has actually evolved under a much more complex process than what would be reflected by estimates from a BiSSE model. It is this complexity that HiSSE is trying estimate.
 
 ##Specifying the diversification parameters
 Rather than optimizing $\lambda_i$ and $\mu_i$ separately, hisse optimizes transformations of these variables. Here we let $\tau_i = \lambda_i+\mu_i$ define “net turnover”, and we let $\epsilon_i = \mu_i / \lambda_i$ define the "extinction fraction". This reparameterization alleviates problems associated with over-fitting when $\lambda_i$ and $\mu_i$ are highly correlated, but both matter in explaining the diversity pattern (see discussion of this issue in Beaulieu and O'Meara 2015). The number of free parameters in the model for both net turnover and extinction fraction are specified as index vectors provided to the function call. Each vector contains four entries that correspond to rates associated with the observed states (0 or 1) and the hidden states (A or B). They are ordered as follows: 0A, 1A, 0B, 1B. Note that the index vector can also be set up such that parameters are linked among states or even dropped from the model entirely. 
@@ -43,7 +47,7 @@ Let's walk through a couple of examples. Take, for instance, the following index
 turnover.anc = c(1,1,0,0)
 eps.anc = c(1,1,0,0)
 ```
-For turnover.anc, there is a single free parameter for both 0A and 1A state combinations; there is a single free parameter for extinction fraction. This is equivalent to a BiSSE model with a fixed turnover and extinction rates across the observed states 0 an 1. Now, say we want to include separate turnover rates for both states: 
+In this example, turnover.anc has a single free parameter for both 0A and 1A state combinations; there is a single free parameter for extinction fraction. This is equivalent to a BiSSE model with a fixed turnover and extinction rates across the observed states 0 an 1. Now, say we want to include separate turnover rates for both states 0A and 1A: 
 ```{r, eval=TRUE}
 turnover.anc = c(1,2,0,0)
 ```
@@ -51,7 +55,7 @@ Thus, a full hisse model would thus be,
 ```{r, eval=TRUE}
 turnover.anc = c(1,2,3,4)
 ```
-which corresponds to four separate net turnover rates for 1=0A, 2=1A, 3=0B, 4=1B. Extinction fraction, needless to say, follows the same format, though including a zero for a state we want to include in the model corresponds to no extinction, which is the Yule equivalent:
+which corresponds to four separate net turnover rates for 1=0A, 2=1A, 3=0B, 4=1B. Extinction fraction, needless to say, follows the same format, though including a zero for a state we want to include in the model corresponds to no extinction, which is the Yule (pure birth) equivalent:
 ```{r, eval=TRUE}
 eps.anc = c(0,0,0,0)
 ```
@@ -80,7 +84,7 @@ Note that the index for parameter 6 has become 1 -- in other words, their rate w
 trans.rates.nodual.allequal = ParEqual(trans.rates.nodual, c(1,2,1,3,1,4,1,5,1,6,1,7,1,8))
 trans.rates.nodual.allequal
 ```
-If this function is confusing, there are other ways to do the same thing. For example,
+Here we've set the index 2 to equal 1, 3 to equal 1, 4 to equal 1, etc. Of course, if this function is confusing, there are other ways to do the same thing. For example, one could do:
 ```{r, eval=TRUE}
 trans.rates.nodual.allequal = trans.rates.nodual
 trans.rates.nodual.allequal[!is.na(trans.rates.nodual.allequal) & !trans.rates.nodual.allequal == 0] = 1
@@ -91,10 +95,14 @@ Also note that in order to run a BiSSE model in HiSSE, the matrix set up would l
 trans.rates.bisse = TransMatMaker(hidden.states=FALSE)
 trans.rates.bisse
 ```
-Whatever transition matrix is designed, it is supplied to the `trans.rate=` argument in the `hisse()` call.
+Whatever transition matrix is designed, it is supplied to the `trans.rate=` argument in the `hisse()` call:
+```{r, eval=FALSE}
+pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
+           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal)
+```
 
 ##Setting up the null-two model
-Recently Rabosky and Goldberg (2015) raised a very important concern with SSE models. They showed, rather convincingly, that if the tree evolved under a heterogeneous branching process that is completely independent from the evolution of the focal character, BiSSE will almost always return high support for a model of trait-dependent diversfication. From an interpretational stand point, this is troubling. But, it is important to bear in mind what such a result is really saying: Yes, BiSSE is very wrong in assigning rate differences to a neutral trait, but a simple equal rates diversification model is not correct either. This leaves practitioners in quite the bind, because the "right" model isn't something that can be tested in BiSSE.
+Recently Rabosky and Goldberg (2015) raised a very important concern with SSE models. They showed, rather convincingly, that if the tree evolved under a heterogeneous branching process that is completely independent from the evolution of the focal character, SSE models will almost always return high support for a model of trait-dependent diversfication. From an interpretational stand point, this is troubling. But, it is important to bear in mind what such a result is really saying: Yes, BiSSE is very wrong in assigning rate differences to a neutral trait, but a simple equal rates diversification model is not correct either. This leaves practitioners in quite the bind, because the "right" model isn't something that can be tested in BiSSE.
 
 This touches on a much larger issue, which is that we've relied on rather trivial null model (i.e., equal rates diversification) to compare against the fit of BiSSE. Again, it is important to stress that SSE models are not models of trait evolution, but rather joint models for the tree and the trait where they are maximizing the probability of the observed states at the tips and the observed tree, given the model. So, if a tree violates a single regime birth-death model due to any number of causes, then even if the tip data are perfectly consistent with a simple model, the tip data plus the tree are not. In such cases, then, it should not be surprising that a more complex model will tend to be chosen over a nested simpler model, particularly if the underlying tree is large enough. A fairer comparison would need to involve some sort of "null" model that contains the same degree of complexity in terms of numbers of parameters for diversification, but is also independent of the evolution of the focal character, to allow for comparisons among any complex, trait-dependent models of interest.
 
@@ -133,13 +141,18 @@ to.change <- cbind(c(1,3,2,4), c(3,1,4,2))
 trans.rates.nodual.threerates[to.change] = 3
 trans.rates.nodual.threerates
 ```
-As before, turnover.anc, eps.anc, and the transition rate matrix are supplied as arguments to `hisse()`, and the results can be compared against any model in the hisse set, including BiSSE.
+As before, turnover.anc, eps.anc, and the transition rate matrix are supplied as arguments to `hisse()`:
+```{r, eval=FALSE}
+pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
+           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal)
+```
+and the results can be compared against any model in the hisse set, including BiSSE.
 
 ##Plotting hisse reconstructions
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(fig.width=7, fig.height=5)
 ```
-Our HiSSE provides plotting functionality in `plot.hisse.states()` for character state reconstructions of `class hisse.states` output by our `MarginRecon()` function. There are a couple of options for these reconstructions to be plotted. First, a single `hisse.states` object can be supplied and it will provide a heat map of the diversification rate parameter of choice. Users can choose among turnover, net diversification ("net.div"), speciation, extinction, or extinction fraction ("extinction.fraction"). I've provided example `hisse.states` output from the example data set simulated above. Let's load the file and check that everything has loaded correctly and is of the proper `hisse.states` class:
+Our HiSSE package provides plotting functionality in `plot.hisse.states()` for character state reconstructions of `class hisse.states` output by our `MarginRecon()` function. Specifically, the function provides an overlay of the state reconstructions on the rate estimates. There are a couple of options for how these reconstructions to be plotted. First, a single `hisse.states` object can be supplied and it will provide a heat map of the diversification rate parameter of choice. Users can choose among turnover, net diversification ("net.div"), speciation, extinction, or extinction fraction ("extinction.fraction"). I've provided example `hisse.states` output from the example data set simulated above. This particular model assumed two diversification rate parameters -- i.e., turnover.anc=c(1,1,1,2), and eps.anc=c(1,1,1,1). Let's load this file and check that everything has loaded correctly and is of the proper `hisse.states` class:
 ```{r, eval=TRUE}
 load("testrecon1.Rsave")
 class(pp.recon)
@@ -149,15 +162,19 @@ One other step that is necessary is to make sure that the `hisse.states` object 
 ```{r, eval=TRUE}
 pp.recon$aic
 ```
-If this returns a NULL, then something has gone wrong and you should check how you performed the reconstructions. If everything is fine, and it's still not there for some reason, then you can add it manually by simply doing `pp.recon$aic = 364.8615`. But, by default the AIC for the model should be supplied as an argument in the `MarginRecon()` function. 
+If this returns a NULL, then something has gone wrong and you should check how you performed the reconstructions. If everything is fine, and it's still not there for some reason, then you can add it manually by simply doing `pp.recon$aic = 364.8615`. But, by default the AIC for the model should be supplied as an argument in the `MarginRecon()` function (using the `pp` object we defined above):
+```{r, eval=FALSE}
+pp.recon = MarginRecon(phy, sim.dat, f=c(1,1), hidden.states=TRUE, pars=pp$solution, 
+                       aic=pp$aic, n.cores=2)
+```
 
 Now that we have the right files and information, let's plot net diversification rates:
 ```{r, eval=TRUE}
 plot.hisse.states(pp.recon, rate.param="net.div", show.tip.label=FALSE)
 ```
-These are the default colors: red to blue for rate and white to black for state. However, other colors can be specified (see plot.hisse.states manual). The legend in the bottom left corner provides the frequency of the observed states (0 or 1) and the distribution of net diversification rates at the tips only. Note that in this particular model I only specified two diversification rate parameters (i.e., turnover.anc=c(1,1,1,2), and eps.anc=c(1,1,1,1)), and yet there seems to be a continuous range of rates at the tips. What gives? Well, when a single reconstruction is provided the rates painted on each branch are the weighted average of the rate, with the marginal probability used as the weights. So this particular painting has taken into account the uncertainty in rates on each branch. 
+These are the default colors: red to blue for rate and white to black for state. However, other colors can be specified (see plot.hisse.states manual). The legend in the bottom left corner provides the frequency of the observed states (0 or 1) and the distribution of net diversification rates at the tips only. Note that in this particular model I only specified two diversification rate parameters [i.e., turnover.anc=c(1,1,1,2), and eps.anc=c(1,1,1,1)], and yet there seems to be a continuous range of rates at the tips. What gives? Well, when a single reconstruction is provided the rates painted on each branch are the weighted average of the rate, with the marginal probability used as the weights. So this particular painting has taken into account the uncertainty in rates on each branch. 
 
-But, please be careful here! Notice that there are parts of the tree that have much higher rates (denoted by bright red) than others (denoted by darker blue)? This is highly misleading. If you look at the legend the rates span from 0.066 - 0.069! So, really, there aren't any differences in the diversification rates despite what the painting may say. By default the visualization uses the minimum rate on the tree for the minimum color, and the maximum rate for the maximum color. However, users may want to use the same color scale across models, even if some of them have a smaller range than others. A vector with the minimum and maximum rate across all models can be passed to the visualization:
+But, please be careful here! Notice that there are parts of the tree that have much higher rates (denoted by bright red) than others (denoted by darker blue)? This is actually highly misleading. If you look at the legend the rates span from 0.066 - 0.069! So, really, there aren't any meaningful differences in the diversification rates despite what the painting may say. By default the visualization uses the minimum rate on the tree for the minimum color, and the maximum rate for the maximum color. However, users may want to use the same color scale across models, even if some of them have a smaller range than others. A vector with the minimum and maximum rate across all models can be passed to the visualization:
 ```{r, eval=TRUE}
 plot.hisse.states(pp.recon, rate.param="net.div", show.tip.label=FALSE, rate.range=c(0,0.072))
 ```
@@ -165,7 +182,7 @@ Now the differences completely disappear.
 
 A really cool feature of the plotting function is that if you provide a list of `hisse.states` objects the function will "model-average" the results. In other words, branches are painted such that they take into account both state and rate uncertainty and uncertainty in the model. The `plot.hisse.states()` first calculates a weighted average of the likeliest state and rate combination for every node and tip for each model in the set, using the marginal probability as the weights, which are then averaged across all models using the Akaike weights (i.e., the relative probability of a model). 
 
-I've created two additional `hisse.states` objects that I will use to demonstrate this. I recognize that there are many ways to generate a list. But here is one way, where I'm assuming that the marginal reconstructions from three models are saved to the directory we are working from:
+I've created two additional `hisse.states` objects that I will use to demonstrate this: one reconstruction is based on the null-two model [turnover.anc=c(1,1,2,2], and the other assumes four free turnover rates [i.e., turnover.anc=c(1,2,3,4)]; in all cases I assumed equal transition rates and equal extinction fractions. I recognize that there are many ways to generate a list. But here is one way, where I'm assuming that the marginal reconstructions from three models are saved to the directory we are working from:
 ```{r, eval=TRUE}
 # First, suck in all the files with .Rsave line ending
 files = system("ls -1 | grep .Rsave", intern=TRUE)
