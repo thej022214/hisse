@@ -154,7 +154,7 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 
 	
 	tips <- subset(results, !descendants)$id
-	if( length(which(is.na(results$anc))) > 1) { #we don't have a stem, but start with node at base. Stick a stem on, then prune it off
+	if( length(which(is.na(results$anc))) > 1) { #we do not have a stem, but start with node at base. Stick a stem on, then prune it off
 		new.root.id <- min(results$anc, na.rm=TRUE)-1
 		results[which(is.na(results$anc)),]$anc <- new.root.id
 		results<- rbind(results[1,], results)

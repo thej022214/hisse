@@ -101,6 +101,26 @@ pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc
            eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal)
 ```
 
+##A common mistake
+I wanted to highlight a common mistake I've seen through my email correspondence with several users of hisse. It may be of interest to test a model where the hidden state is associated with a single observed state. In other words, the model would contain state 0A, 1A, and 1B. The diversification parameters might look something like this:
+```{r, eval=TRUE}
+turnover.anc = c(1,2,0,3)
+eps.anc = c(1,2,0,3)
+```
+The 0 in the 3rd entry for state 0B designates that the parameter is removed entirely from the model. A common mistake is that the transitions to and from 0B are not removed from the transition matrix. This needs to be done manually:
+```{r, eval=TRUE}
+trans.rates <- TransMatMaker(hidden.states=TRUE)
+trans.rates.nodual.no0B <- ParDrop(trans.rates, c(2,3,5,7,8,9,10,12))
+trans.rates.nodual.no0B
+```
+
+##Changing the output
+By default, hisse outputs turnover and extinction fraction. I recognize, of course, that this defies the convention of seeking to estimate and interpretation differences in net diversification ($r_i = \lambda_i-\mu_i$). Therefore, users can alter how the final parameters are printed to the screen using the `output.type=` argument in the call `hisse()`. We've included three options: "turnover", "net.div", and "raw", which outputs the results as estimates of speciation ($\lambda_i$) and exinction ($\mu_i$). Thus, to output net diversification:
+```{r, eval=FALSE}
+pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
+           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal, output.type="net.div")
+```
+
 ##Setting up the null-two model
 Recently Rabosky and Goldberg (2015) raised a very important concern with SSE models. They showed, rather convincingly, that if the tree evolved under a heterogeneous branching process that is completely independent from the evolution of the focal character, SSE models will almost always return high support for a model of trait-dependent diversfication. From an interpretational stand point, this is troubling. But, it is important to bear in mind what such a result is really saying: Yes, BiSSE is very wrong in assigning rate differences to a neutral trait, but a simple equal rates diversification model is not correct either. This leaves practitioners in quite the bind, because the "right" model isn't something that can be tested in BiSSE.
 
