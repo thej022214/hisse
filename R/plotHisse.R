@@ -8,6 +8,10 @@
 plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width.rate=5, edge.width.state=2, type="fan", rate.range=NULL, show.tip.label=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3", ...) {
 	hisse.results <- x
 	if(class(hisse.results)=="hisse.states") { #we have to make a list so we can run this generally
+		if(is.null(hisse.results$aic)){
+			#If a user forgot to include the aic, then we add a random value in for them
+			hisse.results$aic = 42
+		}
 		tmp.list <- list()
 		tmp.list[[1]] <- hisse.results
 		hisse.results <- tmp.list	
