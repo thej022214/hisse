@@ -102,7 +102,7 @@ pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc
 ```
 
 ##A common mistake
-I wanted to highlight a common mistake I've seen through my email correspondence with several users of hisse. It may be of interest to test a model where the hidden state is associated with a single observed state. In other words, the model would contain state 0A, 1A, and 1B. The diversification parameters might look something like this:
+I wanted to highlight a common mistake I've seen through my email correspondence with several users. It may be of interest to test a model where the hidden state is associated with only a single observed state, such that the model contains states 0A, 1A, and 1B. The diversification parameters might look something like this:
 ```{r, eval=TRUE}
 turnover.anc = c(1,2,0,3)
 eps.anc = c(1,2,0,3)
@@ -178,16 +178,6 @@ load("testrecon1.Rsave")
 class(pp.recon)
 pp.recon
 ```
-One other step that is necessary is to make sure that the `hisse.states` object contains the AIC from the model fit embedded in it. The plotting function will not work without it:
-```{r, eval=TRUE}
-pp.recon$aic
-```
-If this returns a NULL, then something has gone wrong and you should check how you performed the reconstructions. If everything is fine, and it's still not there for some reason, then you can add it manually by simply doing `pp.recon$aic = 364.8615`. But, by default the AIC for the model should be supplied as an argument in the `MarginRecon()` function (using the `pp` object we defined above):
-```{r, eval=FALSE}
-pp.recon = MarginRecon(phy, sim.dat, f=c(1,1), hidden.states=TRUE, pars=pp$solution, 
-                       aic=pp$aic, n.cores=2)
-```
-
 Now that we have the right files and information, let's plot net diversification rates:
 ```{r, eval=TRUE}
 plot.hisse.states(pp.recon, rate.param="net.div", show.tip.label=FALSE)
@@ -202,7 +192,16 @@ Now the differences completely disappear.
 
 A really cool feature of the plotting function is that if you provide a list of `hisse.states` objects the function will "model-average" the results. In other words, branches are painted such that they take into account both state and rate uncertainty and uncertainty in the model. The `plot.hisse.states()` first calculates a weighted average of the likeliest state and rate combination for every node and tip for each model in the set, using the marginal probability as the weights, which are then averaged across all models using the Akaike weights (i.e., the relative probability of a model). 
 
-I've created two additional `hisse.states` objects that I will use to demonstrate this: one reconstruction is based on the null-two model [turnover.anc=c(1,1,2,2], and the other assumes four free turnover rates [i.e., turnover.anc=c(1,2,3,4)]; in all cases I assumed equal transition rates and equal extinction fractions. I recognize that there are many ways to generate a list. But here is one way, where I'm assuming that the marginal reconstructions from three models are saved to the directory we are working from:
+A first initial step when doing the modeling-averaging approach is to make sure that the `hisse.states` objects contain the AIC from the model fit embedded in it. The plotting function will not work without it:
+```{r, eval=TRUE}
+pp.recon$aic
+```
+If this returns a NULL, then something has gone wrong and you should check how you performed the reconstructions. The AIC for the model can be supplied as an argument in the `MarginRecon()` function (using the `pp` object we defined above):
+```{r, eval=FALSE}
+pp.recon = MarginRecon(phy, sim.dat, f=c(1,1), hidden.states=TRUE, pars=pp$solution, 
+                       aic=pp$aic, n.cores=2)
+```
+I've created two additional `hisse.states` objects that I will use to demonstrate how to plot model-averaged states and rates: one reconstruction is based on the null-two model [turnover.anc=c(1,1,2,2)], and the other assumes four free turnover rates [i.e., turnover.anc=c(1,2,3,4)]; in all cases I assumed equal transition rates and equal extinction fractions. I recognize that there are many ways to generate a list. But here is one way, where I'm assuming that the marginal reconstructions from three models are saved to the directory we are working from:
 ```{r, eval=TRUE}
 # First, suck in all the files with .Rsave line ending
 files = system("ls -1 | grep .Rsave", intern=TRUE)
