@@ -1,3 +1,12 @@
+
+######################################################################################################################################
+######################################################################################################################################
+### HiSSE Simulator -- work in progress 
+######################################################################################################################################
+######################################################################################################################################
+
+#written by Brian O
+
 SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL, override.safeties=FALSE) {
 	if(!is.finite(max.taxa) & !is.finite(max.t) & !is.finite(max.wall.time)) {
 		if(!override.safeties) {
