@@ -11,7 +11,7 @@ vignette: >
 
 
 
-This tutorial gives some basic information on how to set up and execute a model using [hisse](http://cran.r-project.org/web/packages/hisse/) (Beaulieu & O'Meara 2015). While our hidden state speciation and extinction model (HiSSE) is a natural extension of the models contained within [diversitree](http://cran.r-project.org/web/packages/diversitree/) (FitzJohn 2012), our implementation has a very different set up.
+This tutorial gives some basic information on how to set up and execute a model using [hisse](https://cran.r-project.org/package=hisse/) (Beaulieu & O'Meara 2015). While our hidden state speciation and extinction model (HiSSE) is a natural extension of the models contained within [diversitree](https://cran.r-project.org/package=diversitree/) (FitzJohn 2012), our implementation has a very different set up.
 
 Before getting started, be sure to load the hisse package:
 ```{r, eval=TRUE}
@@ -203,7 +203,21 @@ pp.recon = MarginRecon(phy, sim.dat, f=c(1,1), hidden.states=TRUE, pars=pp$solut
 ```
 I've created two additional `hisse.states` objects that I will use to demonstrate how to plot model-averaged states and rates: one reconstruction is based on the null-two model [turnover.anc=c(1,1,2,2)], and the other assumes four free turnover rates [i.e., turnover.anc=c(1,2,3,4)]; in all cases I assumed equal transition rates and equal extinction fractions. I recognize that there are many ways to generate a list. But here is one way, where I'm assuming that the marginal reconstructions from three models are saved to the directory we are working from:
 ```{r, eval=TRUE}
-# First, suck in all the files with .Rsave line ending
+hisse.results.list = list()
+load("testrecon1.Rsave")
+hisse.results.list[[1]] = pp.recon
+load("testrecon2.Rsave")
+hisse.results.list[[2]] = pp.recon
+load("testrecon3.Rsave")
+hisse.results.list[[3]] = pp.recon
+# Now supply the list the plotting function
+plot.hisse.states(hisse.results.list, rate.param="net.div", show.tip.label=FALSE, rate.range=c(0,0.072))
+```
+Although this is similar to the plot above, which shows no real rate differences, it actually accounts for both the uncertainty in the model as well as the reconstructions. Note that there are many features that can be adjusted in `plot.hisse.states()`, which is described in detail in the manual.
+
+Note that the above code is obviously a pretty lame way of generating a list. An even easier way would be to do something like this:
+```{r, eval=FALSE}
+# First, suck in all the files with .Rsave line ending in your working directory:
 files = system("ls -1 | grep .Rsave", intern=TRUE)
 # Create an empty list object
 hisse.results.list = list()
@@ -213,10 +227,7 @@ for(i in sequence(length(files))){
   hisse.results.list[[i]] = pp.recon
   rm(pp.recon)
 }
-# Now supply the list the plotting function
-plot.hisse.states(hisse.results.list, rate.param="net.div", show.tip.label=FALSE, rate.range=c(0,0.072))
 ```
-Although this is similar to the plot above, which shows no real rate differences, it actually accounts for both the uncertainty in the model as well as the reconstructions. Note that there are many features that can be adjusted in `plot.hisse.states()`, which is described in detail in the manual.
 
 ##References
 Beaulieu, J.M., and B.C. O'Meara. (2015). Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. bioRxiv doi: http://dx.doi.org/10.1101/016386

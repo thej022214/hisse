@@ -4,6 +4,10 @@ export(hisse, hisse.null4, MarginRecon, SupportRegion, TransMatMaker, ParDrop, P
 import(ape, deSolve, GenSA, subplex, data.table)
 importFrom(parallel, mclapply)
 importFrom(phytools, plot.contMap, nodeHeights, fastAnc, anc.ML)
+importFrom("grDevices", "colorRampPalette", "nclass.Sturges", "rainbow")
+importFrom("graphics", "hist", "par", "plot", "rect", "segments", "text")
+importFrom("methods", "hasArg")
+importFrom("stats", "dbeta", "density", "quantile", "reorder", "rexp", "runif", "weighted.mean")
 
 exportClasses('hisse.fit', 'hisse.null4.fit', 'hisse.states', 'hisse.support')
 S3method(print, hisse.fit)

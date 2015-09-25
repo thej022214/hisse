@@ -8,7 +8,8 @@
 #written by Brian O
 
 SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL, override.safeties=FALSE) {
-	if(!is.finite(max.taxa) & !is.finite(max.t) & !is.finite(max.wall.time)) {
+    id <- living <- state <- NULL
+    if(!is.finite(max.taxa) & !is.finite(max.t) & !is.finite(max.wall.time)) {
 		if(!override.safeties) {
 			stop("You have to limit the number of taxa, the tree height, and/or the actual run time. With current settings, hisse will grow a tree to infite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct.")
 		} else {
@@ -122,7 +123,8 @@ GetDeathRate <- function(turnover, eps) {
 }
 
 CheckKeepRunning <- function(results, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, start=NULL) {
-	keep.running <- TRUE
+    living <- NULL
+    keep.running <- TRUE
 	if(dim(subset(results, living))[1]<1) {
 		keep.running <- FALSE	
 	} 
@@ -141,7 +143,8 @@ CheckKeepRunning <- function(results, max.taxa=Inf, max.t=Inf, max.wall.time=Inf
 }
 
 SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
-	if(class(results)!="data.frame") {
+    living <- descendants <- NULL
+    if(class(results)!="data.frame") {
 		try(results <- 	results$results)
 		if(class(results)!="data.frame") {
 			stop("This requires a dataframe with simulation results")	
