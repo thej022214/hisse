@@ -4,12 +4,12 @@ author: "Jeremy M. Beaulieu"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Running HiSSE}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteIndexEntry{Running hisse}
+   \usepackage[utf8]{inputenc}
 ---
 
-
+## Getting started
 
 This tutorial gives some basic information on how to set up and execute a model using [hisse](https://cran.r-project.org/package=hisse/) (Beaulieu & O'Meara 2015). While our hidden state speciation and extinction model (HiSSE) is a natural extension of the models contained within [diversitree](https://cran.r-project.org/package=diversitree/) (FitzJohn 2012), our implementation has a very different set up.
 
@@ -61,7 +61,7 @@ eps.anc = c(0,0,0,0)
 ```
 Fairly straightforward, but why do we do it this way? This particular format makes it easier to generate a large set of nested models to test. We now include an internal function `GetAllModels.anc()` that provides all possible combinations of free parameters nested within the full hisse model.
 
-##Setting up the transition rate matrix
+## Setting up the transition rate matrix
 The transition rate matrix is set up separate from the diversification rate parameters. This was intentional. We want to reinforce the idea that SSE models are not trait evolution models, but rather joint models for the tree and the evolution of a trait. It for this reason that we depict the transition rates in the canoncial **Q** matrix format.
 
 To generate the index matrix describing the free parameters in the transition model, we use the `TransMatMaker()` function:
@@ -101,7 +101,7 @@ pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc
            eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal)
 ```
 
-##A common mistake
+## A common mistake
 I wanted to highlight a common mistake I've seen through my email correspondence with several users. It may be of interest to test a model where the hidden state is associated with only a single observed state, such that the model contains states 0A, 1A, and 1B. The diversification parameters might look something like this:
 ```{r, eval=TRUE}
 turnover.anc = c(1,2,0,3)
@@ -114,14 +114,14 @@ trans.rates.nodual.no0B <- ParDrop(trans.rates, c(2,3,5,7,8,9,10,12))
 trans.rates.nodual.no0B
 ```
 
-##Changing the output
+## Changing the output
 By default, hisse outputs turnover and extinction fraction. I recognize, of course, that this defies the convention of seeking to estimate and interpretation differences in net diversification ($r_i = \lambda_i-\mu_i$). Therefore, users can alter how the final parameters are printed to the screen using the `output.type=` argument in the call `hisse()`. We've included three options: "turnover", "net.div", and "raw", which outputs the results as estimates of speciation ($\lambda_i$) and exinction ($\mu_i$). Thus, to output net diversification:
 ```{r, eval=FALSE}
 pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
            eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal, output.type="net.div")
 ```
 
-##Setting up the null-two model
+## Setting up the null-two model
 Recently Rabosky and Goldberg (2015) raised a very important concern with SSE models. They showed, rather convincingly, that if the tree evolved under a heterogeneous branching process that is completely independent from the evolution of the focal character, SSE models will almost always return high support for a model of trait-dependent diversification. From an interpretational stand point, this is troubling. But, it is important to bear in mind what such a result is really saying: Yes, BiSSE is very wrong in assigning rate differences to a neutral trait, but a simple equal rates diversification model is not correct either. This leaves practitioners in quite the bind, because the "right" model isn't something that can be tested in BiSSE.
 
 This touches on a much larger issue, which is that we've relied on rather trivial null model (i.e., equal rates diversification) to compare against the fit of BiSSE. Again, it is important to stress that SSE models are not models of trait evolution, but rather joint models for the tree and the trait where they are maximizing the probability of the observed states at the tips and the observed tree, given the model. So, if a tree violates a single regime birth-death model due to any number of causes, then even if the tip data are perfectly consistent with a simple model, the tip data plus the tree are not. In such cases, then, it should not be surprising that a more complex model will tend to be chosen over a nested simpler model, particularly if the underlying tree is large enough. A fairer comparison would need to involve some sort of "null" model that contains the same degree of complexity in terms of numbers of parameters for diversification, but is also independent of the evolution of the focal character, to allow for comparisons among any complex, trait-dependent models of interest.
@@ -229,7 +229,7 @@ for(i in sequence(length(files))){
 }
 ```
 
-##References
+## References
 Beaulieu, J.M., and B.C. O'Meara. (2015). Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. bioRxiv doi: http://dx.doi.org/10.1101/016386
 *Note this is currently accepted pending revision at Systematic Biology
 

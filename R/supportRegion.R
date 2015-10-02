@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta=2,  hidden.states=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, verbose=TRUE){
+SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta=2, output.type="turnover", hidden.states=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, verbose=TRUE){
 	phy <- hisse.obj$phy
 	data <- hisse.obj$data
 	data.new<-data.frame(data[,2], data[,2], row.names=data[,1])
@@ -22,10 +22,51 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
 	upper <- -lower
 
 	#Bad Jeremy! Hard-coded column headers...
-	interval.names <- c("lnLik", "turn.0", "turn.1", "turn.A", "turn.B", "eps.0", "eps.1", "eps.A", "eps.B","q10","qA0","qB0","q01","qA1","qB1","q0A","q1A","qBA","q0B","q1B","qAB","turn.alpha.0","turn.alpha.1", "turn.alpha.A", "turn.alpha.B", "turn.beta.0","turn.beta.1", "turn.beta.A", "turn.beta.B", "eps.alpha.0","eps.alpha.1", "eps.alpha.A", "eps.alpha.B", "eps.beta.0","eps.beta.1", "eps.beta.A", "eps.beta.B", "turn.slice.0","turn.slice.1", "turn.slice.A", "turn.slice.B", "eps.slice.0","eps.slice.1", "eps.slice.A", "eps.slice.B", "q01.slice","q10.slice","q0A.slice","qA0.slice","q1B.slice","qB1.slice","q0B.slice","qB0.slice","q1A.slice","qA1.slice","qBA.slice","qAB.slice")
+    if(output.type == "turnover"){
+        interval.names <- c("lnLik", "turn.0A", "turn.1A", "turn.0B", "turn.1B", "eps.0A", "eps.1A", "eps.0B", "eps.1B","q1A0A","q0B0A","q1B0A","q0A1A","q0B1A","q1B1A","q0A0B","q1A0B","q1B0B","q0A1B","q1A1B","q0A1B","turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
+    }
+    if(output.type == "net.div"){
+        interval.names <- c("lnLik", "netdiv.0A", "netdiv.1A", "netdiv.0B", "netdiv.1B", "eps.0A", "eps.1A", "eps.0B", "eps.1B","q1A0A","q0B0A","q1B0A","q0A1A","q0B1A","q1B1A","q0A0B","q1A0B","q1B0B","q0A1B","q1A1B","q0A1B","turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
+    }
+    if(output.type == "raw"){
+        interval.names <- c("lnLik", "lambda.0A", "lambda.1A", "lambda.0B", "lambda.1B", "mu.0A", "mu.1A", "mu.0B", "mu.1B","q1A0A","q0B0A","q1B0A","q0A1A","q0B1A","q1B1A","q0A0B","q1A0B","q1B0B","q0A1B","q1A1B","q0A1B","turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
+    }
 
 	interval.results <- AdaptiveConfidenceIntervalSampling(par, lower=lower, upper=upper, desired.delta = desired.delta, n.points=n.points, verbose=verbose, phy=phy, data=data.new, index.par=hisse.obj$index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int)
-	interval.results.final <- matrix(0, n.points+1, length(hisse.obj$index.par))
+    if(output.type == "net.div"){
+        lambda.0A <- interval.results[,2] / (1 + interval.results[,6])
+        lambda.1A <- interval.results[,3] / (1 + interval.results[,7])
+        lambda.0B <- interval.results[,4] / (1 + interval.results[,8])
+        lambda.1B <- interval.results[,5] / (1 + interval.results[,9])
+        mu.0A <- (interval.results[,2] * interval.results[,6]) / (1 + interval.results[,6])
+        mu.1A <- (interval.results[,3] * interval.results[,7]) / (1 + interval.results[,7])
+        mu.0B <- (interval.results[,4] * interval.results[,8]) / (1 + interval.results[,8])
+        mu.1B <- (interval.results[,5] * interval.results[,9]) / (1 + interval.results[,9])
+        interval.results[,2] <- lambda.0A - mu.0A
+        interval.results[,3] <- lambda.1A - mu.1A
+        interval.results[,4] <- lambda.0B - mu.0B
+        interval.results[,5] <- lambda.1B - mu.1B
+    }
+    if(output.type == "raw"){
+        lambda.0A <- interval.results[,2] / (1 + interval.results[,6])
+        lambda.1A <- interval.results[,3] / (1 + interval.results[,7])
+        lambda.0B <- interval.results[,4] / (1 + interval.results[,8])
+        lambda.1B <- interval.results[,5] / (1 + interval.results[,9])
+        mu.0A <- (interval.results[,2] * interval.results[,6]) / (1 + interval.results[,6])
+        mu.1A <- (interval.results[,3] * interval.results[,7]) / (1 + interval.results[,7])
+        mu.0B <- (interval.results[,4] * interval.results[,8]) / (1 + interval.results[,8])
+        mu.1B <- (interval.results[,5] * interval.results[,9]) / (1 + interval.results[,9])
+        interval.results[,2] <- lambda.0A
+        interval.results[,3] <- lambda.1A
+        interval.results[,4] <- lambda.0B
+        interval.results[,5] <- lambda.1B
+        interval.results[,6] <- mu.0A
+        interval.results[,7] <- mu.1A
+        interval.results[,8] <- mu.0B
+        interval.results[,9] <- mu.1B
+    }
+    
+    interval.results.final <- matrix(0, n.points+1, length(hisse.obj$index.par))
 	for(i in 1:(n.points+1)){
 		par.rep <- unlist(interval.results[i,-1],use.names=FALSE)
 		interval.results.final[i,] <- c(par.rep,0)[hisse.obj$index.par]
