@@ -33,39 +33,6 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
     }
 
 	interval.results <- AdaptiveConfidenceIntervalSampling(par, lower=lower, upper=upper, desired.delta = desired.delta, n.points=n.points, verbose=verbose, phy=phy, data=data.new, index.par=hisse.obj$index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int)
-    if(output.type == "net.div"){
-        lambda.0A <- interval.results[,2] / (1 + interval.results[,6])
-        lambda.1A <- interval.results[,3] / (1 + interval.results[,7])
-        lambda.0B <- interval.results[,4] / (1 + interval.results[,8])
-        lambda.1B <- interval.results[,5] / (1 + interval.results[,9])
-        mu.0A <- (interval.results[,2] * interval.results[,6]) / (1 + interval.results[,6])
-        mu.1A <- (interval.results[,3] * interval.results[,7]) / (1 + interval.results[,7])
-        mu.0B <- (interval.results[,4] * interval.results[,8]) / (1 + interval.results[,8])
-        mu.1B <- (interval.results[,5] * interval.results[,9]) / (1 + interval.results[,9])
-        interval.results[,2] <- lambda.0A - mu.0A
-        interval.results[,3] <- lambda.1A - mu.1A
-        interval.results[,4] <- lambda.0B - mu.0B
-        interval.results[,5] <- lambda.1B - mu.1B
-    }
-    if(output.type == "raw"){
-        lambda.0A <- interval.results[,2] / (1 + interval.results[,6])
-        lambda.1A <- interval.results[,3] / (1 + interval.results[,7])
-        lambda.0B <- interval.results[,4] / (1 + interval.results[,8])
-        lambda.1B <- interval.results[,5] / (1 + interval.results[,9])
-        mu.0A <- (interval.results[,2] * interval.results[,6]) / (1 + interval.results[,6])
-        mu.1A <- (interval.results[,3] * interval.results[,7]) / (1 + interval.results[,7])
-        mu.0B <- (interval.results[,4] * interval.results[,8]) / (1 + interval.results[,8])
-        mu.1B <- (interval.results[,5] * interval.results[,9]) / (1 + interval.results[,9])
-        interval.results[,2] <- lambda.0A
-        interval.results[,3] <- lambda.1A
-        interval.results[,4] <- lambda.0B
-        interval.results[,5] <- lambda.1B
-        interval.results[,6] <- mu.0A
-        interval.results[,7] <- mu.1A
-        interval.results[,8] <- mu.0B
-        interval.results[,9] <- mu.1B
-    }
-    
     interval.results.final <- matrix(0, n.points+1, length(hisse.obj$index.par))
 	for(i in 1:(n.points+1)){
 		par.rep <- unlist(interval.results[i,-1],use.names=FALSE)
@@ -73,6 +40,38 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
 	}
 	interval.results.final[,21:56] = 1
 	interval.results.final <- cbind(interval.results[,1], interval.results.final)
+    if(output.type == "net.div"){
+        lambda.0A <- interval.results.final[,2] / (1 + interval.results.final[,6])
+        lambda.1A <- interval.results.final[,3] / (1 + interval.results.final[,7])
+        lambda.0B <- interval.results.final[,4] / (1 + interval.results.final[,8])
+        lambda.1B <- interval.results.final[,5] / (1 + interval.results.final[,9])
+        mu.0A <- (interval.results.final[,2] * interval.results.final[,6]) / (1 + interval.results.final[,6])
+        mu.1A <- (interval.results.final[,3] * interval.results.final[,7]) / (1 + interval.results.final[,7])
+        mu.0B <- (interval.results.final[,4] * interval.results.final[,8]) / (1 + interval.results.final[,8])
+        mu.1B <- (interval.results.final[,5] * interval.results.final[,9]) / (1 + interval.results.final[,9])
+        interval.results.final[,2] <- lambda.0A - mu.0A
+        interval.results.final[,3] <- lambda.1A - mu.1A
+        interval.results.final[,4] <- lambda.0B - mu.0B
+        interval.results.final[,5] <- lambda.1B - mu.1B
+    }
+    if(output.type == "raw"){
+        lambda.0A <- interval.results.final[,2] / (1 + interval.results.final[,6])
+        lambda.1A <- interval.results.final[,3] / (1 + interval.results.final[,7])
+        lambda.0B <- interval.results.final[,4] / (1 + interval.results.final[,8])
+        lambda.1B <- interval.results.final[,5] / (1 + interval.results.final[,9])
+        mu.0A <- (interval.results.final[,2] * interval.results.final[,6]) / (1 + interval.results.final[,6])
+        mu.1A <- (interval.results.final[,3] * interval.results.final[,7]) / (1 + interval.results.final[,7])
+        mu.0B <- (interval.results.final[,4] * interval.results.final[,8]) / (1 + interval.results.final[,8])
+        mu.1B <- (interval.results.final[,5] * interval.results.final[,9]) / (1 + interval.results.final[,9])
+        interval.results.final[,2] <- lambda.0A
+        interval.results.final[,3] <- lambda.1A
+        interval.results.final[,4] <- lambda.0B
+        interval.results.final[,5] <- lambda.1B
+        interval.results.final[,6] <- mu.0A
+        interval.results.final[,7] <- mu.1A
+        interval.results.final[,8] <- mu.0B
+        interval.results.final[,9] <- mu.1B
+    }
 	interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
 	ci.interval = apply(interval.results.in, 2, quantile)
 	colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
