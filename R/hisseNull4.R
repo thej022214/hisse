@@ -213,9 +213,9 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 				prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
 			}
 			##############################################################################
-			if(is.nan(prob.subtree.cal[9]) | is.nan(prob.subtree.cal[10]) | is.nan(prob.subtree.cal[11]) | is.nan(prob.subtree.cal[12]) | is.nan(prob.subtree.cal[13]) | is.nan(prob.subtree.cal[14]) | is.nan(prob.subtree.cal[15]) | is.nan(prob.subtree.cal[16])){
+			if(!is.finite(prob.subtree.cal[9]) | !is.finite(prob.subtree.cal[10]) | !is.finite(prob.subtree.cal[11]) | !is.finite(prob.subtree.cal[12]) | !is.finite(prob.subtree.cal[13]) | !is.finite(prob.subtree.cal[14]) | !is.finite(prob.subtree.cal[15]) | !is.finite(prob.subtree.cal[16])){
 				return(bad.likelihood)
-			}										
+			}				
 			if(prob.subtree.cal[9]<0 | prob.subtree.cal[10]<0 | prob.subtree.cal[11]<0 | prob.subtree.cal[12]<0 | prob.subtree.cal[13]<0 | prob.subtree.cal[14]<0 | prob.subtree.cal[15]<0 | prob.subtree.cal[16]<0){
 					return(bad.likelihood)
 			}
