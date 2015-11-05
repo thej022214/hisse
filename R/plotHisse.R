@@ -206,6 +206,7 @@ plot=TRUE,anc.states=NULL,...){
 	cols<-rainbow(1001,start=0,end=0.7); names(cols)<-0:1000
 	if(is.null(lims)) lims<-c(min(c(a,x)),max(c(a,x))) #modified by BCO to include anc state in range for lims
 	trans<-0:1000/1000*(lims[2]-lims[1])+lims[1]; names(trans)<-0:1000
+	tree$maps <- list(rep(rep(NA, 2), nrow(tree$edge)))
 	for(i in 1:nrow(tree$edge)){
 		XX<-cbind(c(H[i,1],steps[intersect(which(steps>H[i,1]),which(steps<H[i,2]))]),
 				  c(steps[intersect(which(steps>H[i,1]),which(steps<H[i,2]))],H[i,2]))-H[i,1]
