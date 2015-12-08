@@ -240,6 +240,7 @@ plot=TRUE,anc.states=NULL,...){
 # written by Liam J. Revell 2012
 getState<-function(x,trans){
 	i<-1
+	state <- names(trans)[1] #BCO: added to prevent error when while loop not entered
 	while(x>trans[i]){
 		state<-names(trans)[i]
 		i<-i+1
