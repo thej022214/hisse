@@ -1,5 +1,7 @@
 test_that("BiSSE_HiSSE_test",{
-	library(diversitree)
+	skip_on_cran()
+    
+    library(diversitree)
 	pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
 	set.seed(4)
 	phy <- tree.bisse(pars, max.t=30, x0=0)
@@ -28,6 +30,8 @@ test_that("BiSSE_HiSSE_test",{
 
 
 test_that("MuSSE_HiSSE_test1", {
+    skip_on_cran()
+
 	library(diversitree)
 	pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
 			  .03, .045, .06, # mu 1, 2, 3
@@ -66,6 +70,8 @@ test_that("MuSSE_HiSSE_test1", {
 })
 
 test_that("MuSSE_HiSSE_test2", {
+    skip_on_cran()
+
 	library(diversitree)
 	pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
 			  .03, .045, .06, # mu 1, 2, 3
@@ -100,6 +106,8 @@ test_that("MuSSE_HiSSE_test2", {
 })
 
 test_that("HiSSE_Null_Four_test", {
+    skip_on_cran()
+
 	library(diversitree)
 	pars <- c(0.1, 0.1, 0.03, 0.03, 0.01, 0.01)
 	set.seed(4)
