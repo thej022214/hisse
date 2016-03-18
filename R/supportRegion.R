@@ -18,8 +18,8 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
 	for(i in np.sequence){
 		par[i] <- hisse.obj$solution[which(hisse.obj$index.par == np.sequence[i])[1]]
 	}
-	lower <- rep(-20, np)
-	upper <- -lower
+	lower <- rep(exp(-20), np)
+	upper <- rep(exp(20), np)
 
 	#Bad Jeremy! Hard-coded column headers...
     if(output.type == "turnover"){
@@ -73,13 +73,13 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
         interval.results.final[,9] <- mu.1B
     }
 	interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
-	ci.interval = apply(interval.results.in, 2, quantile)
+    ci.interval = apply(interval.results.in, 2, quantile)
 	colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
 
 	obj = NULL
-	obj$ci <- ci.interval[,1:22]
-	obj$points.within.region = interval.results.in[,1:22]
-	obj$all.points = interval.results.final[,1:22]
+	obj$ci <- ci.interval[,1:21]
+	obj$points.within.region = interval.results.in[,1:21]
+	obj$all.points = interval.results.final[,1:21]
 	class(obj) = "hisse.support"	
 	return(obj)
 }
@@ -107,7 +107,7 @@ AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=
 	#############################################################
 	#Now assess the likelihood at the MLE:
 	starting <- -DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-	#Generate the multipliers for feeling the boundaries:
+    #Generate the multipliers for feeling the boundaries:
 	min.multipliers <- rep(1, length(par))
 	max.multipliers <- rep(1, length(par))
 	results <- data.frame(data.frame(matrix(nrow=n.points+1, ncol=1+length(par))))
