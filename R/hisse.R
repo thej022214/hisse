@@ -6,6 +6,15 @@
 ######################################################################################################################################
 
 hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, max.tol=.Machine$double.eps^.25){
+	if(!is.null(root.p)) {
+		root.type="user"
+		root.p <- root.p / sum(root.p)	
+		if(hidden.states ==TRUE & length(root.p)==2){
+			root.p <- rep(root.p, 2)
+			root.p <- root.p / sum(root.p)	
+			warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
+		}
+	}
 	
 	if(is.null(trans.rate)){
 		stop("Rate matrix needed. See TransMatMaker() to create one.")
