@@ -15,7 +15,7 @@ root.type="madfitz", root.p=NULL, verbose=TRUE)
 \item{output.type}{indicates whether the rates should be printed onscreen as the optimized variables, \dQuote{turnover}, transformed to reflect net diversification, \dQuote{net.div}, or transformed to reflect \eqn{\lambda}{lambda} and \eqn{\mu}{mu}, \dQuote{raw}.}
 \item{hidden.states}{a logical indicating whether the model includes a hidden state. The default is \code{TRUE}.} 
 \item{condition.on.survival}{a logical indicating whether the likelihood was conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
-\item{root.type}{indicates whether root prior assumption was based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, or assumed equal, \dQuote{equal}.}
+\item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
 \item{verbose}{a logical indicating whether progress should be printed to the screen. The default is \code{TRUE}.}
 }

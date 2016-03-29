@@ -16,7 +16,7 @@ sann.its=10000, max.tol=.Machine$double.eps^.25)
 \item{eps.anc}{a vector of length 8, indicating the free parameters associated with the extinction fractions. Default setting assumes character independent diversification (see Details).} 
 \item{trans.type}{provides the type of transition rate model. Currently this model allows two types: \dQuote{equal}, the default, which assumes all transitions are equal, and \dQuote{three.rate}, that assumes three rates (see Details).} 
 \item{condition.on.survival}{a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
-\item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, or assumed equal, \dQuote{equal}.}
+\item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
 \item{output.type}{indicates whether the rates should be printed onscreen as the optimized variables, \dQuote{turnover}, transformed to reflect net diversification, \dQuote{net.div}, or transformed to reflect \eqn{\lambda}{lambda} and \eqn{\mu}{mu}, \dQuote{raw}.}
 \item{sann}{a logical indicating whether a two-step optimization procedure is to be used. The first includes a simulate annealing approach, with the second involving a refinement using \code{subplex}. The default is \code{FALSE}.}
@@ -27,6 +27,9 @@ sann.its=10000, max.tol=.Machine$double.eps^.25)
 This function sets up and executes a four-state trait independent HiSSE model. The model closely follows \code{hisse}.
 
 Like \code{hisse}, users input vectors containing values to indicate how many free parameters are to be estimated for each of the variables in the model. However, the null-four model assumes that \dQuote{turnover.anc} and \dQuote{eps.anc} are linked between the two observed states. Thus, users are unlikely to alter the inputs much, aside from perhaps fixing \dQuote{turnover.anc} or \dQuote{eps.anc} to be equal across the four hidden states, where the \dQuote{turnover.anc} input vector is set as rep(c(1,1,1,1),2). For a Yule equivalent, the input vector for \dQuote{eps.anc} would be rep(c(0,0,0,0),2). For how to setup a null-two model see the example code below.
+
+For user-specified \dQuote{root.p}, you should specify the probability for each state. See help for \dQuote{hisse} for more on other parameters for this function.
+
 }
 \value{
 \code{hisse} returns an object of class \code{hisse.fit}. This is a list with elements:
