@@ -16,7 +16,7 @@ aic=NULL, verbose=TRUE, n.cores=NULL)
 \item{four.state.null}{a logical indicating whether the model is the null-four model. The default is \code{FALSE}.} 
 \item{timeslice}{a user-supplied time to split the tree.}
 \item{condition.on.survival}{a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
-\item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, or assumed equal, \dQuote{equal}.}
+\item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
 \item{aic}{the AIC for the model being used for the reconstruction. This is used by the plotting function. The default is \code{NULL}.}
 \item{verbose}{a logical indicating whether progress should be printed to screen. The default is \code{TRUE}.}
@@ -24,6 +24,11 @@ aic=NULL, verbose=TRUE, n.cores=NULL)
 }
 \details{
 In this implementation the marginal probability of state i for a focal node is simply the overall likelihood of the tree and data when the state of the focal node is fixed in state i. Note that the likeliest tip states can also be estimated: we observe state 1, but the underlying state could either be state 1A or 1B. Thus, for any given node or tip we traverse the entire tree as many times as there are states in the model. As the size of the tree grows, however, these repeated tree traversals can slow the calculation down considerably. For this reason, we allow the marginal calculation to be conducted in parallel across any number of independent computer processors.
+
+For user-specified \dQuote{root.p}, you should specify the probability for each state. If you are doing a hidden model, there will be four states: 0A, 1A, 0B, 1B. So if you wanted to say the root had to be state 0, you would specify \dQuote{root.p = c(0.5, 0, 0.5, 0)}. 
+
+See help for \dQuote{hisse} for more on other parameters for this function.
+
 }
 \value{
 \code{MarginRecon} returns an object of class \code{hisse.states}. This is a list with elements:
