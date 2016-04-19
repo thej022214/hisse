@@ -268,6 +268,7 @@ makeMappedEdge<-function(edge,maps){
 	return(mapped.edge)
 }
 
+#Get prob of it being 1
 ConvertToBinaryState <- function(x) {
 	x.trimmed <- x[,-1]
 	state.0.indices <- which(grepl("0", colnames(x.trimmed)))
@@ -282,7 +283,7 @@ ConvertToBinaryState <- function(x) {
 	}
 	result.vector.0 <- apply(x0.trimmed, 1, sum)
 	result.vector.1 <- apply(x1.trimmed, 1, sum)
-	result.vector <- result.vector.0 / (result.vector.0 + result.vector.1)
+	result.vector <- result.vector.1 / (result.vector.0 + result.vector.1)
 	names(result.vector) <- x[,1]
 	return(result.vector)
 }
