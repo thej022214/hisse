@@ -48,6 +48,8 @@ For user-specified \dQuote{root.p}, you should specify the probability for each 
 \item{$trans.type}{the user-specified transition model.}
 \item{$trans.mat}{the index matrix that specifies the free parameters in the transition model.} 
 \item{$max.tol}{relative optimization tolerance.}
+\item{$upper.bounds}{the vector of upper limits to the optimization search.}
+\item{$lower.bounds}{the vector of lower limits to the optimization search.}
 }
 \examples{
 ## Not run
@@ -69,7 +71,7 @@ For user-specified \dQuote{root.p}, you should specify the probability for each 
 # eps.anc=c(1,1,2,2), trans.rate=trans.rates.hisse)
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. In revision. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In revision. 
+Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In press. 
 }
 
 \author{Jeremy M. Beaulieu}

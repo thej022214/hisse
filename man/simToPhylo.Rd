@@ -26,7 +26,7 @@ plot(SimToPhylo(simulated.result$results, include.extinct=FALSE))
 } 	
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. In revision. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In revision. 
+Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In press. 
 }
 \author{Brian O'Meara}
 \keyword{utility}

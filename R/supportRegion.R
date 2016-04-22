@@ -19,8 +19,8 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
         for(i in np.sequence){
             par[i] <- hisse.obj$solution[which(hisse.obj$index.par == np.sequence[i])[1]]
         }
-        lower <- rep(exp(-20), np)
-        upper <- rep(exp(20), np)
+        lower <- hisse.obj$lower.bounds
+        upper <- hisse.obj$upper.bounds
         
         #Bad Jeremy! Hard-coded column headers...
         if(output.type == "turnover"){
@@ -120,8 +120,8 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
         for(i in np.sequence){
             par[i] <- hisse.obj$solution[which(hisse.obj$index.par == np.sequence[i])[1]]
         }
-        lower <- rep(exp(-20), np)
-        upper <- rep(exp(20), np)
+        lower <- hisse.obj$lower.bounds
+        upper <- hisse.obj$upper.bounds
         
         #Bad Jeremy! Hard-coded column headers...
         if(output.type == "turnover"){

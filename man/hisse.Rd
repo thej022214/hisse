@@ -57,6 +57,8 @@ Finally, the options \dQuote{.beta} and \dQuote{timeslice} are included, but nei
 \item{$iterations}{number of iterations of the likelihood search that were executed.}
 \item{$output.type}{the user-specified output.type to be printed on the screen.}
 \item{$max.tol}{relative optimization tolerance.}
+\item{$upper.bounds}{the vector of upper limits to the optimization search.}
+\item{$lower.bounds}{the vector of lower limits to the optimization search.}
 }
 \examples{
 ## Not run
@@ -77,7 +79,7 @@ Finally, the options \dQuote{.beta} and \dQuote{timeslice} are included, but nei
 # eps.anc=c(1,2,0,3), trans.rate=trans.rates.hisse)
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. In revision. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In revision. 
+Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In press. 
 
 FitzJohn R.G., Maddison W.P., and Otto S.P. 2009. Estimating trait-dependent speciation and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
 

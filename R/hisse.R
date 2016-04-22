@@ -124,6 +124,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
 		names(init.pars) <- NULL
 		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.pars[3]/init.pars[1]),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
+		upper <- c(rep(log(10),4), rep(log(10),4), rep(log(100), 12), rep(log(10),36)) 
 	}else{
 		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=FALSE)
 		names(init.pars) <- NULL
@@ -132,16 +133,17 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 			init.eps = 1e-6
 		}
 		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.eps),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
+		upper <- c(rep(log(10),4), rep(log(10),4), rep(log(100), 12), rep(log(10),36)) 
 	}
 	#Set initials using estimates from constant bd model:
 	np.sequence <- 1:np
 	ip <- numeric(np)
+	upper <- numeric(np)
 	for(i in np.sequence){
 		ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
+		upper[i] <- upper[which(pars == np.sequence[i])[1]]
 	}
-
 	lower <- rep(-20, length(ip))
-	upper <- -lower
 	
 	if(sann == FALSE){
 		cat("Finished. Beginning subplex routine...", "\n")
@@ -165,7 +167,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	solution.tmp[solution.tmp==0] = 1
 	solution[21:56] = solution.tmp
 	
-	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, output.type=output.type, max.tol=max.tol) 
+	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, output.type=output.type, max.tol=max.tol, upper.bounds=upper, lower.bounds=lower) 
 	class(obj) = "hisse.fit"		
 	
 	return(obj)		

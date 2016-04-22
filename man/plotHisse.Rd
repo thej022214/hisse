@@ -49,7 +49,7 @@ the rest of the plot (c(0, 0.2, 0, 0.2)): by changing values, you can make the l
 from Liam Revell's phytools package.
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. In revision. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In revision. 
+Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In press. 
 }
 \author{Brian O'Meara}
 \keyword{plotting}
