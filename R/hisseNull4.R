@@ -461,7 +461,7 @@ print.hisse.null4.fit <- function(x,...){
 		param.est[6,1:2] <- c(param.est.sp.1B, param.est.mu.1B)
 		param.est[7,1:2] <- c(param.est.sp.1C, param.est.mu.1C)
 		param.est[8,1:2] <- c(param.est.sp.1D, param.est.mu.1D)		
-		names(param.est0) <- names(param.est1) <- c("lambda", "mu")	
+		names(param.est) <- c("lambda", "mu")	
 	}
 	
 	cat("Diversification Rates\n")

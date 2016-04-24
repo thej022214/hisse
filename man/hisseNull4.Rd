@@ -60,7 +60,7 @@ For user-specified \dQuote{root.p}, you should specify the probability for each 
 # sim.dat <- data.frame(names(phy$tip.state), phy$tip.state)
 
 ## Fit null-four HiSSE:
-# pp.hisse.null <- hisse(phy, sim.dat, turnover.anc=rep(c(1,2,3,4),2), 
+# pp.hisse.null <- hisse.null4(phy, sim.dat, turnover.anc=rep(c(1,2,3,4),2), 
 # eps.anc=rep(c(1,2,3,4),2), trans.type="equal")
 
 ## Fit null-two HiSSE model:
