@@ -63,7 +63,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
 		names(init.pars) <- NULL
 		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 8), rep(log(init.pars[3]/init.pars[1]),8), rep(log(init.pars[5]), 32))
-		upper <- c(rep(log(50),8), rep(log(50),8), rep(log(100), 32))
+		upper.full <- c(rep(log(50),8), rep(log(50),8), rep(log(100), 32))
 	}else{
 		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=FALSE)
 		names(init.pars) <- NULL
@@ -72,7 +72,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 			init.eps = 1e-6
 		}
 		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 8), rep(log(init.eps),8), rep(log(init.pars[5]), 32))
-		upper <- c(rep(log(50),8), rep(log(50),8), rep(log(100), 32))
+		upper.full <- c(rep(log(50),8), rep(log(50),8), rep(log(100), 32))
 	}
 	#Set initials using estimates from constant bd model:
 	np.sequence <- 1:np
@@ -80,7 +80,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 	upper <- numeric(np)
 	for(i in np.sequence){
 		ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
-		upper[i] <- upper[which(pars == np.sequence[i])[1]]
+		upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
 	}
 	lower <- rep(-20, length(ip))
 	
