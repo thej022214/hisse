@@ -167,7 +167,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	solution.tmp[solution.tmp==0] = 1
 	solution[21:56] = solution.tmp
 	
-	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, output.type=output.type, max.tol=max.tol, upper.bounds=upper, lower.bounds=lower) 
+	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, upper.bounds=upper, lower.bounds=lower)
 	class(obj) = "hisse.fit"		
 	
 	return(obj)		

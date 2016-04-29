@@ -265,7 +265,7 @@ AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=
             }
         }
         if (verbose && i%%100==0) {
-            print(paste(i, "of", n.points, "points done"))
+            cat(paste(i, "of", n.points, "points done"), "\n")
         }
     }
     return(results)
