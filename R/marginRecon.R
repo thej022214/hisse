@@ -52,7 +52,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 				marginal.probs.rescaled = marginal.probs.tmp - best.probs
 				marginal.probs[focal,] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
 				if (verbose && i%%100==0) {
-					print(paste(i, "of", nb.node, "nodes done"))	
+					cat(paste(i, "of", nb.node, "nodes done"), "\n")
 				}
 			}
 			if(hidden.states==TRUE){
@@ -70,7 +70,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 					marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
 					marginal.probs[i,nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
 					if (verbose && i%%100==0) {
-						print(paste(i, "of", nb.tip, "tips done"))	
+						cat(paste(i, "of", nb.tip, "tips done"), "\n")
 					}			
 				}
 			}
@@ -197,7 +197,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 				marginal.probs.rescaled = marginal.probs.tmp - best.probs
 				marginal.probs[focal,] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
 				if (verbose && i%%100==0) {
-					print(paste(i, "of", nb.node, "nodes done"))	
+					cat(paste(i, "of", nb.node, "nodes done"), "\n")
 				}
 			}
 			#Now for the tips...
@@ -215,7 +215,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 				marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
 				marginal.probs[i,nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
 				if (verbose && i%%100==0) {
-					print(paste(i, "of", nb.tip, "tips done"))	
+					cat(paste(i, "of", nb.tip, "tips done"), "\n")
 				}			
 			}
 			obj <- NULL
