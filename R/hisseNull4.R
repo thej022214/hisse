@@ -96,7 +96,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeNull, ub=upper, lb=lower, opts=opts, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np)
+            out = nloptr(x0=ip, eval_f=DevOptimizeNull, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
@@ -111,7 +111,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 		cat("Finished. Beginning simulated annealing...", "\n")
 		out.sann = GenSA(ip, fn=DevOptimizeNull, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np)
 		cat("Finished. Refining using subplex routine...", "\n")
-        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeNull, ub=upper, lb=lower, opts=opts, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np)
+        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeNull, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         loglik = -out$objective
