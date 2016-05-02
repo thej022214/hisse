@@ -20,16 +20,8 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
             par[i] <- hisse.obj$solution[which(hisse.obj$index.par == np.sequence[i])[1]]
         }
         
-        if(any(par < hisse.obj$lower.bounds)==TRUE){
-            lower <- rep(par[which(par < hisse.obj$lower.bounds)]+1, length(hisse.obj$lower.bounds))
-        }else{
-            lower <- hisse.obj$lower.bounds
-        }
-        if(any(par > hisse.obj$upper.bounds)==TRUE){
-            upper <- rep(par[which(par > hisse.obj$upper.bounds)]+1, length(hisse.obj$upper.bounds))
-        }else{
-            upper <- hisse.obj$upper.bounds
-        }
+        lower <- hisse.obj$lower.bounds
+        upper <- hisse.obj$upper.bounds
         
         #Bad Jeremy! Hard-coded column headers...
         if(output.type == "turnover"){
@@ -130,16 +122,8 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
             par[i] <- hisse.obj$solution[which(hisse.obj$index.par == np.sequence[i])[1]]
         }
 
-        if(any(par < hisse.obj$lower.bounds)==TRUE){
-            lower <- rep(par[which(par < hisse.obj$lower.bounds)]+1, length(hisse.obj$lower.bounds))
-        }else{
-            lower <- hisse.obj$lower.bounds
-        }
-        if(any(par > hisse.obj$upper.bounds)==TRUE){
-            upper <- rep(par[which(par > hisse.obj$upper.bounds)]+1, length(hisse.obj$upper.bounds))
-        }else{
-            upper <- hisse.obj$upper.bounds
-        }
+        lower <- hisse.obj$lower.bounds
+        upper <- hisse.obj$upper.bounds
         
         #Bad Jeremy! Hard-coded column headers...
         if(output.type == "turnover"){
