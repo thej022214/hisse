@@ -7,7 +7,8 @@ hisse(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0),
 eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), 
 eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE,
-sann.its=10000, max.tol=.Machine$double.eps^.25)
+sann.its=10000, bounded.search=FALSE, max.tol=.Machine$double.eps^.25,
+turnover.upper=50, eps.upper=50, trans.upper=100)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -26,7 +27,11 @@ sann.its=10000, max.tol=.Machine$double.eps^.25)
 \item{output.type}{indicates whether the rates should be printed onscreen as the optimized variables, \dQuote{turnover}, transformed to reflect net diversification, \dQuote{net.div}, or transformed to reflect \eqn{\lambda}{lambda} and \eqn{\mu}{mu}, \dQuote{raw}.}
 \item{sann}{a logical indicating whether a two-step optimization procedure is to be used. The first includes a simulate annealing approach, with the second involving a refinement using \code{subplex}. The default is \code{FALSE}.}
 \item{sann.its}{a numeric indicating the number of times the simulated annealing algorithm should call the objective function.}
+\item{bounded.search}{a logical indicating whether or not bounds should be enforced during optimization. The default is is \code{FALSE}.}
 \item{max.tol}{supplies the relative optimization tolerance to \code{subplex}.}
+\item{turnover.upper}{sets the upper bound for the turnover parameters.}
+\item{eps.upper}{sets the upper bound for the extinction fraction parameters.}
+\item{trans.upper}{sets the upper bound for the transition rate parameters.}
 }
 \details{
 This function sets up and executes the HiSSE model. The model closely follows \code{diversitree}, although here we employ modified optimization procedures. For example, rather than optimizing birth and death separately, hisse optimizes orthogonal transformations of these variables: we let tau = birth+death define "net turnover", and we let eps = death/birth define the \dQuote{extinction fraction}. This reparameterization alleviates problems associated with overfitting when birth and death are highly correlated, but both matter in explaining the diversity pattern. As for data file format, \code{hisse} expects a two column matrix or data frame, with the first column containing the species names and the second containing the binary character information. Note that the order of the data file and the names in the \dQuote{phylo} object need not be in the same order; \code{hisse} deals with this internally. Also, the character information MUST be binary (i.e., states are codes as 0 and 1), otherwise, the function will misbehave.

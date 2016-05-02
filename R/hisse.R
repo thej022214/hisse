@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, max.tol=.Machine$double.eps^.25){
+hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=FALSE, max.tol=.Machine$double.eps^.25, turnover.upper=50, eps.upper=50, trans.upper=100){
 	if(!is.null(root.p)) {
 		root.type="user"
 		root.p <- root.p / sum(root.p)	
@@ -124,7 +124,11 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
 		names(init.pars) <- NULL
 		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.pars[3]/init.pars[1]),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
-		upper.full <- c(rep(log(50),4), rep(log(50),4), rep(log(100), 12), rep(log(10),36))
+        if(bounded.search == TRUE){
+            upper.full <- c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper), 12), rep(log(10),36))
+        }else{
+            upper.full <- c(rep(21,4), rep(21,4), rep(21, 12), rep(21, 36))
+        }
 	}else{
 		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=FALSE)
 		names(init.pars) <- NULL
@@ -133,7 +137,11 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 			init.eps = 1e-6
 		}
 		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.eps),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
-		upper.full <- c(rep(log(50),4), rep(log(50),4), rep(log(100), 12), rep(log(10),36))
+        if(bounded.search == TRUE){
+            upper.full <- c(rep(log(50),4), rep(log(50),4), rep(log(100), 12), rep(log(10),36))
+        }else{
+            upper.full <- c(rep(21,4), rep(21,4), rep(21, 12), rep(21, 36))
+        }
 	}
 	#Set initials using estimates from constant bd model:
 	np.sequence <- 1:np
@@ -146,19 +154,27 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	lower <- rep(-20, length(ip))
 
     if(sann == FALSE){
-		cat("Finished. Beginning subplex routine...", "\n")
-		out = subplex(ip, fn=DevOptimize, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np)
+        if(bounded.search == TRUE){
+            cat("Finished. Beginning bounded subplex routine...", "\n")
+            opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
+            out = nloptr(x0=ip, eval_f=DevOptimize, ub=upper, lb=lower, opts=opts, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np)
+            solution[] <- c(exp(out$solution), 0)[pars]
+            loglik = -out$objective
+        }else{
+            cat("Finished. Beginning subplex routine...", "\n")
+            out = subplex(ip, fn=DevOptimize, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np)
+            solution <- numeric(length(pars))
+            solution[] <- c(exp(out$par), 0)[pars]
+            loglik = -out$value
+        }
 	}else{
 		cat("Finished. Beginning simulated annealing...", "\n")
 		out.sann = GenSA(ip, fn=DevOptimize, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np)
 		cat("Finished. Refining using subplex routine...", "\n")
-		out = subplex(out.sann$par, fn=DevOptimize, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np)
+        out = nloptr(x0=out.sann$par, eval_f=DevOptimize, ub=upper, lb=lower, opts=opts, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np)
+        solution[] <- c(exp(out$solution), 0)[pars]
+        loglik = -out$objective
 	}
-	solution <- numeric(length(pars))
-#	solution[] <- c(exp(out$solution), 0)[pars]
-	solution[] <- c(exp(out$par), 0)[pars]
-#	loglik = -out$objective
-	loglik = -out$value
 	
 	cat("Finished. Summarizing results...", "\n")
 
@@ -185,8 +201,10 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 DevOptimize <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, timeslice, np) {
 	#Generates the final vector with the appropriate parameter estimates in the right place:
 	p.new <- exp(p)
+    print(p.new)
 	model.vec <- numeric(length(pars))
 	model.vec[] <- c(p.new, 0)[pars]
+    print(model.vec)
 	model.vec.tmp = model.vec[21:56]
 	model.vec.tmp[model.vec.tmp==0] = 1
 	model.vec[21:56] = model.vec.tmp
@@ -314,13 +332,16 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 			}
 
 			######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
-			if(attributes(prob.subtree.cal.full)$istate[1] < 0){
+			print(attributes(prob.subtree.cal.full)$istate[1])
+            print(prob.subtree.cal.full[-1,-1])
+            if(attributes(prob.subtree.cal.full)$istate[1] < 0){
 				return(bad.likelihood)
 			}else{
 				prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
 			}
 			##############################################################################
-			if(hidden.states == FALSE){
+			
+            if(hidden.states == FALSE){
 				if(is.nan(prob.subtree.cal[3]) | is.nan(prob.subtree.cal[4])){
 					return(bad.likelihood)
 				}										

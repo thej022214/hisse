@@ -1,7 +1,8 @@
 useDynLib(hisse)
 
 export(hisse, hisse.null4, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo)
-import(ape, deSolve, GenSA, subplex, data.table)
+import(ape, deSolve, GenSA, subplex, nloptr)
+importFrom(data.table, data.table, setkey)
 importFrom(parallel, mclapply)
 importFrom(phytools, plot.contMap, nodeHeights, fastAnc, anc.ML)
 importFrom("grDevices", "colorRampPalette", "nclass.Sturges", "rainbow")

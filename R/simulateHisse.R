@@ -5,7 +5,6 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-#written by Brian O
 
 SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL, override.safeties=FALSE) {
     id <- living <- state <- NULL
@@ -13,7 +12,7 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 		if(!override.safeties) {
 			stop("You have to limit the number of taxa, the tree height, and/or the actual run time. With current settings, hisse will grow a tree to infite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct.")
 		} else {
-			warning("With current settings, hisse will grow a tree to infite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct. Normally the program would throw an error, but you claim to know what you're doing (override.safeties==TRUE). We would strongly advise you to have checkpointing running. You may also want to buy a carbon offset for the CPU-years you might burn through during this simulation.")		
+			warning("With current settings, hisse will grow a tree to infinite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct. Normally the program would throw an error, but you claim to know what you're doing (override.safeties==TRUE). We would strongly advise you to have checkpointing running. You may also want to buy a carbon offset for the CPU-years you might burn through during this simulation.")		
 		}
 	}
 	start <- Sys.time()
@@ -220,3 +219,5 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 GetConversionOfAncestralNode <- function(anc.id, results) {
 	return(results$phylo.tipward.id[which(results$id == anc.id)])
 }
+
+
