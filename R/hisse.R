@@ -201,10 +201,8 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 DevOptimize <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, timeslice, np) {
 	#Generates the final vector with the appropriate parameter estimates in the right place:
 	p.new <- exp(p)
-    print(p.new)
 	model.vec <- numeric(length(pars))
 	model.vec[] <- c(p.new, 0)[pars]
-    print(model.vec)
 	model.vec.tmp = model.vec[21:56]
 	model.vec.tmp[model.vec.tmp==0] = 1
 	model.vec[21:56] = model.vec.tmp
@@ -332,8 +330,6 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 			}
 
 			######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
-			print(attributes(prob.subtree.cal.full)$istate[1])
-            print(prob.subtree.cal.full[-1,-1])
             if(attributes(prob.subtree.cal.full)$istate[1] < 0){
 				return(bad.likelihood)
 			}else{
