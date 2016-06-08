@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps.anc=rep(c(1,2,3,4),2), trans.type = "equal", condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=FALSE, max.tol=.Machine$double.eps^.25, turnover.upper=50, eps.upper=50, trans.upper=100){
+hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps.anc=rep(c(1,2,3,4),2), trans.type = "equal", condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=FALSE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100){
 	
 	#Some basic formatting of parameters:
 	phy$node.label <- NULL	
@@ -62,7 +62,11 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 	if(sum(eps.anc)==0){
 		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
 		names(init.pars) <- NULL
-		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 8), rep(log(init.pars[3]/init.pars[1]),8), rep(log(init.pars[5]), 32))
+        if(is.null(starting.vals)){
+            def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 8), rep(log(init.pars[3]/init.pars[1]),8), rep(log(init.pars[5]), 32))
+        }else{
+            def.set.pars <- c(rep(log(starting.vals[1]), 8), rep(log(starting.vals[2]),8), rep(log(starting.vals[3]), 32))
+        }
         if(bounded.search == TRUE){
             upper.full <- c(rep(log(turnover.upper),8), rep(log(eps.upper),8), rep(log(trans.upper), 32))
         }else{
@@ -75,7 +79,11 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 		if(init.eps == 0){
 			init.eps = 1e-6
 		}
-		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 8), rep(log(init.eps),8), rep(log(init.pars[5]), 32))
+        if(is.null(starting.vals)){
+            def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 8), rep(log(init.eps),8), rep(log(init.pars[5]), 32))
+        }else{
+            def.set.pars <- c(rep(log(starting.vals[1]), 8), rep(log(starting.vals[2]),8), rep(log(starting.vals[3]), 32))
+        }
         if(bounded.search == TRUE){
             upper.full <- c(rep(log(turnover.upper),8), rep(log(eps.upper),8), rep(log(trans.upper), 32))
         }else{
@@ -119,7 +127,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 	
 	cat("Finished. Summarizing results...", "\n")
 	
-	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, output.type=output.type, trans.type=trans.type, trans.mat=trans.mat, max.tol=max.tol, upper.bounds=upper, lower.bounds=lower) 
+	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, output.type=output.type, trans.type=trans.type, trans.mat=trans.mat, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower)
 	class(obj) = "hisse.null4.fit"		
 	
 	return(obj)		

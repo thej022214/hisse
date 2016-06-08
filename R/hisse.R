@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=FALSE, max.tol=.Machine$double.eps^.25, turnover.upper=50, eps.upper=50, trans.upper=100){
+hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=FALSE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100){
 	if(!is.null(root.p)) {
 		root.type="user"
 		root.p <- root.p / sum(root.p)	
@@ -123,7 +123,11 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	if(sum(eps.anc)==0){
 		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
 		names(init.pars) <- NULL
-		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.pars[3]/init.pars[1]),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
+        if(is.null(starting.vals)){
+            def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.pars[3]/init.pars[1]),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
+        }else{
+            def.set.pars <- c(rep(log(starting.vals[1]), 4), rep(log(starting.vals[2]),4), rep(log(starting.vals[3]), 12), rep(log(1), 36))
+        }
         if(bounded.search == TRUE){
             upper.full <- c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper), 12), rep(log(10),36))
         }else{
@@ -136,7 +140,11 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 		if(init.eps == 0){
 			init.eps = 1e-6
 		}
-		def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.eps),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
+        if(is.null(starting.vals)){
+            def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.eps),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
+        }else{
+            def.set.pars <- c(rep(log(starting.vals[1]), 4), rep(log(starting.vals[2]),4), rep(log(starting.vals[3]), 12), rep(log(1), 36))
+        }
         if(bounded.search == TRUE){
             upper.full <- c(rep(log(50),4), rep(log(50),4), rep(log(100), 12), rep(log(10),36))
         }else{
@@ -185,7 +193,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	solution.tmp[solution.tmp==0] = 1
 	solution[21:56] = solution.tmp
 	
-	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, upper.bounds=upper, lower.bounds=lower)
+	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower)
 	class(obj) = "hisse.fit"		
 	
 	return(obj)		
@@ -219,6 +227,7 @@ DevOptimize <- function(p, pars, phy, data, f, hidden.states, condition.on.survi
 	cache$eps.beta.factor1 = 1 / dbeta(0.1, model.vec[30], model.vec[34])
 	cache$eps.beta.factorA = 1 / dbeta(0.1, model.vec[31], model.vec[35])
 	cache$eps.beta.factorB = 1 / dbeta(0.1, model.vec[32], model.vec[36])
+
 	logl <- DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
 	return(-logl)
 }
@@ -269,7 +278,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 		compD <- matrix(0, nrow=nb.tip + nb.node, ncol=4)
 		compE <- matrix(0, nrow=nb.tip + nb.node, ncol=4)		
 	}
-		
+    print(compD)
 	#Initializes the tip sampling and sets internal nodes to be zero:
 	ncols = dim(compD)[2]
 	if(length(cache$f) == 2){
@@ -499,9 +508,17 @@ ParametersToPass <- function(phy, data, f, model.vec, timeslice, hidden.states){
 		}
 	}
 	if(hidden.states == TRUE){
+        #This is to force the same order no matter the model:
+        first.zero.state <- which(data == 0)[1]
 		states = matrix(0,Ntip(phy),4)
 		for(i in 1:Ntip(phy)){
-			if(data[i]==0){states[i,c(1,3)]=1}
+			if(data[i]==0){
+                if(i == first.zero.state){
+                    states[i,1]=1
+                }else{
+                    states[i,c(1,3)]=1
+                }
+            }
 			if(data[i]==1){states[i,c(2,4)]=1}
 			if(data[i]==2){states[i,1:4]=1}
 		}
