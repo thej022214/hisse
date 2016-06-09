@@ -6,7 +6,8 @@
 ######################################################################################################################################
 
 hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=FALSE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100){
-	if(!is.null(root.p)) {
+
+    if(!is.null(root.p)) {
 		root.type="user"
 		root.p <- root.p / sum(root.p)	
 		if(hidden.states ==TRUE & length(root.p)==2){
@@ -507,17 +508,9 @@ ParametersToPass <- function(phy, data, f, model.vec, timeslice, hidden.states){
 		}
 	}
 	if(hidden.states == TRUE){
-        #This is to force the same order no matter the model:
-        first.zero.state <- which(data == 0)[1]
 		states = matrix(0,Ntip(phy),4)
 		for(i in 1:Ntip(phy)){
-			if(data[i]==0){
-                if(i == first.zero.state){
-                    states[i,1]=1
-                }else{
-                    states[i,c(1,3)]=1
-                }
-            }
+            if(data[i]==0){states[i,c(1,3)]=1}
 			if(data[i]==1){states[i,c(2,4)]=1}
 			if(data[i]==2){states[i,1:4]=1}
 		}
