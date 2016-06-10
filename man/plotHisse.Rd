@@ -47,6 +47,8 @@ moved around the overall tree plot by using \dQuote{legend.position}: this is a 
 the values are the starting and ending positions as a fraction of the overall plot. By default, the legend starts at the lower left corner and continues up 20% into 
 the rest of the plot (c(0, 0.2, 0, 0.2)): by changing values, you can make the legend larger or smaller and change its position. The heatmap code is modified slightly
 from Liam Revell's phytools package.
+
+Note that the examples trees generated in diversitree, which are detailed in other functions, will cause this function to throw an error. We are still working on why this occurs. But, these phy objects can be saved to another file, reuploaded, brought into MarginRecon, and then plotted with this function just fine. 
 }
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In press. 
