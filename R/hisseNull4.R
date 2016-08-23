@@ -141,7 +141,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 ######################################################################################################################################
 
 #Function used for optimizing parameters:
-DevOptimizeNull <- function(p, pars, phy, data, f, condition.on.survival, root.type, root.p, timeslice, np) {
+DevOptimizeNull <- function(p, pars, phy, data, f, condition.on.survival, root.type, root.p, np) {
 	#Generates the final vector with the appropriate parameter estimates in the right place:
 	p.new <- exp(p)
 	model.vec <- numeric(length(pars))
