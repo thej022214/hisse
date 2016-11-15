@@ -261,8 +261,13 @@ AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=
                     min.multipliers[j] <- min.multipliers[j] * (1-scale.int)
                     max.multipliers[j] <- max.multipliers[j] * (1+scale.int) #expand the range
                 } else {
-                    min.multipliers[j] <- 1
-                    max.multipliers[j] <- 1
+                    if(width.ratio < 0.02 & i>100) { # we are sampling too widely
+                      min.multipliers[j] <- min.multipliers[j] * (1+scale.int)
+                      max.multipliers[j] <- max.multipliers[j] * (1-scale.int) #contract the range
+                    } else {
+                      min.multipliers[j] <- 1
+                      max.multipliers[j] <- 1
+                  }
                 }
             }
         }
