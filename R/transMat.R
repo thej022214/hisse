@@ -32,8 +32,7 @@ TransMatMaker <- function(hidden.states=FALSE){
 
 ParDrop <- function(rate.mat.index=NULL, drop.par=NULL){
 	if(is.null(rate.mat.index)){
-		cat("Rate matrix needed.  See TransMatMaker() to create one.\n")
-		return
+		stop("Rate matrix needed.  See TransMatMaker() to create one.\n", call.=FALSE)
 	}
 	if(is.null(drop.par)){
 		cat("No parameters indicated to drop.  Original matrix returned.\n")
@@ -60,8 +59,7 @@ ParDrop <- function(rate.mat.index=NULL, drop.par=NULL){
 
 ParEqual <- function(rate.mat.index=NULL, eq.par=NULL){
 	if(is.null(rate.mat.index)){
-		cat("Rate matrix needed.  See TransMatMaker() to create one.\n")
-		return
+		stop("Rate matrix needed.  See TransMatMaker() to create one.\n", call.=FALSE)
 	}
 	if(is.null(drop) || length(eq.par) < 2){
 		cat("Fewer than two parameters indicated to equalize. Original matrix returned.\n")

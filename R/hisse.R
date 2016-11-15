@@ -110,7 +110,8 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	
 	data.new<-data.frame(data[,2], data[,2], row.names=data[,1])
 	data.new<-data.new[phy$tip.label,]
-	#This is used to scale starting values to account for sampling:
+
+    #This is used to scale starting values to account for sampling:
 	if(length(f) == 2){
 		samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
 	}else{
