@@ -295,7 +295,13 @@ GenerateValues <- function(par, lower, upper, scale.int, max.tries=100, expand.p
         new.vals <- rep(NA, length(par))
         for(i in sequence(length(par))) {
             examined.max[i] <- max(0.001, examined.max[i])
-            new.vals[i] <- runif(1, max(lower[i], (1-scale.int)*examined.min[i]), min(upper[i], (1+scale.int)*examined.max[i]))
+            min.val <- max(lower[i], (1-scale.int)*examined.min[i])
+            max.val <- min(upper[i], (1+scale.int)*examined.max[i])
+            if(all.equal(min.val, max.val)) {
+              min.val <- min.val * 0.9999
+              max.val <- max.val * 1.0001
+            }
+            new.vals[i] <- runif(1, min.val, max.val)
             if(new.vals[i]<lower[i]) {
                 pass=FALSE
             }
