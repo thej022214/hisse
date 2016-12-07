@@ -297,7 +297,7 @@ GenerateValues <- function(par, lower, upper, scale.int, max.tries=100, expand.p
             examined.max[i] <- max(0.001, examined.max[i])
             min.val <- max(lower[i], (1-scale.int)*examined.min[i])
             max.val <- min(upper[i], (1+scale.int)*examined.max[i])
-            if(all.equal(min.val, max.val)) {
+            if(isTRUE(all.equal(min.val, max.val))) {
               min.val <- min.val * 0.9999
               max.val <- max.val * 1.0001
             }
