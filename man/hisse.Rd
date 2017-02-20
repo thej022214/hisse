@@ -7,7 +7,7 @@ hisse(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0),
 eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), 
 eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE,
-sann.its=10000, bounded.search=FALSE, max.tol=.Machine$double.eps^.25,
+sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25,
 starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100)
 }       
 \arguments{
@@ -27,7 +27,7 @@ starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100)
 \item{output.type}{indicates whether the rates should be printed onscreen as the optimized variables, \dQuote{turnover}, transformed to reflect net diversification, \dQuote{net.div}, or transformed to reflect \eqn{\lambda}{lambda} and \eqn{\mu}{mu}, \dQuote{raw}.}
 \item{sann}{a logical indicating whether a two-step optimization procedure is to be used. The first includes a simulate annealing approach, with the second involving a refinement using \code{subplex}. The default is \code{FALSE}.}
 \item{sann.its}{a numeric indicating the number of times the simulated annealing algorithm should call the objective function.}
-\item{bounded.search}{a logical indicating whether or not bounds should be enforced during optimization. The default is is \code{FALSE}.}
+\item{bounded.search}{a logical indicating whether or not bounds should be enforced during optimization. The default is is \code{TRUE}.}
 \item{max.tol}{supplies the relative optimization tolerance to \code{subplex}.}
 \item{starting.vals}{a vector of starting values to be used instead of the default settings. These are just three values given in the following order: turnover (1), extinction fraction (2), and a single transition rate (3)}
 \item{turnover.upper}{sets the upper bound for the turnover parameters.}

@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps.anc=rep(c(1,2,3,4),2), trans.type = "equal", condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=FALSE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100){
+hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps.anc=rep(c(1,2,3,4),2), trans.type = "equal", condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100){
 	
 	#Some basic formatting of parameters:
 	phy$node.label <- NULL	
