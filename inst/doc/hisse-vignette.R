@@ -138,7 +138,7 @@ hisse.results.list[[3]] = pp.recon
 plot.hisse.states(hisse.results.list, rate.param="net.div", show.tip.label=FALSE, rate.range=c(0,0.072))
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  # First, suck in all the files with .Rsave line ending in your working directory:
+#  #First, suck in all the files with .Rsave line ending in your working directory:
 #  files = system("ls -1 | grep .Rsave", intern=TRUE)
 #  # Create an empty list object
 #  hisse.results.list = list()
