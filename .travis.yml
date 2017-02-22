@@ -1,6 +1,9 @@
 language: r
 r:
   - devel
+env:
+  global:
+    - R_CHECK_ARGS="--as-cran"
 sudo: false
 cache: packages
 warnings_are_errors: true
