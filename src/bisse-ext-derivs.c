@@ -15,8 +15,7 @@
 #include <stdio.h>
 #define NUMELEMENTS 28
 
-static double params_bisse[NUMELEMENTS]; 
-
+static double params_bisse[NUMELEMENTS];
 
 void initmod_bisse(void (* odeparms)(int *, double *)){
 	int N = NUMELEMENTS;

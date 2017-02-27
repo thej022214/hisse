@@ -1,4 +1,4 @@
-useDynLib(hisse, .registration = TRUE, .fixes = "C_")
+useDynLib(hisse)
 
 export(hisse, hisse.null4, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo)
 import(ape, deSolve, GenSA, subplex, nloptr)
