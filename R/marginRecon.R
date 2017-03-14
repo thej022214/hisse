@@ -165,8 +165,8 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 				rates.mat[4,] <- model.vec[5:6]
 				rates.mat[5,] <- raw.rates[5:6]
 				rownames(rates.mat) <- c("turnover", "net.div", "speciation", "extinction.fraction", "extinction")
-				colnames(rates.mat) <- c("id", "0", "1")
-				colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("0", "1")
+				colnames(rates.mat) <- c("0", "1")
+				colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "0", "1")
 			}
 			obj$rates.mat = rates.mat
 			phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
@@ -229,7 +229,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 			rates.mat[4,] <- model.vec[9:16]
 			rates.mat[5,] <- raw.rates[9:16]
 			rownames(rates.mat) <- c("turnover", "net.div", "speciation", "extinction.fraction", "extinction")
-			colnames(rates.mat) <- c("id", "0A", "0B", "0C", "0D","1A", "1B", "1C", "1D")
+			colnames(rates.mat) <- c("0A", "0B", "0C", "0D","1A", "1B", "1C", "1D")
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("0A", "0B", "0C", "0D","1A", "1B", "1C", "1D")
 			obj$rates.mat = rates.mat			
 			phy$node.label = apply(marginal.probs, 1, which.max)[-(1:nb.tip)]
@@ -275,10 +275,11 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 			rates.mat[3,] <- raw.rates[1:8]
 			rates.mat[4,] <- model.vec[9:16]
 			rates.mat[5,] <- raw.rates[9:16]
-            print(head(tip.mat))
-            print(head(node.mat))
+            print(head(obj$tip.mat))
+            print(head(obj$node.mat))
+            print(head(rates.mat))
 			rownames(rates.mat) <- c("turnover", "net.div", "speciation", "extinction.fraction", "extinction")
-			colnames(rates.mat) <- c("id", "0A", "0B", "0C", "0D","1A", "1B", "1C", "1D")
+			colnames(rates.mat) <- c("0A", "0B", "0C", "0D","1A", "1B", "1C", "1D")
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "0B", "0C", "0D","1A", "1B", "1C", "1D")
 			obj$rates.mat = rates.mat
 			phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
