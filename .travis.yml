@@ -1,7 +1,7 @@
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libgsl0ldbl
-  - sudo apt-get install gsl-bin
+  - apt-get -qq update
+  - apt-get install -y libgsl0ldbl
+  - apt-get install gsl-bin
 language: r
 r:
   - devel
