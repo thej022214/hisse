@@ -5,10 +5,13 @@ before_install:
 language: r
 r:
   - devel
+r_packages:
+  - diversitree
+  - knitr
+  - testthat
 env:
   global:
     - R_CHECK_ARGS="--as-cran"
 sudo: true
 cache: packages
 warnings_are_errors: false
-
