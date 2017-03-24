@@ -1,14 +1,14 @@
 before_install:
-  - apt-get -qq update
-  - apt-get install -y libgsl0ldbl
-  - apt-get install gsl-bin
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libgsl0ldbl
+  - sudo apt-get install gsl-bin
 language: r
 r:
   - devel
 env:
   global:
     - R_CHECK_ARGS="--as-cran"
-sudo: false
+sudo: true
 cache: packages
-warnings_are_errors: true
+warnings_are_errors: false
 
