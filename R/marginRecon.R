@@ -59,8 +59,8 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 				for (i in seq(from = 1, length.out = nb.tip)) {
 					marginal.probs.tmp <- numeric(4)
 					nstates = which(!cache$states[i,] == 0)
+                    cache$states.keep = cache$states[i,]
 					for (j in nstates){
-						cache$states.keep = cache$states[i,]
 						cache$states[i,] = 0
 						cache$states[i,j] = 1
 						marginal.probs.tmp[j] <- DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
@@ -125,8 +125,8 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 				TipEval <- function(tip){
 					marginal.probs.tmp <- numeric(4)
 					nstates = which(!cache$states[tip,] == 0)
+                    cache$states.keep = cache$states[tip,]
 					for (j in nstates){
-						cache$states.keep = cache$states[tip,]
 						cache$states[tip,] = 0
 						cache$states[tip,j] = 1
 						marginal.probs.tmp[j] <- DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
@@ -204,8 +204,8 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 			for (i in seq(from = 1, length.out = nb.tip)) {
 				marginal.probs.tmp <- numeric(4)
 				nstates = which(!cache$states[i,] == 0)
+                cache$states.keep = cache$states[i,]
 				for (j in nstates){
-					cache$states.keep = cache$states[i,]
 					cache$states[i,] = 0
 					cache$states[i,j] = 1
 					marginal.probs.tmp[j] <- DownPassNull(phy, cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
@@ -251,8 +251,8 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 			TipEval <- function(tip){
 				marginal.probs.tmp <- numeric(8)
 				nstates = which(!cache$states[tip,] == 0)
+                cache$states.keep = cache$states[tip,]
 				for (j in nstates){
-					cache$states.keep = cache$states[tip,]
 					cache$states[tip,] = 0
 					cache$states[tip,j] = 1
 					marginal.probs.tmp[j] <- DownPassNull(phy, cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
@@ -275,9 +275,6 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 			rates.mat[3,] <- raw.rates[1:8]
 			rates.mat[4,] <- model.vec[9:16]
 			rates.mat[5,] <- raw.rates[9:16]
-            print(head(obj$tip.mat))
-            print(head(obj$node.mat))
-            print(head(rates.mat))
 			rownames(rates.mat) <- c("turnover", "net.div", "speciation", "extinction.fraction", "extinction")
 			colnames(rates.mat) <- c("0A", "0B", "0C", "0D","1A", "1B", "1C", "1D")
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "0B", "0C", "0D","1A", "1B", "1C", "1D")
