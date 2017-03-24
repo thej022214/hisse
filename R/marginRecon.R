@@ -100,9 +100,6 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 				rates.mat[3,] <- raw.rates[1:2]
 				rates.mat[4,] <- model.vec[5:6]
 				rates.mat[5,] <- raw.rates[5:6]
-                print(rates.mat)
-                print(head(obj$node.mat))
-                print(head(obj$tip.mat))
 				rownames(rates.mat) <- c("turnover", "net.div", "speciation", "extinction.fraction", "extinction")
 				colnames(rates.mat) <- c("0", "1")
 				colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "0", "1")
