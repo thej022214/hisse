@@ -279,7 +279,7 @@ AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=
       warning("Did not generate enough points in the region; restarting to create additional points")
       print(paste("Now doing an additional", 2+round(n.points/4), "points to the", dim(results)[1], "ones already done because not enough points in the good enough region were sampled"))
       new.results <- AdaptiveConfidenceIntervalSampling(par=par, lower=lower, upper=upper, desired.delta=desired.delta, n.points=2+round(n.points/4), verbose=verbose, phy=phy, data=data, index.par=index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, hisse.null.four=hisse.null.four, min.number.points=0)
-      results <- cbind(results, new.results[-1,])
+      results <- rbind(results, new.results[-1,])
     }
     return(results)
 }

@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100){
+hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100, ode.solver="lsoda"){
 
     if(!is.null(root.p)) {
 		root.type="user"
@@ -148,7 +148,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
             def.set.pars <- c(rep(log(starting.vals[1]), 4), rep(log(starting.vals[2]),4), rep(log(starting.vals[3]), 12), rep(log(1), 36))
         }
         if(bounded.search == TRUE){
-            upper.full <- c(rep(log(50),4), rep(log(50),4), rep(log(100), 12), rep(log(10),36))
+            upper.full <- c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper), 12), rep(log(10),36))
         }else{
             upper.full <- c(rep(21,4), rep(21,4), rep(21, 12), rep(21, 36))
         }
@@ -167,13 +167,13 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimize, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np)
+            out = nloptr(x0=ip, eval_f=DevOptimize, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np, ode.solver=ode.solver)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimize, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np)
+            out = subplex(ip, fn=DevOptimize, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np, ode.solver=ode.solver)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
@@ -195,7 +195,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	solution.tmp[solution.tmp==0] = 1
 	solution[21:56] = solution.tmp
 	
-	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower)
+	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.solver=ode.solver)
 	class(obj) = "hisse.fit"		
 	
 	return(obj)		
@@ -210,7 +210,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 ######################################################################################################################################
 
 #Function used for optimizing parameters:
-DevOptimize <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, timeslice, np) {
+DevOptimize <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, timeslice, np, ode.solver) {
 	#Generates the final vector with the appropriate parameter estimates in the right place:
 	p.new <- exp(p)
 	model.vec <- numeric(length(pars))
@@ -230,7 +230,7 @@ DevOptimize <- function(p, pars, phy, data, f, hidden.states, condition.on.survi
 	cache$eps.beta.factorA = 1 / dbeta(0.1, model.vec[31], model.vec[35])
 	cache$eps.beta.factorB = 1 / dbeta(0.1, model.vec[32], model.vec[36])
 
-	logl <- DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+	logl <- DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.solver=ode.solver)
 	return(-logl)
 }
 
@@ -265,7 +265,7 @@ starting.point.generator <- function(phy, k, samp.freq.tree, q.div=5, yule=FALSE
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL) {
+DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.solver) {
 	#Some preliminaries:
 	nb.tip <- length(phy$tip.label)
 	nb.node <- phy$Nnode
@@ -328,7 +328,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				padded.pars[sequence(length(pars))]<-pars
 				yini <-c(E0=cache$node.E[1], E1=cache$node.E[2], D0=cache$node.D[1], D1=cache$node.D[2])
 				times=c(cache$tipward.age, cache$rootward.age)
-				prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dllname = "hisse", rtol=1e-8, atol=1e-8, hmax=10)
+				prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
 			}else{
 				pars <- list(cache$tot_time, cache$timeslice, cache$turnover.trend.alpha0, cache$turnover.trend.beta0, cache$turnover.beta.factor0, cache$turnover.slice.factor0, cache$eps.trend.alpha0, cache$eps.trend.beta0, cache$eps.beta.factor0, cache$eps.slice.factor0, cache$turnover.trend.alpha1, cache$turnover.trend.beta1, cache$turnover.beta.factor1, cache$turnover.slice.factor1, cache$eps.trend.alpha1, cache$eps.trend.beta1, cache$eps.beta.factor1, cache$eps.slice.factor1, cache$turnover.trend.alphaA, cache$turnover.trend.betaA, cache$turnover.beta.factorA, cache$turnover.slice.factorA, cache$eps.trend.alphaA, cache$eps.trend.betaA, cache$eps.beta.factorA, cache$eps.slice.factorA, cache$turnover.trend.alphaB, cache$turnover.trend.betaB, cache$turnover.beta.factorB, cache$turnover.slice.factorB, cache$eps.trend.alphaB, cache$eps.trend.betaB, cache$eps.beta.factorB, cache$eps.slice.factorB, cache$x_turnover0, cache$x_eps0, cache$x_turnover1, cache$x_eps1, cache$x_turnoverA, cache$x_epsA, cache$x_turnoverB, cache$x_epsB, cache$q01, cache$q10, cache$q0A, cache$qA0, cache$q1B, cache$qB1, cache$q0B, cache$qB0, cache$q1A, cache$qA1, cache$qBA, cache$qAB, cache$q01_slice.factor, cache$q10_slice.factor, cache$q0A_slice.factor, cache$qA0_slice.factor, cache$q1B_slice.factor, cache$qB1_slice.factor, cache$q0B_slice.factor, cache$qB0_slice.factor, cache$q1A_slice.factor, cache$qA1_slice.factor, cache$qBA_slice.factor, cache$qAB_slice.factor, cache$focal_edge_length, cache$tipward_age)
 				NUMELEMENTS <- 68 #needed for passing in vector to C
@@ -337,8 +337,8 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				stopifnot(length(padded.pars)<=NUMELEMENTS)
 				padded.pars[sequence(length(pars))]<-pars				
 				yini <-c(E0=cache$node.E[1], E1=cache$node.E[2], EA=cache$node.E[3], EB=cache$node.E[4], D0=cache$node.D[1], D1=cache$node.D[2], DA=cache$node.D[3], DB=cache$node.D[4])
-				times=c(cache$tipward.age, cache$rootward.age)							
-				prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_hisse", padded.pars, initfunc="initmod_hisse", dllname = "hisse", rtol=1e-8, atol=1e-8, hmax=10)
+				times=c(cache$tipward.age, cache$rootward.age)
+                prob.subtree.cal.full <- ode(yini, times, func = "maddison_DE_hisse", padded.pars, method=ode.solver, initfunc="initmod_hisse", dllname = "hisse", rtol=1e-8, atol=1e-8, hini=0.001)
 			}
 
 			######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########

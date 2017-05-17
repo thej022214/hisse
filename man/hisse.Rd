@@ -8,7 +8,8 @@ eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0),
 eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE,
 sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25,
-starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100)
+starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100,
+ode.solver="lsoda")
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -33,6 +34,7 @@ starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100)
 \item{turnover.upper}{sets the upper bound for the turnover parameters.}
 \item{eps.upper}{sets the upper bound for the extinction fraction parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
+\item{ode.solver}{determines which ode solver to use. Default is lsoda.}
 }
 \details{
 This function sets up and executes the HiSSE model. The model closely follows \code{diversitree}, although here we employ modified optimization procedures. For example, rather than optimizing birth and death separately, hisse optimizes orthogonal transformations of these variables: we let tau = birth+death define "net turnover", and we let eps = death/birth define the \dQuote{extinction fraction}. This reparameterization alleviates problems associated with overfitting when birth and death are highly correlated, but both matter in explaining the diversity pattern. As for data file format, \code{hisse} expects a two column matrix or data frame, with the first column containing the species names and the second containing the binary character information. Note that the order of the data file and the names in the \dQuote{phylo} object need not be in the same order; \code{hisse} deals with this internally. Also, the character information MUST be binary (i.e., states are codes as 0 and 1), otherwise, the function will misbehave.
