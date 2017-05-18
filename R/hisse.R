@@ -338,7 +338,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				padded.pars[sequence(length(pars))]<-pars				
 				yini <-c(E0=cache$node.E[1], E1=cache$node.E[2], EA=cache$node.E[3], EB=cache$node.E[4], D0=cache$node.D[1], D1=cache$node.D[2], DA=cache$node.D[3], DB=cache$node.D[4])
 				times=c(cache$tipward.age, cache$rootward.age)
-                prob.subtree.cal.full <- ode(yini, times, func = "maddison_DE_hisse", padded.pars, method=ode.solver, initfunc="initmod_hisse", dllname = "hisse", rtol=1e-8, atol=1e-8, hini=0.001)
+                prob.subtree.cal.full <- ode(yini, times, func = "maddison_DE_hisse", padded.pars, method=ode.solver, initfunc="initmod_hisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
 			}
 
 			######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
