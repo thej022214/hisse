@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps.anc=rep(c(1,2,3,4),2), trans.type = "equal", condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100){
+hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps.anc=rep(c(1,2,3,4),2), trans.type = "equal", condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=1e-8){
 	
 	#Some basic formatting of parameters:
 	phy$node.label <- NULL	
@@ -104,22 +104,22 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeNull, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np)
+            out = nloptr(x0=ip, eval_f=DevOptimizeNull, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeNull, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np)
+            out = subplex(ip, fn=DevOptimizeNull, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
         }
 	}else{
 		cat("Finished. Beginning simulated annealing...", "\n")
-		out.sann = GenSA(ip, fn=DevOptimizeNull, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np)
+		out.sann = GenSA(ip, fn=DevOptimizeNull, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
 		cat("Finished. Refining using subplex routine...", "\n")
-        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeNull, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np)
+        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeNull, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         loglik = -out$objective
@@ -127,7 +127,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 	
 	cat("Finished. Summarizing results...", "\n")
 	
-	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, output.type=output.type, trans.type=trans.type, trans.mat=trans.mat, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower)
+	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, output.type=output.type, trans.type=trans.type, trans.mat=trans.mat, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
 	class(obj) = "hisse.null4.fit"		
 	
 	return(obj)		
@@ -141,13 +141,13 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 ######################################################################################################################################
 
 #Function used for optimizing parameters:
-DevOptimizeNull <- function(p, pars, phy, data, f, condition.on.survival, root.type, root.p, np) {
+DevOptimizeNull <- function(p, pars, phy, data, f, condition.on.survival, root.type, root.p, np, ode.eps) {
 	#Generates the final vector with the appropriate parameter estimates in the right place:
 	p.new <- exp(p)
 	model.vec <- numeric(length(pars))
 	model.vec[] <- c(p.new, 0)[pars]
 	cache = ParametersToPassNull(phy, data, model.vec, f=f)
-	logl <- DownPassNull(phy, cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+	logl <- DownPassNull(phy, cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
 	return(-logl)
 }
 
@@ -182,7 +182,7 @@ starting.point.generator <- function(phy, k, samp.freq.tree, q.div=5, yule=FALSE
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL) {
+DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.eps=1e-8) {
 	#Some preliminaries:
 	nb.tip <- length(phy$tip.label)
 	nb.node <- phy$Nnode
@@ -250,6 +250,11 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 			if(prob.subtree.cal[9]<0 | prob.subtree.cal[10]<0 | prob.subtree.cal[11]<0 | prob.subtree.cal[12]<0 | prob.subtree.cal[13]<0 | prob.subtree.cal[14]<0 | prob.subtree.cal[15]<0 | prob.subtree.cal[16]<0){
 					return(bad.likelihood)
 			}
+            
+            if(sum(prob.subtree.cal[9:16] < ode.eps)){
+                return(bad.likelihood)
+            }
+            
 			#Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
 			phi <- c(phi, prob.subtree.cal[1:8])
 			v <- v * prob.subtree.cal[9:16]				

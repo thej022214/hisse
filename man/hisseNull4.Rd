@@ -7,7 +7,8 @@ hisse.null4(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2),
 eps.anc=rep(c(1,2,3,4),2), trans.type="equal", condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL,  output.type="turnover", sann=FALSE, 
 sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25,
-starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100)
+starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100,
+ode.eps=1e-8)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -25,9 +26,10 @@ starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100)
 \item{bounded.search}{a logical indicating whether or not bounds should be enforced during optimization. The default is is \code{TRUE}.}
 \item{max.tol}{supplies the relative optimization tolerance to \code{subplex}.}
 \item{starting.vals}{a vector of starting values to be used instead of the default settings. These are just three values given in the following order: turnover (1), extinction fraction (2), and a single transition rate (3)}
-\item{turnover.upper}{sets the upper bound for the turnover parameters.}
+\item{turnover.upper}{sets the upper bound for the turnover parameters. The default upper bound assumes an event occurs every 100 years.}
 \item{eps.upper}{sets the upper bound for the extinction fraction parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
+\item{ode.eps}{sets the tolerance for the integration at the end of a branch. Essentially if the sum of compD is less than this tolerance, then it assumes the results are unstable and discards them. The default is set to a value that is stable for both easy and very difficult optimization problems.}
 }
 \details{
 This function sets up and executes a four-state trait independent HiSSE model. The model closely follows \code{hisse}.
@@ -77,7 +79,7 @@ For user-specified \dQuote{root.p}, you should specify the probability for each 
 # eps.anc=c(1,1,2,2), trans.rate=trans.rates.hisse)
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In press. 
+Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 }
 
 \author{Jeremy M. Beaulieu}

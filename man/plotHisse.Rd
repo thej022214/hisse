@@ -51,7 +51,7 @@ from Liam Revell's phytools package.
 Note that the examples trees generated in diversitree, which are detailed in other functions, will cause this function to throw an error. We are still working on why this occurs. But, these phy objects can be saved to another file, reuploaded, brought into MarginRecon, and then plotted with this function just fine. 
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In press. 
+Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 }
 \author{Brian O'Meara}
 \keyword{plotting}

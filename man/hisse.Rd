@@ -8,8 +8,8 @@ eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0),
 eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE,
 sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25,
-starting.vals=NULL, turnover.upper=50, eps.upper=50, trans.upper=100,
-ode.solver="lsoda")
+starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100,
+ode.eps=1e-8)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -31,10 +31,10 @@ ode.solver="lsoda")
 \item{bounded.search}{a logical indicating whether or not bounds should be enforced during optimization. The default is is \code{TRUE}.}
 \item{max.tol}{supplies the relative optimization tolerance to \code{subplex}.}
 \item{starting.vals}{a vector of starting values to be used instead of the default settings. These are just three values given in the following order: turnover (1), extinction fraction (2), and a single transition rate (3)}
-\item{turnover.upper}{sets the upper bound for the turnover parameters.}
+\item{turnover.upper}{sets the upper bound for the turnover parameters. The default upper bound assumes an event occurs every 100 years.}
 \item{eps.upper}{sets the upper bound for the extinction fraction parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
-\item{ode.solver}{determines which ode solver to use. Default is lsoda.}
+\item{ode.eps}{sets the tolerance for the integration at the end of a branch. Essentially if the sum of compD is less than this tolerance, then it assumes the results are unstable and discards them. The default is set to a value that is stable for both easy and very difficult optimization problems.}
 }
 \details{
 This function sets up and executes the HiSSE model. The model closely follows \code{diversitree}, although here we employ modified optimization procedures. For example, rather than optimizing birth and death separately, hisse optimizes orthogonal transformations of these variables: we let tau = birth+death define "net turnover", and we let eps = death/birth define the \dQuote{extinction fraction}. This reparameterization alleviates problems associated with overfitting when birth and death are highly correlated, but both matter in explaining the diversity pattern. As for data file format, \code{hisse} expects a two column matrix or data frame, with the first column containing the species names and the second containing the binary character information. Note that the order of the data file and the names in the \dQuote{phylo} object need not be in the same order; \code{hisse} deals with this internally. Also, the character information MUST be binary (i.e., states are codes as 0 and 1), otherwise, the function will misbehave.
@@ -87,7 +87,7 @@ Finally, the options \dQuote{.beta} and \dQuote{timeslice} are included, but nei
 # eps.anc=c(1,2,0,3), trans.rate=trans.rates.hisse)
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. In press. 
+Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 
 FitzJohn R.G., Maddison W.P., and Otto S.P. 2009. Estimating trait-dependent speciation and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
 
