@@ -8,7 +8,7 @@ eps.anc=rep(c(1,2,3,4),2), trans.type="equal", condition.on.survival=TRUE,
 root.type="madfitz", root.p=NULL,  output.type="turnover", sann=FALSE, 
 sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25,
 starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100,
-ode.eps=1e-8)
+ode.eps=0)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -29,7 +29,7 @@ ode.eps=1e-8)
 \item{turnover.upper}{sets the upper bound for the turnover parameters. The default upper bound assumes an event occurs every 100 years.}
 \item{eps.upper}{sets the upper bound for the extinction fraction parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
-\item{ode.eps}{sets the tolerance for the integration at the end of a branch. Essentially if the sum of compD is less than this tolerance, then it assumes the results are unstable and discards them. The default is set to a value that is stable for both easy and very difficult optimization problems.}
+\item{ode.eps}{sets the tolerance for the integration at the end of a branch. Essentially if the sum of compD is less than this tolerance, then it assumes the results are unstable and discards them. The default is set to zero, but in testing a value of 1e-8 can sometimes produce stable solutions for both easy and very difficult optimization problems.}
 }
 \details{
 This function sets up and executes a four-state trait independent HiSSE model. The model closely follows \code{hisse}.
