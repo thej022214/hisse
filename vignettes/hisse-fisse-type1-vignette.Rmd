@@ -246,7 +246,7 @@ axis(1, at = seq(0,.08, by = .02), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
 mtext("Mean standardized Ic", side=1, line=3.25, cex=1.2)
 #mtext(side=2, text="Proportion significant", line= 3.7, cex=1.2)
 mtext("All non-SDD data sets",side=3, line=0, adj=0)
-mtext(side=2, text="C", line= 3.7, cex=1.4, las=1, at=1.05)
+mtext(side=3, text="C", line=3.7, cex=1.4, las=1, at=.25)
 ```
 
 We closely examined each of the data sets from the trait-independent scenarios and found nothing obvious about them that may be useful predictors of the "false positive" rate. For example, the parsimony score, which provides a coarse indication of the minimum number of changes in the discrete character, did not predict the percentage of the spurious support for a trait-dependent model of diversification. We do note that when we separated the scenarios by whether or not the tree was generated through simulation or by modifying existing empirical trees (Fig. 3B), there was a clear positive trend, though with only six data points it is difficult to conclude whether such a pattern is real or simply coincident. We also examined the relationship between a standardized measure of tree balance and the false positive rate (Fig. 3C), and again we found no obvious trend, with the empirical trees neither being overly balanced, nor imbalanced, relative to the simulated trees.
@@ -266,6 +266,44 @@ In Beaulieu and O'Meara (2016), which describes the details of our HiSSE approac
 
 In certain areas of biology, we seem to stop after rejecting a null model that we already knew was false, and it is useful to get information about whether an effect might be present. However, we suggest scientists go beyond this to actually look at parameter estimates. Suppose we find the diversification rate in state 1 is higher than state 0. Is it 0.0001% higher, or is it 300% higher? The answer could have biologically very different implications. Rather than just rejecting nulls, we suggest using HiSSE to do multimodel inference -- compare a variety of models, look at weight for each, and make biological conclusions based on these models and their parameter estimates. The plotting functions in HiSSE were implemented specifically to promote this approach even when one cannot compare states directly (the diversication rate in 0D in a CID4 model does not easily map to a 0A or 0B rate in a HiSSE model), averaged rates at tips and nodes can be used to find estimates of rates, incorporating model uncertainty. See the *Running HiSSE* vignette for more details on how to do this.
 
+```{r, eval=TRUE, echo=FALSE, fig.cap = ""}
+par(oma=c(1,2,1,1))
+mm <- matrix(c(1,2,3), nrow=2, ncol=3, byrow=T)
+layout(mm)
+load("setMEVTipRatios.Rsave")
+
+hist.obj <- hist(final.res[,1], breaks=20, plot=FALSE)
+hist.obj$counts <- hist.obj$counts/sum(hist.obj$counts)
+plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.6, 1.6), ylim=c(0,.3), col="blue")
+par(tck=.01)
+axis(2, at = seq(0,.3, by = .05), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+axis(1, at = seq(0.6,1.6, by = .2), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+abline(v=1, lty=2, lwd=2)
+mtext("Tip ratio 0:1 turnover rate", side=1, line=3.25, cex=1.2)
+mtext(side=2, text="Frequency", line= 3.7, cex=1.2)
+mtext("Scenario 42: 54% 'False positive' rate",side=3, line=0, adj=0)
+mtext(side=2, text="A", line=3.7, cex=1.4, las=1, at=1.05)
+
+hist.obj <- hist(final.res[,3], breaks=20, plot=FALSE)
+hist.obj$counts <- hist.obj$counts/sum(hist.obj$counts)
+plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.6, 1.6), ylim=c(0,.3), col="blue")
+par(tck=.01)
+axis(2, at = seq(0,.3, by = .05), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+axis(1, at = seq(0.6,1.6, by = .2), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+abline(v=1, lty=2, lwd=2)
+mtext("Tip ratio 0:1 speciation rate", side=1, line=3.25, cex=1.2)
+mtext(side=2, text="B", line= 3.7, cex=1.4, las=1, at=1.05)
+
+hist.obj <- hist(final.res[,5], breaks=20, plot=FALSE)
+hist.obj$counts <- hist.obj$counts/sum(hist.obj$counts)
+plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.6, 1.6), ylim=c(0,.3), col="blue")
+par(tck=.01)
+axis(2, at = seq(0,.3, by = .05), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+axis(1, at = seq(0.6,1.6, by = .2), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+abline(v=1, lty=2, lwd=2)
+mtext("Tip ratio 0:1 extinction rate", side=1, line=3.25, cex=1.2)
+mtext(side=2, text="C", line= 3.7, cex=1.4, las=1, at=1.05)
+```
 
 
 ## References
