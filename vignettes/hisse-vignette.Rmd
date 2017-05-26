@@ -2,7 +2,9 @@
 title: "Running HiSSE"
 author: "Jeremy M. Beaulieu"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: rmarkdown::html_vignette
+output: 
+  pdf_document:
+    fig_caption: yes
 vignette: >
    %\VignetteEngine{knitr::rmarkdown}
    %\VignetteIndexEntry{Running hisse}
@@ -23,7 +25,7 @@ library(diversitree)
 set.seed(4)
 # Essentially we are setting up a model that models the evolution of two binary characters
 # Thus, we are assuming the following state combinations 1=00, 2=10, 3=01, 4=11:
-pars <- c(0.1,0.1,0.1,0.2, rep(0.03, 4), 0.01,0.01,0, 0.01, 0, 0.01, 0.01,0,0.01, 0,0.01,0.01)
+pars <- c(0.1,0.1,0.1,0.2, rep(0.03, 4), 0.01,0.01,0,0.01,0,0.01,0.01,0,0.01,0,0.01,0.01)
 phy <- tree.musse(pars, max.taxa=50, x0=1, include.extinct=FALSE)
 sim.dat <- data.frame(names(phy$tip.state), phy$tip.state)
 # Now we want to make the states associated with the second character hidden from us. So, 
@@ -87,7 +89,8 @@ trans.rates.nodual.allequal
 Here we've set the index 2 to equal 1, 3 to equal 1, 4 to equal 1, etc. Of course, if this function is confusing, there are other ways to do the same thing. For example, one could do:
 ```{r, eval=TRUE}
 trans.rates.nodual.allequal = trans.rates.nodual
-trans.rates.nodual.allequal[!is.na(trans.rates.nodual.allequal) & !trans.rates.nodual.allequal == 0] = 1
+trans.rates.nodual.allequal[!is.na(trans.rates.nodual.allequal) & 
+                              !trans.rates.nodual.allequal == 0] = 1
 trans.rates.nodual.allequal
 ```
 Also note that in order to run a BiSSE model in HiSSE, the matrix set up would look like this:
@@ -122,7 +125,7 @@ pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc
 ```
 
 ## Setting up the 2-state character-independent (CID-2) model
-In Beaulieu and O'Meara (2016), we proposed two character-independent models as a means of providing a fairer comparison between trait-dependent and trait-independent models of diversification (for more details see "A comment about HiSSE vs. FiSSE and Type I errors" vignette). These character-independent (CID) models explicitly assume that the evolution of a binary character is independent of the diversification process without forcing the diversification process to be constant across the entire tree. The first model, which we refer to as "CID-2”, contains four diversification process parameters that account for trait-dependent diversification solely on the two states of an unobserved, hidden trait. In this way, CID-2 contains the same amount of complexity in terms of diversification as a BiSSE model. The second model, which we refer to as “CID-4” contains the same number of diversification parameters as in the general HiSSE model that are linked across four hidden states. In the case of the CID=4 model, we have implemented a separate function, `hisse.null4()` that should be fairly self-explanatory. However, rather than implementing a separate function for the "CID-2" model, we found it is easier to just set it up and test it using the `hisse()` function. This section describes how to do this.
+In Beaulieu and O'Meara (2016), we proposed two character-independent models as a means of providing a fairer comparison between trait-dependent and trait-independent models of diversification (for more details see the *Type I errors, Model rejection, & HiSSE vs. FiSSE* vignette). These character-independent (CID) models explicitly assume that the evolution of a binary character is independent of the diversification process without forcing the diversification process to be constant across the entire tree. The first model, which we refer to as "CID-2", contains four diversification process parameters that account for trait-dependent diversification solely on the two states of an unobserved, hidden trait. In this way, CID-2 contains the same amount of complexity in terms of diversification as a BiSSE model. The second model, which we refer to as “CID-4" contains the same number of diversification parameters as in the general HiSSE model that are linked across four hidden states. In the case of the CID=4 model, we have implemented a separate function, `hisse.null4()` that should be fairly self-explanatory. However, rather than implementing a separate function for the "CID-2" model, we found it is easier to just set it up and test it using the `hisse()` function. This section describes how to do this.
 
 Remember, the goal is to set up a model where the diversification process is independent from the observed states (0 or 1) of the focal trait. In other words, diversification rate differences, if they exist, will only be associated with one of the hidden states (A or B) regardless of the state of the focal trait. Thus, the free parameters for diversification would look like this: 
 ```{r, eval=TRUE}
@@ -182,7 +185,8 @@ These are the default colors: red to blue for rate and white to black for state.
 
 But, please be careful here! Notice that there are parts of the tree that have much higher rates (denoted by bright red) than others (denoted by darker blue). This is actually highly misleading. If you look at the legend the rates span from 0.066 - 0.069! So, really, there aren't any meaningful differences in the diversification rates despite what the painting may say. By default the visualization uses the minimum rate on the tree for the minimum color, and the maximum rate for the maximum color. However, users may want to use the same color scale across models, even if some of them have a smaller range than others. A vector with the minimum and maximum rate across all models can be passed to the visualization:
 ```{r, eval=TRUE}
-plot.hisse.states(pp.recon, rate.param="net.div", show.tip.label=FALSE, rate.range=c(0,0.072))
+plot.hisse.states(pp.recon, rate.param="net.div", show.tip.label=FALSE, 
+                  rate.range=c(0,0.072))
 ```
 Now the differences completely disappear.
 

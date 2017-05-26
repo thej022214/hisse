@@ -1,0 +1,19 @@
+citHeader("To cite hisse in publications use:")
+
+citEntry(entry = "Article",
+  title        = "Detecting hidden diversification shifts in models of trait-dependent speciation and extinction.",
+  author       = personList(as.person("Jeremy M. Beaulieu"),
+                   as.person("Brian C. O'Meara")),
+  journal      = "Systematic Biology",
+  year         = "2016",
+  volume       = "65",
+  number       = "4",
+  pages        = "583-601",
+  url          = "https://academic.oup.com/sysbio/article/65/4/583/1753616",
+
+  textVersion  =
+  paste("Beaulieu, J.M., and B.C. O'Meara (2016).",
+        "Detecting hidden diversification shifts in models of trait-dependent speciation and extinction.",
+        "Systematic Biology, 64(4), 583-601.",
+        "URL https://academic.oup.com/sysbio/article/65/4/583/1753616.")
+)
