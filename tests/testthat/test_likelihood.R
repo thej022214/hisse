@@ -23,7 +23,7 @@ test_that("BiSSE_HiSSE_test",{
 	cache$eps.beta.factorA = 1 / dbeta(0.1, 1, 1)
 	cache$turnover.beta.factorB = 1 / dbeta(0.1, 1, 1)
 	cache$eps.beta.factorB = 1 / dbeta(0.1, 1, 1)
-	hisse.full <- hisse:::DownPass(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE)
+	hisse.full <- hisse:::DownPass(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE, ode.solver="lsoda")
 	comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
 	expect_true(comparison)
 })

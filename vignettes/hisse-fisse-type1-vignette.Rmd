@@ -264,45 +264,68 @@ In Beaulieu and O'Meara (2016), which describes the details of our HiSSE approac
 5. A p-value, or statistical significance, does not measure the size of an effect or the importance of a result.
 6. By itself, a p-value does not provide a good measure of evidence regarding a model or hypothesis.
 
-In certain areas of biology, we seem to stop after rejecting a null model that we already knew was false, and it is useful to get information about whether an effect might be present. However, we suggest scientists go beyond this to actually look at parameter estimates. Suppose we find the diversification rate in state 1 is higher than state 0. Is it 0.0001% higher, or is it 300% higher? The answer could have biologically very different implications. Rather than just rejecting nulls, we suggest using HiSSE to do multimodel inference -- compare a variety of models, look at weight for each, and make biological conclusions based on these models and their parameter estimates. The plotting functions in HiSSE were implemented specifically to promote this approach even when one cannot compare states directly (the diversication rate in 0D in a CID4 model does not easily map to a 0A or 0B rate in a HiSSE model), averaged rates at tips and nodes can be used to find estimates of rates, incorporating model uncertainty. See the *Running HiSSE* vignette for more details on how to do this.
+In certain areas of biology, we seem to stop after rejecting a null model that we already knew was false, though to be fair it is useful to get information about whether or not an effect might be present. However, we suggest scientists go beyond this to actually look at parameter estimates. Suppose we find the diversification rate in state 1 is higher than state 0. Is it 0.0001% higher, or is it 300% higher? The answer could have biologically very different implications. Rather than just rejecting nulls, we suggest using HiSSE to do multimodel inference -- compare a variety of models, look at weight for each, and make biological conclusions based on these models and their parameter estimates. The plotting functions in HiSSE were implemented specifically to promote this approach even when one cannot compare states directly (the diversication rate in 0D in a CID4 model does not easily map to a 0A or 0B rate in a HiSSE model), averaged rates at tips and nodes can be used to find estimates of rates, incorporating model uncertainty. See the *Running HiSSE* vignette for more details on how to do this.
 
-```{r, eval=TRUE, echo=FALSE, fig.cap = ""}
-par(oma=c(1,2,1,1))
-mm <- matrix(c(1,2,3), nrow=2, ncol=3, byrow=T)
-layout(mm)
+To demonstrate, we summarized the ratios in diversification between observed states 0 and 1 across the tips for two scenario in which HiSSE performed poorly from a model rejection perspective. Specifically, 
+we examined a true-SSD scenario (6)  that  
+Points to make:
+1) true-SSD scenario we do well, slightly underestimate the ratio, and in 4 data sets HiSSE returns the wrong ratio with respect to turnover. This is due to poor estimates of extinction, which inflated turnover rates. Relying on speciation only, however, all data sets return the proper ratio.
+2) non-SSD is clearly centered on a ratio of 1, meaning no difference, despite the fact that 54% of the data sets were found to have strong evidence favoring a SSD interpretation. In fact, this scenario has an average of 3% upwards bias, with roughly 70% of all data sets falling within 10% in either direction.
+
+```{r, eval=TRUE, echo=FALSE, fig.height=5, fig.width=7, fig.cap = "Model-averaged parameter estimates of turnover and speciation from two scenarios, a true SSD scenario (A,B) where our HiSSE model set showed high 'false negative' rates (i.e., failed to reject a trait-independent scenario), and a non-SSD scenario (C,D) which exhibited a 54% false-positive rate. In the case of the non-SSD scenario, it clearly shows that despite the poor performance of from a model rejection perspective, examining the the model parameters would indicate that on average, there are no differences in diversification rates among observed states."}
+par(mfcol=c(2,2), mar=c(4,4,0.5,0.5), oma=c(1,2,1,1))
+
+load("setCAQTipRatios.Rsave")
+hist.obj <- hist(final.res[,1], breaks=35, plot=FALSE)
+hist.obj$counts <- hist.obj$counts/sum(hist.obj$counts)
+plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.0, 2), ylim=c(0,.3), col="blue")
+par(tck=.01)
+axis(2, at = seq(0,.3, by = .05), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+axis(1, at = seq(0, 2, by = .25), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+abline(v=1, lty=3, lwd=2)
+abline(v=0.5, lty=2, lwd=1.5, col="darkorange")
+mtext("Scen. 6: True SSD, 30% 'False negative' rate",side=3, line=0, adj=0, cex=.75)
+title(ylab="Frequency", line=2.5)
+#title(xlab=expression(Estimated~alpha), line=2)
+legend(1.2,0.30, c("Expected ratio"), lty=2, lwd=.75,col="darkorange", bty="n", cex=.75) 
+mtext("A",side=2, las=1, line=2.5, at=0.35)
+
 load("setMEVTipRatios.Rsave")
-
 hist.obj <- hist(final.res[,1], breaks=20, plot=FALSE)
 hist.obj$counts <- hist.obj$counts/sum(hist.obj$counts)
-plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.6, 1.6), ylim=c(0,.3), col="blue")
+plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.0, 2), ylim=c(0,.3), col="blue")
 par(tck=.01)
 axis(2, at = seq(0,.3, by = .05), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
-axis(1, at = seq(0.6, 1.6, by = .2), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
-abline(v=1, lty=2, lwd=2)
-mtext("Tip ratio 0:1 turnover rate", side=1, line=3.25, cex=1.2)
-mtext(side=2, text="Frequency", line= 3.7, cex=1.2)
-mtext("Scenario 42: 54% 'False positive' rate",side=3, line=0, adj=0)
-mtext(side=2, text="A", line=3.7, cex=1.4, las=1, at=1.05)
+axis(1, at = seq(0, 2, by = .25), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+abline(v=1, lty=3, lwd=2)
+abline(v=1, lty=2, lwd=1.5, col="darkorange")
+title(ylab="Frequency", line=2.5)
+title(xlab="Tip ratio 0:1 turnover rate", line=2)
+mtext("Scen. 42: Non-SSD, 54% 'False positive' rate",side=3, line=0, adj=0,cex=.75)
+mtext("C",side=2, las=1, line=2.5, at=0.35)
 
+load("setCAQTipRatios.Rsave")
 hist.obj <- hist(final.res[,3], breaks=20, plot=FALSE)
 hist.obj$counts <- hist.obj$counts/sum(hist.obj$counts)
-plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.6, 1.6), ylim=c(0,.3), col="blue")
+plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.0, 2), ylim=c(0,.3), col="blue")
 par(tck=.01)
 axis(2, at = seq(0,.3, by = .05), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
-axis(1, at = seq(0.6,1.6, by = .2), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
-abline(v=1, lty=2, lwd=2)
-mtext("Tip ratio 0:1 speciation rate", side=1, line=3.25, cex=1.2)
-mtext(side=2, text="B", line= 3.7, cex=1.4, las=1, at=1.05)
+axis(1, at = seq(0, 2, by = .25), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+abline(v=1, lty=3, lwd=2)
+abline(v=0.5, lty=2, lwd=1.5, col="darkorange")
+mtext("B",side=2, las=1, line=2.5, at=0.35)
 
-hist.obj <- hist(final.res[,5], breaks=20, plot=FALSE)
+load("setMEVTipRatios.Rsave")
+hist.obj <- hist(final.res[,3], breaks=20, plot=FALSE)
 hist.obj$counts <- hist.obj$counts/sum(hist.obj$counts)
-plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.6, 1.6), ylim=c(0,.3), col="blue")
+plot(hist.obj, axes=FALSE, xlab="", ylab="", main="", xlim=c(0.0, 2), ylim=c(0,.3), col="blue")
 par(tck=.01)
-axis(2, at = seq(0,.3, by = .05), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
-axis(1, at = seq(0.6,1.6, by = .2), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
-abline(v=1, lty=2, lwd=2)
-mtext("Tip ratio 0:1 extinction rate", side=1, line=3.25, cex=1.2)
-mtext(side=2, text="C", line= 3.7, cex=1.4, las=1, at=1.05)
+axis(2, at = seq(0,0.3, by = .05), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+axis(1, at = seq(0, 2, by = .25), las =1, lwd=1, labels=TRUE, mgp=c(.75,.5,0))
+abline(v=1, lty=3, lwd=2)
+abline(v=1, lty=2, lwd=1.5, col="darkorange")
+title(xlab="Tip ratio 0:1 speciation rate", line=2)
+mtext("D",side=2, las=1, line=2.5, at=0.35)
 ```
 
 
