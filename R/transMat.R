@@ -5,21 +5,23 @@
 ######################################################################################################################################
 
 TransMatMaker <- function(hidden.states=FALSE){
-	if(hidden.states == FALSE){
-		rate.mat <- matrix(NA, 2, 2)
-		diag(rate.mat) <- 3
-		rate.mat[is.na(rate.mat)] <- 1:2
-		diag(rate.mat) <- NA
-		rownames(rate.mat) <- c("(0)","(1)")
-		colnames(rate.mat) <- c("(0)","(1)")					
-	}else{
-		rate.mat <- matrix(NA, 4, 4)
-		diag(rate.mat) <- 13
-		rate.mat[is.na(rate.mat)] <- 1:12
-		diag(rate.mat) <- NA
-		rownames(rate.mat) <- c("(0A)","(1A)","(0B)","(1B)")
-		colnames(rate.mat) <- c("(0A)","(1A)","(0B)","(1B)")			
-	}
+    if(model.type =="hisse"){
+        if(hidden.states == FALSE){
+            rate.mat <- matrix(NA, 2, 2)
+            diag(rate.mat) <- 3
+            rate.mat[is.na(rate.mat)] <- 1:2
+            diag(rate.mat) <- NA
+            rownames(rate.mat) <- c("(0)","(1)")
+            colnames(rate.mat) <- c("(0)","(1)")
+        }else{
+            rate.mat <- matrix(NA, 4, 4)
+            diag(rate.mat) <- 13
+            rate.mat[is.na(rate.mat)] <- 1:12
+            diag(rate.mat) <- NA
+            rownames(rate.mat) <- c("(0A)","(1A)","(0B)","(1B)")
+            colnames(rate.mat) <- c("(0A)","(1A)","(0B)","(1B)")			
+        }
+    }
 	return(rate.mat)
 }
 

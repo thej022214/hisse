@@ -4,56 +4,177 @@ dyn.load("../src/higeosse-ext-derivs.so")
 dyn.load("../src/canonical_geosse-ext-derivs.so")
 
 
-
 ######################################################################################################################################
 ######################################################################################################################################
 ### HiGeoSSE -- Expanded set of GeoSSE models for examining diversification in relation to biogeography
 ######################################################################################################################################
 ######################################################################################################################################
 
-#PUT HERE
+higeosse <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, mag.san.start=0.5, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
+    
+    if(!is.null(root.p)) {
+        root.type="user"
+        root.p <- root.p / sum(root.p)
+        if(hidden.states ==TRUE & length(root.p)==2){
+            root.p <- rep(root.p, 2)
+            root.p <- root.p / sum(root.p)
+            warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
+        }
+    }
+    
+    if(is.null(trans.rate)){
+        stop("Rate matrix needed. See TransMatMaker() to create one.")
+    }
+    
+    if(hidden.states == TRUE & dim(trans.rate)[1]<4){
+        stop("You chose a hidden state but this is not reflected in the transition matrix")
+    }
 
-## Models ##
-# canonical GeoSSE model #
-# model.vec <- numeric(95)
-# model.vec[1:7] <- c(pars[1:3], pars[4:5], pars[6:7])
-#
-#
-# canonical GeoSSE null #
-# model.vec <- numeric(95)
-# lambda_A <- pars[1]
-# lambda_B <- pars[2]
-# lambda_C <- pars[3]
-# mu_A <- 0.7
-# mu_B <- 0.7
-# mu_C <- 0.7
-# model.vec <- c(rep(lambda_A, 3), pars[4:5], pars[6:7], rep(1,12), rep(lambda_B, 3), pars[4:5], pars[6:7], rep(1,12), rep(lambda_C, 3), pars[1:3], pars[4:5], pars[6:7], rep(1,12))
-#
-#
-# HiGeoSSE #
-# hidden.trans.rates <- numeric(0)
-# hidden.trans.rates[c(1,5,9)] <- 1
-# model.vec <- numeric(95)
-# model.vec[1:19] <- c(pars[1:3], pars[4:5], pars[6:7], hidden.trans.rates)
-# model.vec[20:38] <- c(pars[1:3], pars[4:5], pars[6:7], hidden.trans.rates)
-#
-#
-# HiGeoSSE null #
-# lambda_A <- pars[1]
-# lambda_B <- pars[2]
-# lambda_C <- pars[3]
-# lambda_D <- pars[1]+.3
-# lambda_E <- pars[2]+.25
-# mu_A <- 0.7
-# mu_B <- 0.7
-# mu_C <- 0.7
-# mu_D <- 0.7
-# mu_E <- 0.7
-# model.vec <- c(rep(lambda_A, 3), rep(mu_A, 3), pars[6:7], rep(1,12), rep(lambda_B, 3), rep(mu_B, 3), pars[6:7], rep(1,12), rep(lambda_C, 3), rep(mu_C, 3), pars[6:7], rep(1,12), rep(lambda_D, 3), rep(mu_D, 3), pars[6:7], rep(1,12), rep(lambda_E, 3), rep(mu_E, 3), pars[6:7], rep(1,12))
+    pars <- numeric(95)
 
-# Everything else in between.
+    if(dim(trans.rate)[2]==3){
+        pars.tmp <- speciation
+        extinction.tmp <- extinction
+        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinction.tmp)
+        trans.tmp <- c(trans.rate["(0)", "(01)"], trans.rate["(1)", "(01)"])
+        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, trans.tmp)
+        pars[1:7] <- pars.tmp
+    }
+    
+    if(dim(trans.rate)[2]==6){
+        pars.tmp <- speciation
+        extinction.tmp <- extinction
+        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinction.tmp)
+        rows <- c("(0A)", "(1A)", "(0B)", "(1B)")
+        cols <- c("(01A)", "(01A)", "(01B)", "(01B)")
+        trans.tmp <- trans.rate[cbind(rows,cols)]
+        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, trans.tmp)
+        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+        category.rate.shift <- rep(max(pars.tmp), length(category.tmp))
+        category.rate.shiftA <- c(category.rate.shift[1], rep(0,3), category.rate.shift[2], rep(0,3), category.rate.shift[3], rep(0,3))
+        category.rate.shiftB <- c(category.rate.shift[4], rep(0,3), category.rate.shift[5], rep(0,3), category.rate.shift[6], rep(0,3))
+        pars.tmp <- c(speciation[1:3], extinction.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extinction.tmp[3:4], trans.tmp[3:4], category.rate.shiftB)
+        pars[1:length(pars.tmp)] <- pars.tmp
+    }
+    
+    if(dim(trans.rate)[2]==9){
+        pars.tmp <- speciation
+        extinction.tmp <- extinction
+        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinction.tmp)
+        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)")
+        cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)")
+        trans.tmp <- trans.rate[cbind(rows,cols)]
+        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, trans.tmp)
+        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+        category.rate.shift <- rep(max(pars.tmp), length(category.tmp))
+        category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,2), category.rate.shift[3:4], rep(0,2), category.rate.shift[5:6], rep(0,2))
+        category.rate.shiftB <- c(category.rate.shift[7:8], rep(0,2), category.rate.shift[9:10], rep(0,2), category.rate.shift[11:12], rep(0,2))
+        category.rate.shiftC <- c(category.rate.shift[13:14], rep(0,2), category.rate.shift[15:16], rep(0,2), category.rate.shift[17:18], rep(0,2))
+        pars.tmp <- c(speciation[1:3], extinction.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extinction.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extinction.tmp[5:6], trans.tmp[5:6], category.rate.shiftC)
+        pars[1:length(pars.tmp)] <- pars.tmp
+    }
+    
+    if(dim(trans.rate)[2]==12){
+        pars.tmp <- speciation
+        extinction.tmp <- extinction
+        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinction.tmp)
+        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)", "(0D)", "(1D)")
+        cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)", "(01D)", "(01D)")
+        trans.tmp <- trans.rate[cbind(rows,cols)]
+        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, trans.tmp)
+        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+        category.rate.shift <- rep(max(pars.tmp), length(category.tmp))
+        category.rate.shiftA <- c(category.rate.shift[1:3], rep(0,1), category.rate.shift[4:6], rep(0,1), category.rate.shift[7:9], rep(0,1))
+        category.rate.shiftB <- c(category.rate.shift[10:12], rep(0,1), category.rate.shift[13:15], rep(0,1), category.rate.shift[16:18], rep(0,1))
+        category.rate.shiftC <- c(category.rate.shift[19:21], rep(0,1), category.rate.shift[22:24], rep(0,1), category.rate.shift[25:27], rep(0,1))
+        category.rate.shiftD <- c(category.rate.shift[28:30], rep(0,1), category.rate.shift[31:33], rep(0,1), category.rate.shift[34:36], rep(0,1))
+        pars.tmp <- c(speciation[1:3], extinction.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extinction.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extinction.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, speciation[10:12], extinction.tmp[7:8], trans.tmp[7:8], category.rate.shiftD)
+        pars[1:length(pars.tmp)] <- pars.tmp
+    }
+
+    if(dim(trans.rate)[2]==15){
+        pars.tmp <- speciation
+        extinction.tmp <- extinction
+        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinction.tmp)
+        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)", "(0D)", "(1D)", "(0E)", "(1E)")
+        cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)", "(01D)", "(01D)", "(01E)", "(01E)")
+        trans.tmp <- trans.rate[cbind(rows,cols)]
+        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, trans.tmp)
+        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+        category.rate.shift <- rep(max(pars.tmp), length(category.tmp))
+        category.rate.shiftA <- category.rate.shift[1:12]
+        category.rate.shiftB <- category.rate.shift[12:24]
+        category.rate.shiftC <- category.rate.shift[25:36]
+        category.rate.shiftD <- category.rate.shift[37:48]
+        category.rate.shiftE <- category.rate.shift[49:60]
+        pars.tmp <- c(speciation[1:3], extinction.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extinction.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extinction.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, speciation[10:12], extinction.tmp[7:8], trans.tmp[7:8], category.rate.shiftD, speciation[13:15], extinction.tmp[9:10], trans.tmp[9:10], category.rate.shiftE)
+        pars[1:length(pars.tmp)] <- pars.tmp
+    }
+    
+    np <- max(pars)
+    pars[pars==0] <- np+1
+
+    cat("Initializing...", "\n")
+
+    data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+    data.new <- data.new[phy$tip.label,]
+
+    #This is used to scale starting values to account for sampling:
+    if(length(f) == 3){
+        samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
+    }else{
+        if(length(f) == Ntip(phy)){
+            samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
+        }else{
+            stop("The vector of sampling frequencies does not match the number of tips in the tree.")
+        }
+    }
+    
+    if(sum(extinction)==0){
+        init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
+        names(init.pars) <- NULL
+        if(is.null(starting.vals)){
+            def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.pars[3]/init.pars[1]),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
+        }else{
+            def.set.pars <- c(rep(log(starting.vals[1]), 4), rep(log(starting.vals[2]),4), rep(log(starting.vals[3]), 12), rep(log(1), 36))
+        }
+        if(bounded.search == TRUE){
+            upper.full <- c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper), 12), rep(log(10),36))
+        }else{
+            upper.full <- c(rep(21,4), rep(21,4), rep(21, 12), rep(21, 36))
+        }
+    }else{
+        init.pars <- starting.point.geosse(phy, eps=mag.san.start)
+        names(init.pars) <- NULL
+        init.eps = init.pars[3]/init.pars[1]
+        if(init.eps == 0){
+            init.eps = 1e-6
+        }
+        if(is.null(starting.vals)){
+            def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.eps),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
+        }else{
+            def.set.pars <- c(rep(log(starting.vals[1]), 4), rep(log(starting.vals[2]),4), rep(log(starting.vals[3]), 12), rep(log(1), 36))
+        }
+        if(bounded.search == TRUE){
+            upper.full <- c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper), 12), rep(log(10),36))
+        }else{
+            upper.full <- c(rep(21,4), rep(21,4), rep(21, 12), rep(21, 36))
+        }
+    }
 
 
+
+}
 
 ######################################################################################################################################
 ######################################################################################################################################
@@ -62,10 +183,41 @@ dyn.load("../src/canonical_geosse-ext-derivs.so")
 ######################################################################################################################################
 
 
+DevOptimizeHiGeoSSE <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, np, ode.eps) {
+    #Generates the final vector with the appropriate parameter estimates in the right place:
+    p.new <- exp(p)
+    model.vec <- numeric(length(pars))
+    model.vec[] <- c(p.new, 0)[pars]
 
-#PUT HERE
+    cache = ParametersToPassHiGeoSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states){
+    
+    logl <- DownPasshiGeoSSE(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
+    return(-logl)
+}
 
 
+#Taken from the GeoSSE code modified to account for sampling -- credit goes to Emma Goldberg:
+starting.point.geosse <- function(tree, eps=0.5, samp.freq.tree) {
+    if (eps == 0) {
+        s <- (log(Ntip(tree)) - log(2)) / max(branching.times(tree))
+        s <- s/samp.freq.tree
+        x <- 0
+        d <- s/10
+    } else {
+        n <- Ntip(tree)
+        r <- ( log( (n/2) * (1 - eps*eps) + 2*eps + (1 - eps)/2 *
+        sqrt( n * (n*eps*eps - 8*eps + 2*n*eps + n))) - log(2)
+        ) / max(branching.times(tree))
+        s <- r / (1 - eps)
+        x <- s * eps
+        s <- s/samp.freq.tree
+        x <- x - (s*samp.freq.tree) * (1 - 1/samp.freq.tree)
+        d <- x
+    }
+    p <- c(s, s, s, x, x, d, d)
+    names(p) <- c("sA",  "sB",  "sAB", "xA" , "xB"  ,"dA"  ,"dB")
+    p
+}
 
 
 ######################################################################################################################################
