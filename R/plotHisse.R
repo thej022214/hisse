@@ -14,11 +14,11 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 		}
 		tmp.list <- list()
 		tmp.list[[1]] <- hisse.results
-		hisse.results <- tmp.list	
+		hisse.results <- tmp.list
 	}
 	par(fig=c(0,1, 0, 1), new=FALSE)
 	if(is.null(rate.colors)) {
-		rate.colors <- c("blue", "red")	
+		rate.colors <- c("blue", "red")
 	}
 	if(is.null(state.colors)) {
 		state.colors <- c("white", "black")
@@ -37,7 +37,7 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 	if(!show.tip.label) { #this is b/c you cannot suppress plotting tip labels in phytools plotSimmap
 		rep.rev <- function(x, y) {
 			result<-paste(rep(y,x), collapse="", sep="")
-			return(result)	
+			return(result)
 		}
 		tree.to.plot$tip.label <- sapply(sequence(length(tree.to.plot$tip.label)), rep.rev, " ")
 		fsize=0
@@ -53,7 +53,7 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 	}
 	rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
 	rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
-	
+
 	rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
 	#change colors
 	rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
@@ -62,7 +62,7 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 	plot(rate.tree, outline=FALSE, lwd=edge.width.rate, legend=FALSE, type=type, fsize=fsize, ...)
 	par(fig=c(0,1, 0, 1), new=TRUE)
 	#state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
-	
+
 	state.lims <- range(c(states.tips, states.internal))
 	state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
 	state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
@@ -72,7 +72,7 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 	state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
 	state.tree$cols[]<- state.colors
 	plot(state.tree, outline=FALSE, lwd=edge.width.state, legend=FALSE, type=type, fsize=fsize, ...)
-	
+
 	if(legend!="none") {
 		par(fig=legend.position, new=TRUE)
 		plot(x=c(-0.1,1.1), y=c(-1.5,1.5), xlab="", ylab="", bty="n", type="n", xaxt="n", yaxt="n")
@@ -87,19 +87,19 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 			rates.to.plot <- append(rates.to.plot, rates.internal)
 			states.to.plot <- append(states.to.plot, states.internal)
 		}
-		
+
 		if(legend.kernel.rates=="auto") {
 			if(length(unique(rates.to.plot))<=4) {
-				legend.kernel.rates <- "hist"	
+				legend.kernel.rates <- "hist"
 			} else {
-				legend.kernel.rates <- "rectangular"	
+				legend.kernel.rates <- "rectangular"
 			}
 		}
 		if(legend.kernel.states=="auto") {
 			if(length(unique(states.to.plot))<=4) {
-				legend.kernel.states <- "hist"	
+				legend.kernel.states <- "hist"
 			} else {
-				legend.kernel.states <- "rectangular"	
+				legend.kernel.states <- "rectangular"
 			}
 		}
 
@@ -131,25 +131,25 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 		par(lend=1)
 		segments(x0=rates.density$x, y0=rep(0, length(rates.density$y)), y1=rates.density$y, col=rate.colors[1+as.integer(round((length(rate.colors)-1)* rates.density$x))], lwd=ifelse(legend.kernel.rates=="hist",4,1))
 		text(x=0, y=1.2, labels=format(rate.lims[1], digits=2), cex=legend.cex)
-		text(x=1, y=1.2, labels=format(rate.lims[2], digits=2), cex=legend.cex) 
-		text(x=0.5, y=1.2, labels=rate.param, cex=legend.cex)	
+		text(x=1, y=1.2, labels=format(rate.lims[2], digits=2), cex=legend.cex)
+		text(x=0.5, y=1.2, labels=rate.param, cex=legend.cex)
 #		lines(rates.density$x, rates.density$y, lwd=0.5, col="gray")
-		
+
 		segments(x0=states.density$x, y0=rep(0, length(states.density$y)), y1=states.density$y, col=state.colors[1+as.integer(round((length(state.colors)-1)* states.density$x))], lwd=ifelse(legend.kernel.states=="hist",4,1))
 		text(x=0, y=-1.2, labels="0", cex=legend.cex)
-		text(x=1, y=-1.2, labels="1", cex=legend.cex) 
-		text(x=0.5, y=-1.2, labels="State", cex=legend.cex)	
+		text(x=1, y=-1.2, labels="1", cex=legend.cex)
+		text(x=0.5, y=-1.2, labels="State", cex=legend.cex)
 #		lines(states.density$x, states.density$y, lwd=0.5, col="gray")
 #		lines(rates.density$x, 0*rates.density$y, lwd=0.5, col="gray")
-	
+
 	}
-	
+
 	return(list(rate.tree=rate.tree, state.tree=state.tree))
 }
 
 GetNormalizedDensityPlot <- function(x, limits, kernel, min.breaks=100) {
 	x.density <- c()
-	
+
 	if (kernel=="hist") {
 		x.density<-hist(x, breaks=seq(from= limits[1], to= limits[2], length.out = max(min.breaks,nclass.Sturges(x)+2)), plot=FALSE)
 		x.density$x <- x.density$mid
@@ -163,7 +163,7 @@ GetNormalizedDensityPlot <- function(x, limits, kernel, min.breaks=100) {
 		} else {
 			x.density <- density(x, from=limits[1], to=limits[2], kernel=kernel)
 		}
-	}	
+	}
 	x.density$x <- (x.density$x - limits[1]) / (limits[2]-limits[1]) #so it goes from zero to one
 	if(kernel!="traditional") {
 		x.density$y <- x.density$y/max(x.density$y)
@@ -193,8 +193,8 @@ plot=TRUE,anc.states=NULL,...){
 	H<-nodeHeights(tree)
 	a <- anc.states #BCO modified
 	if(is.null(a)) { #BCO put this in if loop
-		if(method=="fastAnc") a<-fastAnc(tree,x) 
-		else { 
+		if(method=="fastAnc") a<-fastAnc(tree,x)
+		else {
 			fit<-anc.ML(tree,x)
 			a<-fit$ace
 			if(!is.null(fit$missing.x)) x<-c(x,fit$missing.x)
@@ -241,7 +241,7 @@ plot=TRUE,anc.states=NULL,...){
 getState<-function(x,trans){
 	i<-1
 	state <- names(trans)[1] #BCO: added to prevent error when while loop not entered
-	while(x>trans[i]){
+	while(x>trans[i] & i <= length(trans)){
 		state<-names(trans)[i]
 		i<-i+1
 	}
@@ -251,7 +251,7 @@ getState<-function(x,trans){
 # The following function is from phytools, by Liam Revell, which is released under GPL2+
 # It is not exported from phytools, so the options are phytools:::makeMappedEdge or copy it here
 # Given that phytools could change non-exported functions in a way that breaks the above code
-# I have elected to copy it unchanged. Phytools remains a 
+# I have elected to copy it unchanged. Phytools remains a
 # Brian O'Meara, June 10, 2015
 
 # make a mapped edge matrix
@@ -262,8 +262,8 @@ makeMappedEdge<-function(edge,maps){
 	mapped.edge<-matrix(0,nrow(edge),length(st))
 	rownames(mapped.edge)<-apply(edge,1,function(x) paste(x,collapse=","))
 	colnames(mapped.edge)<-st
-	for(i in 1:length(maps)) 
-		for(j in 1:length(maps[[i]])) 
+	for(i in 1:length(maps))
+		for(j in 1:length(maps[[i]]))
 			mapped.edge[i,names(maps[[i]])[j]]<-mapped.edge[i,names(maps[[i]])[j]]+maps[[i]][j]
 	return(mapped.edge)
 }
@@ -304,7 +304,7 @@ ConvertManyToRate <- function(hisse.results, rate.param, which.element) {
 	storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
 	for (i in sequence(length(hisse.results))) {
 		rate.vector <- hisse.results[[i]]$rates.mat[rate.param,]
-		storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=hisse.results[[i]]$rates.mat[rate.param,]))	
+		storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=hisse.results[[i]]$rates.mat[rate.param,]))
 	}
 	final.results <- apply(storage.matrix, 1, weighted.mean, w=AIC.weights)
 	return(final.results)
@@ -314,7 +314,7 @@ ConvertManyToBinaryState <- function(hisse.results, which.element) {
 	AIC.weights <- GetAICWeights(hisse.results)
 	storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
 	for (i in sequence(length(hisse.results))) {
-		storage.matrix <- cbind(storage.matrix, ConvertToBinaryState(x=hisse.results[[i]][[which.element]]))	
+		storage.matrix <- cbind(storage.matrix, ConvertToBinaryState(x=hisse.results[[i]][[which.element]]))
 	}
 	final.results <- apply(storage.matrix, 1, weighted.mean, w=AIC.weights)
 	return(final.results)
@@ -334,10 +334,10 @@ GetRateRange <- function(x, rate.param) {
 	if(class(hisse.results)=="hisse.states") { #we have to make a list so we can run this generally
 		tmp.list <- list()
 		tmp.list[[1]] <- hisse.results
-		hisse.results <- tmp.list	
+		hisse.results <- tmp.list
 	}
 	all.rates <- sapply(hisse.results, "[[", "rates.mat", simplify=FALSE)
-	return(range(unname(unlist(sapply(all.rates, GetRelevantRowEntries, rate.param="turnover")))))	
+	return(range(unname(unlist(sapply(all.rates, GetRelevantRowEntries, rate.param="turnover")))))
 }
 
 GetRelevantRowEntries <- function(x, rate.param) {
