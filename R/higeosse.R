@@ -8,7 +8,7 @@ dyn.load("../src/canonical_geosse-ext-derivs.so")
 
 ######################################################################################################################################
 ######################################################################################################################################
-### HiGeoSSE -- Expanded set of GeoSSE models for examining diversification in relation to biogeography
+### HiGeoSSE -- Expanded set of GeoSSE models for examining diversification in relation to geographic range evolution
 ######################################################################################################################################
 ######################################################################################################################################
 
@@ -328,7 +328,8 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
                 runSilent <- function() {
                     options(warn = -1)
                     on.exit(options(warn = 0))
-                    capture.output(res <- lsoda(yini, times, func = "classe_geosse_equivalent_derivs", padded.pars, initfunc="initmod_geosse", dll = "canonical_geosse-ext-derivs", rtol=1e-8, atol=1e-8))
+                    capture.output(res <- lsoda(yini, times, func = "classe_geosse_equivalent_derivs", padded.pars, initfunc="initmod_geosse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                    #capture.output(res <- lsoda(yini, times, func = "classe_geosse_equivalent_derivs", padded.pars, initfunc="initmod_geosse", dll = "canonical_geosse-ext-derivs", rtol=1e-8, atol=1e-8))
                     res
                 }
                 prob.subtree.cal.full <- runSilent()
@@ -341,10 +342,12 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
 				padded.pars[sequence(length(pars))]<-pars
                 yini <- c(E_0A=cache$node.E[1], E_1A=cache$node.E[2], E_01A=cache$node.E[3], E_0B=cache$node.E[4], E_1B=cache$node.E[5], E_01B=cache$node.E[6], E_0C=cache$node.E[7], E_1C=cache$node.E[8], E_01C=cache$node.E[9], E_0D=cache$node.E[10], E_1D=cache$node.E[11], E_01D=cache$node.E[12], E_0E=cache$node.E[13], E_1E=cache$node.E[14], E_01E=cache$node.E[15], D_N0A=cache$node.D[1], D_N1A=cache$node.D[2], D_N01A=cache$node.D[3], D_N0B=cache$node.D[4], D_N1B=cache$node.D[5], D_N01B=cache$node.D[6], D_N0C=cache$node.D[7], D_N1C=cache$node.D[8], D_N01C=cache$node.D[9], D_N0D=cache$node.D[10], D_N1D=cache$node.D[11], D_N01D=cache$node.D[12], D_N0E=cache$node.D[13], D_N1E=cache$node.D[14], D_N01E=cache$node.D[15])
 				times=c(cache$tipward.age, cache$rootward.age)
+                
                 runSilent <- function() {
                     options(warn = -1)
                     on.exit(options(warn = 0))
-                    capture.output(res <- lsoda(yini, times, func = "higeosse_derivs", padded.pars, initfunc="initmod_higeosse", dll = "higeosse-ext-derivs", rtol=1e-8, atol=1e-8))
+                    capture.output(res <- lsoda(yini, times, func = "higeosse_derivs", padded.pars, initfunc="iinitmod_higeosse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                    #capture.output(res <- lsoda(yini, times, func = "higeosse_derivs", padded.pars, initfunc="initmod_higeosse", dll = "higeosse-ext-derivs", rtol=1e-8, atol=1e-8))
                     res
                 }
                 prob.subtree.cal.full <- runSilent()
