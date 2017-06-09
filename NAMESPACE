@@ -1,6 +1,6 @@
 useDynLib(hisse, .registration = TRUE)
 
-export(hisse, hisse.null4, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo, GetModelAveTipRates, GetModelAveNodeRates)
+export(hisse, hisse.null4, higeosse, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo, GetModelAveTipRates, GetModelAveNodeRates, TransMatMakerHiGeoSSE)
 import(ape, deSolve, GenSA, subplex, nloptr)
 importFrom(data.table, data.table, setkey)
 importFrom(parallel, mclapply)
@@ -10,7 +10,7 @@ importFrom("graphics", "hist", "par", "plot", "rect", "segments", "text")
 importFrom("methods", "hasArg")
 importFrom("stats", "dbeta", "density", "quantile", "reorder", "rexp", "runif", "weighted.mean")
 
-exportClasses('hisse.fit', 'hisse.null4.fit', 'hisse.states', 'hisse.support')
+exportClasses('hisse.fit', 'hisse.null4.fit', 'higeosse.fit', 'hisse.states', 'hisse.support')
 S3method(print, hisse.fit)
 S3method(print, hisse.null4.fit)
 S3method(print, hisse.states)

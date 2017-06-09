@@ -1,9 +1,9 @@
 
-library(deSolve)
-library(diversitree)
-library(nloptr)
-dyn.load("../src/higeosse-ext-derivs.so")
-dyn.load("../src/canonical_geosse-ext-derivs.so")
+#library(deSolve)
+#library(diversitree)
+#library(nloptr)
+#dyn.load("../src/higeosse-ext-derivs.so")
+#dyn.load("../src/canonical_geosse-ext-derivs.so")
 
 
 ######################################################################################################################################
@@ -346,7 +346,7 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
                 runSilent <- function() {
                     options(warn = -1)
                     on.exit(options(warn = 0))
-                    capture.output(res <- lsoda(yini, times, func = "higeosse_derivs", padded.pars, initfunc="iinitmod_higeosse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                    capture.output(res <- lsoda(yini, times, func = "higeosse_derivs", padded.pars, initfunc="initmod_higeosse", dllname = "hisse", rtol=1e-8, atol=1e-8))
                     #capture.output(res <- lsoda(yini, times, func = "higeosse_derivs", padded.pars, initfunc="initmod_higeosse", dll = "higeosse-ext-derivs", rtol=1e-8, atol=1e-8))
                     res
                 }
@@ -646,34 +646,34 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
 ######################################################################################################################################
 ######################################################################################################################################
 
-pars <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
-names(pars) <- diversitree:::default.argnames.geosse()
+#pars <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
+#names(pars) <- diversitree:::default.argnames.geosse()
 
 ## Simulate a tree
-set.seed(5)
-phy <- tree.geosse(pars, max.t=4, x0=0)
-data <- data.frame(g_s = names(phy$tip.state), states = phy$tip.state)
+#set.seed(5)
+#phy <- tree.geosse(pars, max.t=4, x0=0)
+#data <- data.frame(g_s = names(phy$tip.state), states = phy$tip.state)
 ## See the data
-statecols <- c("AB"="purple", "A"="blue", "B"="red")
+#statecols <- c("AB"="purple", "A"="blue", "B"="red")
 
 ## The likelihood function
-lik <- make.geosse(phy, phy$tip.state)
-lik(pars)
+#lik <- make.geosse(phy, phy$tip.state)
+#lik(pars)
 
-states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
+#states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
 
-states <- states[phy$tip.label,]
-names(pars) <- NULL
-model.vec <- numeric(95)
+#states <- states[phy$tip.label,]
+#names(pars) <- NULL
+#model.vec <- numeric(95)
 #tests against GeoSSE
 #model.vec <- rep(c(pars[1:3], pars[4:5], pars[6:7], rep(0,12)), 5)
-model.vec <- numeric(95)
-model.vec[1:7] <- c(pars[1:3], pars[4:5], pars[6:7])
-phy$node.label <- NULL
-cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
-ll.geosse <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=FALSE, bad.likelihood=-10000000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
-cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
-ll.higeosse <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-10000000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+#model.vec <- numeric(95)
+#model.vec[1:7] <- c(pars[1:3], pars[4:5], pars[6:7])
+#phy$node.label <- NULL
+#cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
+#ll.geosse <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=FALSE, bad.likelihood=-10000000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+#cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
+#ll.higeosse <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-10000000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
 
 #tests against NULL
 #lambda_A <- pars[1]
