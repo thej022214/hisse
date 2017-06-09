@@ -250,7 +250,7 @@ starting.point.generator <- function(phy, k, samp.freq.tree, q.div=5, yule=FALSE
 	pars.bd <- suppressWarnings(starting.point.tree(phy, yule))
 	#Rescale parameters to account for sampling, if necessary, using Stadler 2013: 
 	pars.bd[1] = pars.bd[1] / samp.freq.tree
-	pars.bd[2] = pars.bd[2] - (pars.bd[1]*samp.freq.tree) * (1 - 1/samp.freq.tree)
+	pars.bd[2] = pars.bd[2] - ((pars.bd[1]*samp.freq.tree) * (1 - 1/samp.freq.tree))
 	r <- if  ( pars.bd[1] > pars.bd[2] )
     (pars.bd[1] - pars.bd[2]) else pars.bd[1]
 	p <- rep(c(pars.bd, r / q.div), c(k, k, k * (k-1)))
