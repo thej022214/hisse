@@ -1,6 +1,6 @@
 useDynLib(hisse, .registration = TRUE)
 
-export(hisse, hisse.null4, higeosse, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo, GetModelAveTipRates, GetModelAveNodeRates, TransMatMakerHiGeoSSE)
+export(hisse, hisse.null4, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo, GetModelAveTipRates, GetModelAveNodeRates)
 import(ape, deSolve, GenSA, subplex, nloptr)
 importFrom(data.table, data.table, setkey)
 importFrom(parallel, mclapply)
@@ -8,6 +8,7 @@ importFrom(phytools, plot.contMap, nodeHeights, fastAnc, anc.ML)
 importFrom("grDevices", "colorRampPalette", "nclass.Sturges", "rainbow")
 importFrom("graphics", "hist", "par", "plot", "rect", "segments", "text")
 importFrom("methods", "hasArg")
+importFrom("utils", "capture.output")
 importFrom("stats", "dbeta", "density", "quantile", "reorder", "rexp", "runif", "weighted.mean")
 
 exportClasses('hisse.fit', 'hisse.null4.fit', 'higeosse.fit', 'hisse.states', 'hisse.support')
