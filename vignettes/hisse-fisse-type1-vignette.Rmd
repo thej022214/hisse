@@ -7,7 +7,7 @@ output:
     fig_caption: yes
 vignette: >
    %\VignetteEngine{knitr::rmarkdown}
-   %\VignetteIndexEntry{Running hisse}
+   %\VignetteIndexEntry{Type I errors, Model rejection, & HiSSE vs. FiSSE}
    \usepackage[utf8]{inputenc}
 ---
 
