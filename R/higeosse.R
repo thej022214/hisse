@@ -12,7 +12,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-higeosse <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extinction.upper=1000, trans.upper=100, ode.eps=0){
+HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extinction.upper=1000, trans.upper=100, ode.eps=0){
     
     if(!is.null(root.p)) {
         root.type="user"
