@@ -1,6 +1,6 @@
 useDynLib(hisse, .registration = TRUE)
 
-export(hisse, hisse.null4, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo, GetModelAveTipRates, GetModelAveNodeRates)
+export(hisse, hisse.null4, MarginRecon, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo, GetModelAveTipRates, GetModelAveNodeRates, higeosse, TransMatMakerHiGeoSSE)
 import(ape, deSolve, GenSA, subplex, nloptr)
 importFrom(data.table, data.table, setkey)
 importFrom(parallel, mclapply)
