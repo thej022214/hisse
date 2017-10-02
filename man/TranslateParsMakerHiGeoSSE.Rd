@@ -3,7 +3,7 @@
 \title{Key to translate HiGeoSSE into ClaSSE}
 \description{Simulate key of parnames to translate between HiGeoSSE and ClaSSE models}
 \usage{
-TranslateParsMakerHiGeoSSE <- function(k)}       
+TranslateParsMakerHiGeoSSE(k)}       
 \arguments{
 \item{k}{number of hidden states in the model. Minimum is 0 for a model
   without hidden states (i.e., GeoSSE).}
