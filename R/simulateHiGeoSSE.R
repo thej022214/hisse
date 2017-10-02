@@ -1,21 +1,84 @@
-## Function to simulate a tree using the HiGeoSSE process. Depends on 'tree.classe' function of the package diversitree.
+## Functions associated with simulation of a Hidden areas GeoSSE model using the ClaSSE model. GeoSSE is a subset of a ClaSSE model.
 
-## Little issue with an unexported function from diversitree.
-## 'diversitree:::default.argnames.classe'
-## As an option I will lift/copy the function as an unexported function of the hisse package.
-## So we get 'hisse:::default.argnames.classe'
+SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.time=Inf, include.extinct=FALSE, return.HiGeoSSE_pars=FALSE, override.safeties=FALSE){
+    if(return.HiGeoSSE_pars){
+        mod.matrix <- matrix(data=0, nrow=7, ncol=hidden.areas+1)
+        rownames( mod.matrix ) <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB")
+        colnames( mod.matrix ) <- as.character( 0:hidden.areas )
+        qmatAB <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
+        diag(qmatAB) <- NA
+        trans.names <- paste0("AB", 0:hidden.areas)
+        rownames(qmatAB) <- colnames(qmatAB) <- trans.names
+        qmatA <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
+        diag(qmatA) <- NA
+        trans.names <- paste0("A", 0:hidden.areas)
+        rownames(qmatA) <- colnames(qmatA) <- trans.names
+        qmatB <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
+        diag(qmatB) <- NA
+        trans.names <- paste0("B", 0:hidden.areas)
+        rownames(qmatB) <- colnames(qmatB) <- trans.names
+        par.list <- list( model.pars = mod.matrix, q.AB = qmatAB, q.A = qmatA, q.B = qmatB)
+        class(par.list) <- append(class(par.list),"HiGeoSSE_pars")
+        return( par.list )
+    }
 
-## Entries will be a matrix with exactly 7 rows in the same order as the arguments of the GeoSSE model. The number of columns will inform the number of hidden states.
-## Also a squared matrix with dimensions equal to a multiplier of 3 (ordered A, B, AB). Multiples of 3 will inform the number of hidden states.
-## Function need to privide a option to just return a list with empty parameters for the own function in the correct format. This will help a lot when using this.
-## Function will return the same vectors that the SimulateHisse does. However, returning the $results in the same format will be hard. Will just return a phylogeny with tip states maybe.
+    ## Make a series of checks:
+    if( is.infinite(max.taxa) & is.infinite(max.time)){
+        if( override.safeties ) print("WARNING: Simulation running without stopping criteria defined. \n")
+        if( !override.safeties ) stop("No stopping criteria have been informed.")
+    }
+    ## The parameter list is too specific. Better to use the custom class.
+    if( !inherits(pars, "HiGeoSSE_pars") ) stop("Argument 'pars' needs to be of class 'HiGeoSSE_pars'. Please check argument 'return.HiGeoSSE_pars'.")
 
-SimulateHiGeoSSE <- function(mod.matrix, trans.matrix, max.taxa=Inf, max.time=Inf, max.wall.time=Inf, include.extinct=FALSE, x0="AB0", override.safeties=FALSE, return.empty.pars=FALSE, control.empty.pars=NULL){
+    ## Generate the key for the translation of the parameters:
+    model.pars.vec <- c( pars$model.pars )
+    names(model.pars.vec) <- paste0(rownames( pars$model.pars ), rep(colnames(pars$model.pars), each=7))
+
+    ## Get the transtions for the hidden areas.
+    ## Have a feeling this could be more elegant. But, well...
+    tr.size <- ((hidden.areas+1)^2)-(hidden.areas+1)
+    AB.vec <- A.vec <- B.vec <- vector("numeric", length=tr.size)
+    AB.nm <- A.nm <- B.nm <- vector("character", length=tr.size)
+    count <- 1 ## keep the count for the loop.
+    for( i in 1:(hidden.areas+1) ){
+        for( j in 1:(hidden.areas+1) ){
+            if( i == j ) next
+            AB.vec[count] <- pars$q.AB[i,j]
+            AB.nm[count] <- paste0("qAB", i-1, j-1)
+            A.vec[count] <- pars$q.A[i,j]
+            A.nm[count] <- paste0("qA", i-1, j-1)
+            B.vec[count] <- pars$q.B[i,j]
+            B.nm[count] <- paste0("qB", i-1, j-1)
+            count <- count + 1
+        }
+    }
+    names(AB.vec) <- AB.nm
+    names(A.vec) <- A.nm
+    names(B.vec) <- B.nm
+
+    ## Translate from HiGeoSSE par names to ClaSSE.
+    parkey <- TranslateParsMakerHiGeoSSE(k=hidden.areas)
+    higeosse.pars <- c(model.pars.vec, AB.vec, A.vec, B.vec)
+    classe.pars <- vector("numeric", length=nrow(parkey))
+    names(classe.pars) <- parkey[,1]
+    for( i in 1:length(higeosse.pars) ){
+        classe.pars[parkey[,2] %in% names(higeosse.pars[i])] <- higeosse.pars[i]
+    }
+
+    ## Get a vector of parameters in the correct format for ClaSSE.
+    full.classe.pars <- GetArgnamesClasse(k=(hidden.areas+1)*3)
+    full.classe.pars <- setNames(rep(0, times=length(full.classe.pars)), full.classe.pars)
+    mm <- match(names(classe.pars), table=names(full.classe.pars))
+    full.classe.pars[mm] <- classe.pars
+
+    ## Simulate the phylogenetic tree:
+    sims <- diversitree::tree.classe(pars=full.classe.pars, max.taxa=max.taxa, max.t=max.t
+                                   , include.extinct=include.extinct, x0=x0)
     
-
+    ## Need to elaborate the returning object. Now returns only the same output as 'tree.classe' function.
+    return( sims )
+    
 }
-
-## An additional function that 'SimulateHiGeoSSE' needs.
 
 GetArgnamesClasse <- function(k){
     ## Function to generate the correct argument names for 'tree.classe'.
