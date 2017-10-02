@@ -71,9 +71,14 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
     mm <- match(names(classe.pars), table=names(full.classe.pars))
     full.classe.pars[mm] <- classe.pars
 
+    ## Translate x0 to ClaSSE format.
+    par.areas <- paste0(c("AB", "A", "B"), rep(0:hidden.areas, each=3))
+    if( !x0 %in% par.areas ) stop(paste0("x0 needs to be one of ", paste(par.areas, sep="", collapse=", "), " .", collapse=""))
+    classe.x0 <- which( par.areas %in% x0 )
+
     ## Simulate the phylogenetic tree:
     sims <- diversitree::tree.classe(pars=full.classe.pars, max.taxa=max.taxa, max.t=max.t
-                                   , include.extinct=include.extinct, x0=x0)
+                                   , include.extinct=include.extinct, x0=classe.x0)
     
     ## Need to elaborate the returning object. Now returns only the same output as 'tree.classe' function.
     return( sims )
