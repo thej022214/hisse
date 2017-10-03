@@ -36,20 +36,10 @@ by eliminating this parameter of the model.
 }
 \value{
 	This returns a list, with the following elements:
-	\item{$phy}{a phylogeny ot class phylo.}
+	\item{$phy}{a phylogeny of class phylo.}
 	\item{$data}{a named vector with the tip states.}
-	\item{$birth.counts}{a named vector with the number of
-cladogenetic events for each area (and hidden area).}
-	\item{$death.counts}{a named vector with the number of local
-extinctions in each of the endemic areas (hidden or not).}
-	\item{$extipation.counts}{a named vector with the number of
-extirpation events from the widespread distribution (hidden or not).}
-	\item{$dispersion.counts}{a named vector with the number of dispersion
-events from the endemic areas to the widespread area (hidden or not).}
-	\item{$hidden.trans.counts}{a named vector with the number of
-transition events between the hidden categores for each parameter.}
-	\item{$transition.counts}{matrix of counts of transitions from
-	  one state to another.}
+	\item{$sim.attempts}{number of times that the simulation tried
+	  before reaching desired termination condition.}
       }      
 \examples{
 \dontrun{

@@ -77,12 +77,20 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
     classe.x0 <- which( par.areas %in% x0 )
 
     ## Simulate the phylogenetic tree:
-    sims <- diversitree::tree.classe(pars=full.classe.pars, max.taxa=max.taxa, max.t=max.t
+    ## Repeat until we get the sims done. Record how many times it failed.
+    attempt <- 0
+    sims <- NULL
+    while( is.null(sims) ){
+    sims <- diversitree::tree.classe(pars=full.classe.pars, max.taxa=max.taxa, max.t=max.time
                                    , include.extinct=include.extinct, x0=classe.x0)
+    attempt <- attempt + 1
+    }
     
-    ## Need to elaborate the returning object. Now returns only the same output as 'tree.classe' function.
-    return( sims )
+    ## Translate the traits back to HiGeoSSE format.
+    tip.state <- sapply(sims$tip.state, function(x) par.areas[x])
+    sims$node.state <- sapply(sims$node.state, function(x) par.areas[x])
     
+    return( list(phy=sims, data=tip.state, sim.attempts=attempt) )
 }
 
 GetArgnamesClasse <- function(k){
