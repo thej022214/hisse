@@ -8,7 +8,7 @@ TransMatMakerHiGeoSSE <- function(hidden.areas=0, make.null=FALSE){
                 sub.mat2 <- TransMatGeoSSEsingle(cat.number=1)
                 sub.mat3 <- matrix(NA, 3, 3)
                 diag(sub.mat3) <- 3
-                trans.mat <- rbind(cbind(sub.mat1,sub.mat3), cbind(sub.mat4,sub.mat2))
+                trans.mat <- rbind(cbind(sub.mat1,sub.mat3), cbind(sub.mat3,sub.mat2))
             }else{
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1)
                 sub.mat2 <- TransMatGeoSSEsingle(cat.number=2)
