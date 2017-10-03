@@ -40,6 +40,7 @@ by eliminating this parameter of the model.
 	\item{$data}{a named vector with the tip states.}
 	\item{$sim.attempts}{number of times that the simulation tried
 	  before reaching desired termination condition.}
+    \item{$pars}{the parameters used for the simulation.}
       }      
 \examples{
 \dontrun{
