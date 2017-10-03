@@ -12,14 +12,14 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extinction.upper=1000, trans.upper=100, ode.eps=0){
+HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1,2), hidden.areas=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, trans.upper=100, ode.eps=0){
 
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
-        if(hidden.states ==TRUE & length(root.p)==2){
+        if(hidden.areas ==TRUE & length(root.p)==2){
             root.p <- rep(root.p, 2)
             root.p <- root.p / sum(root.p)
             warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
@@ -30,7 +30,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
         stop("Rate matrix needed. See TransMatMakerHiGeoSSE() to create one.")
     }
     
-    if(hidden.states == TRUE & dim(trans.rate)[1]<4){
+    if(hidden.areas == TRUE & dim(trans.rate)[1]<4){
         stop("You chose a hidden state but this is not reflected in the transition matrix")
     }
 
@@ -39,9 +39,9 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
     if(dim(trans.rate)[2]==3){
         rate.cats <- 1
         pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        extirpation.tmp <- extirpation
+        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extirpation.tmp)
         trans.tmp <- c(trans.rate["(0)", "(01)"], trans.rate["(1)", "(01)"])
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         category.rates.unique <- 0
@@ -52,9 +52,9 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
     if(dim(trans.rate)[2]==6){
         rate.cats <- 2
         pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        extirpation.tmp <- extirpation
+        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extirpation.tmp)
         rows <- c("(0A)", "(1A)", "(0B)", "(1B)")
         cols <- c("(01A)", "(01A)", "(01B)", "(01B)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -64,16 +64,16 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
         category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
         category.rate.shiftA <- c(category.rate.shift[1], rep(0,3), category.rate.shift[2], rep(0,3), category.rate.shift[3], rep(0,3))
         category.rate.shiftB <- c(category.rate.shift[4], rep(0,3), category.rate.shift[5], rep(0,3), category.rate.shift[6], rep(0,3))
-        pars.tmp <- c(speciation[1:3], extinction.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extinction.tmp[3:4], trans.tmp[3:4], category.rate.shiftB)
+        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[3:4], category.rate.shiftB)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==9){
         rate.cats <- 3
         pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        extirpation.tmp <- extirpation
+        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extirpation.tmp)
         rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)")
         cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -84,16 +84,16 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
         category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,2), category.rate.shift[3:4], rep(0,2), category.rate.shift[5:6], rep(0,2))
         category.rate.shiftB <- c(category.rate.shift[7:8], rep(0,2), category.rate.shift[9:10], rep(0,2), category.rate.shift[11:12], rep(0,2))
         category.rate.shiftC <- c(category.rate.shift[13:14], rep(0,2), category.rate.shift[15:16], rep(0,2), category.rate.shift[17:18], rep(0,2))
-        pars.tmp <- c(speciation[1:3], extinction.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extinction.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extinction.tmp[5:6], trans.tmp[5:6], category.rate.shiftC)
+        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[5:6], category.rate.shiftC)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==12){
         rate.cats <- 4
         pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        extirpation.tmp <- extirpation
+        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extirpation.tmp)
         rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)", "(0D)", "(1D)")
         cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)", "(01D)", "(01D)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -107,16 +107,16 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
         category.rate.shiftD <- c(category.rate.shift[28:30], rep(0,1), category.rate.shift[31:33], rep(0,1), category.rate.shift[34:36], rep(0,1))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extinction.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extinction.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extinction.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, speciation[10:12], extinction.tmp[7:8], trans.tmp[7:8], category.rate.shiftD)
+        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[7:8], category.rate.shiftD)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
 
     if(dim(trans.rate)[2]==15){
         rate.cats <- 5
         pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        extirpation.tmp <- extirpation
+        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extirpation.tmp)
         rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)", "(0D)", "(1D)", "(0E)", "(1E)")
         cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)", "(01D)", "(01D)", "(01E)", "(01E)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -131,7 +131,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
         category.rate.shiftE <- category.rate.shift[49:60]
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extinction.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extinction.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extinction.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, speciation[10:12], extinction.tmp[7:8], trans.tmp[7:8], category.rate.shiftD, speciation[13:15], extinction.tmp[9:10], trans.tmp[9:10], category.rate.shiftE)
+        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[7:8], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[9:10], category.rate.shiftE)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
@@ -154,7 +154,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
         }
     }
 
-    if(sum(extinction)==0){
+    if(sum(extirpation)==0){
         init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
     }else{
         init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
@@ -167,7 +167,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
         def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), log(starting.vals[6:7]), rep(log(0.01), 12)), rate.cats)
     }
     if(bounded.search == TRUE){
-        upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extinction.upper),2), rep(log(trans.upper),2), rep(log(10), 12)), rate.cats)
+        upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2), rep(log(10), 12)), rate.cats)
     }else{
         upper.full <- rep(21,length(def.set.pars))
     }
@@ -185,22 +185,22 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeHiGeoSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = nloptr(x0=ip, eval_f=DevOptimizeHiGeoSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeHiGeoSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = subplex(ip, fn=DevOptimizeHiGeoSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann = GenSA(ip, fn=DevOptimizeHiGeoSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out.sann = GenSA(ip, fn=DevOptimizeHiGeoSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         cat("Finished. Refining using subplex routine...", "\n")
-        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeHiGeoSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeHiGeoSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         loglik = -out$objective
@@ -208,7 +208,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
 
     cat("Finished. Summarizing results...", "\n")
 
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.areas=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
     class(obj) = "higeosse.fit"
 
     return(obj)
