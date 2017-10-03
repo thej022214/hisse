@@ -1,13 +1,8 @@
-
-
-TransMatMakerHiGeoSSE <- function(hidden.states=FALSE, hidden.cats=1, make.null=FALSE){
-    if(hidden.states == FALSE){
+TransMatMakerHiGeoSSE <- function(hidden.areas=0, make.null=FALSE){
+    if(hidden.areas == 0){
         trans.mat <- TransMatGeoSSEsingle(cat.number=1)
     }else{
-        if(hidden.cats ==1){
-            stop("Need to specify more than one hidden category.")
-        }
-        if(hidden.cats == 2){
+        if(hidden.areas == 1){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1)
                 sub.mat2 <- TransMatGeoSSEsingle(cat.number=1)
@@ -24,7 +19,7 @@ TransMatMakerHiGeoSSE <- function(hidden.states=FALSE, hidden.cats=1, make.null=
             rownames(trans.mat) <- colnames(trans.mat) <- c("(0A)","(1A)","(01A)", "(0B)","(1B)","(01B)")
         }
 
-        if(hidden.cats == 3){
+        if(hidden.areas == 2){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1)
                 sub.mat2 <- matrix(NA, 3, 3)
@@ -41,7 +36,7 @@ TransMatMakerHiGeoSSE <- function(hidden.states=FALSE, hidden.cats=1, make.null=
             rownames(trans.mat) <- colnames(trans.mat) <- c("(0A)","(1A)","(01A)", "(0B)","(1B)","(01B)", "(0C)","(1C)","(01C)")
         }
 
-        if(hidden.cats == 4){
+        if(hidden.areas == 3){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1)
                 sub.mat2 <- matrix(NA, 3, 3)
@@ -59,7 +54,7 @@ TransMatMakerHiGeoSSE <- function(hidden.states=FALSE, hidden.cats=1, make.null=
             rownames(trans.mat) <- colnames(trans.mat) <- c("(0A)","(1A)","(01A)", "(0B)","(1B)","(01B)", "(0C)","(1C)","(01C)", "(0D)","(1D)","(01D)")
         }
         
-        if(hidden.cats == 5){
+        if(hidden.areas == 4){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1)
                 sub.mat2 <- matrix(NA, 3, 3)
@@ -117,6 +112,3 @@ TransMatGeoSSEsingle <- function(cat.number=1){
     rownames(rate.mat) <- colnames(rate.mat) <-  c("(0)","(1)","(01)")
     return(rate.mat)
 }
-
-
-
