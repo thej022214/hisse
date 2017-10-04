@@ -11,6 +11,7 @@ importFrom("methods", "hasArg")
 importFrom("utils", "capture.output")
 importFrom("stats", "dbeta", "density", "quantile", "reorder", "rexp", "runif", "weighted.mean")
 importFrom("diversitree", "tree.classe")
+importFrom("stats", "setNames")
 
 exportClasses('hisse.fit', 'hisse.null4.fit', 'higeosse.fit', 'hisse.states', 'hisse.support')
 S3method(print, hisse.fit)
