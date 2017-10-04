@@ -209,10 +209,11 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     cat("Finished. Summarizing results...", "\n")
 
     obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.areas=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
-    class(obj) = "higeosse.fit"
-
-    return(obj)
-
+    ## class(obj) = "higeosse.fit"
+    ## Make some repackaging of the output to be more readable:
+    out <- FormatOutHiGeoSSE(obj)
+    class(out) <- append(class(out), "higeosse.fit")
+    return(out)
 }
 
 ######################################################################################################################################
@@ -225,7 +226,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
 DevOptimizeHiGeoSSE <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, np, ode.eps) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
-    print(p.new)
+    ## print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
 
@@ -635,11 +636,30 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
 ######################################################################################################################################
 ######################################################################################################################################
 
-#PUT HERE
-
-
-
-
+print.higeosse.fit <- function(x){
+    ## Function to print a "higeosse.fit" object.
+    ## Assumes x is of class "higeosse.fit" and that it was formated by 'FormatOutHiGeoSSE' function.
+    par.list <- x$solution
+    ntips <- Ntip( x$imput$phy )
+    nareas <- ncol( x$control$trans.matrix )/3
+    output <- c(x$fit$loglik, x$fit$AIC, x$fit$AICc, ntips, nareas-1)
+    names(output) <- c("-lnL", "AIC", "AICc", "n.taxa", "n.hidden.areas")
+    cat("\nFit\n")
+    print(output)
+    cat("\n")
+    cat("(s)peciation, e(x)tirpation, and (d)ispersion:\n")
+    cat("\n")
+    print(x$solution$model.pars)
+    cat("\n")
+    cat("Transition between hidden areas:\n")
+    cat("\n")
+    print(x$solution$q.0)
+    cat("\n")
+    print(x$solution$q.1)
+    cat("\n")
+    print(x$solution$q.01)
+    cat("\n")
+}
 
 
 ######################################################################################################################################
