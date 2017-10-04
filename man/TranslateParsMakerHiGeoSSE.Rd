@@ -23,7 +23,5 @@ of parameters of the correspondent ClaSSE model given the parameter
   have the parameter names for a ClaSSE model and column 'higeosse.pars'
   have the parameter names for the matching HiGeoSSE model.
       }
-\examples{}
-\references{}
 \author{Daniel Caetano}
 \keyword{simulation, GeoSSE, HiGeoSSE}
