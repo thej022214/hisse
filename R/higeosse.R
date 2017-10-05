@@ -113,7 +113,7 @@ higeosse <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extinction=c(1,
         rate.cats <- 5
         pars.tmp <- speciation
         extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
+        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which(extinction.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinction.tmp)
         rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)", "(0D)", "(1D)", "(0E)", "(1E)")
         cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)", "(01D)", "(01D)", "(01E)", "(01E)")

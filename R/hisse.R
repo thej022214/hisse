@@ -115,11 +115,11 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	if(length(f) == 2){
 		samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
 	}else{
-		if(length(f) == Ntip(phy)){
-			samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
-		}else{
-			stop("The vector of sampling frequencies does not match the number of tips in the tree.")
-		}
+        #if(length(f) == Ntip(phy)){
+        #	samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
+        #}else{
+			stop("This is no longer supported.")
+        #}
 	}
 
 	if(sum(eps.anc)==0){
@@ -293,6 +293,8 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 			compE[i,] <- rep((1-cache$f[i]), ncols/2)
 		}
 	}
+    print(compD[TIPS,])
+    print(compE[TIPS,])
 	logcomp <- c()
 	#Start the postorder traversal indexing lists by node number: 
 	for (i in seq(from = 1, length.out = nb.node)) {
