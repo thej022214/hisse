@@ -293,8 +293,6 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 			compE[i,] <- rep((1-cache$f[i]), ncols/2)
 		}
 	}
-    print(compD[TIPS,])
-    print(compE[TIPS,])
 	logcomp <- c()
 	#Start the postorder traversal indexing lists by node number: 
 	for (i in seq(from = 1, length.out = nb.node)) {
