@@ -118,7 +118,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
         #if(length(f) == Ntip(phy)){
         #	samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
         #}else{
-			stop("This is no longer supported.")
+			stop("This is functionality has been temporarily removed.")
         #}
 	}
 
