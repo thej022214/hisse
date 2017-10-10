@@ -115,11 +115,11 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	if(length(f) == 2){
 		samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
 	}else{
-		if(length(f) == Ntip(phy)){
-			samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
-		}else{
-			stop("The vector of sampling frequencies does not match the number of tips in the tree.")
-		}
+        #if(length(f) == Ntip(phy)){
+        #	samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
+        #}else{
+			stop("This is functionality has been temporarily removed.")
+        #}
 	}
 
 	if(sum(eps.anc)==0){
