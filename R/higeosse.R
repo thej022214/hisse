@@ -12,7 +12,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1,2), hidden.areas=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, trans.upper=100, ode.eps=0){
+HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1,2), hidden.areas=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, trans.upper=100, ode.eps=0){
 
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -257,6 +257,7 @@ starting.point.geosse <- function(tree, eps=0.5, samp.freq.tree) {
     }
     p <- c(s, s, s, x, x, d, d)
     names(p) <- c("sA",  "sB",  "sAB", "xA" , "xB"  ,"dA"  ,"dB")
+    print(p)
     p
 }
 
