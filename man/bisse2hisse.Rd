@@ -15,9 +15,10 @@ BisseToHisse(lambda, mu, q01, q10)
 A simple vector providing the proper format for BiSSE parameters and defaults in HiSSE for use in the \code{marginRecon} function.
 }
 \examples{
-#BiSSE ancestral reconstruction
-#bisse.pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
-#hisse.par.vec <- BisseToHisse(lambda=c(0.1,0.2), mu=c(0.03,0.03), q01=0.01, q10=0.01)
+\donttest{
+bisse.pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
+hisse.par.vec <- BisseToHisse(lambda=c(0.1,0.2), mu=c(0.03,0.03), q01=0.01, q10=0.01)
+}
 }
 \author{Jeremy M. Beaulieu}
 \keyword{models}

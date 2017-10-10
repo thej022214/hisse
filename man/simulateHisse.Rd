@@ -39,7 +39,7 @@ The output can be returned as an ape \code{phylo} tree by passing the \code{$res
 	\item{$n.surviving}{the number of taxa alive at the end of the simulation.}
 }
 \examples{
-\dontrun{
+\donttest{
 simulated.result <- SimulateHisse(c(.3, .1), c(.1, 0), 
 matrix(c(NA, 0.2, .3, NA), nrow=2), max.taxa=35, x0=1)	
 par(mfcol=c(1,2))

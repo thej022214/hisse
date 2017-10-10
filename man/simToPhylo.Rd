@@ -17,7 +17,7 @@ This takes the \code{$results} object from a \code{SimulateHisse} run and conver
 \item{phylo}{a phylo object in cladewise order.}
 }
 \examples{
-\dontrun{
+\donttest{
 simulated.result <- SimulateHisse(c(.3, .1), c(.1, 0), 
 matrix(c(NA, 0.2, .3, NA), nrow=2), max.taxa=35, x0=1)	
 par(mfcol=c(1,2))

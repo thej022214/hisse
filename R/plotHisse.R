@@ -171,12 +171,9 @@ GetNormalizedDensityPlot <- function(x, limits, kernel, min.breaks=100) {
 	return(x.density)
 }
 
-# The following function is from phytools, by Liam Revell, which is released under GPL2+
-# Modified by Brian O''Meara, June 9, 2015
 
 # function plots reconstructed values for ancestral characters along the edges of the tree
-# written by Liam J. Revell 2012, 2013, 2014, 2015
-
+# Modified by Brian O'Meara, June 9, 2015
 contMapGivenAnc <-function(tree,x,res=100,fsize=NULL,ftype=NULL,lwd=4,legend=NULL,
 lims=NULL,outline=TRUE,sig=3,type="phylogram",direction="rightwards",
 plot=TRUE,anc.states=NULL,...){
@@ -230,14 +227,11 @@ plot=TRUE,anc.states=NULL,...){
 }
 
 
-# The following function is from phytools, by Liam Revell, which is released under GPL2+
+# The following function is from phytools, which is released under GPL2+
 # It is not exported from phytools, so the options are phytools:::getState or copy it here
 # Given that phytools could change non-exported functions in a way that breaks the above code
 # I have elected to copy it unchanged.
 # Brian O'Meara, June 10, 2015
-
-# function
-# written by Liam J. Revell 2012
 getState<-function(x,trans){
 	i<-1
 	state <- names(trans)[1] #BCO: added to prevent error when while loop not entered
@@ -248,15 +242,12 @@ getState<-function(x,trans){
 	return(state)
 }
 
-# The following function is from phytools, by Liam Revell, which is released under GPL2+
+# make a mapped edge matrix
+# The following function is from phytools, which is released under GPL2+
 # It is not exported from phytools, so the options are phytools:::makeMappedEdge or copy it here
 # Given that phytools could change non-exported functions in a way that breaks the above code
 # I have elected to copy it unchanged. Phytools remains a
 # Brian O'Meara, June 10, 2015
-
-# make a mapped edge matrix
-# written by Liam J. Revell 2013
-
 makeMappedEdge<-function(edge,maps){
 	st<-sort(unique(unlist(sapply(maps,function(x) names(x)))))
 	mapped.edge<-matrix(0,nrow(edge),length(st))
@@ -288,6 +279,7 @@ ConvertToBinaryState <- function(x) {
 	return(result.vector)
 }
 
+
 ConvertToRate <- function(x, rate.vector) {
 	x.trimmed <- x[,-1]
 	x.trimmed <- x.trimmed / rowSums(x.trimmed) #normalize to 1 (which it should be already)
@@ -298,6 +290,7 @@ ConvertToRate <- function(x, rate.vector) {
 	names(result.vector) <- x[,1]
 	return(result.vector)
 }
+
 
 ConvertManyToRate <- function(hisse.results, rate.param, which.element) {
 	AIC.weights <- GetAICWeights(hisse.results)
@@ -310,6 +303,7 @@ ConvertManyToRate <- function(hisse.results, rate.param, which.element) {
 	return(final.results)
 }
 
+
 ConvertManyToBinaryState <- function(hisse.results, which.element) {
 	AIC.weights <- GetAICWeights(hisse.results)
 	storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
@@ -319,6 +313,7 @@ ConvertManyToBinaryState <- function(hisse.results, which.element) {
 	final.results <- apply(storage.matrix, 1, weighted.mean, w=AIC.weights)
 	return(final.results)
 }
+
 
 GetAICWeights <- function(hisse.results) {
 	AIC.vector <- sapply(hisse.results, "[[", "aic")
@@ -339,6 +334,7 @@ GetRateRange <- function(x, rate.param) {
 	all.rates <- sapply(hisse.results, "[[", "rates.mat", simplify=FALSE)
 	return(range(unname(unlist(sapply(all.rates, GetRelevantRowEntries, rate.param="turnover")))))
 }
+
 
 GetRelevantRowEntries <- function(x, rate.param) {
 	return(x[which(rownames(x)==rate.param),])
