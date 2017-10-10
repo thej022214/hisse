@@ -94,8 +94,8 @@ void classe_geosse_equivalent_derivs(int *neq, double *t, double *y, double *ydo
     d0_01  = params_geosse[5],  /* dispersal from A to AB     */
     d1_0 = 0,
     d1_01 = params_geosse[6],   /* dispersal from B to AB     */
-    d01_0 = xA,
-    d01_1 = xB;
+    d01_0 = xB,
+    d01_1 = xA;
     
     /*  dE_2 / dt  */
     ydot[0] = -(sA + d0_1 + d0_01 + xA) * E_0 + (d0_1 * E_1 + d0_01 * E_2) + xA + (sA * E_0 * E_0);
@@ -104,7 +104,7 @@ void classe_geosse_equivalent_derivs(int *neq, double *t, double *y, double *ydo
     ydot[1] = -(sB + d1_0 + d1_01 + xB) * E_1 + (d1_0 * E_0 + d1_01 * E_2) + xB + (sB * E_1 * E_1);
     
     /*  dE_1 / dt  */
-    ydot[2] = -(sAB + sA + sB + d01_0 + d01_0) * E_2 + (d01_0 * E_0 + d01_1 * E_1) + sA * E_0 * E_2 + sB * E_2 * E_1 + sAB * E_0 * E_1;
+    ydot[2] = -(sAB + sA + sB + d01_0 + d01_1) * E_2 + (d01_0 * E_0 + d01_1 * E_1) + sA * E_0 * E_2 + sB * E_2 * E_1 + sAB * E_0 * E_1;
     
     /*  dD_N2 / dt  */
     ydot[3] = -(sA + d0_1 + d0_01 + xA) * D_N0 + (d0_1 * D_N1 + d0_01 * D_N2) + sA * (D_N0 * E_0 + D_N0 * E_0);

@@ -323,7 +323,7 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
                 NUMELEMENTS <- 7 #needed for passing in vector to C
 				padded.pars <- rep(0, NUMELEMENTS)
 				pars <- c(unlist(pars))
-				stopifnot(length(padded.pars)<=NUMELEMENTS)
+                stopifnot(length(padded.pars)<=NUMELEMENTS)
 				padded.pars[sequence(length(pars))]<-pars
 				yini <-c(E_0=cache$node.E[1], E_1=cache$node.E[2], E_01=cache$node.E[3], D_N0=cache$node.D[1], D_N1=cache$node.D[2], D_N2=cache$node.D[3])
 				times=c(cache$tipward.age, cache$rootward.age)
@@ -636,7 +636,7 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
 ######################################################################################################################################
 ######################################################################################################################################
 
-print.higeosse.fit <- function(x){
+print.higeosse.fit <- function(x,...){
     ## Function to print a "higeosse.fit" object.
     ## Assumes x is of class "higeosse.fit" and that it was formated by 'FormatOutHiGeoSSE' function.
     par.list <- x$solution
