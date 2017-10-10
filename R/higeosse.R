@@ -257,7 +257,6 @@ starting.point.geosse <- function(tree, eps=0.5, samp.freq.tree) {
     }
     p <- c(s, s, s, x, x, d, d)
     names(p) <- c("sA",  "sB",  "sAB", "xA" , "xB"  ,"dA"  ,"dB")
-    print(p)
     p
 }
 
