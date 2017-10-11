@@ -209,7 +209,9 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     cat("Finished. Summarizing results...", "\n")
 
     obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.areas=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
-    ## class(obj) = "higeosse.fit"
+    ## class(obj) <- append(class(obj), "higeosse.fit")
+    ## return(obj)
+    
     ## Make some repackaging of the output to be more readable:
     out <- FormatOutHiGeoSSE(obj)
     class(out) <- append(class(out), "higeosse.fit")
