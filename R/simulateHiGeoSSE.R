@@ -90,7 +90,7 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
     tip.state <- sapply(sims$tip.state, function(x) par.areas[x])
     sims$node.state <- sapply(sims$node.state, function(x) par.areas[x])
     
-    return( list(phy=sims, data=tip.state, sim.attempts=attempt, pars=pars) )
+    return( list(phy=sims, data=tip.state, sim.attempts=attempt, pars=pars, classe.pars=full.classe.pars) )
 }
 
 GetArgnamesClasse <- function(k){

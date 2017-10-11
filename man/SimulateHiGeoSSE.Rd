@@ -42,6 +42,8 @@ by eliminating this parameter of the model.
 	\item{$sim.attempts}{number of times that the simulation tried
 	  before reaching desired termination condition.}
     \item{$pars}{the parameters used for the simulation.}
+    \item{$classe.pars}{the parameters in 'make.classe' format for 
+      the 'diversitree' package.}
       }      
 \examples{
 \dontrun{
