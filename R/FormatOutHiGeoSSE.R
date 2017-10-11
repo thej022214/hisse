@@ -56,7 +56,7 @@ FormatOutHiGeoSSE <- function(fit.geosse){
     names( out$control$index.par ) <- parnames
     solution <- fit.geosse$solution
     names( solution ) <- parnames
-    solution[out$control$index.par == max(out$control$index.par)] <- NA
+    ## solution[out$control$index.par == max(out$control$index.par)] <- NA
     ## First group of parameters:
     geosse.pars <- matrix(nrow=7, ncol=5)
     colnames(geosse.pars) <- LETTERS[1:5]
@@ -64,13 +64,13 @@ FormatOutHiGeoSSE <- function(fit.geosse){
     for(i in 1:5) geosse.pars[,(1*i)] <- solution[(1+(19*(i-1))):(7+(19*(i-1)))]
     ## Second group of parameters:
     q0.pars <- matrix(nrow=5, ncol=5)
-    colnames(q0.pars) <- rownames(q0.pars) <- paste0(0, LETTERS[1:5])
+    colnames(q0.pars) <- rownames(q0.pars) <- paste0("0", LETTERS[1:5])
     for(i in 1:5) q0.pars[(1*i),(1:5)[-i]] <- solution[(8+(19*(i-1))):(11+(19*(i-1)))]
     q1.pars <- matrix(nrow=5, ncol=5)
-    colnames(q1.pars) <- rownames(q1.pars) <- paste0(1, LETTERS[1:5])
+    colnames(q1.pars) <- rownames(q1.pars) <- paste0("1", LETTERS[1:5])
     for(i in 1:5) q1.pars[(1*i),(1:5)[-i]] <- solution[(12+(19*(i-1))):(15+(19*(i-1)))]
     q01.pars <- matrix(nrow=5, ncol=5)
-    colnames(q01.pars) <- rownames(q01.pars) <- paste0(01, LETTERS[1:5])
+    colnames(q01.pars) <- rownames(q01.pars) <- paste0("01", LETTERS[1:5])
     for(i in 1:5) q01.pars[(1*i),(1:5)[-i]] <- solution[(16+(19*(i-1))):(19+(19*(i-1)))]
     ## Drop the columns and lines of the result that do not belong to the model.
     n.areas <- ncol( out$control$trans.matrix ) / 3
