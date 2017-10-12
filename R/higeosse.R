@@ -523,9 +523,9 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
             if(data[i]==1){states[i,4]=1}
             if(data[i]==2){states[i,5]=1}
             if(data[i]==0){states[i,6]=1}
-            if(data[i]==4){states[i,13]=1}
-            if(data[i]==5){states[i,14]=1}
-            if(data[i]==3){states[i,15]=1}
+            if(data[i]==4){states[i,10]=1}
+            if(data[i]==5){states[i,11]=1}
+            if(data[i]==3){states[i,12]=1}
         }
     }
     
