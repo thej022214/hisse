@@ -517,7 +517,7 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
             if(data[i]==0){states[i,c(3,6,9,12,15)]=1}
         }
     }
-    if(hidden.states == TEST){
+    if(hidden.states == "TEST"){
         states = matrix(0,Ntip(phy),15)
         for(i in 1:Ntip(phy)){
             if(data[i]==1){states[i,1]=1}
