@@ -319,8 +319,8 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
 			cache$node.E <- compE[desNodes[desIndex],]
 			##Call to lsoda that utilizes C code. Requires a lot of inputs. Note that for now we hardcode the NUMELEMENTS arguments. The reason for this is because with lsoda we can only pass a vector of parameters.
 			if(hidden.states == FALSE){
-				pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$d0A_01A, cache$d1A_01A)
-                NUMELEMENTS <- 7 #needed for passing in vector to C
+				pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$d0A_1A, cache$d0A_01A, cache$d1A_0A, cache$d1A_01A, cache$d01A_0A, cache$d01A_1A)
+                NUMELEMENTS <- 11 #needed for passing in vector to C
 				padded.pars <- rep(0, NUMELEMENTS)
 				pars <- c(unlist(pars))
                 stopifnot(length(padded.pars)<=NUMELEMENTS)
@@ -337,8 +337,8 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
                 }
                 prob.subtree.cal.full <- runSilent()
 			}else{
-				pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$d0A_01A, cache$d1A_01A,  cache$d0A_0B, cache$d0A_0C, cache$d0A_0D, cache$d0A_0E, cache$d1A_1B, cache$d1A_1C, cache$d1A_1D, cache$d1A_1E, cache$d01A_01B, cache$d01A_01C, cache$d01A_01D, cache$d01A_01E, cache$s0B, cache$s1B, cache$s01B, cache$x0B, cache$x1B, cache$d0B_01B, cache$d1B_01B, cache$d0B_0A, cache$d0B_0C, cache$d0B_0D, cache$d0B_0E, cache$d1B_1A, cache$d1B_1C, cache$d1B_1D, cache$d1B_1E, cache$d01B_01A, cache$d01B_01C, cache$d01B_01D, cache$d01B_01E,  cache$s0C, cache$s1C, cache$s01C, cache$x0C, cache$x1C, cache$d0C_01C, cache$d1C_01C,  cache$d0C_0A, cache$d0C_0B, cache$d0C_0D, cache$d0C_0E, cache$d1C_1A, cache$d1C_1B, cache$d1C_1D, cache$d1C_1E, cache$d01C_01A, cache$d01C_01B, cache$d01C_01D, cache$d01C_01E,  cache$s0D, cache$s1D, cache$s01D, cache$x0D, cache$x1D, cache$d0D_01D, cache$d1D_01D,  cache$d0D_0A, cache$d0D_0B, cache$d0D_0C, cache$d0D_0E, cache$d1D_1A, cache$d1D_1B, cache$d1D_1C, cache$d1D_1E, cache$d01D_01A, cache$d01D_01B, cache$d01D_01C, cache$d01D_01E,  cache$s0E, cache$s1E, cache$s01E, cache$x0E, cache$x1E, cache$d0E_01E, cache$d1E_01E,  cache$d0E_0A, cache$d0E_0B, cache$d0E_0C, cache$d0E_0D, cache$d1E_1A, cache$d1E_1B, cache$d1E_1C, cache$d1E_1ED, cache$d01E_01A, cache$d01E_01B, cache$d01E_01C, cache$d01E_01D)
-				NUMELEMENTS <- 95 #needed for passing in vector to C
+				pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$d0A_1A, cache$d0A_01A, cache$d1A_0A, cache$d1A_01A, cache$d01A_0A, cache$d01A_1A, cache$d0A_0B, cache$d0A_0C, cache$d0A_0D, cache$d0A_0E, cache$d1A_1B, cache$d1A_1C, cache$d1A_1D, cache$d1A_1E, cache$d01A_01B, cache$d01A_01C, cache$d01A_01D, cache$d01A_01E, cache$s0B, cache$s1B, cache$s01B, cache$x0B, cache$x1B, cache$d0B_1B , cache$d0B_01B, cache$d1B_0B, cache$d1B_01B, cache$d01B_0B, cache$d01B_1B, cache$d0B_0A, cache$d0B_0C, cache$d0B_0D, cache$d0B_0E, cache$d1B_1A, cache$d1B_1C, cache$d1B_1D, cache$d1B_1E, cache$d01B_01A, cache$d01B_01C, cache$d01B_01D, cache$d01B_01E, cache$s0C, cache$s1C, cache$s01C, cache$x0C, cache$x1C, cache$d0C_1C , cache$d0C_01C, cache$d1C_0C, cache$d1C_01C, cache$d01C_0C, cache$d01C_1C, cache$d0C_0A, cache$d0C_0B, cache$d0C_0D, cache$d0C_0E, cache$d1C_1A, cache$d1C_1B, cache$d1C_1D, cache$d1C_1E, cache$d01C_01A, cache$d01C_01B, cache$d01C_01D, cache$d01C_01E, cache$s0D, cache$s1D, cache$s01D, cache$x0D, cache$x1D, cache$d0D_1D , cache$d0D_01D, cache$d1D_0D, cache$d1D_01D, cache$d01D_0D, cache$d01D_1D, cache$d0D_0A, cache$d0D_0B, cache$d0D_0C, cache$d0D_0E, cache$d1D_1A, cache$d1D_1B, cache$d1D_1C, cache$d1D_1E, cache$d01D_01A, cache$d01D_01B, cache$d01D_01C, cache$d01D_01E, cache$s0E, cache$s1E, cache$s01E, cache$x0E, cache$x1E, cache$d0E_1E , cache$d0E_01E, cache$d1E_0E, cache$d1E_01E, cache$d01E_0E, cache$d01E_1E, cache$d0E_0A, cache$d0E_0B, cache$d0E_0C, cache$d0E_0D, cache$d1E_1A, cache$d1E_1B, cache$d1E_1C, cache$d1E_1D, cache$d01E_01A, cache$d01E_01B, cache$d01E_01C, cache$d01E_01D)
+				NUMELEMENTS <- 115 #needed for passing in vector to C
 				padded.pars <- rep(0, NUMELEMENTS)
 				pars <- c(unlist(pars))
 				stopifnot(length(padded.pars)<=NUMELEMENTS)
@@ -398,50 +398,96 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
                 v <- rbind(v, prob.subtree.cal[16:30])
 			}
 		}
-		if(hidden.states == TRUE){
-			compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
-			compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
-            compD[focal,3] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0A + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1A + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01A
-            v <- v[,-c(1:3)]
-            compD[focal,4] <- v[1,1] * v[2,1] * cache$s0B
-            compD[focal,5] <- v[1,2] * v[2,2] * cache$s1B
-            compD[focal,6] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0B + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1B + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01B
-            v <- v[,-c(1:3)]
-            compD[focal,7] <- v[1,1] * v[2,1] * cache$s0C
-            compD[focal,8] <- v[1,2] * v[2,2] * cache$s1C
-            compD[focal,9] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0C + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1C + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01C
-            v <- v[,-c(1:3)]
-            compD[focal,10] <- v[1,1] * v[2,1] * cache$s0D
-            compD[focal,11] <- v[1,2] * v[2,2] * cache$s1D
-            compD[focal,12] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0D + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1D + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01D
-            v <- v[,-c(1:3)]
-            compD[focal,13] <- v[1,1] * v[2,1] * cache$s0E
-            compD[focal,14] <- v[1,2] * v[2,2] * cache$s1E
-            compD[focal,15] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0E + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1E + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01E
-            compE[focal,] <- phi[1:15]
-			if(!is.null(node)){
-				fixer = numeric(15)
-				fixer[state] = 1
-				if(node == focal){
-					compD[focal,] <- compD[focal,] * fixer
-				}
-				#compE[focal,] <- compE[focal,] * fixer
-			}
-		}else{
-            compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
-            compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
-            compD[focal,3] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0A + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1A + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01A
-            compE[focal,] <- phi[1:3]
-            if(!is.null(node)){
-				if(node == focal){
-					fixer = c(0,0,0)
-					fixer[state] = 1
-					compD[focal,] <- compD[focal,] * fixer
-				}
-			}			
-		}
-		###########################
-		#Logcompensation bit for dealing with underflow issues. Need to give a necessary shoutout to Rich FitzJohn -- we follow his diversitree approach. VERIFIED that it works properly:
+        if(allow.cladogenetic == TRUE){
+            if(hidden.states == TRUE){
+                compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
+                compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
+                compD[focal,3] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0A + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1A + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01A
+                v <- v[,-c(1:3)]
+                compD[focal,4] <- v[1,1] * v[2,1] * cache$s0B
+                compD[focal,5] <- v[1,2] * v[2,2] * cache$s1B
+                compD[focal,6] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0B + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1B + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01B
+                v <- v[,-c(1:3)]
+                compD[focal,7] <- v[1,1] * v[2,1] * cache$s0C
+                compD[focal,8] <- v[1,2] * v[2,2] * cache$s1C
+                compD[focal,9] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0C + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1C + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01C
+                v <- v[,-c(1:3)]
+                compD[focal,10] <- v[1,1] * v[2,1] * cache$s0D
+                compD[focal,11] <- v[1,2] * v[2,2] * cache$s1D
+                compD[focal,12] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0D + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1D + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01D
+                v <- v[,-c(1:3)]
+                compD[focal,13] <- v[1,1] * v[2,1] * cache$s0E
+                compD[focal,14] <- v[1,2] * v[2,2] * cache$s1E
+                compD[focal,15] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0E + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1E + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01E
+                compE[focal,] <- phi[1:15]
+                if(!is.null(node)){
+                    fixer = numeric(15)
+                    fixer[state] = 1
+                    if(node == focal){
+                        compD[focal,] <- compD[focal,] * fixer
+                    }
+                    #compE[focal,] <- compE[focal,] * fixer
+                }
+            }else{
+                compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
+                compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
+                compD[focal,3] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0A + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1A + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01A
+                compE[focal,] <- phi[1:3]
+                if(!is.null(node)){
+                    if(node == focal){
+                        fixer = c(0,0,0)
+                        fixer[state] = 1
+                        compD[focal,] <- compD[focal,] * fixer
+                    }
+                }			
+            }
+        }else{
+            ##Allows for a 3-state MuSSE type model. Important for cases where you have a random tree and a random trait.
+            if(hidden.states == TRUE){
+                compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
+                compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
+                compD[focal,3] <- v[1,3] * v[2,3] * cache$s01A
+                v <- v[,-c(1:3)]
+                compD[focal,4] <- v[1,1] * v[2,1] * cache$s0B
+                compD[focal,5] <- v[1,2] * v[2,2] * cache$s1B
+                compD[focal,6] <- v[1,3] * v[2,3] * cache$s01B
+                v <- v[,-c(1:3)]
+                compD[focal,7] <- v[1,1] * v[2,1] * cache$s0C
+                compD[focal,8] <- v[1,2] * v[2,2] * cache$s1C
+                compD[focal,9] <- v[1,3] * v[2,3] * cache$s01C
+                v <- v[,-c(1:3)]
+                compD[focal,10] <- v[1,1] * v[2,1] * cache$s0D
+                compD[focal,11] <- v[1,2] * v[2,2] * cache$s1D
+                compD[focal,12] <- v[1,3] * v[2,3] * cache$s01D
+                v <- v[,-c(1:3)]
+                compD[focal,13] <- v[1,1] * v[2,1] * cache$s0E
+                compD[focal,14] <- v[1,2] * v[2,2] * cache$s1E
+                compD[focal,15] <- v[1,3] * v[2,3] * cache$s01E
+                compE[focal,] <- phi[1:15]
+                if(!is.null(node)){
+                    fixer = numeric(15)
+                    fixer[state] = 1
+                    if(node == focal){
+                        compD[focal,] <- compD[focal,] * fixer
+                    }
+                    #compE[focal,] <- compE[focal,] * fixer
+                }
+            }else{
+                compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
+                compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
+                compD[focal,3] <- v[1,3] * v[2,3] * cache$s01A
+                compE[focal,] <- phi[1:3]
+                if(!is.null(node)){
+                    if(node == focal){
+                        fixer = c(0,0,0)
+                        fixer[state] = 1
+                        compD[focal,] <- compD[focal,] * fixer
+                    }
+                }
+            }
+        }
+        ###########################
+        #Logcompensation bit for dealing with underflow issues. Need to give a necessary shoutout to Rich FitzJohn -- we follow his diversitree approach. VERIFIED that it works properly:
         tmp <- sum(compD[focal,])
         compD[focal,] <- compD[focal,] / tmp
         logcomp <- c(logcomp, log(tmp))
@@ -536,105 +582,125 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$s01A = model.vec[3]
     obj$x0A = model.vec[4]
     obj$x1A = model.vec[5]
-    obj$d0A_01A = model.vec[6]
-    obj$d1A_01A = model.vec[7]
-    
-    obj$d0A_0B = model.vec[8]
-    obj$d0A_0C = model.vec[9]
-    obj$d0A_0D = model.vec[10]
-    obj$d0A_0E = model.vec[11]
-    obj$d1A_1B = model.vec[12]
-    obj$d1A_1C = model.vec[13]
-    obj$d1A_1D = model.vec[14]
-    obj$d1A_1E = model.vec[15]
-    obj$d01A_01B = model.vec[16]
-    obj$d01A_01C = model.vec[17]
-    obj$d01A_01D = model.vec[18]
-    obj$d01A_01E = model.vec[19]
+    obj$d0A_1A  = model.vec[6]
+    obj$d0A_01A = model.vec[7]
+    obj$d1A_0A = model.vec[8]
+    obj$d1A_01A = model.vec[9]
+    obj$d01A_0A = model.vec[10]
+    obj$d01A_1A = model.vec[11]
 
-    obj$s0B = model.vec[20]
-    obj$s1B = model.vec[21]
-    obj$s01B = model.vec[22]
-    obj$x0B = model.vec[23]
-    obj$x1B = model.vec[24]
-    obj$d0B_01B = model.vec[25]
-    obj$d1B_01B = model.vec[26]
-    
-    obj$d0B_0A = model.vec[27]
-    obj$d0B_0C = model.vec[28]
-    obj$d0B_0D = model.vec[29]
-    obj$d0B_0E = model.vec[30]
-    obj$d1B_1A = model.vec[31]
-    obj$d1B_1C = model.vec[32]
-    obj$d1B_1D = model.vec[33]
-    obj$d1B_1E = model.vec[34]
-    obj$d01B_01A = model.vec[35]
-    obj$d01B_01C = model.vec[36]
-    obj$d01B_01D = model.vec[37]
-    obj$d01B_01E = model.vec[38]
+    obj$d0A_0B = model.vec[12]
+    obj$d0A_0C = model.vec[13]
+    obj$d0A_0D = model.vec[14]
+    obj$d0A_0E = model.vec[15]
+    obj$d1A_1B = model.vec[16]
+    obj$d1A_1C = model.vec[17]
+    obj$d1A_1D = model.vec[18]
+    obj$d1A_1E = model.vec[19]
+    obj$d01A_01B = model.vec[20]
+    obj$d01A_01C = model.vec[21]
+    obj$d01A_01D = model.vec[22]
+    obj$d01A_01E = model.vec[23]
 
-    obj$s0C = model.vec[39]
-    obj$s1C = model.vec[40]
-    obj$s01C = model.vec[41]
-    obj$x0C = model.vec[42]
-    obj$x1C = model.vec[43]
-    obj$d0C_01C = model.vec[44]
-    obj$d1C_01C = model.vec[45]
-    
-    obj$d0C_0A = model.vec[46]
-    obj$d0C_0B = model.vec[47]
-    obj$d0C_0D = model.vec[48]
-    obj$d0C_0E = model.vec[49]
-    obj$d1C_1A = model.vec[50]
-    obj$d1C_1B = model.vec[51]
-    obj$d1C_1D = model.vec[52]
-    obj$d1C_1E = model.vec[53]
-    obj$d01C_01A = model.vec[54]
-    obj$d01C_01B = model.vec[55]
-    obj$d01C_01D = model.vec[56]
-    obj$d01C_01E = model.vec[57]
-    
-    obj$s0D = model.vec[58]
-    obj$s1D = model.vec[59]
-    obj$s01D = model.vec[60]
-    obj$x0D = model.vec[61]
-    obj$x1D = model.vec[62]
-    obj$d0D_01D = model.vec[63]
-    obj$d1D_01D = model.vec[64]
-    
-    obj$d0D_0A = model.vec[65]
-    obj$d0D_0B = model.vec[66]
-    obj$d0D_0C = model.vec[67]
-    obj$d0D_0E = model.vec[68]
-    obj$d1D_1A = model.vec[69]
-    obj$d1D_1B = model.vec[70]
-    obj$d1D_1C = model.vec[71]
-    obj$d1D_1E = model.vec[72]
-    obj$d01D_01A = model.vec[73]
-    obj$d01D_01B = model.vec[74]
-    obj$d01D_01C = model.vec[75]
-    obj$d01D_01E = model.vec[76]
-    
-    obj$s0E = model.vec[77]
-    obj$s1E = model.vec[78]
-    obj$s01E = model.vec[79]
-    obj$x0E = model.vec[80]
-    obj$x1E = model.vec[81]
-    obj$d0E_01E = model.vec[82]
-    obj$d1E_01E = model.vec[83]
-    
-    obj$d0E_0A = model.vec[84]
-    obj$d0E_0B = model.vec[85]
-    obj$d0E_0C = model.vec[86]
-    obj$d0E_0D = model.vec[87]
-    obj$d1E_1A = model.vec[88]
-    obj$d1E_1B = model.vec[89]
-    obj$d1E_1C = model.vec[90]
-    obj$d1E_1ED = model.vec[91]
-    obj$d01E_01A = model.vec[92]
-    obj$d01E_01B = model.vec[93]
-    obj$d01E_01C = model.vec[94]
-    obj$d01E_01D = model.vec[95]
+    obj$s0B = model.vec[24]
+    obj$s1B = model.vec[25]
+    obj$s01B = model.vec[26]
+    obj$x0B = model.vec[27]
+    obj$x1B = model.vec[28]
+    obj$d0B_1B  = model.vec[29]
+    obj$d0B_01B = model.vec[30]
+    obj$d1B_0B = model.vec[31]
+    obj$d1B_01B = model.vec[32]
+    obj$d01B_0B = model.vec[33]
+    obj$d01B_1B = model.vec[34]
+
+    obj$d0B_0A = model.vec[35]
+    obj$d0B_0C = model.vec[36]
+    obj$d0B_0D = model.vec[37]
+    obj$d0B_0E = model.vec[38]
+    obj$d1B_1A = model.vec[39]
+    obj$d1B_1C = model.vec[40]
+    obj$d1B_1D = model.vec[41]
+    obj$d1B_1E = model.vec[42]
+    obj$d01B_01A = model.vec[43]
+    obj$d01B_01C = model.vec[44]
+    obj$d01B_01D = model.vec[45]
+    obj$d01B_01E = model.vec[46]
+
+    obj$s0C = model.vec[47]
+    obj$s1C = model.vec[48]
+    obj$s01C = model.vec[49]
+    obj$x0C = model.vec[50]
+    obj$x1C = model.vec[51]
+    obj$d0C_1C  = model.vec[52]
+    obj$d0C_01C = model.vec[53]
+    obj$d1C_0C = model.vec[54]
+    obj$d1C_01C = model.vec[55]
+    obj$d01C_0C = model.vec[56]
+    obj$d01C_1C = model.vec[57]
+
+    obj$d0C_0A = model.vec[58]
+    obj$d0C_0B = model.vec[59]
+    obj$d0C_0D = model.vec[60]
+    obj$d0C_0E = model.vec[61]
+    obj$d1C_1A = model.vec[62]
+    obj$d1C_1B = model.vec[63]
+    obj$d1C_1D = model.vec[64]
+    obj$d1C_1E = model.vec[65]
+    obj$d01C_01A = model.vec[66]
+    obj$d01C_01B = model.vec[67]
+    obj$d01C_01D = model.vec[68]
+    obj$d01C_01E = model.vec[69]
+
+    obj$s0D = model.vec[70]
+    obj$s1D = model.vec[71]
+    obj$s01D = model.vec[72]
+    obj$x0D = model.vec[73]
+    obj$x1D = model.vec[74]
+    obj$d0D_1D  = model.vec[75]
+    obj$d0D_01D = model.vec[76]
+    obj$d1D_0D = model.vec[77]
+    obj$d1D_01D = model.vec[78]
+    obj$d01D_0D = model.vec[79]
+    obj$d01D_1D = model.vec[80]
+
+    obj$d0D_0A = model.vec[81]
+    obj$d0D_0B = model.vec[82]
+    obj$d0D_0C = model.vec[83]
+    obj$d0D_0E = model.vec[84]
+    obj$d1D_1A = model.vec[85]
+    obj$d1D_1B = model.vec[86]
+    obj$d1D_1C = model.vec[87]
+    obj$d1D_1E = model.vec[88]
+    obj$d01D_01A = model.vec[89]
+    obj$d01D_01B = model.vec[90]
+    obj$d01D_01C = model.vec[91]
+    obj$d01D_01E = model.vec[92]
+
+    obj$s0E = model.vec[93]
+    obj$s1E = model.vec[94]
+    obj$s01E = model.vec[95]
+    obj$x0E = model.vec[96]
+    obj$x1E = model.vec[97]
+    obj$d0E_1E  = model.vec[98]
+    obj$d0E_01E = model.vec[99]
+    obj$d1E_0E = model.vec[100]
+    obj$d1E_01E = model.vec[101]
+    obj$d01E_0E = model.vec[102]
+    obj$d01E_1E = model.vec[103]
+
+    obj$d0E_0A = model.vec[104]
+    obj$d0E_0B = model.vec[105]
+    obj$d0E_0C = model.vec[106]
+    obj$d0E_0D = model.vec[107]
+    obj$d1E_1A = model.vec[108]
+    obj$d1E_1B = model.vec[109]
+    obj$d1E_1C = model.vec[110]
+    obj$d1E_1D = model.vec[111]
+    obj$d01E_01A = model.vec[112]
+    obj$d01E_01B = model.vec[113]
+    obj$d01E_01C = model.vec[114]
+    obj$d01E_01D = model.vec[115]
 
     obj$split.times = sort(branching.times(phy), decreasing=TRUE)
     

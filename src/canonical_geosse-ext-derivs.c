@@ -13,7 +13,7 @@
 #include <R_ext/Rdynload.h>
 #include <Rmath.h>
 #include <stdio.h>
-#define NUMELEMENTS 7
+#define NUMELEMENTS 11
 
 static double params_geosse[NUMELEMENTS];
 
@@ -90,12 +90,12 @@ void classe_geosse_equivalent_derivs(int *neq, double *t, double *y, double *ydo
     sAB = params_geosse[2],     /* between-region speciation  */
     xA  = params_geosse[3],     /* extinction from region A   */
     xB  = params_geosse[4],     /* extinction from region B   */
-    d0_1  = 0,
-    d0_01  = params_geosse[5],  /* dispersal from A to AB     */
-    d1_0 = 0,
-    d1_01 = params_geosse[6],   /* dispersal from B to AB     */
-    d01_0 = xB,
-    d01_1 = xA;
+    d0_1  = params_geosse[5],   /* jumps from 0 to 1          */
+    d0_01  = params_geosse[6],  /* dispersal from A to AB     */
+    d1_0 = params_geosse[7],    /* jumps from 1 to 0          */
+    d1_01 = params_geosse[8],   /* dispersal from B to AB     */
+    d01_0 = params_geosse[9],   /* true extirpation rate      */
+    d01_1 = params_geosse[10];  /* true extirpation rate      */
     
     /*  dE_2 / dt  */
     ydot[0] = -(sA + d0_1 + d0_01 + xA) * E_0 + (d0_1 * E_1 + d0_01 * E_2) + xA + (sA * E_0 * E_0);
