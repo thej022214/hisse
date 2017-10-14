@@ -94,7 +94,7 @@ void higeosse_derivs(int *neq, double *t, double *y, double *ydot, double *yout,
     d0B_01B = params_higeosse[29],
     d1B_0B = params_higeosse[30],
     d1B_01B = params_higeosse[31],
-    d01B_0B = params_higeosse[32]
+    d01B_0B = params_higeosse[32],
     d01B_1B = params_higeosse[33],
 
     d0B_0A = params_higeosse[34],
