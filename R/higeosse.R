@@ -267,7 +267,7 @@ starting.point.geosse <- function(tree, eps=0.5, samp.freq.tree) {
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, allow.cladogenetic=TRUE, ode.eps=0) {
+DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, allow.cladogenetic=TRUE, ode.eps=0) {
 	#Some preliminaries:
 	nb.tip <- length(phy$tip.label)
 	nb.node <- phy$Nnode
