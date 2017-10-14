@@ -247,10 +247,9 @@ test_that("HiGeoSSE_test5", {
     
     sim.data <- SimulateHiGeoSSE(pars=sim.pars, hidden.areas = 1, max.taxa = 500)
     sim.data$classe.pars ## This is the parameters for the ClaSSE model.
-    sim.data$data
     
     ## Just to double check the translation to ClaSSE.
-    par.table <- hisse:::TranslateParsMakerHiGeoSSE(k=0)
+    par.table <- hisse:::TranslateParsMakerHiGeoSSE(k=1)
     
     ## Get the likelihood for the ClaSSE model:
     ## Here I am assuming root value is EQUAL!!!!!!!
@@ -265,15 +264,15 @@ test_that("HiGeoSSE_test5", {
     states.mat <- data.frame(states, states, row.names=names(states))
     states.mat <- states.mat[sim.data$phy$tip.label,]
     names(pars) <- NULL
-    model.vec <- numeric(95)
-    order.pars1 <- c(pars1[c(2,3,1,4:7)], 4,0,0,0, 6,0,0,0, 2,0,0,0)
-    order.pars2 <- c(pars2[c(2,3,1,4:7)], 3,0,0,0, 5,0,0,0, 1,0,0,0)
+    model.vec <- numeric(115)
+    order.pars1 <- c(pars1[c(2,3,1,4:5)],0,pars1[6],0,pars1[c(7,5:4)], 4,0,0,0, 6,0,0,0, 2,0,0,0)
+    order.pars2 <- c(pars2[c(2,3,1,4:5)],0,pars2[6],0,pars2[c(7,5:4)], 3,0,0,0, 5,0,0,0, 1,0,0,0)
     order.pars <- c(order.pars1, order.pars2)
-    model.vec[1:38] <- order.pars
+    model.vec[1:46] <- order.pars
     
     sim.data$phy$node.label <- NULL
-    cache <- ParametersToPassHiGeoSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
-    higeosse.full <- DownPassHiGeosse(phy=sim.data$phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
+    cache <- hisse:::ParametersToPassHiGeoSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
+    higeosse.full <- hisse:::DownPassHiGeosse(phy=sim.data$phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
     comparison <- identical(round(higeosse.full,4), round(classe.full,4))
     comparison
     expect_true(comparison)
