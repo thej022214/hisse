@@ -14,7 +14,7 @@ test_that("BiSSE_HiSSE_test",{
 	pars.bisse <- c(0.1+0.03, 0.2+0.03, 0, 0, 0.03/0.1, 0.03/0.2, 0, 0, 0.01, 0, 0, 0.01, 0, 0, 0, 0, 0, 0, 0, 0)
 	model.vec = c(pars.bisse, rep(1,36))
 	phy$node.label = NULL
-	cache = hisse:::ParametersToPass(phy, states[,1], model.vec, f=c(.4,.6), timeslice=NULL, hidden.states=hidden.states)
+	cache = ParametersToPass(phy, states[,1], model.vec, f=c(.4,.6), timeslice=NULL, hidden.states=hidden.states)
 	cache$turnover.beta.factor0 = 1 / dbeta(0.1, 1, 1)
 	cache$eps.beta.factor0 = 1 / dbeta(0.1, 1, 1)
 	cache$turnover.beta.factor1 = 1 / dbeta(0.1, 1, 1)
@@ -145,8 +145,8 @@ test_that("HiGeoSSE_test1", {
     model.vec <- numeric(115)
     model.vec[1:11] <- c(pars[1:3], pars[4:5], 0, pars[6], 0, pars[7], pars[5:4])
     phy$node.label <- NULL
-    cache <- hisse:::ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
-    higeosse.full <- hisse:::DownPassHiGeosse(phy=phy, cache=cache, hidden.states=FALSE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
+    higeosse.full <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=FALSE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     comparison <- identical(round(higeosse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
@@ -169,8 +169,8 @@ test_that("HiGeoSSE_test2", {
     model.vec <- numeric(115)
     model.vec[1:11] <- c(pars[1:3], pars[4:5], 0, pars[6], 0, pars[7], pars[5:4])
     phy$node.label <- NULL
-    cache <- hisse:::ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
-    higeosse.full <- hisse:::DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
+    higeosse.full <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     comparison <- identical(round(higeosse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
@@ -193,8 +193,8 @@ test_that("HiGeoSSE_test3", {
     model.vec <- numeric(115)
     model.vec[1:11] <- c(pars[1:3], pars[4:5], 0, pars[6], 0, pars[7], pars[5:4])
     phy$node.label <- NULL
-    cache <- hisse:::ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
-    higeosse.full <- hisse:::DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
+    higeosse.full <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     comparison <- identical(round(higeosse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
@@ -217,8 +217,8 @@ test_that("HiGeoSSE_test4", {
     model.vec <- numeric(115)
     model.vec[1:11] <- c(pars[1:3], pars[4:5], 0, pars[6], 0, pars[7], pars[5:4])
     phy$node.label <- NULL
-    cache <- hisse:::ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
-    higeosse.full <- hisse:::DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
+    higeosse.full <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     comparison <- identical(round(higeosse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
@@ -249,10 +249,10 @@ test_that("HiGeoSSE_test5", {
     sim.data$classe.pars ## This is the parameters for the ClaSSE model.
     
     ## Just to double check the translation to ClaSSE.
-    par.table <- hisse:::TranslateParsMakerHiGeoSSE(k=1)
+    par.table <- TranslateParsMakerHiGeoSSE(k=1)
     
     ## Get the likelihood for the ClaSSE model:
-    ## Here I am assuming root value is EQUAL!!!!!!!
+    ## Here I am assuming root value is EQUAL
     key.number <- c(0,1,2,3,4,5)
     key.name <- c("AB0","A0","B0", "AB1","A1","B1")
     states <- sapply(sim.data$data, function(y) key.number[match(y, key.name)])
@@ -271,8 +271,8 @@ test_that("HiGeoSSE_test5", {
     model.vec[1:46] <- order.pars
     
     sim.data$phy$node.label <- NULL
-    cache <- hisse:::ParametersToPassHiGeoSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
-    higeosse.full <- hisse:::DownPassHiGeosse(phy=sim.data$phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
+    cache <- ParametersToPassHiGeoSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
+    higeosse.full <- DownPassHiGeosse(phy=sim.data$phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
     comparison <- identical(round(higeosse.full,4), round(classe.full,4))
     comparison
     expect_true(comparison)
