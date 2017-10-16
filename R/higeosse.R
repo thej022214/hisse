@@ -136,6 +136,53 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE)
             pars[1:length(pars.tmp)] <- pars.tmp
         }
+        
+        np <- max(pars)
+        pars[pars==0] <- np+1
+        
+        cat("Initializing...", "\n")
+        
+        data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+        data.new <- data.new[phy$tip.label,]
+        
+        #This is used to scale starting values to account for sampling:
+        if(length(f) == 3){
+            samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
+        }else{
+            if(length(f) == Ntip(phy)){
+                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
+            }else{
+                stop("The vector of sampling frequencies does not match the number of tips in the tree.")
+            }
+        }
+        
+        if(sum(extirpation)==0){
+            init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
+        }else{
+            init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
+        }
+        names(init.pars) <- NULL
+        
+        if(is.null(starting.vals)){
+            def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), log(init.pars[6:7]), rep(log(.01), 12)), rate.cats)
+        }else{
+            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), log(starting.vals[6:7]), rep(log(0.01), 12)), rate.cats)
+        }
+        if(bounded.search == TRUE){
+            upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2), rep(log(10), 12)), rate.cats)
+        }else{
+            upper.full <- rep(21,length(def.set.pars))
+        }
+        
+        np.sequence <- 1:np
+        ip <- numeric(np)
+        upper <- numeric(np)
+        for(i in np.sequence){
+            ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
+            upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
+        }
+        lower <- rep(-20, length(ip))
+        
     }else{
         pars <- numeric(120)
         
@@ -237,53 +284,53 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             pars.tmp <- c(speciation[1:3], extirpation.tmp[1:3], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[4:6], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[7:9], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[10:12], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[13:15], trans.tmp[25:30], category.rate.shiftE)
             pars[1:length(pars.tmp)] <- pars.tmp
         }
-    }
-
-    np <- max(pars)
-    pars[pars==0] <- np+1
-    
-    cat("Initializing...", "\n")
-    
-    data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
-    data.new <- data.new[phy$tip.label,]
-    
-    #This is used to scale starting values to account for sampling:
-    if(length(f) == 3){
-        samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
-    }else{
-        if(length(f) == Ntip(phy)){
-            samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
+        
+        np <- max(pars)
+        pars[pars==0] <- np+1
+        
+        cat("Initializing...", "\n")
+        
+        data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+        data.new <- data.new[phy$tip.label,]
+        
+        #This is used to scale starting values to account for sampling:
+        if(length(f) == 3){
+            samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
         }else{
-            stop("The vector of sampling frequencies does not match the number of tips in the tree.")
+            if(length(f) == Ntip(phy)){
+                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
+            }else{
+                stop("The vector of sampling frequencies does not match the number of tips in the tree.")
+            }
         }
+        
+        if(sum(extirpation)==0){
+            init.pars <- starting.point.generator(phy, 3, samp.freq.tree, yule=TRUE)
+        }else{
+            init.pars <- starting.point.generator(phy, 3, samp.freq.tree, yule=FALSE)
+        }
+        names(init.pars) <- NULL
+        
+        if(is.null(starting.vals)){
+            def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:6]), log(init.pars[7:12]), rep(log(.01), 12)), rate.cats)
+        }else{
+            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:6]), log(starting.vals[7:12]), rep(log(0.01), 12)), rate.cats)
+        }
+        if(bounded.search == TRUE){
+            upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),3), rep(log(trans.upper),6), rep(log(10), 12)), rate.cats)
+        }else{
+            upper.full <- rep(21,length(def.set.pars))
+        }
+        
+        np.sequence <- 1:np
+        ip <- numeric(np)
+        upper <- numeric(np)
+        for(i in np.sequence){
+            ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
+            upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
+        }
+        lower <- rep(-20, length(ip))
     }
-    
-    if(sum(extirpation)==0){
-        init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
-    }else{
-        init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
-    }
-    names(init.pars) <- NULL
-    
-    if(is.null(starting.vals)){
-        def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), log(init.pars[6:7]), rep(log(.01), 12)), rate.cats)
-    }else{
-        def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), log(starting.vals[6:7]), rep(log(0.01), 12)), rate.cats)
-    }
-    if(bounded.search == TRUE){
-        upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2), rep(log(10), 12)), rate.cats)
-    }else{
-        upper.full <- rep(21,length(def.set.pars))
-    }
-    
-    np.sequence <- 1:np
-    ip <- numeric(np)
-    upper <- numeric(np)
-    for(i in np.sequence){
-        ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
-        upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
-    }
-    lower <- rep(-20, length(ip))
     
     if(sann == FALSE){
         if(bounded.search == TRUE){
@@ -368,6 +415,7 @@ starting.point.geosse <- function(tree, eps=0.5, samp.freq.tree) {
     names(p) <- c("sA",  "sB",  "sAB", "xA" , "xB"  ,"dA"  ,"dB")
     p
 }
+
 
 
 ######################################################################################################################################
