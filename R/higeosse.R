@@ -43,11 +43,11 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         extirpation.tmp <- extirpation
         extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extirpation.tmp)
-        trans.tmp <- c(trans.rate["(0)", "(01)"], trans.rate["(1)", "(01)"])
+        trans.tmp <- c(trans.rate["(0)", "(1)"], trans.rate["(0)", "(01)"], trans.rate["(1)", "(0)"], trans.rate["(1)", "(01)"],  trans.rate["(01)", "(0)"],  trans.rate["(01)", "(1)"])
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         category.rates.unique <- 0
         pars.tmp <- c(pars.tmp, trans.tmp)
-        pars[1:7] <- pars.tmp
+        pars[1:11] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==6){
@@ -56,8 +56,8 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         extirpation.tmp <- extirpation
         extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extirpation.tmp)
-        rows <- c("(0A)", "(1A)", "(0B)", "(1B)")
-        cols <- c("(01A)", "(01A)", "(01B)", "(01B)")
+        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)")
+        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, trans.tmp)
@@ -65,7 +65,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
         category.rate.shiftA <- c(category.rate.shift[1], rep(0,3), category.rate.shift[2], rep(0,3), category.rate.shift[3], rep(0,3))
         category.rate.shiftB <- c(category.rate.shift[4], rep(0,3), category.rate.shift[5], rep(0,3), category.rate.shift[6], rep(0,3))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[3:4], category.rate.shiftB)
+        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
@@ -75,8 +75,8 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         extirpation.tmp <- extirpation
         extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extirpation.tmp)
-        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)")
-        cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)")
+        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)")
+        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, trans.tmp)
@@ -85,7 +85,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,2), category.rate.shift[3:4], rep(0,2), category.rate.shift[5:6], rep(0,2))
         category.rate.shiftB <- c(category.rate.shift[7:8], rep(0,2), category.rate.shift[9:10], rep(0,2), category.rate.shift[11:12], rep(0,2))
         category.rate.shiftC <- c(category.rate.shift[13:14], rep(0,2), category.rate.shift[15:16], rep(0,2), category.rate.shift[17:18], rep(0,2))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[5:6], category.rate.shiftC)
+        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
@@ -95,8 +95,8 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         extirpation.tmp <- extirpation
         extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extirpation.tmp)
-        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)", "(0D)", "(1D)")
-        cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)", "(01D)", "(01D)")
+        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)")
+        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, trans.tmp)
@@ -108,7 +108,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         category.rate.shiftD <- c(category.rate.shift[28:30], rep(0,1), category.rate.shift[31:33], rep(0,1), category.rate.shift[34:36], rep(0,1))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[7:8], category.rate.shiftD)
+        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
 
@@ -118,8 +118,8 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         extirpation.tmp <- extirpation
         extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extirpation.tmp)
-        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)", "(0D)", "(1D)", "(0E)", "(1E)")
-        cols <- c("(01A)", "(01A)", "(01B)", "(01B)", "(01C)", "(01C)", "(01D)", "(01D)", "(01E)", "(01E)")
+        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)", "(0E)", "(0E)",  "(1E)", "(1E)",  "(01E)", "(01E)")
+        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)",  "(1E)", "(01E)", "(0E)", "(01E)", "(0E)",  "(1E)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, trans.tmp)
@@ -132,7 +132,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         category.rate.shiftE <- category.rate.shift[49:60]
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[7:8], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[9:10], category.rate.shiftE)
+        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
@@ -768,9 +768,16 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0A_01A = model.vec[7]
     obj$d1A_0A = model.vec[8]
     obj$d1A_01A = model.vec[9]
-    obj$d01A_0A = model.vec[10]
-    obj$d01A_1A = model.vec[11]
-
+    if(model.vec[10]==0){
+        obj$d01A_0A = model.vec[5]
+    }else{
+        obj$d01A_0A = model.vec[10]
+    }
+    if(model.vec[11]==0){
+        obj$d01A_1A = model.vec[4]
+    }else{
+        obj$d01A_1A = model.vec[11]
+    }
     obj$d0A_0B = model.vec[12]
     obj$d0A_0C = model.vec[13]
     obj$d0A_0D = model.vec[14]
@@ -793,9 +800,16 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0B_01B = model.vec[30]
     obj$d1B_0B = model.vec[31]
     obj$d1B_01B = model.vec[32]
-    obj$d01B_0B = model.vec[33]
-    obj$d01B_1B = model.vec[34]
-
+    if(model.vec[33] == 0){
+        obj$d01B_0B = model.vec[28]
+    }else{
+        obj$d01B_0B = model.vec[33]
+    }
+    if(model.vec[34] == 0){
+        obj$d01B_1B = model.vec[27]
+    }else{
+        obj$d01B_1B = model.vec[34]
+    }
     obj$d0B_0A = model.vec[35]
     obj$d0B_0C = model.vec[36]
     obj$d0B_0D = model.vec[37]
@@ -818,9 +832,16 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0C_01C = model.vec[53]
     obj$d1C_0C = model.vec[54]
     obj$d1C_01C = model.vec[55]
-    obj$d01C_0C = model.vec[56]
-    obj$d01C_1C = model.vec[57]
-
+    if(model.vec[56] == 0){
+        obj$d01C_0C = model.vec[51]
+    }else{
+        obj$d01C_0C = model.vec[56]
+    }
+    if(model.vec[57] == 0){
+        obj$d01C_1C = model.vec[50]
+    }else{
+        obj$d01C_1C = model.vec[57]
+    }
     obj$d0C_0A = model.vec[58]
     obj$d0C_0B = model.vec[59]
     obj$d0C_0D = model.vec[60]
@@ -843,9 +864,16 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0D_01D = model.vec[76]
     obj$d1D_0D = model.vec[77]
     obj$d1D_01D = model.vec[78]
-    obj$d01D_0D = model.vec[79]
-    obj$d01D_1D = model.vec[80]
-
+    if(model.vec[79] == 0){
+        obj$d01D_0D = model.vec[74]
+    }else{
+        obj$d01D_0D = model.vec[79]
+    }
+    if(model.vec[80] == 0){
+        obj$d01D_1D = model.vec[73]
+    }else{
+        obj$d01D_1D = model.vec[80]
+    }
     obj$d0D_0A = model.vec[81]
     obj$d0D_0B = model.vec[82]
     obj$d0D_0C = model.vec[83]
@@ -868,9 +896,16 @@ ParametersToPassHiGeoSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0E_01E = model.vec[99]
     obj$d1E_0E = model.vec[100]
     obj$d1E_01E = model.vec[101]
-    obj$d01E_0E = model.vec[102]
-    obj$d01E_1E = model.vec[103]
-
+    if(model.vec[102] == 0){
+        obj$d01E_0E = model.vec[97]
+    }else{
+        obj$d01E_0E = model.vec[102]
+    }
+    if(model.vec[103] == 0){
+        obj$d01E_1E = model.vec[96]
+    }else{
+        obj$d01E_1E = model.vec[103]
+    }
     obj$d0E_0A = model.vec[104]
     obj$d0E_0B = model.vec[105]
     obj$d0E_0C = model.vec[106]
