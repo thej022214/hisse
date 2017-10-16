@@ -331,7 +331,9 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         }
         lower <- rep(-20, length(ip))
     }
-    
+    print(ip)
+    print(upper)
+    print(lower)
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
@@ -387,6 +389,7 @@ DevOptimizeHiGeoSSE <- function(p, pars, phy, data, f, hidden.states, assume.cla
         logl <- DownPassHiGeosse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
     }else{
         cache = ParametersToPassMuSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
+        print(cache)
         logl <- DownPassMusse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
     }
     return(-logl)
