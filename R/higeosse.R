@@ -1101,7 +1101,7 @@ ParametersToPassMuSSE <- function(phy, data, f, model.vec, hidden.states){
         for(i in 1:Ntip(phy)){
             if(data[i]==1){states[i,1]=1}
             if(data[i]==2){states[i,2]=1}
-            if(data[i]==4){states[i,3]=1}
+            if(data[i]==0){states[i,3]=1}
         }
     }
     if(hidden.states == TRUE){
@@ -1109,7 +1109,7 @@ ParametersToPassMuSSE <- function(phy, data, f, model.vec, hidden.states){
         for(i in 1:Ntip(phy)){
             if(data[i]==1){states[i,c(1,4,7,10,13)]=1}
             if(data[i]==2){states[i,c(2,5,8,11,14)]=1}
-            if(data[i]==4){states[i,c(3,6,9,12,15)]=1}
+            if(data[i]==0){states[i,c(3,6,9,12,15)]=1}
         }
     }
     if(hidden.states == "TEST"){
