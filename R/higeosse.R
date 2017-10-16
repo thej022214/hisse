@@ -4,7 +4,7 @@
 #library(nloptr)
 #dyn.load("../src/higeosse-ext-derivs.so")
 #dyn.load("../src/canonical_geosse-ext-derivs.so")
-dyn.load("../src/notclasse-more-ext-derivs.so")
+#dyn.load("../src/notclasse-more-ext-derivs.so")
 
 
 ######################################################################################################################################
@@ -559,8 +559,8 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
                 runSilent <- function() {
                     options(warn = -1)
                     on.exit(options(warn = 0))
-                    #capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                    capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dll = "notclasse-ext-derivs", rtol=1e-8, atol=1e-8))
+                    capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                    #capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dll = "notclasse-ext-derivs", rtol=1e-8, atol=1e-8))
                     res
                 }
                 prob.subtree.cal.full <- runSilent()
@@ -576,8 +576,8 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
                 runSilent <- function() {
                     options(warn = -1)
                     on.exit(options(warn = 0))
-                    #capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                    capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dll = "notclasse-more-ext-derivs", rtol=1e-8, atol=1e-8))
+                    capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                    #capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dll = "notclasse-more-ext-derivs", rtol=1e-8, atol=1e-8))
                     res
                 }
                 prob.subtree.cal.full <- runSilent()
