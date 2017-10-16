@@ -14,7 +14,7 @@
 ######################################################################################################################################
 
 HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1,2), hidden.areas=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, trans.upper=100, ode.eps=0){
-
+    
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     if(!is.null(root.p)) {
@@ -34,117 +34,220 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     if(hidden.areas == TRUE & dim(trans.rate)[1]<4){
         stop("You chose a hidden state but this is not reflected in the transition matrix")
     }
+    
+    if(assume.cladogenetic == TRUE){
+        pars <- numeric(115)
+        
+        if(dim(trans.rate)[2]==3){
+            rate.cats <- 1
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            trans.tmp <- c(trans.rate["(0)", "(1)"], trans.rate["(0)", "(01)"], trans.rate["(1)", "(0)"], trans.rate["(1)", "(01)"],  trans.rate["(01)", "(0)"],  trans.rate["(01)", "(1)"])
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            category.rates.unique <- 0
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            pars[1:11] <- pars.tmp
+        }
+        
+        if(dim(trans.rate)[2]==6){
+            rate.cats <- 2
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)")
+            cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)")
+            trans.tmp <- trans.rate[cbind(rows,cols)]
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            category.rate.shiftA <- c(category.rate.shift[1], rep(0,3), category.rate.shift[2], rep(0,3), category.rate.shift[3], rep(0,3))
+            category.rate.shiftB <- c(category.rate.shift[4], rep(0,3), category.rate.shift[5], rep(0,3), category.rate.shift[6], rep(0,3))
+            pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB)
+            pars[1:length(pars.tmp)] <- pars.tmp
+        }
+        
+        if(dim(trans.rate)[2]==9){
+            rate.cats <- 3
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)")
+            cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)")
+            trans.tmp <- trans.rate[cbind(rows,cols)]
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,2), category.rate.shift[3:4], rep(0,2), category.rate.shift[5:6], rep(0,2))
+            category.rate.shiftB <- c(category.rate.shift[7:8], rep(0,2), category.rate.shift[9:10], rep(0,2), category.rate.shift[11:12], rep(0,2))
+            category.rate.shiftC <- c(category.rate.shift[13:14], rep(0,2), category.rate.shift[15:16], rep(0,2), category.rate.shift[17:18], rep(0,2))
+            pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC)
+            pars[1:length(pars.tmp)] <- pars.tmp
+        }
+        
+        if(dim(trans.rate)[2]==12){
+            rate.cats <- 4
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)")
+            cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)")
+            trans.tmp <- trans.rate[cbind(rows,cols)]
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            category.rate.shiftA <- c(category.rate.shift[1:3], rep(0,1), category.rate.shift[4:6], rep(0,1), category.rate.shift[7:9], rep(0,1))
+            category.rate.shiftB <- c(category.rate.shift[10:12], rep(0,1), category.rate.shift[13:15], rep(0,1), category.rate.shift[16:18], rep(0,1))
+            category.rate.shiftC <- c(category.rate.shift[19:21], rep(0,1), category.rate.shift[22:24], rep(0,1), category.rate.shift[25:27], rep(0,1))
+            category.rate.shiftD <- c(category.rate.shift[28:30], rep(0,1), category.rate.shift[31:33], rep(0,1), category.rate.shift[34:36], rep(0,1))
+            category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD)
+            category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
+            pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD)
+            pars[1:length(pars.tmp)] <- pars.tmp
+        }
+        
+        if(dim(trans.rate)[2]==15){
+            rate.cats <- 5
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)", "(0E)", "(0E)",  "(1E)", "(1E)",  "(01E)", "(01E)")
+            cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)",  "(1E)", "(01E)", "(0E)", "(01E)", "(0E)",  "(1E)")
+            trans.tmp <- trans.rate[cbind(rows,cols)]
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            category.rate.shiftA <- category.rate.shift[1:12]
+            category.rate.shiftB <- category.rate.shift[13:24]
+            category.rate.shiftC <- category.rate.shift[25:36]
+            category.rate.shiftD <- category.rate.shift[37:48]
+            category.rate.shiftE <- category.rate.shift[49:60]
+            category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE)
+            category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
+            pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE)
+            pars[1:length(pars.tmp)] <- pars.tmp
+        }
+    }else{
+        pars <- numeric(120)
+        
+        if(dim(trans.rate)[2]==3){
+            rate.cats <- 1
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            trans.tmp <- c(trans.rate["(0)", "(1)"], trans.rate["(0)", "(01)"], trans.rate["(1)", "(0)"], trans.rate["(1)", "(01)"],  trans.rate["(01)", "(0)"],  trans.rate["(01)", "(1)"])
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            category.rates.unique <- 0
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            pars[1:12] <- pars.tmp
+        }
+        
+        if(dim(trans.rate)[2]==6){
+            rate.cats <- 2
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)")
+            cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)")
+            trans.tmp <- trans.rate[cbind(rows,cols)]
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            category.rate.shiftA <- c(category.rate.shift[1], rep(0,3), category.rate.shift[2], rep(0,3), category.rate.shift[3], rep(0,3))
+            category.rate.shiftB <- c(category.rate.shift[4], rep(0,3), category.rate.shift[5], rep(0,3), category.rate.shift[6], rep(0,3))
+            pars.tmp <- c(speciation[1:3], extirpation.tmp[1:3], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[4:6], trans.tmp[7:12], category.rate.shiftB)
+            pars[1:length(pars.tmp)] <- pars.tmp
+        }
+        
+        if(dim(trans.rate)[2]==9){
+            rate.cats <- 3
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)")
+            cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)")
+            trans.tmp <- trans.rate[cbind(rows,cols)]
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,2), category.rate.shift[3:4], rep(0,2), category.rate.shift[5:6], rep(0,2))
+            category.rate.shiftB <- c(category.rate.shift[7:8], rep(0,2), category.rate.shift[9:10], rep(0,2), category.rate.shift[11:12], rep(0,2))
+            category.rate.shiftC <- c(category.rate.shift[13:14], rep(0,2), category.rate.shift[15:16], rep(0,2), category.rate.shift[17:18], rep(0,2))
+            pars.tmp <- c(speciation[1:3], extirpation.tmp[1:3], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[4:6], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[7:9], trans.tmp[13:18], category.rate.shiftC)
+            pars[1:length(pars.tmp)] <- pars.tmp
+        }
+        
+        if(dim(trans.rate)[2]==12){
+            rate.cats <- 4
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)")
+            cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)")
+            trans.tmp <- trans.rate[cbind(rows,cols)]
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            category.rate.shiftA <- c(category.rate.shift[1:3], rep(0,1), category.rate.shift[4:6], rep(0,1), category.rate.shift[7:9], rep(0,1))
+            category.rate.shiftB <- c(category.rate.shift[10:12], rep(0,1), category.rate.shift[13:15], rep(0,1), category.rate.shift[16:18], rep(0,1))
+            category.rate.shiftC <- c(category.rate.shift[19:21], rep(0,1), category.rate.shift[22:24], rep(0,1), category.rate.shift[25:27], rep(0,1))
+            category.rate.shiftD <- c(category.rate.shift[28:30], rep(0,1), category.rate.shift[31:33], rep(0,1), category.rate.shift[34:36], rep(0,1))
+            category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD)
+            category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
+            pars.tmp <- c(speciation[1:3], extirpation.tmp[1:3], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[4:6], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[7:9], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[10:12], trans.tmp[19:24], category.rate.shiftD)
+            pars[1:length(pars.tmp)] <- pars.tmp
+        }
+        
+        if(dim(trans.rate)[2]==15){
+            rate.cats <- 5
+            pars.tmp <- speciation
+            extirpation.tmp <- extirpation
+            extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, extirpation.tmp)
+            rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)", "(0E)", "(0E)",  "(1E)", "(1E)",  "(01E)", "(01E)")
+            cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)",  "(1E)", "(01E)", "(0E)", "(01E)", "(0E)",  "(1E)")
+            trans.tmp <- trans.rate[cbind(rows,cols)]
+            trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+            pars.tmp <- c(pars.tmp, trans.tmp)
+            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
+            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            category.rate.shiftA <- category.rate.shift[1:12]
+            category.rate.shiftB <- category.rate.shift[13:24]
+            category.rate.shiftC <- category.rate.shift[25:36]
+            category.rate.shiftD <- category.rate.shift[37:48]
+            category.rate.shiftE <- category.rate.shift[49:60]
+            category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE)
+            category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
+            pars.tmp <- c(speciation[1:3], extirpation.tmp[1:3], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[4:6], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[7:9], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[10:12], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[13:15], trans.tmp[25:30], category.rate.shiftE)
+            pars[1:length(pars.tmp)] <- pars.tmp
+        }
+    }
 
-    pars <- numeric(115)
-
-    if(dim(trans.rate)[2]==3){
-        rate.cats <- 1
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        trans.tmp <- c(trans.rate["(0)", "(1)"], trans.rate["(0)", "(01)"], trans.rate["(1)", "(0)"], trans.rate["(1)", "(01)"],  trans.rate["(01)", "(0)"],  trans.rate["(01)", "(1)"])
-        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        category.rates.unique <- 0
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        pars[1:11] <- pars.tmp
-    }
-    
-    if(dim(trans.rate)[2]==6){
-        rate.cats <- 2
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)")
-        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)")
-        trans.tmp <- trans.rate[cbind(rows,cols)]
-        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-        category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
-        category.rate.shiftA <- c(category.rate.shift[1], rep(0,3), category.rate.shift[2], rep(0,3), category.rate.shift[3], rep(0,3))
-        category.rate.shiftB <- c(category.rate.shift[4], rep(0,3), category.rate.shift[5], rep(0,3), category.rate.shift[6], rep(0,3))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB)
-        pars[1:length(pars.tmp)] <- pars.tmp
-    }
-    
-    if(dim(trans.rate)[2]==9){
-        rate.cats <- 3
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)")
-        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)")
-        trans.tmp <- trans.rate[cbind(rows,cols)]
-        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-        category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
-        category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,2), category.rate.shift[3:4], rep(0,2), category.rate.shift[5:6], rep(0,2))
-        category.rate.shiftB <- c(category.rate.shift[7:8], rep(0,2), category.rate.shift[9:10], rep(0,2), category.rate.shift[11:12], rep(0,2))
-        category.rate.shiftC <- c(category.rate.shift[13:14], rep(0,2), category.rate.shift[15:16], rep(0,2), category.rate.shift[17:18], rep(0,2))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC)
-        pars[1:length(pars.tmp)] <- pars.tmp
-    }
-    
-    if(dim(trans.rate)[2]==12){
-        rate.cats <- 4
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)")
-        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)")
-        trans.tmp <- trans.rate[cbind(rows,cols)]
-        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-        category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
-        category.rate.shiftA <- c(category.rate.shift[1:3], rep(0,1), category.rate.shift[4:6], rep(0,1), category.rate.shift[7:9], rep(0,1))
-        category.rate.shiftB <- c(category.rate.shift[10:12], rep(0,1), category.rate.shift[13:15], rep(0,1), category.rate.shift[16:18], rep(0,1))
-        category.rate.shiftC <- c(category.rate.shift[19:21], rep(0,1), category.rate.shift[22:24], rep(0,1), category.rate.shift[25:27], rep(0,1))
-        category.rate.shiftD <- c(category.rate.shift[28:30], rep(0,1), category.rate.shift[31:33], rep(0,1), category.rate.shift[34:36], rep(0,1))
-        category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD)
-        category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD)
-        pars[1:length(pars.tmp)] <- pars.tmp
-    }
-
-    if(dim(trans.rate)[2]==15){
-        rate.cats <- 5
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)", "(0E)", "(0E)",  "(1E)", "(1E)",  "(01E)", "(01E)")
-        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)",  "(1E)", "(01E)", "(0E)", "(01E)", "(0E)",  "(1E)")
-        trans.tmp <- trans.rate[cbind(rows,cols)]
-        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-        category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
-        category.rate.shiftA <- category.rate.shift[1:12]
-        category.rate.shiftB <- category.rate.shift[13:24]
-        category.rate.shiftC <- category.rate.shift[25:36]
-        category.rate.shiftD <- category.rate.shift[37:48]
-        category.rate.shiftE <- category.rate.shift[49:60]
-        category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE)
-        category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE)
-        pars[1:length(pars.tmp)] <- pars.tmp
-    }
-    
     np <- max(pars)
     pars[pars==0] <- np+1
-
+    
     cat("Initializing...", "\n")
-
+    
     data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
-   
-   #This is used to scale starting values to account for sampling:
+    
+    #This is used to scale starting values to account for sampling:
     if(length(f) == 3){
         samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
     }else{
@@ -154,14 +257,14 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             stop("The vector of sampling frequencies does not match the number of tips in the tree.")
         }
     }
-
+    
     if(sum(extirpation)==0){
         init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
     }else{
         init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
     }
     names(init.pars) <- NULL
-
+    
     if(is.null(starting.vals)){
         def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), log(init.pars[6:7]), rep(log(.01), 12)), rate.cats)
     }else{
@@ -172,7 +275,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     }else{
         upper.full <- rep(21,length(def.set.pars))
     }
-
+    
     np.sequence <- 1:np
     ip <- numeric(np)
     upper <- numeric(np)
@@ -181,35 +284,35 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
     }
     lower <- rep(-20, length(ip))
-
+    
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeHiGeoSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = nloptr(x0=ip, eval_f=DevOptimizeHiGeoSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeHiGeoSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = subplex(ip, fn=DevOptimizeHiGeoSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann = GenSA(ip, fn=DevOptimizeHiGeoSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out.sann = GenSA(ip, fn=DevOptimizeHiGeoSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         cat("Finished. Refining using subplex routine...", "\n")
-        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeHiGeoSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeHiGeoSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         loglik = -out$objective
     }
-
+    
     cat("Finished. Summarizing results...", "\n")
-
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.areas=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
+    
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.areas=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
     ## class(obj) <- append(class(obj), "higeosse.fit")
     ## return(obj)
     
@@ -226,14 +329,19 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
 ######################################################################################################################################
 
 
-DevOptimizeHiGeoSSE <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, np, ode.eps) {
+DevOptimizeHiGeoSSE <- function(p, pars, phy, data, f, hidden.states, assume.cladogenetic, condition.on.survival, root.type, root.p, np, ode.eps) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
     ## print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache = ParametersToPassHiGeoSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
-    logl <- DownPassHiGeosse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
+    if(assume.cladogenetic == TRUE){
+        cache = ParametersToPassHiGeoSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
+        logl <- DownPassHiGeosse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
+    }else{
+        cache = ParametersToPassMuSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
+        logl <- DownPassMusse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
+    }
     return(-logl)
 }
 
