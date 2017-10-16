@@ -7,7 +7,7 @@
 
 TransMatMakerHiGeoSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps=FALSE, separate.extirpation=FALSE){
     if(hidden.areas == 0){
-        trans.mat <- TransMatGeoSSEsingle(cat.number=1)
+        trans.mat <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
     }else{
         if(hidden.areas == 1){
             if(make.null == TRUE){
