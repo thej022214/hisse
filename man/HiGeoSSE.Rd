@@ -5,10 +5,11 @@
  and Extinction) on a phylogeny and character distribution.}
 \usage{
 HiGeoSSE(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1,2), 
-hidden.areas=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", 
-root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, 
-max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, 
-speciation.upper=1000, extirpation.upper=1000, trans.upper=100, ode.eps=0)
+hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, 
+condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE,
+sann.its=10000, bounded.search=TRUE,  max.tol=.Machine$double.eps^.50,
+mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, 
+trans.upper=100, ode.eps=0)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
@@ -39,6 +40,8 @@ model. See 'Details'.}
   hidden area. The default is \code{FALSE}.} 
 \item{trans.rate}{provides the transition rate model. See function
   \code{TransMatMakerHiGeoSSE}.}
+\item{assume.cladogenetic}{assumes that cladogenetic events occur at nodes. The 
+	default is \code{TRUE}.}
 \item{condition.on.survival}{a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
   speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}

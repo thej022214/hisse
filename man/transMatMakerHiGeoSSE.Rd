@@ -3,7 +3,8 @@
 \title{Transition Rate matrix generator for the HiGeoSSE model}
 \description{Generates and manipulates the index of the transition rate parameters to be optimized.}
 \usage{
-TransMatMakerHiGeoSSE(hidden.areas=0, make.null=FALSE)
+TransMatMakerHiGeoSSE(hidden.areas=0, make.null=FALSE, include.jumps=FALSE, 
+	separate.extirpation=FALSE)
 }       
 \arguments{
 \item{hidden.areas}{a numeric value with the number of hidden areas in
@@ -13,6 +14,8 @@ TransMatMakerHiGeoSSE(hidden.areas=0, make.null=FALSE)
   transition rates from endemic to widespread areas (A -> AB and B ->
   AB) are the same across all hidden areas and (2) the transition rates
   between hidden areas (such as 0A <-> 1A) are the same for all areas.}
+\item{include.jumps}{allows for 0->1 and 1->0 transitions.}
+\item{separate.extirpation}{allows for 01->0 and 01->1 transitions.}
 }
 \details{
   Outputs the full index of the rate parameters that are to be optimized.

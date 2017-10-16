@@ -312,6 +312,8 @@ test_that("MuSSE_test1", {
 
 
 test_that("MuSSE_test2", {
+    skip_on_cran()
+
     library(diversitree)
     pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
     .03, .045, .06, # mu 1, 2, 3
@@ -334,8 +336,8 @@ test_that("MuSSE_test2", {
     model.vec = rep(0,120)
     model.vec[97:108] = pars.hisse
     phy$node.label = NULL
-    cache <- ParametersToPassMuSSE(phy, states[,1], model.vec, f=c(1,1,1), hidden.states=TRUE)
-    hisse.constrained <- DownPassMusse(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE)
+    cache <- hisse:::ParametersToPassMuSSE(phy, states[,1], model.vec, f=c(1,1,1), hidden.states="TEST")
+    hisse.constrained <- hisse:::DownPassMusse(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE)
     comparison <- identical(round(hisse.constrained,4), round(diversitree.constrained,4))
     expect_true(comparison)
 })
