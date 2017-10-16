@@ -278,35 +278,65 @@ test_that("HiGeoSSE_test5", {
 
 
 
-#test_that("MuSSE_test1", {
-#    skip_on_cran()
+test_that("MuSSE_test1", {
+    skip_on_cran()
+    
+    library(diversitree)
+    pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
+    .03, .045, .06, # mu 1, 2, 3
+    .05, 0,         # q12, q13
+    .05, .05,       # q21, q23
+    0,   .05)       # q31, q32
+    set.seed(2)
+    phy <- tree.musse(pars, 30, x0=1)
+    states <- phy$tip.state
+    lik <- make.musse(phy, states, 3)
+    lik.base <- constrain(lik, lambda2 ~ lambda1, lambda3 ~ lambda1,
+    mu2 ~ mu1, mu3 ~ mu1,
+    q13 ~ 0, q21 ~ q12, q23 ~ q12, q31 ~ 0, q32 ~ q12)
+    diversitree.constrained = lik.base(c(.1, .03, .05))
+    diversitree.full = lik(pars)
+    
+    states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
+    states <- states[phy$tip.label,]
+    states[states[,1]==3,] = 4
+    pars.hisse <- c(0.1, 0.1, 0.1, 0.03, 0.03, 0.03, 0.05, 0, 0.05, 0.05, 0, 0.05)
+    model.vec = rep(0,120)
+    model.vec[1:12] = pars.hisse
+    phy$node.label = NULL
+    cache <- ParametersToPassMuSSE(phy, states[,1], model.vec, f=c(1,1,1), hidden.states=FALSE)
+    hisse.constrained <- DownPassMusse(phy, cache, hidden.states=FALSE, root.type="madfitz", condition.on.survival=TRUE)
+    comparison <- identical(round(hisse.constrained,4), round(diversitree.constrained,4))
+    expect_true(comparison)
+})
 
-#library(diversitree)
-#pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
-#.03, .045, .06, # mu 1, 2, 3
-#.05, 0,         # q12, q13
-#.05, .05,       # q21, q23
-#0,   .05)       # q31, q32
-#set.seed(2)
-#phy <- tree.musse(pars, 30, x0=1)
-#states <- phy$tip.state
-#lik <- make.musse(phy, states, 3)
-#lik.base <- constrain(lik, lambda2 ~ lambda1, lambda3 ~ lambda1,
-#mu2 ~ mu1, mu3 ~ mu1,
-#q13 ~ 0, q21 ~ q12, q23 ~ q12, q31 ~ 0, q32 ~ q12)
-#diversitree.constrained = lik.base(c(.1, .03, .05))
-#diversitree.full = lik(pars)
 
-#states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
-#states <- states[phy$tip.label,]
-#states[states[,1]==3,] = 4
-#pars.hisse <- c(0.1, 0.1, 0.1, 0.03, 0.03, 0.03, 0.05, 0, 0.05, 0.05, 0, 0.05)
-#model.vec = rep(0,120)
-#model.vec[1:12] = pars.hisse
-#phy$node.label = NULL
-#cache <- ParametersToPassMuSSE(phy, states[,1], model.vec, f=c(1,1,1), hidden.states=FALSE)
-#hisse.constrained <- DownPassMusse(phy, cache, hidden.states=FALSE, root.type="madfitz", condition.on.survival=TRUE)
-#comparison <- identical(round(hisse.constrained,4), round(diversitree.constrained,4))
-#    expect_true(comparison)
-#})
+test_that("MuSSE_test2", {
+    library(diversitree)
+    pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
+    .03, .045, .06, # mu 1, 2, 3
+    .05, 0,         # q12, q13
+    .05, .05,       # q21, q23
+    0,   .05)       # q31, q32
+    set.seed(2)
+    phy <- tree.musse(pars, 30, x0=1)
+    states <- phy$tip.state
+    lik <- make.musse(phy, states, 3)
+    lik.base <- constrain(lik,
+    q13 ~ 0, q21 ~ q12, q23 ~ q12, q31 ~ 0, q32 ~ q12)
+    diversitree.constrained = lik.base(c(.1, .2, .3, .03,.04,.05, .05))
+    diversitree.full = lik(pars)
+    
+    states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
+    states <- states[phy$tip.label,]
+    states[states[,1]==3,] = 4
+    pars.hisse <- c(.1, .2, .3, .03, .04, .05, 0.05, 0, 0.05, 0.05, 0, 0.05)
+    model.vec = rep(0,120)
+    model.vec[97:108] = pars.hisse
+    phy$node.label = NULL
+    cache <- ParametersToPassMuSSE(phy, states[,1], model.vec, f=c(1,1,1), hidden.states=TRUE)
+    hisse.constrained <- DownPassMusse(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE)
+    comparison <- identical(round(hisse.constrained,4), round(diversitree.constrained,4))
+    expect_true(comparison)
+})
 
