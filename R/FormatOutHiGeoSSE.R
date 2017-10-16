@@ -11,8 +11,8 @@ FormatOutHiGeoSSE <- function(fit.geosse){
     out$fit$AICc <- fit.geosse$AICc
     ## List with the imput data for the analysis.
     imput <- list()
-    out$imput$phy <- fit.geosse$phy
-    out$imput$data <- fit.geosse$data
+    out$input$phy <- fit.geosse$phy
+    out$input$data <- fit.geosse$data
     ## List with the control for the analysis.
     control <- list()
     out$control$index.par <- fit.geosse$index.par
