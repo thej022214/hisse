@@ -273,7 +273,6 @@ test_that("HiGeoSSE_test5", {
     cache <- hisse:::ParametersToPassHiGeoSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
     higeosse.full <- hisse:::DownPassHiGeosse(phy=sim.data$phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
     comparison <- identical(round(higeosse.full,4), round(classe.full,4))
-    comparison
     expect_true(comparison)
 })
 
