@@ -69,6 +69,7 @@ test_that("MuSSE_HiSSE_test1", {
 	expect_true(comparison)
 })
 
+
 test_that("MuSSE_HiSSE_test2", {
     skip_on_cran()
 
@@ -105,6 +106,7 @@ test_that("MuSSE_HiSSE_test2", {
 	expect_true(comparison)
 })
 
+
 test_that("HiSSE_Null_Four_test", {
     skip_on_cran()
 
@@ -125,7 +127,6 @@ test_that("HiSSE_Null_Four_test", {
 	comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
 	expect_true(comparison)
 })
-
 
 
 test_that("HiGeoSSE_test1", {
@@ -252,7 +253,7 @@ test_that("HiGeoSSE_test5", {
     par.table <- TranslateParsMakerHiGeoSSE(k=1)
     
     ## Get the likelihood for the ClaSSE model:
-    ## Here I am assuming root value is EQUAL
+    ## Here we assume root value is EQUAL
     key.number <- c(0,1,2,3,4,5)
     key.name <- c("AB0","A0","B0", "AB1","A1","B1")
     states <- sapply(sim.data$data, function(y) key.number[match(y, key.name)])

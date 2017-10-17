@@ -1,12 +1,4 @@
 
-#library(deSolve)
-#library(diversitree)
-#library(nloptr)
-#dyn.load("../src/higeosse-ext-derivs.so")
-#dyn.load("../src/canonical_geosse-ext-derivs.so")
-#dyn.load("../src/notclasse-more-ext-derivs.so")
-
-
 ######################################################################################################################################
 ######################################################################################################################################
 ### HiGeoSSE -- Expanded set of GeoSSE models for examining diversification in relation to geographic range evolution
@@ -31,10 +23,16 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         stop("Rate matrix needed. See TransMatMakerHiGeoSSE() to create one.")
     }
     
-    if(hidden.areas == TRUE & dim(trans.rate)[1]<4){
+    if(hidden.areas == TRUE & dim(trans.rate)[1]<3){
         stop("You chose a hidden state but this is not reflected in the transition matrix")
     }
     
+    if(assume.cladogenetic == FALSE){
+        if(dim(trans.rate)[1] != extirpation){
+            stop("You have not specified enough extinction parameters.")
+        }
+    }
+
     if(assume.cladogenetic == TRUE){
         pars <- numeric(115)
         
