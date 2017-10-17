@@ -31,8 +31,8 @@ TransMatMakerHiGeoSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
         if(hidden.areas == 2){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                max.par <- max(sub.mat1, na.rm=TRUE)
                 sub.mat2 <- matrix(NA, 3, 3)
-                max.par <- max(sub.mat2, na.rm=TRUE)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1))
             }else{
@@ -50,8 +50,8 @@ TransMatMakerHiGeoSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
         if(hidden.areas == 3){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat1, na.rm=TRUE)
+                sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1))
             }else{
@@ -70,8 +70,8 @@ TransMatMakerHiGeoSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
         if(hidden.areas == 4){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat1, na.rm=TRUE)
+                sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1))
             }else{
@@ -81,7 +81,7 @@ TransMatMakerHiGeoSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
                 sub.mat4 <- TransMatGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat5 <- TransMatGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat6 <- matrix(NA, 3, 3)
-                max.par <- max(sub.mat4, na.rm=TRUE)
+                max.par <- max(sub.mat5, na.rm=TRUE)
                 diag(sub.mat6) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat6, sub.mat6, sub.mat6, sub.mat6), cbind(sub.mat6, sub.mat2, sub.mat6, sub.mat6, sub.mat6), cbind(sub.mat6, sub.mat6, sub.mat3, sub.mat6, sub.mat6), cbind(sub.mat6, sub.mat6, sub.mat6, sub.mat4, sub.mat6), cbind(sub.mat6, sub.mat6, sub.mat6, sub.mat6, sub.mat5))
             }
