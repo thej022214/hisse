@@ -180,7 +180,6 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
         }
         lower <- rep(-20, length(ip))
-        print(ip)
     }else{
         pars <- numeric(120)
         
@@ -386,10 +385,7 @@ DevOptimizeHiGeoSSE <- function(p, pars, phy, data, f, hidden.states, assume.cla
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
     if(assume.cladogenetic == TRUE){
-        print(pars)
-        print(model.vec)
         cache = ParametersToPassHiGeoSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
-        print(cache)
         logl <- DownPassHiGeosse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
     }else{
         cache = ParametersToPassMuSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
