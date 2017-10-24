@@ -180,7 +180,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
         }
         lower <- rep(-20, length(ip))
-        
+        print(ip)
     }else{
         pars <- numeric(120)
         
