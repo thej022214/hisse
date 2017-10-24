@@ -162,12 +162,12 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         names(init.pars) <- NULL
         
         if(is.null(starting.vals)){
-            def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), log(init.pars[6:7]), rep(log(.01), 12)), rate.cats)
+            def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]),3), rep(log(.01), 12)), rate.cats)
         }else{
-            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), log(starting.vals[6:7]), rep(log(0.01), 12)), rate.cats)
+            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[6:7]),3), rep(log(0.01), 12)), rate.cats)
         }
         if(bounded.search == TRUE){
-            upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2), rep(log(10), 12)), rate.cats)
+            upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2*3), rep(log(10), 12)), rate.cats)
         }else{
             upper.full <- rep(21,length(def.set.pars))
         }
