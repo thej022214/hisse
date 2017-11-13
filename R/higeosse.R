@@ -28,7 +28,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     }
     
     if(assume.cladogenetic == FALSE){
-        if(dim(trans.rate)[1] != extirpation){
+        if(dim(trans.rate)[1] != length(extirpation)){
             stop("You have not specified enough extinction parameters.")
         }
     }
