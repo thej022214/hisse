@@ -148,13 +148,13 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         if(length(f) == 3){
             freqs <- table(data.new[,1])
             if(length(freqs == 2)){
-                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1])[as.numeric(names(freqs))+1] / f)
+                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
             }else{
-                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1])[as.numeric(names(freqs))+1] / f)
+                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
             }
         }else{
             if(length(f) == Ntip(phy)){
-                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1])[as.numeric(names(freqs))+1] / mean(f))
+                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f[as.numeric(names(freqs))+1]))
             }else{
                 stop("The vector of sampling frequencies does not match the number of tips in the tree.")
             }
