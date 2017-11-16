@@ -9,13 +9,14 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
+
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
         if(hidden.areas ==TRUE & length(root.p)==2){
             root.p <- rep(root.p, 2)
             root.p <- root.p / sum(root.p)
-            warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
+            warning("For hidden areas, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
         }
     }
     
