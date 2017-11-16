@@ -154,7 +154,8 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             }
         }else{
             if(length(f) == Ntip(phy)){
-                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f[as.numeric(names(freqs))+1]))
+                stop("This is functionality has been temporarily removed.")
+                #samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f[as.numeric(names(freqs))+1]))
             }else{
                 stop("The vector of sampling frequencies does not match the number of tips in the tree.")
             }
@@ -298,10 +299,16 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         
         #This is used to scale starting values to account for sampling:
         if(length(f) == 3){
-            samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
+            freqs <- table(data.new[,1])
+            if(length(freqs == 2)){
+                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
+            }else{
+                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
+            }
         }else{
             if(length(f) == Ntip(phy)){
-                samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
+                stop("This is functionality has been temporarily removed.")
+                #samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f[as.numeric(names(freqs))+1]))
             }else{
                 stop("The vector of sampling frequencies does not match the number of tips in the tree.")
             }

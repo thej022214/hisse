@@ -292,6 +292,228 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 }
 
 
+
+######################################################################################################################################
+######################################################################################################################################
+### ANCESTRAL STATE RECONSTRUCTION for GeoSSE -- calculates marginal probabilities for our set of GeoSSE models
+######################################################################################################################################
+######################################################################################################################################
+
+MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
+    
+    if( !is.null(phy$node.label) ) phy$node.label <- NULL
+    
+    if(!is.null(root.p)) {
+        root.type="user"
+        root.p <- root.p / sum(root.p)
+        if(hidden.states ==TRUE & length(root.p)==2){
+            root.p <- rep(root.p, 2)
+            root.p <- root.p / sum(root.p)
+            warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
+        }
+    }
+    
+    data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+    data.new <- data.new[phy$tip.label,]
+    model.vec = pars
+    
+    #Prerequisites for running the downpass algorithm:
+    if(assume.cladogenetic == TRUE){
+        cache = hisse:::ParametersToPassHiGeoSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
+    }else{
+        cache = hisse:::ParametersToPassMuSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
+    }
+    
+    nb.tip <- length(phy$tip.label)
+    nb.node <- phy$Nnode
+    if(hidden.areas == FALSE){
+        nstates = 3
+    }else{
+        nstates = 15
+    }
+    nodes <- unique(phy$edge[,1])
+    
+    if(is.null(n.cores)){
+        marginal.probs <- matrix(0, nb.node+nb.tip, nstates)
+        for (i in seq(from = 1, length.out = nb.node)) {
+            focal <- nodes[i]
+            marginal.probs.tmp <- c()
+            for (j in 1:nstates){
+                if(assume.cladogenetic == TRUE){
+                    marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                }else{
+                    marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                }
+            }
+            best.probs = max(marginal.probs.tmp)
+            marginal.probs.rescaled = marginal.probs.tmp - best.probs
+            marginal.probs[focal,] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+            if (verbose && i%%100==0) {
+                cat(paste(i, "of", nb.node, "nodes done"), "\n")
+            }
+        }
+        if(hidden.areas==TRUE){
+            for (i in seq(from = 1, length.out = nb.tip)) {
+                marginal.probs.tmp <- numeric(4)
+                nstates = which(!cache$states[i,] == 0)
+                cache$states.keep = cache$states[i,]
+                for (j in nstates){
+                    cache$states[i,] = 0
+                    cache$states[i,j] = 1
+                    if(assume.cladogenetic == TRUE){
+                        marginal.probs.tmp[j] <- hisse:::DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                    }else{
+                        marginal.probs.tmp[j] <- hisse:::DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                    }
+                }
+                cache$states[i,] = cache$states.keep
+                best.probs = max(marginal.probs.tmp[nstates])
+                marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
+                marginal.probs[i,nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+                if (verbose && i%%100==0) {
+                    cat(paste(i, "of", nb.tip, "tips done"), "\n")
+                }
+            }
+        }
+        obj <- NULL
+        if(!hidden.areas == TRUE){
+            marginal.probs[1:nb.tip,] = cache$states
+        }
+        marginal.probs <- cbind(1:(nb.node+nb.tip), marginal.probs)
+        obj$node.mat = marginal.probs[-(1:nb.tip),]
+        obj$tip.mat = marginal.probs[1:nb.tip,]
+############# Needs to be addressed
+        #if(hidden.areas == TRUE){
+        #    raw.rates <- ParameterTransform(x=model.vec[1:4], y=model.vec[5:8])
+        #    rates.mat <- matrix(0, 5, 4)
+        #    rates.mat[1,] <- model.vec[1:4]
+        #    rates.mat[2,] <- raw.rates[1:4] - raw.rates[5:8]
+        #    rates.mat[3,] <- raw.rates[1:4]
+        #    rates.mat[4,] <- model.vec[5:8]
+        #    rates.mat[5,] <- raw.rates[5:8]
+        #    rownames(rates.mat) <- c("turnover", "net.div", "speciation", "extinction.fraction", "extinction")
+        #    colnames(rates.mat) <- c("0A", "1A", "0B", "1B")
+        #    colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "0B", "1B")
+        #}else{
+        #    raw.rates <- ParameterTransform(x=model.vec[1:4], y=model.vec[5:8])
+        #    rates.mat <- matrix(0, 5, 2)
+        #    rates.mat[1,] <- model.vec[1:2]
+        #    rates.mat[2,] <- raw.rates[1:2] - raw.rates[5:6]
+        #    rates.mat[3,] <- raw.rates[1:2]
+        #    rates.mat[4,] <- model.vec[5:6]
+        #    rates.mat[5,] <- raw.rates[5:6]
+        #    rownames(rates.mat) <- c("turnover", "net.div", "speciation", "extinction.fraction", "extinction")
+        #    colnames(rates.mat) <- c("0", "1")
+        #    colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "0", "1")
+        #}
+        
+        #obj$rates.mat = rates.mat
+        phy$node.label = apply(marginal.probs[,-1], 1, which.max)[-(1:nb.tip)]
+        obj$phy = phy
+    }else{
+        NodeEval <- function(node){
+            focal <- node
+            marginal.probs.tmp <- c()
+            for (j in 1:nstates){
+                if(assume.cladogenetic == TRUE){
+                    marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                }else{
+                    marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                }
+            }
+            best.probs = max(marginal.probs.tmp)
+            marginal.probs.rescaled = marginal.probs.tmp - best.probs
+            marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+            return(c(node, marginal.probs))
+        }
+        node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
+        
+        if(hidden.areas==TRUE){
+            TipEval <- function(tip){
+                marginal.probs.tmp <- numeric(4)
+                nstates = which(!cache$states[tip,] == 0)
+                cache$states.keep = cache$states[tip,]
+                for (j in nstates){
+                    cache$states[tip,] = 0
+                    cache$states[tip,j] = 1
+                    if(assume.cladogenetic == TRUE){
+                        marginal.probs.tmp[j] <- hisse:::DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                    }else{
+                        marginal.probs.tmp[j] <- hisse:::DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                    }
+                }
+                cache$states[tip,] = cache$states.keep
+                best.probs = max(marginal.probs.tmp[nstates])
+                marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
+                marginal.probs <- numeric(15)
+                marginal.probs[nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+                return(c(tip, marginal.probs))
+            }
+            tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
+        }
+        obj <- NULL
+        
+        if(hidden.areas == TRUE){
+            obj$node.mat <- matrix(unlist(node.marginals), ncol = 15+1, byrow = TRUE)
+            obj$tip.mat = matrix(unlist(tip.marginals), ncol = 15+1, byrow = TRUE)
+############# Needs to be addressed
+            #    raw.rates <- ParameterTransform(x=model.vec[1:4], y=model.vec[5:8])
+            #    rates.mat <- matrix(0, 5, 4)
+            #    rates.mat[1,] <- model.vec[1:4]
+            #    rates.mat[2,] <- raw.rates[1:4] - raw.rates[5:8]
+            #    rates.mat[3,] <- raw.rates[1:4]
+            #    rates.mat[4,] <- model.vec[5:8]
+            #    rates.mat[5,] <- raw.rates[5:8]
+            #    rownames(rates.mat) <- c("turnover", "net.div", "speciation", "extinction.fraction", "extinction")
+            #    colnames(rates.mat) <- c("0A", "1A", "0B", "1B")
+            #    colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "0B", "1B")
+            
+        }else{
+            obj$node.mat <- matrix(unlist(node.marginals), ncol = 3+1, byrow = TRUE)
+            obj$tip.mat = cbind(1:Ntip(phy), cache$states)
+############# Needs to be addressed
+            #    raw.rates <- ParameterTransform(x=model.vec[1:4], y=model.vec[5:8])
+            #    rates.mat <- matrix(0, 5, 2)
+            #    rates.mat[1,] <- model.vec[1:2]
+            #    rates.mat[2,] <- raw.rates[1:2] - raw.rates[5:6]
+            #    rates.mat[3,] <- raw.rates[1:2]
+            #    rates.mat[4,] <- model.vec[5:6]
+            #    rates.mat[5,] <- raw.rates[5:6]
+            #    rownames(rates.mat) <- c("turnover", "net.div", "speciation", "extinction.fraction", "extinction")
+            #    colnames(rates.mat) <- c("0", "1")
+            #    colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "0", "1")
+            
+        }
+        
+        #obj$rates.mat = rates.mat
+        
+        phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
+        obj$phy = phy
+    }
+    
+    if(!is.null(aic)){
+        obj$aic = aic
+    }
+    
+    class(obj) = "hisse.geosse.states"
+    return(obj)
+}
+
+
+ParameterTransform <- function(x, y){
+    speciation <- x / (1+y)
+    extinction <- (x*y) / (1+y)
+    return(c(speciation, extinction))
+}
+
+
+print.hisse.states <- function(x,...){
+    print(x$phy)
+}
+
+
+
+
 ParameterTransform <- function(x, y){
 	speciation <- x / (1+y)
 	extinction <- (x*y) / (1+y)
