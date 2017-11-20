@@ -401,7 +401,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
         }else{
             if(assume.cladogenetic == TRUE){
                 print("here")
-                rates.mat <- matrix(0, 2, 5)
+                rates.mat <- matrix(0, 2, 3)
                 print(rates.mat)
                 print(model.vec[c(1, 2, 3)])
                 rates.mat[1,] <- model.vec[c(1, 2, 3)]
@@ -410,7 +410,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
                 colnames(rates.mat) <- c("s0", "s1", "s01", "x0", "x1")
                 colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01")
             }else{
-                rates.mat <- matrix(0, 2, 6)
+                rates.mat <- matrix(0, 2, 3)
                 rates.mat[1,] <- model.vec[c(1, 2, 3)]
                 rates.mat[2,] <- model.vec[c(4, 5, 6)]
                 rownames(rates.mat) <- c("speciation", "extinction")
