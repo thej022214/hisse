@@ -420,7 +420,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
                 colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01",)
             }
         }
-        #obj$rates.mat = rates.mat
+        obj$rates.mat = rates.mat
         phy$node.label = apply(marginal.probs[,-1], 1, which.max)[-(1:nb.tip)]
         obj$phy = phy
     }else{
