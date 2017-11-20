@@ -383,8 +383,6 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
         obj$node.mat = marginal.probs[-(1:nb.tip),]
         obj$tip.mat = marginal.probs[1:nb.tip,]
         if(hidden.areas == TRUE){
-            obj$node.mat <- matrix(unlist(node.marginals), ncol = 15+1, byrow = TRUE)
-            obj$tip.mat = matrix(unlist(tip.marginals), ncol = 15+1, byrow = TRUE)
             if(assume.cladogenetic == TRUE){
                 rates.mat <- matrix(0, 2, 25)
                 rates.mat[1,] <- model.vec[c(1, 2, 3, 24, 25, 26, 47, 48, 49, 70, 71, 72, 93, 94, 95)]
@@ -401,8 +399,6 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
                 colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
             }
         }else{
-            obj$node.mat <- matrix(unlist(node.marginals), ncol = 3+1, byrow = TRUE)
-            obj$tip.mat = cbind(1:Ntip(phy), cache$states)
             if(assume.cladogenetic == TRUE){
                 rates.mat <- matrix(0, 2, 5)
                 rates.mat[1,] <- model.vec[c(1, 2, 3)]
@@ -419,7 +415,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
                 colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01",)
             }
         }
-        obj$rates.mat = rates.mat
+        #obj$rates.mat = rates.mat
         phy$node.label = apply(marginal.probs[,-1], 1, which.max)[-(1:nb.tip)]
         obj$phy = phy
     }else{
