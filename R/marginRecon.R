@@ -402,7 +402,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
             if(assume.cladogenetic == TRUE){
                 print("here")
                 rates.mat <- matrix(0, 2, 5)
-                print(rate.mat)
+                print(rates.mat)
                 print(model.vec[c(1, 2, 3)])
                 rates.mat[1,] <- model.vec[c(1, 2, 3)]
                 rates.mat[2,] <- c(model.vec[c(4, 5)], "NA")
