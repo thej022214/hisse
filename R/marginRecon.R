@@ -405,16 +405,18 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
                 print(rates.mat)
                 print(model.vec[c(1, 2, 3)])
                 rates.mat[1,] <- model.vec[c(1, 2, 3)]
-                rates.mat[2,] <- c(model.vec[c(4, 5)], "NA")
+                print("here??")
+                rates.mat[2,] <- c(model.vec[c(4, 5)], 0)
+                print("here??")
                 rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("s0", "s1", "s01", "x0", "x1")
+                colnames(rates.mat) <- c("0", "1", "01")
                 colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01")
             }else{
                 rates.mat <- matrix(0, 2, 3)
                 rates.mat[1,] <- model.vec[c(1, 2, 3)]
                 rates.mat[2,] <- model.vec[c(4, 5, 6)]
                 rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("s0", "s1", "s01", "x0", "x1", "x01")
+                colnames(rates.mat) <- c("0", "1", "01")
                 colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01",)
             }
         }
