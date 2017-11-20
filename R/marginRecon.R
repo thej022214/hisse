@@ -383,42 +383,28 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
         obj$node.mat = marginal.probs[-(1:nb.tip),]
         obj$tip.mat = marginal.probs[1:nb.tip,]
         if(hidden.areas == TRUE){
+            rates.mat <- matrix(0, 2, 15)
+            rates.mat[1,] <- model.vec[c(1, 2, 3, 24, 25, 26, 47, 48, 49, 70, 71, 72, 93, 94, 95)]
             if(assume.cladogenetic == TRUE){
-                rates.mat <- matrix(0, 2, 25)
-                rates.mat[1,] <- model.vec[c(1, 2, 3, 24, 25, 26, 47, 48, 49, 70, 71, 72, 93, 94, 95)]
-                rates.mat[2,] <- model.vec[c(4, 5, 27, 28, 50, 51, 73, 74, 96, 97)]
-                rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("s0A", "s1A", "s01A", "s0B", "s1B", "s01B", "s0C", "s1C", "s01C", "s0D", "s1D", "s01D", "s0E", "s1E", "s01E", "x0A", "x1A", "x0B", "x1B", "x0C", "x1C", "x0D", "x1D", "x0E", "x1E")
-                colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+                rates.mat[2,] <- c(model.vec[c(4, 5)], 0, model.vec[c(27, 28)], 0, model.vec[c(50, 51)], 0, model.vec[c(73, 74)], 0, model.vec[c(96, 97)], 0)
             }else{
-                rates.mat <- matrix(0, 2, 30)
-                rates.mat[1,] <- model.vec[c(1, 2, 3, 25, 26, 27, 49, 50, 51, 73, 74, 75, 97, 98, 99)]
                 rates.mat[2,] <- model.vec[c(4, 5, 6, 28, 29, 30, 52, 53, 54, 76, 77, 78, 100, 101, 102)]
-                rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("s0A", "s1A", "s01A", "s0B", "s1B", "s01B", "s0C", "s1C", "s01C", "s0D", "s1D", "s01D", "s0E", "s1E", "s01E", "x0A", "x1A", "x01A", "x0B", "x1B", "x01B", "x0C", "x1C", "x01C", "x0D", "x1D", "x01D","x0E", "x1E", "x01E")
-                colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+                
             }
+            rownames(rates.mat) <- c("speciation", "extinction")
+            colnames(rates.mat) <- c("0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
         }else{
+            rates.mat <- matrix(0, 2, 3)
+            rates.mat[1,] <- model.vec[c(1, 2, 3)]
             if(assume.cladogenetic == TRUE){
-                print("here")
-                rates.mat <- matrix(0, 2, 3)
-                print(rates.mat)
-                print(model.vec[c(1, 2, 3)])
-                rates.mat[1,] <- model.vec[c(1, 2, 3)]
-                print("here??")
                 rates.mat[2,] <- c(model.vec[c(4, 5)], 0)
-                print("here??")
-                rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("0", "1", "01")
-                colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01")
             }else{
-                rates.mat <- matrix(0, 2, 3)
-                rates.mat[1,] <- model.vec[c(1, 2, 3)]
                 rates.mat[2,] <- model.vec[c(4, 5, 6)]
-                rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("0", "1", "01")
-                colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01",)
             }
+            rownames(rates.mat) <- c("speciation", "extinction")
+            colnames(rates.mat) <- c("0", "1", "01")
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01")
         }
         obj$rates.mat = rates.mat
         phy$node.label = apply(marginal.probs[,-1], 1, which.max)[-(1:nb.tip)]
@@ -469,39 +455,30 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
         if(hidden.areas == TRUE){
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 15+1, byrow = TRUE)
             obj$tip.mat = matrix(unlist(tip.marginals), ncol = 15+1, byrow = TRUE)
+            rates.mat <- matrix(0, 2, 15)
+            rates.mat[1,] <- model.vec[c(1, 2, 3, 24, 25, 26, 47, 48, 49, 70, 71, 72, 93, 94, 95)]
             if(assume.cladogenetic == TRUE){
-                rates.mat <- matrix(0, 2, 25)
-                rates.mat[1,] <- model.vec[c(1, 2, 3, 24, 25, 26, 47, 48, 49, 70, 71, 72, 93, 94, 95)]
-                rates.mat[2,] <- model.vec[c(4, 5, 27, 28, 50, 51, 73, 74, 96, 97)]
-                rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("s0A", "s1A", "s01A", "s0B", "s1B", "s01B", "s0C", "s1C", "s01C", "s0D", "s1D", "s01D", "s0E", "s1E", "s01E", "x0A", "x1A", "x0B", "x1B", "x0C", "x1C", "x0D", "x1D", "x0E", "x1E")
-                colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+                rates.mat[2,] <- c(model.vec[c(4, 5)], 0, model.vec[c(27, 28)], 0, model.vec[c(50, 51)], 0, model.vec[c(73, 74)], 0, model.vec[c(96, 97)], 0)
             }else{
-                rates.mat <- matrix(0, 2, 30)
-                rates.mat[1,] <- model.vec[c(1, 2, 3, 25, 26, 27, 49, 50, 51, 73, 74, 75, 97, 98, 99)]
                 rates.mat[2,] <- model.vec[c(4, 5, 6, 28, 29, 30, 52, 53, 54, 76, 77, 78, 100, 101, 102)]
-                rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("s0A", "s1A", "s01A", "s0B", "s1B", "s01B", "s0C", "s1C", "s01C", "s0D", "s1D", "s01D", "s0E", "s1E", "s01E", "x0A", "x1A", "x01A", "x0B", "x1B", "x01B", "x0C", "x1C", "x01C", "x0D", "x1D", "x01D","x0E", "x1E", "x01E")
-                colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+                
             }
+            rownames(rates.mat) <- c("speciation", "extinction")
+            colnames(rates.mat) <- c("0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
         }else{
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 3+1, byrow = TRUE)
             obj$tip.mat = cbind(1:Ntip(phy), cache$states)
+            rates.mat <- matrix(0, 2, 3)
+            rates.mat[1,] <- model.vec[c(1, 2, 3)]
             if(assume.cladogenetic == TRUE){
-                rates.mat <- matrix(0, 2, 5)
-                rates.mat[1,] <- model.vec[c(1, 2, 3)]
-                rates.mat[2,] <- model.vec[c(4, 5)]
-                rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("s0", "s1", "s01", "x0", "x1")
-                colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01")
+                rates.mat[2,] <- c(model.vec[c(4, 5)], 0)
             }else{
-                rates.mat <- matrix(0, 2, 6)
-                rates.mat[1,] <- model.vec[c(1, 2, 3)]
                 rates.mat[2,] <- model.vec[c(4, 5, 6)]
-                rownames(rates.mat) <- c("speciation", "extinction")
-                colnames(rates.mat) <- c("s0", "s1", "s01", "x0", "x1", "x01")
-                colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01",)
             }
+            rownames(rates.mat) <- c("speciation", "extinction")
+            colnames(rates.mat) <- c("0", "1", "01")
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01")
         }
         obj$rates.mat = rates.mat
         phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
