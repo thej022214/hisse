@@ -1,9 +1,21 @@
 ## Functions associated with simulation of a Hidden areas GeoSSE model using the ClaSSE model. GeoSSE is a subset of a ClaSSE model.
 
-SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.time=Inf, include.extinct=FALSE, return.HiGeoSSE_pars=FALSE, override.safeties=FALSE){
+SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.time=Inf, add.jumps=FALSE, add.extinction=FALSE, include.extinct=FALSE, return.HiGeoSSE_pars=FALSE, override.safeties=FALSE){
     if(return.HiGeoSSE_pars){
-        mod.matrix <- matrix(data=0, nrow=7, ncol=hidden.areas+1)
-        rownames( mod.matrix ) <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB")
+        if( !add.jumps & !add.extinction ){
+            row.names.mod.matrix <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB")
+        }
+        if( add.jumps & !add.extinction ){
+            row.names.mod.matrix <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB", "jdA", "jdB")
+        }
+        if( !add.jumps & add.extinction ){
+            row.names.mod.matrix <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB", "x*A", "x*B")
+        }
+        if( add.jumps & add.extinction ){
+            row.names.mod.matrix <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB", "jdA", "jdB", "x*A", "x*B")
+        }
+        mod.matrix <- matrix(data=0, nrow=length(row.names.mod.matrix), ncol=hidden.areas+1)
+        rownames( mod.matrix ) <- row.names.mod.matrix
         colnames( mod.matrix ) <- as.character( 0:hidden.areas )
         qmatAB <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
         diag(qmatAB) <- NA
@@ -29,10 +41,15 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
     }
     ## The parameter list is too specific. Better to use the custom class.
     if( !inherits(pars, "HiGeoSSE_pars") ) stop("Argument 'pars' needs to be of class 'HiGeoSSE_pars'. Please check argument 'return.HiGeoSSE_pars'.")
+    ## Check if jumps or extinction parameters were provided and, if positive, check if the correct option were selected.
+    if( "jdA" %in% rownames( pars$model.pars ) & !add.jumps ) stop("Detected jump dispersal parameters. Please set 'add.jumps=TRUE'.")
+    if( "jdB" %in% rownames( pars$model.pars ) & !add.jumps ) stop("Detected jump dispersal parameters. Please set 'add.jumps=TRUE'.")
+    if( "x*A" %in% rownames( pars$model.pars ) & !add.extinction ) stop("Detected extra extinction parameters. Please set 'add.extinction=TRUE'.")
+    if( "x*B" %in% rownames( pars$model.pars ) & !add.extinction ) stop("Detected extra extinction parameters. Please set 'add.extinction=TRUE'.")
 
     ## Generate the key for the translation of the parameters:
     model.pars.vec <- c( pars$model.pars )
-    names(model.pars.vec) <- paste0(rownames( pars$model.pars ), rep(colnames(pars$model.pars), each=7))
+    names(model.pars.vec) <- paste0(rownames( pars$model.pars ), rep(colnames(pars$model.pars), each=nrow(pars$model.pars)))
 
     ## Get the transtions for the hidden areas.
     ## Have a feeling this could be more elegant. But, well...
@@ -57,7 +74,8 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
     names(B.vec) <- B.nm
 
     ## Translate from HiGeoSSE par names to ClaSSE.
-    parkey <- TranslateParsMakerHiGeoSSE(k=hidden.areas)
+    ## Need to update 'TranslateParsMakerHiGeoSSE' for the simulations.
+    parkey <- TranslateParsMakerHiGeoSSE(k=hidden.areas, add.extinction=add.extinction, add.jumps=add.jumps)
     higeosse.pars <- c(model.pars.vec, AB.vec, A.vec, B.vec)
     classe.pars <- vector("numeric", length=nrow(parkey))
     names(classe.pars) <- parkey[,1]
@@ -108,10 +126,24 @@ GetArgnamesClasse <- function(k){
     c(lambda.names, mu.names, q.names)
 }
 
-ParNamesKeyClaSSEtoHiGeoSSE <- function(k){
+ParNamesKeyClaSSEtoHiGeoSSE <- function(k, add.extinction, add.jumps){
     ## Generate a matrix with translation between pars of HiGeoSSE to ClaSSE parameters.
     ## If k >= 3 then all the numbers need to be 0 padded. Need to modify this function.
-    mod.par <- sapply(0:k, function(x) paste0(c("sA", "sA", "sB", "sB", "sAB", "xA", "xB", "dA", "dB", "xA", "xB"), x) )
+    ## add.extinction and add.jumps allow for adding additional parameters to the models.
+    if( !add.extinction & !add.jumps ){
+        mod.par <- sapply(0:k, function(x) paste0(c("sA", "sA", "sB", "sB", "sAB", "xA", "xB", "dA", "dB", "xA", "xB"), x) )
+    }
+    if( add.extinction & !add.jumps ){
+        ## Here we just need to mark the extirpation and extinction in different ways so the parameters can receive different values.
+        mod.par <- sapply(0:k, function(x) paste0(c("sA", "sA", "sB", "sB", "sAB", "xA", "xB", "dA", "dB", "x*A", "x*B"), x) )
+    }
+    if( !add.extinction & add.jumps ){
+        mod.par <- sapply(0:k, function(x) paste0(c("sA", "sA", "sB", "sB", "sAB", "xA", "xB", "dA", "dB", "jdA", "jdB", "xA", "xB"), x) )
+    }
+    if( add.extinction & add.jumps ){
+        mod.par <- sapply(0:k, function(x) paste0(c("sA", "sA", "sB", "sB", "sAB", "xA", "xB", "dA", "dB", "jdA", "jdB", "x*A", "x*B"), x) )
+    }
+    
     if( k >= 3 ){
         lambda.classe.par <- sapply(0:k, function(x) paste0("lambda", c(paste0(sprintf("%02d", c(1,1,2)+(x*3)), collapse="")
                                                                       , paste0(sprintf("%02d", c(2,2,2)+(x*3)), collapse="")
@@ -128,6 +160,18 @@ ParNamesKeyClaSSEtoHiGeoSSE <- function(k){
                                                               )
                                                        )
                                )
+        if( add.jumps ){
+            ## This adds the parameters to allow for the jump between the endemic areas.
+            q.classe.par.jumps <- sapply(0:k, function(x) paste0("q", c(paste0(sprintf("%02d", c(2,3)+(x*3)), collapse="")
+                                                                , paste0(sprintf("%02d", c(3,2)+(x*3)), collapse="")
+                                                                  )
+                                                           )
+                                   )
+        }
+        if( !add.jumps ){
+            q.classe.par.jumps <- NULL
+        }
+        
         mu.classe.par <- sapply(0:k, function(x) paste0("mu", c(paste0(sprintf("%02d", c(2)+(x*3)), collapse="")
                                                               , paste0(sprintf("%02d", c(3)+(x*3)), collapse="")
                                                                 )
@@ -136,9 +180,15 @@ ParNamesKeyClaSSEtoHiGeoSSE <- function(k){
     } else{
         lambda.classe.par <- sapply(0:k, function(x) paste0("lambda", c(112,222,113,333,123)+(111*(x*3))))
         q.classe.par <- sapply(0:k, function(x) paste0("q", c(13,12,21,31)+(11*(x*3))))
+        if( add.jumps ){
+            q.classe.par.jumps <- sapply(0:k, function(x) paste0("q", c(23,32)+(11*(x*3))))
+        }
+        if( !add.jumps ){
+            q.classe.par.jumps <- NULL
+        }
         mu.classe.par <- sapply(0:k, function(x) paste0("mu", c(2,3)+(x*3)))
     }
-    classe.par <- rbind(lambda.classe.par, q.classe.par, mu.classe.par)
+    classe.par <- rbind(lambda.classe.par, q.classe.par, q.classe.par.jumps, mu.classe.par)
     mod.par.vec <- as.vector(mod.par)
     classe.par.vec <- as.vector(classe.par)
     res <- cbind(classe.par.vec, mod.par.vec)
@@ -174,12 +224,14 @@ qNamesKeyClaSSEtoGeoSSE <- function(k, area, init){
     return( cbind(q.hidden.classe, q.hidden.higeosse) )
 }
 
-TranslateParsMakerHiGeoSSE <- function(k){
+TranslateParsMakerHiGeoSSE <- function(k, add.extinction, add.jumps){
     ## Returns a table with the names of the parameters for the ClaSSE model that corresponds to the
     ## HiGeoSSE model. All other parameters of the ClaSSE model are set to zero.
     ## k: number of hidden states in the model.
+    ## add.extinction: if the extinction parameter should be separated from extirpation.
+    ## add.jumps: if jumps between endemic areas should be added.
 
-    divpars <- ParNamesKeyClaSSEtoHiGeoSSE(k)
+    divpars <- ParNamesKeyClaSSEtoHiGeoSSE(k, add.extinction=add.extinction, add.jumps=add.jumps)
     transpars.AB <- qNamesKeyClaSSEtoGeoSSE(k=k, area="AB", init=1)
     transpars.A <- qNamesKeyClaSSEtoGeoSSE(k=k, area="A", init=2)
     transpars.B <- qNamesKeyClaSSEtoGeoSSE(k=k, area="B", init=3)
