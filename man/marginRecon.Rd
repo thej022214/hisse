@@ -32,10 +32,10 @@ See help for \dQuote{hisse} for more on other parameters for this function.
 }
 \value{
 \code{MarginRecon} returns an object of class \code{hisse.states}. This is a list with elements:
-\item{$node.mat}{the marginal probabilities calculated for each node. They are ordered based on the elements in the edge matrix in dQuote{phylo} format.}
+\item{$node.mat}{the marginal probabilities calculated for each node. They are ordered based on the elements in the edge matrix in \dQuote{phylo} format.}
 \item{$tip.mat}{the marginal probabilities calculated for each tip. They are ordered based on the order of tip labels in the tree.}
 \item{$rate.mat}{a matrix that details the rates for each state combination. This is used by the plotting function.}
-\item{$phy}{a phylogenetic tree in the dQuote{phylo} format that contains the states with the highest marginal probability at each internal node.}
+\item{$phy}{a phylogenetic tree in the \dQuote{phylo} format that contains the states with the highest marginal probability at each internal node.}
 }
 \examples{
 \donttest{
