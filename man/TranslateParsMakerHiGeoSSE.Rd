@@ -3,10 +3,12 @@
 \title{Key to translate HiGeoSSE into ClaSSE}
 \description{Simulate key of parnames to translate between HiGeoSSE and ClaSSE models}
 \usage{
-TranslateParsMakerHiGeoSSE(k)}       
+TranslateParsMakerHiGeoSSE(k, add.extinction, add.jumps)}       
 \arguments{
 \item{k}{number of hidden states in the model. Minimum is 0 for a model
   without hidden states (i.e., GeoSSE).}
+\item{add.extinction}{if the extinction parameter should be separated from extirpation.}
+\item{add.jumps}{if jumps between endemic areas should be added.}
 }
 \details{
 Function will only return the parameters that are relevant for a

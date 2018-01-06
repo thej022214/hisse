@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-TransMatMakerHiGeoSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps=FALSE, separate.extirpation=FALSE, add.extinction=FALSE, add.jumps=FALSE){
+TransMatMakerHiGeoSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps=FALSE, separate.extirpation=FALSE){
     if(hidden.areas == 0){
         trans.mat <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
     }else{

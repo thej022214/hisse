@@ -4,8 +4,10 @@
   the GeoSSE and HiGeoSSE models.}
 \description{Estimates the likeliest states for both internal nodes and tips of a phylogeny using the marginal reconstruction algorithm.}
 \usage{
-MarginRecon(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE,
-condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL)
+MarginReconGeoSSE(phy, data, f, pars, hidden.areas=TRUE, 
+assume.cladogenetic=TRUE, condition.on.survival=TRUE, 
+root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, 
+n.cores=NULL)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}

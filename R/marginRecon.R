@@ -306,7 +306,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
-        if(hidden.states ==TRUE & length(root.p)==2){
+        if(hidden.areas ==TRUE & length(root.p)==2){
             root.p <- rep(root.p, 2)
             root.p <- root.p / sum(root.p)
             warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
@@ -319,9 +319,9 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
     
     #Prerequisites for running the downpass algorithm:
     if(assume.cladogenetic == TRUE){
-        cache = hisse:::ParametersToPassHiGeoSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
+        cache = ParametersToPassHiGeoSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
     }else{
-        cache = hisse:::ParametersToPassMuSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
+        cache = ParametersToPassMuSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
     }
     
     nb.tip <- length(phy$tip.label)
@@ -340,9 +340,9 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
             marginal.probs.tmp <- c()
             for (j in 1:nstates){
                 if(assume.cladogenetic == TRUE){
-                    marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
                 }else{
-                    marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
                 }
             }
             best.probs = max(marginal.probs.tmp)
@@ -361,9 +361,9 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
                     cache$states[i,] = 0
                     cache$states[i,j] = 1
                     if(assume.cladogenetic == TRUE){
-                        marginal.probs.tmp[j] <- hisse:::DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                        marginal.probs.tmp[j] <- DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
                     }else{
-                        marginal.probs.tmp[j] <- hisse:::DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                        marginal.probs.tmp[j] <- DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
                     }
                 }
                 cache$states[i,] = cache$states.keep
@@ -415,9 +415,9 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
             marginal.probs.tmp <- c()
             for (j in 1:nstates){
                 if(assume.cladogenetic == TRUE){
-                    marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
                 }else{
-                    marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
                 }
             }
             best.probs = max(marginal.probs.tmp)
@@ -436,9 +436,9 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
                     cache$states[tip,] = 0
                     cache$states[tip,j] = 1
                     if(assume.cladogenetic == TRUE){
-                        marginal.probs.tmp[j] <- hisse:::DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                        marginal.probs.tmp[j] <- DownPassHiGeosse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
                     }else{
-                        marginal.probs.tmp[j] <- hisse:::DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                        marginal.probs.tmp[j] <- DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
                     }
                 }
                 cache$states[tip,] = cache$states.keep
