@@ -1158,9 +1158,16 @@ ParametersToPassMuSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0A_01A = model.vec[8]
     obj$d1A_0A = model.vec[9]
     obj$d1A_01A = model.vec[10]
-    obj$d01A_0A = model.vec[11]
-    obj$d01A_1A = model.vec[12]
-    
+    if(model.vec[11] == 0){
+        obj$d01A_0A = model.vec[5]
+    }else{
+        obj$d01A_0A = model.vec[11]
+    }
+    if(model.vec[12] == 0){
+        obj$d01A_1A = model.vec[4]
+    }else{
+        obj$d01A_1A = model.vec[12]
+    }
     obj$d0A_0B = model.vec[13]
     obj$d0A_0C = model.vec[14]
     obj$d0A_0D = model.vec[15]
@@ -1184,9 +1191,16 @@ ParametersToPassMuSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0B_01B = model.vec[32]
     obj$d1B_0B = model.vec[33]
     obj$d1B_01B = model.vec[34]
-    obj$d01B_0B = model.vec[35]
-    obj$d01B_1B = model.vec[36]
-    
+    if(model.vec[35] == 0){
+        obj$d01B_0B = model.vec[29]
+    }else{
+        obj$d01B_0B = model.vec[35]
+    }
+    if(model.vec[36] == 0){
+        obj$d01B_1B = model.vec[28]
+    }else{
+        obj$d01B_1B = model.vec[36]
+    }
     obj$d0B_0A = model.vec[37]
     obj$d0B_0C = model.vec[38]
     obj$d0B_0D = model.vec[39]
@@ -1210,9 +1224,16 @@ ParametersToPassMuSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0C_01C = model.vec[56]
     obj$d1C_0C = model.vec[57]
     obj$d1C_01C = model.vec[58]
-    obj$d01C_0C = model.vec[59]
-    obj$d01C_1C = model.vec[60]
-    
+    if(model.vec[59] == 0){
+        obj$d01C_0C = model.vec[53]
+    }else{
+        obj$d01C_0C = model.vec[59]
+    }
+    if(model.vec[60] == 0){
+        obj$d01C_1C = model.vec[52]
+    }else{
+        obj$d01C_1C = model.vec[60]
+    }
     obj$d0C_0A = model.vec[61]
     obj$d0C_0B = model.vec[62]
     obj$d0C_0D = model.vec[63]
@@ -1236,9 +1257,17 @@ ParametersToPassMuSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0D_01D = model.vec[80]
     obj$d1D_0D = model.vec[81]
     obj$d1D_01D = model.vec[82]
-    obj$d01D_0D = model.vec[83]
-    obj$d01D_1D = model.vec[84]
-    
+    if(model.vec[83] == 0){
+        obj$d01D_0D = model.vec[77]
+    }else{
+        obj$d01D_0D = model.vec[83]
+    }
+    if(model.vec[84] == 0){
+        obj$d01D_1D = model.vec[76]
+    }else{
+        obj$d01D_1D = model.vec[84]
+    }
+
     obj$d0D_0A = model.vec[85]
     obj$d0D_0B = model.vec[86]
     obj$d0D_0C = model.vec[87]
@@ -1262,8 +1291,16 @@ ParametersToPassMuSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$d0E_01E = model.vec[104]
     obj$d1E_0E = model.vec[105]
     obj$d1E_01E = model.vec[106]
-    obj$d01E_0E = model.vec[107]
-    obj$d01E_1E = model.vec[108]
+    if(model.vec[107] == 0){
+        obj$d01E_0E = model.vec[101]
+    }else{
+        obj$d01E_0E = model.vec[107]
+    }
+    if(model.vec[108] == 0){
+        obj$d01E_1E = model.vec[100]
+    }else{
+        obj$d01E_1E = model.vec[108]
+    }
     
     obj$d0E_0A = model.vec[109]
     obj$d0E_0B = model.vec[110]
