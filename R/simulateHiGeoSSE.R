@@ -36,11 +36,13 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
 
     ## Make a series of checks:
     if( is.infinite(max.taxa) & is.infinite(max.time)){
-        if( override.safeties ) print("WARNING: Simulation running without stopping criteria defined. \n")
+        if( override.safeties ) warning("WARNING: Simulation running without stopping criteria defined. \n")
         if( !override.safeties ) stop("No stopping criteria have been informed.")
     }
     ## The parameter list is too specific. Better to use the custom class.
     if( !inherits(pars, "HiGeoSSE_pars") ) stop("Argument 'pars' needs to be of class 'HiGeoSSE_pars'. Please check argument 'return.HiGeoSSE_pars'.")
+    ## If there are no hidden areas in the model, there is a chance the vector of parameters is a vector instead of a matrix.
+    if( !is.matrix(pars$model.pars) ) stop("The parameter 'pars$model.pars' need to be a matrix.")
     ## Check if jumps or extinction parameters were provided and, if positive, check if the correct option were selected.
     if( "jdA" %in% rownames( pars$model.pars ) & !add.jumps ) stop("Detected jump dispersal parameters. Please set 'add.jumps=TRUE'.")
     if( "jdB" %in% rownames( pars$model.pars ) & !add.jumps ) stop("Detected jump dispersal parameters. Please set 'add.jumps=TRUE'.")
