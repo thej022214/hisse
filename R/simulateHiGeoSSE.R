@@ -226,7 +226,7 @@ qNamesKeyClaSSEtoGeoSSE <- function(k, area, init){
     return( cbind(q.hidden.classe, q.hidden.higeosse) )
 }
 
-TranslateParsMakerHiGeoSSE <- function(k, add.extinction, add.jumps){
+TranslateParsMakerHiGeoSSE <- function(k, add.extinction=FALSE, add.jumps=FALSE){
     ## Returns a table with the names of the parameters for the ClaSSE model that corresponds to the
     ## HiGeoSSE model. All other parameters of the ClaSSE model are set to zero.
     ## k: number of hidden states in the model.
