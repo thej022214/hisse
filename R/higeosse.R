@@ -307,7 +307,7 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             }
         }else{
             if(length(f) == Ntip(phy)){
-                stop("This is functionality has been temporarily removed.")
+                stop("This functionality has been temporarily removed.")
                 #samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f[as.numeric(names(freqs))+1]))
             }else{
                 stop("The vector of sampling frequencies does not match the number of tips in the tree.")
@@ -456,8 +456,14 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
 	}else{
 		compD <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
 		compE <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
-	}
-    
+        if(root.type=="user"){
+            root.p.new <- numeric(15)
+            root.p.new[1:length(root.p)] <- root.p
+            root.p <- root.p.new
+            print(root.p)
+        }
+    }
+    print(cache)
 	#Initializes the tip sampling and sets internal nodes to be zero:
 	ncols = dim(compD)[2]
 	if(length(cache$f) == 3){
@@ -730,14 +736,15 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
                 yini <-c(E_0=cache$node.E[1], E_1=cache$node.E[2], E_01=cache$node.E[3], D_N0=cache$node.D[1], D_N1=cache$node.D[2], D_N2=cache$node.D[3])
                 times=c(cache$tipward.age, cache$rootward.age)
 
-                runSilent <- function() {
-                    options(warn = -1)
-                    on.exit(options(warn = 0))
-                    capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                    #capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dll = "notclasse-ext-derivs", rtol=1e-8, atol=1e-8))
-                    res
-                }
-                prob.subtree.cal.full <- runSilent()
+                #runSilent <- function() {
+                #options(warn = -1)
+                #on.exit(options(warn = 0))
+                #capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                #capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dll = "notclasse-ext-derivs", rtol=1e-8, atol=1e-8))
+                #res
+                #}
+                #prob.subtree.cal.full <- runSilent()
+                prob.subtree.cal.full <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
             }else{
                 pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$x01A, cache$d0A_1A, cache$d0A_01A, cache$d1A_0A, cache$d1A_01A, cache$d01A_0A, cache$d01A_1A, cache$d0A_0B, cache$d0A_0C, cache$d0A_0D, cache$d0A_0E, cache$d1A_1B, cache$d1A_1C, cache$d1A_1D, cache$d1A_1E, cache$d01A_01B, cache$d01A_01C, cache$d01A_01D, cache$d01A_01E, cache$s0B, cache$s1B, cache$s01B, cache$x0B, cache$x1B, cache$x01B, cache$d0B_1B , cache$d0B_01B, cache$d1B_0B, cache$d1B_01B, cache$d01B_0B, cache$d01B_1B, cache$d0B_0A, cache$d0B_0C, cache$d0B_0D, cache$d0B_0E, cache$d1B_1A, cache$d1B_1C, cache$d1B_1D, cache$d1B_1E, cache$d01B_01A, cache$d01B_01C, cache$d01B_01D, cache$d01B_01E, cache$s0C, cache$s1C, cache$s01C, cache$x0C, cache$x1C, cache$x01C, cache$d0C_1C , cache$d0C_01C, cache$d1C_0C, cache$d1C_01C, cache$d01C_0C, cache$d01C_1C, cache$d0C_0A, cache$d0C_0B, cache$d0C_0D, cache$d0C_0E, cache$d1C_1A, cache$d1C_1B, cache$d1C_1D, cache$d1C_1E, cache$d01C_01A, cache$d01C_01B, cache$d01C_01D, cache$d01C_01E, cache$s0D, cache$s1D, cache$s01D, cache$x0D, cache$x1D, cache$x01D, cache$d0D_1D , cache$d0D_01D, cache$d1D_0D, cache$d1D_01D, cache$d01D_0D, cache$d01D_1D, cache$d0D_0A, cache$d0D_0B, cache$d0D_0C, cache$d0D_0E, cache$d1D_1A, cache$d1D_1B, cache$d1D_1C, cache$d1D_1E, cache$d01D_01A, cache$d01D_01B, cache$d01D_01C, cache$d01D_01E, cache$s0E, cache$s1E, cache$s01E, cache$x0E, cache$x1E, cache$x01E, cache$d0E_1E, cache$d0E_01E, cache$d1E_0E, cache$d1E_01E, cache$d01E_0E, cache$d01E_1E, cache$d0E_0A, cache$d0E_0B, cache$d0E_0C, cache$d0E_0D, cache$d1E_1A, cache$d1E_1B, cache$d1E_1C, cache$d1E_1D, cache$d01E_01A, cache$d01E_01B, cache$d01E_01C, cache$d01E_01D)
                 NUMELEMENTS <- 120 #needed for passing in vector to C
@@ -747,14 +754,15 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
                 padded.pars[sequence(length(pars))]<-pars
                 yini <- c(E_0A=cache$node.E[1], E_1A=cache$node.E[2], E_01A=cache$node.E[3], E_0B=cache$node.E[4], E_1B=cache$node.E[5], E_01B=cache$node.E[6], E_0C=cache$node.E[7], E_1C=cache$node.E[8], E_01C=cache$node.E[9], E_0D=cache$node.E[10], E_1D=cache$node.E[11], E_01D=cache$node.E[12], E_0E=cache$node.E[13], E_1E=cache$node.E[14], E_01E=cache$node.E[15], D_N0A=cache$node.D[1], D_N1A=cache$node.D[2], D_N01A=cache$node.D[3], D_N0B=cache$node.D[4], D_N1B=cache$node.D[5], D_N01B=cache$node.D[6], D_N0C=cache$node.D[7], D_N1C=cache$node.D[8], D_N01C=cache$node.D[9], D_N0D=cache$node.D[10], D_N1D=cache$node.D[11], D_N01D=cache$node.D[12], D_N0E=cache$node.D[13], D_N1E=cache$node.D[14], D_N01E=cache$node.D[15])
                 times=c(cache$tipward.age, cache$rootward.age)
-                runSilent <- function() {
-                    options(warn = -1)
-                    on.exit(options(warn = 0))
-                    capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                #runSilent <- function() {
+                #    options(warn = -1)
+                #    on.exit(options(warn = 0))
+                #    capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dllname = "hisse", rtol=1e-8, atol=1e-8))
                     #capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dll = "notclasse-more-ext-derivs", rtol=1e-8, atol=1e-8))
-                    res
-                }
-                prob.subtree.cal.full <- runSilent()
+                #    res
+                #}
+                #prob.subtree.cal.full <- runSilent()
+                prob.subtree.cal.full <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dllname = "hisse", rtol=1e-8, atol=1e-8)
             }
             
             ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
