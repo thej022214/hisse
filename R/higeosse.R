@@ -460,10 +460,8 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
             root.p.new <- numeric(15)
             root.p.new[1:length(root.p)] <- root.p
             root.p <- root.p.new
-            print(root.p)
         }
     }
-    print(cache)
 	#Initializes the tip sampling and sets internal nodes to be zero:
 	ncols = dim(compD)[2]
 	if(length(cache$f) == 3){
@@ -693,10 +691,8 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
             root.p.new <- numeric(15)
             root.p.new[1:length(root.p)] <- root.p
             root.p <- root.p.new
-            print(root.p)
         }
     }
-    print(cache)
     #Initializes the tip sampling and sets internal nodes to be zero:
     ncols = dim(compD)[2]
     if(length(cache$f) == 3){
