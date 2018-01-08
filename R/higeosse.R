@@ -689,8 +689,14 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
     }else{
         compD <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
         compE <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
+        if(root.type=="user"){
+            root.p.new <- numeric(15)
+            root.p.new[1:length(root.p)] <- root.p
+            root.p <- root.p.new
+            print(root.p)
+        }
     }
-    
+    print(cache)
     #Initializes the tip sampling and sets internal nodes to be zero:
     ncols = dim(compD)[2]
     if(length(cache$f) == 3){
