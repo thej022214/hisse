@@ -12,6 +12,16 @@ GetModelAveTipRates <- function(x){
 		hisse.results <- tmp.list	
 	}
 
+    if(class(hisse.results)=="hisse.geosse.states") { #we have to make a list so we can run this generally
+        if(is.null(hisse.results$aic)){
+            #If a user forgot to include the aic, then we add a random value in for them
+            hisse.results$aic = 42
+        }
+        tmp.list <- list()
+        tmp.list[[1]] <- hisse.results
+        hisse.results <- tmp.list
+    }
+
 	rates.tips.turnover <- ConvertManyToRate(hisse.results, rate.param="turnover", "tip.mat")
 	rates.tips.net.div <- ConvertManyToRate(hisse.results, rate.param="net.div", "tip.mat")
 	rates.tips.speciation <- ConvertManyToRate(hisse.results, rate.param="speciation", "tip.mat")
