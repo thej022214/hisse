@@ -516,11 +516,13 @@ ParameterTransformGeoSSE <- function(x, assume.cladogenetic=TRUE){
             rates.mat[2,] <- x[1,] - x[2,]
             rates.mat[3,] <- x[2,] / x[1,]
             for(widespread.index in c(3,9,15)){
-                rates.mat[1,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) + sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
-                rates.mat[2,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) - sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
-                rates.mat[3,widespread.index] <- sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)]) / sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)])
+                rates.mat[1:2,widespread.index] <- sum(x[1:2,c(widespread.index-2,widespread.index-2,widespread.index)])
+                rates.mat[3,widespread.index] <- 0
+                #rates.mat[1,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) + sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
+                #rates.mat[2,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) - sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
+                #rates.mat[3,widespread.index] <- sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)]) / sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)])
             }
-            rates.mat[3,is.na(rates.mat[3,])] = 0
+            #rates.mat[3,is.na(rates.mat[3,])] = 0
         }else{
             rates.mat <- matrix(0, 3, 3)
             rownames(rates.mat) <- c("turnover", "net.div", "extinction.fraction")
@@ -528,10 +530,13 @@ ParameterTransformGeoSSE <- function(x, assume.cladogenetic=TRUE){
             rates.mat[1,] <- x[1,] + x[2,]
             rates.mat[2,] <- x[1,] - x[2,]
             rates.mat[3,] <- x[2,] / x[1,]
-            rates.mat[1,3] <- sum(x[1,c(1,2,3)]) + sum(x[2,c(1,2,3)])
-            rates.mat[2,3] <- sum(x[1,c(1,2,3)]) - sum(x[2,c(1,2,3)])
-            rates.mat[3,3] <- sum(x[2,c(1,2,3)]) / sum(x[1,c(1,2,3)])
-            rates.mat[3,is.na(rates.mat[3,])] = 0
+            #rates.mat[1,3] <- sum(x[1,c(1,2,3)]) + sum(x[2,c(1,2,3)])
+            #rates.mat[2,3] <- sum(x[1,c(1,2,3)]) - sum(x[2,c(1,2,3)])
+            #rates.mat[3,3] <- sum(x[2,c(1,2,3)]) / sum(x[1,c(1,2,3)])
+            #rates.mat[3,is.na(rates.mat[3,])] = 0
+            rates.mat[1,3] <- sum(x[1,c(1,2,3)])
+            rates.mat[2,3] <- sum(x[1,c(1,2,3)])
+            rates.mat[3,3] <- 0
         }
     }else{
         if(dim(x)[2] == 15){
