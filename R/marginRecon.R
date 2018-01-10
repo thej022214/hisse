@@ -321,7 +321,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
     if(assume.cladogenetic == TRUE){
         cache = ParametersToPassHiGeoSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
     }else{
-        cache = ParametersToPassMuSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
+        ParametersToPassMuSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
     }
     
     nb.tip <- length(phy$tip.label)
@@ -384,16 +384,17 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
         obj$tip.mat = marginal.probs[1:nb.tip,]
         if(hidden.areas == TRUE){
             rates.mat <- matrix(0, 2, 15)
-            rates.mat[1,] <- model.vec[c(1, 2, 3, 24, 25, 26, 47, 48, 49, 70, 71, 72, 93, 94, 95)]
             if(assume.cladogenetic == TRUE){
+                rates.mat[1,] <- model.vec[c(1, 2, 3, 24, 25, 26, 47, 48, 49, 70, 71, 72, 93, 94, 95)]
                 rates.mat[2,] <- c(model.vec[c(4, 5)], 0, model.vec[c(27, 28)], 0, model.vec[c(50, 51)], 0, model.vec[c(73, 74)], 0, model.vec[c(96, 97)], 0)
             }else{
+                rates.mat[1,] <- model.vec[c(1, 2, 3, 25, 26, 27, 49, 50, 51, 73, 74, 75, 97, 98, 99)]
                 rates.mat[2,] <- model.vec[c(4, 5, 6, 28, 29, 30, 52, 53, 54, 76, 77, 78, 100, 101, 102)]
-                
             }
             rownames(rates.mat) <- c("speciation", "extinction")
             colnames(rates.mat) <- c("0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
-            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+            rates.mat <- ParameterTransformGeoSSE(rates.mat, assume.cladogenetic=assume.cladogenetic)
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01B", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
         }else{
             rates.mat <- matrix(0, 2, 3)
             rates.mat[1,] <- model.vec[c(1, 2, 3)]
@@ -404,6 +405,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
             }
             rownames(rates.mat) <- c("speciation", "extinction")
             colnames(rates.mat) <- c("0", "1", "01")
+            rates.mat <- ParameterTransformGeoSSE(rates.mat, assume.cladogenetic=assume.cladogenetic)
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01")
         }
         obj$rates.mat = rates.mat
@@ -456,16 +458,17 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 15+1, byrow = TRUE)
             obj$tip.mat = matrix(unlist(tip.marginals), ncol = 15+1, byrow = TRUE)
             rates.mat <- matrix(0, 2, 15)
-            rates.mat[1,] <- model.vec[c(1, 2, 3, 24, 25, 26, 47, 48, 49, 70, 71, 72, 93, 94, 95)]
             if(assume.cladogenetic == TRUE){
+                rates.mat[1,] <- model.vec[c(1, 2, 3, 24, 25, 26, 47, 48, 49, 70, 71, 72, 93, 94, 95)]
                 rates.mat[2,] <- c(model.vec[c(4, 5)], 0, model.vec[c(27, 28)], 0, model.vec[c(50, 51)], 0, model.vec[c(73, 74)], 0, model.vec[c(96, 97)], 0)
             }else{
+                rates.mat[1,] <- model.vec[c(1, 2, 3, 25, 26, 27, 49, 50, 51, 73, 74, 75, 97, 98, 99)]
                 rates.mat[2,] <- model.vec[c(4, 5, 6, 28, 29, 30, 52, 53, 54, 76, 77, 78, 100, 101, 102)]
-                
             }
             rownames(rates.mat) <- c("speciation", "extinction")
             colnames(rates.mat) <- c("0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
-            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01C", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0A", "1A", "01A", "0B", "1B", "01B", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+            rates.mat <- ParameterTransformGeoSSE(rates.mat, assume.cladogenetic=assume.cladogenetic)
         }else{
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 3+1, byrow = TRUE)
             obj$tip.mat = cbind(1:Ntip(phy), cache$states)
@@ -479,6 +482,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
             rownames(rates.mat) <- c("speciation", "extinction")
             colnames(rates.mat) <- c("0", "1", "01")
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "0", "1", "01")
+            rates.mat <- ParameterTransformGeoSSE(rates.mat, assume.cladogenetic=assume.cladogenetic)
         }
         obj$rates.mat = rates.mat
         phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
@@ -499,6 +503,67 @@ ParameterTransform <- function(x, y){
     extinction <- (x*y) / (1+y)
     return(c(speciation, extinction))
 }
+
+
+ParameterTransformGeoSSE <- function(x, assume.cladogenetic=TRUE){
+    ## Also need to add the extirpation bit as well to the rate matrix. -- especially if we separate it. It is an event that "represents" extinction of a range. So should it count?
+    if(assume.cladogenetic == TRUE){
+        if(dim(x)[2] == 15){
+            rates.mat <- matrix(0, 3, 15)
+            rownames(rates.mat) <- c("turnover", "net.div", "extinction.fraction")
+            colnames(rates.mat) <- c("0A", "1A", "01A", "0B", "1B", "01B", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+            rates.mat[1,] <- x[1,] + x[2,]
+            rates.mat[2,] <- x[1,] - x[2,]
+            rates.mat[3,] <- x[2,] / x[1,]
+            for(widespread.index in c(3,9,15)){
+                rates.mat[1,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) + sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
+                rates.mat[2,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) - sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
+                rates.mat[3,widespread.index] <- sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)]) / sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)])
+            }
+            rates.mat[3,is.na(rates.mat[3,])] = 0
+        }else{
+            rates.mat <- matrix(0, 3, 3)
+            rownames(rates.mat) <- c("turnover", "net.div", "extinction.fraction")
+            colnames(rates.mat) <- c("0", "1", "01")
+            rates.mat[1,] <- x[1,] + x[2,]
+            rates.mat[2,] <- x[1,] - x[2,]
+            rates.mat[3,] <- x[2,] / x[1,]
+            rates.mat[1,3] <- sum(x[1,c(1,2,3)]) + sum(x[2,c(1,2,3)])
+            rates.mat[2,3] <- sum(x[1,c(1,2,3)]) - sum(x[2,c(1,2,3)])
+            rates.mat[3,3] <- sum(x[2,c(1,2,3)]) / sum(x[1,c(1,2,3)])
+            rates.mat[3,is.na(rates.mat[3,])] = 0
+        }
+    }else{
+        if(dim(x)[2] == 15){
+            rates.mat <- matrix(0, 3, 15)
+            rownames(rates.mat) <- c("turnover", "net.div", "extinction.fraction")
+            colnames(rates.mat) <- c("0A", "1A", "01A", "0B", "1B", "01B", "0C", "1C", "01C", "0D", "1D", "01D", "0E", "1E", "01E")
+            rates.mat[1,] <- x[1,] + x[2,]
+            rates.mat[2,] <- x[1,] - x[2,]
+            rates.mat[3,] <- x[2,] / x[1,]
+            for(widespread.index in c(3,9,15)){
+                rates.mat[1,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) + sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
+                rates.mat[2,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) - sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
+                rates.mat[3,widespread.index] <- sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)]) / sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)])
+            }
+            rates.mat[3,is.na(rates.mat[3,])] = 0
+        }else{
+            rates.mat <- matrix(0, 3, 3)
+            rownames(rates.mat) <- c("turnover", "net.div", "extinction.fraction")
+            colnames(rates.mat) <- c("0", "1", "01")
+            rates.mat[1,] <- x[1,] + x[2,]
+            rates.mat[2,] <- x[1,] - x[2,]
+            rates.mat[3,] <- x[2,] / x[1,]
+            rates.mat[1,3] <- sum(x[1,c(1,2,3)]) + sum(x[2,c(1,2,3)])
+            rates.mat[2,3] <- sum(x[1,c(1,2,3)]) - sum(x[2,c(1,2,3)])
+            rates.mat[3,3] <- sum(x[2,c(1,2,3)]) / sum(x[1,c(1,2,3)])
+            rates.mat[3,is.na(rates.mat[3,])] = 0
+        }
+    }
+    rates.mat <- rbind(x, rates.mat)
+    return(rates.mat)
+}
+
 
 
 print.hisse.states <- function(x,...){

@@ -49,3 +49,6 @@ GetModelAveNodeRates <- function(x){
 	final.df <- data.frame(id=x[[1]]$node.mat[,1], state=states.internal, turnover=rates.tips.turnover, net.div=rates.tips.net.div, speciation=rates.tips.speciation, extinct.frac=rates.tips.extinct.fraction, extinction=rates.tips.extinction)
 	return(final.df)
 }
+
+
+
