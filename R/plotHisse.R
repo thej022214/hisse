@@ -296,6 +296,7 @@ ConvertManyToRate <- function(hisse.results, rate.param, which.element) {
 	AIC.weights <- GetAICWeights(hisse.results)
 	storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
 	for (i in sequence(length(hisse.results))) {
+        print(i)
 		rate.vector <- hisse.results[[i]]$rates.mat[rate.param,]
 		storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=hisse.results[[i]]$rates.mat[rate.param,]))
 	}

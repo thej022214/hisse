@@ -321,7 +321,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
     if(assume.cladogenetic == TRUE){
         cache = ParametersToPassHiGeoSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
     }else{
-        ParametersToPassMuSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
+        cache = ParametersToPassMuSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
     }
     
     nb.tip <- length(phy$tip.label)
