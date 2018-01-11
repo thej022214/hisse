@@ -259,6 +259,22 @@ makeMappedEdge<-function(edge,maps){
 	return(mapped.edge)
 }
 
+MergeAcrossHidden <- function(x) {
+	x.trimmed <- x[,-1]
+	hidden.deleted <- gsub("[^0-9]", "", colnames(x.trimmed))
+	all.observed.states <- unique(hidden.deleted)
+	x.new <- data.frame(matrix(0, nrow=length(x[,1]), ncol=length(all.observed.states)))
+	for (state.index in sequence(length(all.observed.states))) {
+		state.indices <- which(hidden.deleted==all.observed.states[state.index])
+		x.new[,state.index] <- rowSums(data.frame(x.trimmed[,state.indices])) #wrapping in data.frame since it drops to vector if length(state.indices)==1
+	}
+	x.new <- x.new/rowSums(x.new) #normalize
+	rownames(x.new) <- x[,1]
+	colnames(x.new) <- all.observed.states
+	return(x.new)
+}
+
+
 #Get prob of it being 1
 ConvertToBinaryState <- function(x) {
 	x.trimmed <- x[,-1]
@@ -314,6 +330,17 @@ ConvertManyToBinaryState <- function(hisse.results, which.element) {
 	return(final.results)
 }
 
+ConvertManyToMultiState <- function(hisse.results, which.element) {
+	AIC.weights <- GetAICWeights(hisse.results)
+	storage.array <- array(dim=c(nrow(hisse.results[[1]][[which.element]]), length(unique(gsub("[^0-9]", "", colnames(hisse.results[[1]][[which.element]][,-1])))), length(hisse.results)))
+	for (i in sequence(length(hisse.results))) {
+		storage.array[,,i] <- as.matrix(MergeAcrossHidden(x=hisse.results[[i]][[which.element]]))
+	}
+	final.results <- apply(storage.array, c(1,2), weighted.mean, w=AIC.weights)
+	rownames(final.results) <- rownames(hisse.results[[1]][[which.element]])
+	colnames(final.results) <- unique(gsub("[^0-9]", "", colnames(hisse.results[[1]][[which.element]][,-1])))
+	return(final.results)
+}
 
 GetAICWeights <- function(hisse.results) {
 	AIC.vector <- sapply(hisse.results, "[[", "aic")
