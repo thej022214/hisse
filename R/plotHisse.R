@@ -147,6 +147,83 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 	return(list(rate.tree=rate.tree, state.tree=state.tree))
 }
 
+
+plot.higeosse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width.rate=5, edge.width.state=2, type="fan", rate.range=NULL, show.tip.label=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3", ...) {
+	hisse.results <- x
+	if(class(hisse.results)=="hisse.geosse.states") { #we have to make a list so we can run this generally
+		if(is.null(hisse.results$aic)){
+			#If a user forgot to include the aic, then we add a random value in for them
+			hisse.results$aic = 42
+		}
+		tmp.list <- list()
+		tmp.list[[1]] <- hisse.results
+		hisse.results <- tmp.list
+	}
+	par(fig=c(0,1, 0, 1), new=FALSE)
+	if(is.null(rate.colors)) {
+		rate.colors <- c("blue", "red")
+	}
+	if(is.null(state.colors)) {
+		state.colors <- c("white", "black", "grey")
+	}
+    rates.tips <- hisse:::ConvertManyToRate(hisse.results, rate.param, "tip.mat")
+    rates.internal <- hisse:::ConvertManyToRate(hisse.results, rate.param, "node.mat")
+	states.tips <- NA
+	states.internal <- NA
+	if (do.observed.only) {
+        states.tips <- hisse:::ConvertManyToMultiState(hisse.results, "tip.mat")
+        states.internal <- hisse:::ConvertManyToMultiState(hisse.results, "node.mat")
+	} else {
+		stop("So far we can easily plot just the binary observed state; if you want to plot the hidden states, use a different function")
+	}
+	tree.to.plot <- hisse.results[[1]]$phy
+	if(!show.tip.label) { #this is b/c you cannot suppress plotting tip labels in phytools plotSimmap
+		rep.rev <- function(x, y) {
+			result<-paste(rep(y,x), collapse="", sep="")
+			return(result)
+		}
+		tree.to.plot$tip.label <- sapply(sequence(length(tree.to.plot$tip.label)), rep.rev, " ")
+		fsize=0
+	}
+#	rate.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToRate(hisse.object$tip.mat, rate.vector= rate.vector), plot=FALSE, anc.states=ConvertToRate(hisse.object$node.mat, rate.vector= rate.vector), ...)
+	rate.lims <- range(c(rates.tips, rates.internal))
+	if(!is.null(rate.range)) {
+		if(min(rate.range) > min(rate.lims) | max(rate.range) < max(rate.lims)) {
+			warning(paste("Did not override rate.lims: the specified rate.range (", rate.range[1], ", ", rate.range[2], ") did not contain all the values for the observed rates (", rate.lims[1], ", ", rate.lims[2], ")"))
+		} else {
+			rate.lims <- rate.range
+		}
+	}
+	rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
+	rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
+
+    rate.tree <- hisse:::contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
+	#change colors
+	rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
+	rate.tree$cols[] <- rate.colors
+	#rate.tree$cols[] <- adjustcolor(rate.tree$cols[], alpha.f=0.3)
+	plot(rate.tree, outline=FALSE, lwd=edge.width.rate, legend=FALSE, type=type, fsize=fsize, ...)
+	par(fig=c(0,1, 0, 1), new=TRUE)
+	#state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
+
+##### NEW STUFF ######
+    states.tips.tmp <- rowSums(states.tips %*% c(0,1,2))
+    names(states.tips.tmp) <- 1:length(states.tips.tmp)
+    states.internal.tmp <- rowSums(states.internal %*% c(0,1,2))
+    names(states.internal.tmp) <- (length(states.tips.tmp)+1):(length(states.internal.tmp)+length(states.tips.tmp))
+    state.lims <- range(c(states.tips.tmp, states.internal.tmp))
+    state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
+    state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
+    state.tree <- hisse:::contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims, ...)
+    #state.colors <- grey(seq(1,0,length.out=length(state.tree$cols)))
+    state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
+    state.tree$cols[]<- state.colors
+    plot(state.tree, outline=FALSE, lwd=edge.width.state, legend=FALSE, type=type, fsize=fsize, ...)
+######################
+
+	return(list(rate.tree=rate.tree, state.tree=state.tree))
+}
+
 GetNormalizedDensityPlot <- function(x, limits, kernel, min.breaks=100) {
 	x.density <- c()
 
