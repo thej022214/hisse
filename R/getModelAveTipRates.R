@@ -1,10 +1,16 @@
-GetModelAveTipRates <- function(x){
+GetModelAveTipRates <- function(x, AIC.weights=NULL){
     hisse.results <- x
 
     if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states' or 'hisse.geosse.states'.")
 
     ## If hisse.results is a list of model reconstructions, then test if they have $aic. Return error message otherwise.
     if(class(hisse.results) == "list"){
+        if( !is.null( AIC.weights ) ){
+            if( !length(hisse.results) == length(AIC.weights) ){
+                stop( " AIC.weights needs to be NULL or a numeric vector with length equal to the number of models in 'x'. " )
+            }
+            
+        }
         empty.aic <- sapply(hisse.results, function(x) !is.null(x$aic) )
         if( as.logical( sum( empty.aic ) ) ) stop("All elements of the list need to have a '$aic' element.")
         model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states")) )
@@ -12,6 +18,10 @@ GetModelAveTipRates <- function(x){
     }
 
     if( inherits(hisse.results, what = c("hisse.states", "hisse.geosse.states")) ){ # we have to make a list so we can run this generally
+        if( !is.null( AIC.weights ) ){
+            stop( "If using a single model, then 'AIC.weights' needs to be NULL. " )
+        }
+        
         if(is.null(hisse.results$aic)){
             ## If a user forgot to include the aic, then we add a random value in for them
             hisse.results$aic = 42
@@ -21,31 +31,37 @@ GetModelAveTipRates <- function(x){
         hisse.results <- tmp.list
     }
     
-    rates.tips.turnover <- ConvertManyToRate(hisse.results, rate.param="turnover", "tip.mat")
-    rates.tips.net.div <- ConvertManyToRate(hisse.results, rate.param="net.div", "tip.mat")
-    rates.tips.speciation <- ConvertManyToRate(hisse.results, rate.param="speciation", "tip.mat")
-    rates.tips.extinct.fraction <- ConvertManyToRate(hisse.results, rate.param="extinction.fraction", "tip.mat")
-    rates.tips.extinction <- ConvertManyToRate(hisse.results, rate.param="extinction", "tip.mat")
+    rates.tips.turnover <- ConvertManyToRate(hisse.results, rate.param="turnover", which.element="tip.mat", AIC.weights=AIC.weights)
+    rates.tips.net.div <- ConvertManyToRate(hisse.results, rate.param="net.div", which.element="tip.mat", AIC.weights=AIC.weights)
+    rates.tips.speciation <- ConvertManyToRate(hisse.results, rate.param="speciation", which.element="tip.mat", AIC.weights=AIC.weights)
+    rates.tips.extinct.fraction <- ConvertManyToRate(hisse.results, rate.param="extinction.fraction", which.element="tip.mat", AIC.weights=AIC.weights)
+    rates.tips.extinction <- ConvertManyToRate(hisse.results, rate.param="extinction", which.element="tip.mat", AIC.weights=AIC.weights)
     
     ## Objects will always be of list class here.
     if(class(hisse.results[[1]])=="hisse.states"){
-        states.tips <- ConvertManyToBinaryState(hisse.results, "tip.mat")
+        states.tips <- ConvertManyToBinaryState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
     }
     if(class(hisse.results[[1]])=="hisse.geosse.states"){
-        states.tips <- ConvertManyToMultiState(hisse.results, "tip.mat")
+        states.tips <- ConvertManyToMultiState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
     }
 
     final.df <- data.frame(taxon=hisse.results[[1]]$phy$tip.label, state=states.tips, turnover=rates.tips.turnover, net.div=rates.tips.net.div, speciation=rates.tips.speciation, extinct.frac=rates.tips.extinct.fraction, extinction=rates.tips.extinction)
     return(final.df)
 }
 
-GetModelAveNodeRates <- function(x){
+GetModelAveNodeRates <- function(x, AIC.weights=NULL){
     hisse.results <- x
 
     if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states' or 'hisse.geosse.states'.")
 
     ## If hisse.results is a list of model reconstructions, then test if they have $aic. Return error message otherwise.
     if(class(hisse.results) == "list"){
+        if( !is.null( AIC.weights ) ){
+            if( !length(hisse.results) == length(AIC.weights) ){
+                stop( " AIC.weights needs to be NULL or a numeric vector with length equal to the number of models in 'x'. " )
+            }
+            
+        }
         empty.aic <- sapply(hisse.results, function(x) !is.null(x$aic) )
         if( as.logical( sum( empty.aic ) ) ) stop("All elements of the list need to have a '$aic' element.")
         model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states")) )
@@ -53,6 +69,10 @@ GetModelAveNodeRates <- function(x){
     }
 
     if( inherits(hisse.results, what = c("hisse.states", "hisse.geosse.states")) ){ # we have to make a list so we can run this generally
+        if( !is.null( AIC.weights ) ){
+            stop( "If using a single model, then 'AIC.weights' needs to be NULL. " )
+        }
+        
         if(is.null(hisse.results$aic)){
             ## If a user forgot to include the aic, then we add a random value in for them
             hisse.results$aic = 42
@@ -62,18 +82,18 @@ GetModelAveNodeRates <- function(x){
         hisse.results <- tmp.list
     }
     
-    rates.tips.turnover <- ConvertManyToRate(hisse.results, rate.param="turnover", "node.mat")
-    rates.tips.net.div <- ConvertManyToRate(hisse.results, rate.param="net.div", "node.mat")
-    rates.tips.speciation <- ConvertManyToRate(hisse.results, rate.param="speciation", "node.mat")
-    rates.tips.extinct.fraction <- ConvertManyToRate(hisse.results, rate.param="extinction.fraction", "node.mat")
-    rates.tips.extinction <- ConvertManyToRate(hisse.results, rate.param="extinction", "node.mat")
+    rates.tips.turnover <- ConvertManyToRate(hisse.results, rate.param="turnover", which.element="node.mat", AIC.weights=AIC.weights)
+    rates.tips.net.div <- ConvertManyToRate(hisse.results, rate.param="net.div", which.element="node.mat", AIC.weights=AIC.weights)
+    rates.tips.speciation <- ConvertManyToRate(hisse.results, rate.param="speciation", which.element="node.mat", AIC.weights=AIC.weights)
+    rates.tips.extinct.fraction <- ConvertManyToRate(hisse.results, rate.param="extinction.fraction", which.element="node.mat", AIC.weights=AIC.weights)
+    rates.tips.extinction <- ConvertManyToRate(hisse.results, rate.param="extinction", which.element="node.mat", AIC.weights=AIC.weights)
 
     ## Objects will always be of list class here.
     if(class(hisse.results[[1]])=="hisse.states"){
-        states.internal <- ConvertManyToBinaryState(hisse.results, "node.mat")
+        states.internal <- ConvertManyToBinaryState(hisse.results, "node.mat", AIC.weights=AIC.weights)
     }
     if(class(hisse.results[[1]])=="hisse.geosse.states"){
-        states.internal <- ConvertManyToMultiState(hisse.results, "node.mat")
+        states.internal <- ConvertManyToMultiState(hisse.results, "node.mat", AIC.weights=AIC.weights)
     }
     
     final.df <- data.frame(id=hisse.results[[1]]$node.mat[,1], state=states.internal, turnover=rates.tips.turnover, net.div=rates.tips.net.div, speciation=rates.tips.speciation, extinct.frac=rates.tips.extinct.fraction, extinction=rates.tips.extinction)

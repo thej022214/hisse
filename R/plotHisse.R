@@ -308,9 +308,11 @@ ConvertToRate <- function(x, rate.vector) {
 }
 
 
-ConvertManyToRate <- function(hisse.results, rate.param, which.element) {
-	AIC.weights <- GetAICWeights(hisse.results)
-	storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
+ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weights) {
+        if( is.null(AIC.weights) ){
+            AIC.weights <- GetAICWeights(hisse.results)
+        }
+        storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
 	for (i in sequence(length(hisse.results))) {
 		rate.vector <- hisse.results[[i]]$rates.mat[rate.param,]
 		storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=hisse.results[[i]]$rates.mat[rate.param,]))
@@ -320,8 +322,10 @@ ConvertManyToRate <- function(hisse.results, rate.param, which.element) {
 }
 
 
-ConvertManyToBinaryState <- function(hisse.results, which.element) {
-	AIC.weights <- GetAICWeights(hisse.results)
+ConvertManyToBinaryState <- function(hisse.results, which.element, AIC.weights) {
+        if( is.null(AIC.weights) ){
+             AIC.weights <- GetAICWeights(hisse.results)
+        }
 	storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
 	for (i in sequence(length(hisse.results))) {
 		storage.matrix <- cbind(storage.matrix, ConvertToBinaryState(x=hisse.results[[i]][[which.element]]))
@@ -330,8 +334,10 @@ ConvertManyToBinaryState <- function(hisse.results, which.element) {
 	return(final.results)
 }
 
-ConvertManyToMultiState <- function(hisse.results, which.element) {
-	AIC.weights <- GetAICWeights(hisse.results)
+ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights) {
+        if( is.null(AIC.weights) ){
+             AIC.weights <- GetAICWeights(hisse.results)
+        }
 	storage.array <- array(dim=c(nrow(hisse.results[[1]][[which.element]]), length(unique(gsub("[^0-9]", "", colnames(hisse.results[[1]][[which.element]][,-1])))), length(hisse.results)))
 	for (i in sequence(length(hisse.results))) {
 		storage.array[,,i] <- as.matrix(MergeAcrossHidden(x=hisse.results[[i]][[which.element]]))
