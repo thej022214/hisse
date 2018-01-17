@@ -1,7 +1,16 @@
-
-
 GetModelAveTipRates <- function(x){
     hisse.results <- x
+
+    if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states' or 'hisse.geosse.states'.")
+
+    ## If hisse.results is a list of model reconstructions, then test if they have $aic. Return error message otherwise.
+    if(class(hisse.results) == "list"){
+        empty.aic <- sapply(hisse.results, function(x) !is.null(x$aic) )
+        if( as.logical( sum( empty.aic ) ) ) stop("All elements of the list need to have a '$aic' element.")
+        model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states")) )
+        if( as.logical( sum( model.class ) ) ) stop("x needs to be a list of model reconstruction with class 'hisse.states' or 'hisse.geosse.states' ")
+    }
+
     if(class(hisse.results)=="hisse.states") { #we have to make a list so we can run this generally
         if(is.null(hisse.results$aic)){
             #If a user forgot to include the aic, then we add a random value in for them
@@ -28,13 +37,15 @@ GetModelAveTipRates <- function(x){
     rates.tips.extinct.fraction <- ConvertManyToRate(hisse.results, rate.param="extinction.fraction", "tip.mat")
     rates.tips.extinction <- ConvertManyToRate(hisse.results, rate.param="extinction", "tip.mat")
     
-    if(class(hisse.results)=="hisse.states"){
+    ## Objects will always be of list class here.
+    if(class(hisse.results[[1]])=="hisse.states"){
         states.tips <- ConvertManyToBinaryState(hisse.results, "tip.mat")
-    }else{
+    }
+    if(class(hisse.results[[1]])=="hisse.geosse.states"){
         states.tips <- ConvertManyToMultiState(hisse.results, "tip.mat")
     }
-    
-    final.df <- data.frame(taxon=x[[1]]$phy$tip.label, state=states.tips, turnover=rates.tips.turnover, net.div=rates.tips.net.div, speciation=rates.tips.speciation, extinct.frac=rates.tips.extinct.fraction, extinction=rates.tips.extinction)
+
+    final.df <- data.frame(taxon=hisse.results[[1]]$phy$tip.label, state=states.tips, turnover=rates.tips.turnover, net.div=rates.tips.net.div, speciation=rates.tips.speciation, extinct.frac=rates.tips.extinct.fraction, extinction=rates.tips.extinction)
     return(final.df)
 }
 
