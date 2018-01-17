@@ -385,7 +385,7 @@ ConvertToRate <- function(x, rate.vector) {
 }
 
 
-ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weights) {
+ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weights=NULL) {
         if( is.null(AIC.weights) ){
             AIC.weights <- GetAICWeights(hisse.results)
         }
@@ -399,7 +399,7 @@ ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weig
 }
 
 
-ConvertManyToBinaryState <- function(hisse.results, which.element, AIC.weights) {
+ConvertManyToBinaryState <- function(hisse.results, which.element, AIC.weights=NULL) {
         if( is.null(AIC.weights) ){
              AIC.weights <- GetAICWeights(hisse.results)
         }
@@ -411,7 +411,7 @@ ConvertManyToBinaryState <- function(hisse.results, which.element, AIC.weights) 
 	return(final.results)
 }
 
-ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights) {
+ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights=NULL) {
         if( is.null(AIC.weights) ){
              AIC.weights <- GetAICWeights(hisse.results)
         }
