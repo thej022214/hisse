@@ -12,7 +12,7 @@ GetModelAveTipRates <- function(x, AIC.weights=NULL){
             
         }
         empty.aic <- sapply(hisse.results, function(x) !is.null(x$aic) )
-        if( as.logical( sum( empty.aic ) ) ) stop("All elements of the list need to have a '$aic' element.")
+        if( sum( empty.aic ) != length(hisse.results) ) stop("All elements of the list need to have a '$aic' element.")
         model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states")) )
         if( as.logical( sum( model.class ) ) ) stop("x needs to be a list of model reconstruction with class 'hisse.states' or 'hisse.geosse.states' ")
     }
@@ -63,7 +63,7 @@ GetModelAveNodeRates <- function(x, AIC.weights=NULL){
             
         }
         empty.aic <- sapply(hisse.results, function(x) !is.null(x$aic) )
-        if( as.logical( sum( empty.aic ) ) ) stop("All elements of the list need to have a '$aic' element.")
+        if( sum( empty.aic ) != length(hisse.results) ) stop("All elements of the list need to have a '$aic' element.")
         model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states")) )
         if( as.logical( sum( model.class ) ) ) stop("x needs to be a list of model reconstruction with class 'hisse.states' or 'hisse.geosse.states' ")
     }
