@@ -16,8 +16,8 @@ trans.upper=100, ode.eps=0)
     with internal nodes labeled denoting the ancestral selective regimes.}
 \item{data}{a matrix (or dataframe) with two columns containing species
   information. First column has the species names and second column has
-  area codes. Values for the areas need to be 0, 1, or 2, where 0 is
-  area A, 1 is area B and 2 is the widespread area AB. See 'Details'.}
+  area codes. Values for the areas need to be 0, 1, or 2, where 0 is the 
+  widespread area AB, 1 is area A and 2 is area B. See 'Details'.}
 \item{f}{vector of length 3 with the estimated proportion of extant
   species in areas 0 (or AB), 1 (or A), and 2 (or B) that are included
   in the phylogeny. A value of c(0.25, 0.25, 0.5) means that 25 percent
@@ -79,8 +79,8 @@ optimization procedures. As for data file format, \code{HiGeoSSE}
 expects a two column matrix or data frame, with the first column
 containing the species names and the second containing the are
 information. The area information need to be in the format of three
-numbers: 0 for area A, 1 for area B, and 2 for widespread area (i.e.,
-AB). Please note that the code for the areas here differ from the
+numbers: 0 for area AB, 1 for area A, and 2 for B. Please note that 
+the code for the areas here differ from the
 \code{make.geosse} function of package \code{diversitree}.
 The order of the data file and the names in the
 \dQuote{phylo} object need not be in the same order; \code{hisse} deals
