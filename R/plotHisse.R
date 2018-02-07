@@ -164,7 +164,7 @@ plot.higeosse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
 		rate.colors <- c("blue", "red")
 	}
 	if(is.null(state.colors)) {
-		state.colors <- c("white", "black", "grey")
+		state.colors <- c("white", "black", "yellow")
 	}
     rates.tips <- hisse:::ConvertManyToRate(hisse.results, rate.param, "tip.mat")
     rates.internal <- hisse:::ConvertManyToRate(hisse.results, rate.param, "node.mat")
