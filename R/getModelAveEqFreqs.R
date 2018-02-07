@@ -5,9 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-library(deSolve)
-
-GetModelAveEqFreqs <- function(x, T){
+GetModelAveEqFreqs <- function(x, max.time){
     res <- c()
     higeosse.results <- x
     if(class(higeosse.results)!="list") { #we have to make a list so we can run this generally
@@ -21,7 +19,7 @@ GetModelAveEqFreqs <- function(x, T){
         }else{
             cache = hisse:::ParametersToPassMuSSE(higeosse.results[[model.index]]$phy, higeosse.results[[model.index]]$data[,2], model.vec=higeosse.results[[model.index]]$solution, f=higeosse.results[[model.index]]$f, hidden.states=TRUE)
         }
-        out <- lsoda(c(state0A=1,state1A=0,state01A=0, state0B=0,state1B=0,state01B=0, state0C=0,state1C=0,state01C=0, state0D=0,state1D=0,state01D=0, state0E=0,state1E=0,state01E=0), times=c(0,T), func=EqFreqsHiGeoSSE, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
+        out <- lsoda(c(state0A=1,state1A=0,state01A=0, state0B=0,state1B=0,state01B=0, state0C=0,state1C=0,state01C=0, state0D=0,state1D=0,state01D=0, state0E=0,state1E=0,state01E=0), times=c(0,max.time), func=EqFreqsHiGeoSSE, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
         out.mat <- t(matrix(out, 3, 5))
         colnames(out.mat) <- c("0", "1", "01")
         res <- rbind(res, colSums(out.mat)/sum(out.mat))
