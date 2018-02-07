@@ -34,6 +34,7 @@ GetModelAveEqFreqs <- function(x, max.time){
         }
         out.mat <- t(matrix(out, 3, 5))
         colnames(out.mat) <- c("0", "1", "01")
+        print(paste("Index", model.index))
         print(out.mat)
         res <- rbind(res, colSums(out.mat)/sum(out.mat))
     }
