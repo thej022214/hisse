@@ -1,11 +1,10 @@
 \name{Model averaged rates}
-\alias{GetModelAveTipRates}
-\alias{GetModelAveNodeRates}
+\alias{GetModelAveRates}
 \title{Model average rates at tips and nodes}
 \description{Summarizes reconstructions from a single model or a set of models and returns model averaged rates.}
 \usage{
-GetModelAveTipRates(x, AIC.weights=NULL)
-GetModelAveNodeRates(x, AIC.weights=NULL)
+GetModelAveRates(x, AIC.weights=NULL, type=c("tips", "nodes", "both"),
+bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000)) )
 }       
 \arguments{
 \item{x}{a \code{hisse.states} object, a \code{hisse.states.geosse}
@@ -16,6 +15,17 @@ GetModelAveNodeRates(x, AIC.weights=NULL)
   averaged. If 'AIC.weights==NULL' (the default value) then function
   will compute the AICw for the models in the set from the $aic value
   for each model.}
+\item{type}{one of "tips", "nodes", or "both" (the default). This
+  controls whether only the averaged rates for the tips, nodes or both
+  should be returned. If tips or nodes is chosen the output will be a
+  matrix and if both are returned the output will be a list.}
+\item{bound.par.matrix}{A numeric matrix with exactly 5 rows and 2
+  columns to set the limits for the model parameters. First column is
+  the minimum value and second column is the maximum value (both
+  inclusive). The rows are the model parameter in this fixed order:
+  turnover, net diversification, speciation, extinction fraction, and
+  extinction. WARNING: The function will not check for errors in the format of this
+  matrix!!}
 }
 \details{
 Provides a data frame model-averaged rates for all possible configurations of the model parameters (i.e., turnover, net.div, speciation, extinction, or extinction.fraction), either for all tips or for all nodes.
