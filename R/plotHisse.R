@@ -374,28 +374,65 @@ ConvertToBinaryState <- function(x) {
 
 
 ConvertToRate <- function(x, rate.vector) {
-	x.trimmed <- x[,-1]
-	x.trimmed <- x.trimmed / rowSums(x.trimmed) #normalize to 1 (which it should be already)
-	result.vector <- rep(0, dim(x.trimmed)[1])
-	for (i in sequence(dim(x.trimmed)[2])) {
-		result.vector <- result.vector + rate.vector[i] * x.trimmed[,i]	#get weighted mean
-	}
-	names(result.vector) <- x[,1]
-	return(result.vector)
+    x.trimmed <- x[,-1]
+    ## Here is the problem!! This will cause the division by infinite!
+    x.trimmed <- x.trimmed / rowSums(x.trimmed) #normalize to 1 (which it should be already)
+    result.vector <- rep(0, dim(x.trimmed)[1])
+    for (i in sequence(dim(x.trimmed)[2])) {
+        result.vector <- result.vector + rate.vector[i] * x.trimmed[,i]	#get weighted mean
+    }
+    names(result.vector) <- x[,1]
+    return(result.vector)
 }
 
-
 ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weights=NULL) {
-        if( is.null(AIC.weights) ){
-            AIC.weights <- GetAICWeights(hisse.results)
-        }
-        storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
-	for (i in sequence(length(hisse.results))) {
-		rate.vector <- hisse.results[[i]]$rates.mat[rate.param,]
-		storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=hisse.results[[i]]$rates.mat[rate.param,]))
-	}
-	final.results <- apply(storage.matrix, 1, weighted.mean, w=AIC.weights)
-	return(final.results)
+    if( is.null(AIC.weights) ){
+        AIC.weights <- GetAICWeights(hisse.results)
+    }
+    storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
+    for (i in sequence(length(hisse.results))) {
+        rate.vector <- hisse.results[[i]]$rates.mat[rate.param,]
+        storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=rate.vector))
+    }
+    final.results <- apply(storage.matrix, 1, weighted.mean, w=AIC.weights)
+    return(final.results)
+}
+
+CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix){
+    ## Check if every column of the matrices in the list x is within the bounds set to the each of the parameters.
+    ## Drop all the models that are not. Models are the columns in each of the matrices in the list x.
+
+    check.keep.mod <- matrix(nrow = 5, ncol = n.models)
+    for( i in 1:5 ){
+        lim.range <- bound.par.matrix[i, ]
+        check.keep.mod[i,] <- apply(x[[i]], 2, function(y) all( y >= lim.range[1] & y <= lim.range[2] ) )
+    }
+    ## Check if all parameters for the particular model to be averaged are within the bounds.
+    keep.mod <- apply(check.keep.mod, 2, all)
+    if( !all(keep.mod) ){
+        warning( paste0(" Models in position ", paste(which(!keep.mod), collapse=", ")," have parameters outside the bounds defined by 'bound.matrix' argument. These will NOT be included in the reconstruction.") )
+    }
+    if( sum( keep.mod ) > 1 ){
+        final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, weighted.mean, w=AIC.weights[keep.mod]) )
+    }
+    if( sum( keep.mod ) == 1 ){
+        final.results <- lapply(x, function(y) y[,keep.mod]) ## No need to make the weighted.mean
+    }
+    if( sum( keep.mod ) < 1 ) stop( "No models left to reconstruct! Check if parameter estimates for models are outside the bounds defined by 'bound.matrix'." )
+    return( final.results )
+}
+
+ConvertManyToRate_ModelAve <- function(hisse.results, rate.param, which.element) {
+    storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
+    for (i in sequence(length(hisse.results))) {
+        rate.vector <- hisse.results[[i]]$rates.mat[rate.param,]
+        ## Some cases can have 'Inf' values for the rate.vector. This will produce NAs.
+        ## Will happen in the case of problem with 0 speciation values. In the vector for extinction fraction.
+        ## Need to check if the rate vector has some 'NA', 'NaN', or 'Inf'. Do something about it and throw a warning message.
+        if( any( is.infinite( rate.vector ) ) ) stop( paste0("One or more values for ", rate.param, " are 'Inf'. Check model parameters." ) )
+        storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=rate.vector))
+    }
+    return(storage.matrix)
 }
 
 
