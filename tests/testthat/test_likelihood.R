@@ -271,7 +271,7 @@ test_that("HiGeoSSE_test5", {
     model.vec[1:46] <- order.pars
     
     sim.data$phy$node.label <- NULL
-    cache <-  ParametersToPassHiGeoSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
+    cache <- ParametersToPassHiGeoSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
     higeosse.full <- DownPassHiGeosse(phy=sim.data$phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
     comparison <- identical(round(higeosse.full,4), round(classe.full,4))
     expect_true(comparison)

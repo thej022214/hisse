@@ -658,8 +658,9 @@ DownPassHiGeosse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
 	}
 	if(get.phi==TRUE){
 		obj = NULL
-		obj$compD.root = compD[root.node,]
+        obj$compD.root = compD[root.node,]/sum(compD[root.node,])
 		obj$compE = compE
+        obj$root.p = root.p
 		return(obj)
 	}else{
 		return(loglik)
@@ -891,8 +892,9 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
     }
     if(get.phi==TRUE){
         obj = NULL
-        obj$compD.root = compD[root.node,]
+        obj$compD.root = compD[root.node,]/sum(compD[root.node,])
         obj$compE = compE
+        obj$root.p = root.p
         return(obj)
     }else{
         return(loglik)

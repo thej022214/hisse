@@ -164,15 +164,15 @@ plot.higeosse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
 		rate.colors <- c("blue", "red")
 	}
 	if(is.null(state.colors)) {
-		state.colors <- c("white", "black", "grey")
+		state.colors <- c("white", "black", "yellow")
 	}
-    rates.tips <- hisse:::ConvertManyToRate(hisse.results, rate.param, "tip.mat")
-    rates.internal <- hisse:::ConvertManyToRate(hisse.results, rate.param, "node.mat")
+    rates.tips <- ConvertManyToRate(hisse.results, rate.param, "tip.mat")
+    rates.internal <- ConvertManyToRate(hisse.results, rate.param, "node.mat")
 	states.tips <- NA
 	states.internal <- NA
 	if (do.observed.only) {
-        states.tips <- hisse:::ConvertManyToMultiState(hisse.results, "tip.mat")
-        states.internal <- hisse:::ConvertManyToMultiState(hisse.results, "node.mat")
+        states.tips <- ConvertManyToMultiState(hisse.results, "tip.mat")
+        states.internal <- ConvertManyToMultiState(hisse.results, "node.mat")
 	} else {
 		stop("So far we can easily plot just the binary observed state; if you want to plot the hidden states, use a different function")
 	}
@@ -197,7 +197,7 @@ plot.higeosse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
 	rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
 	rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
 
-    rate.tree <- hisse:::contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
+    rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
 	#change colors
 	rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
 	rate.tree$cols[] <- rate.colors
@@ -214,7 +214,7 @@ plot.higeosse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     state.lims <- range(c(states.tips.tmp, states.internal.tmp))
     state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
     state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
-    state.tree <- hisse:::contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims, ...)
+    state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims, ...)
     #state.colors <- grey(seq(1,0,length.out=length(state.tree$cols)))
     state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
     state.tree$cols[]<- state.colors
