@@ -80,7 +80,6 @@ AdaptiveConfidenceIntervalSamplingHiGeoSSE <- function(par, lower, upper, desire
             sim.points <- GenerateValues(par, lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE))
         }
         par <- sim.points
-        print(par)
         model.vec <- numeric(length(index.par))
         model.vec[] <- c(sim.points,0)[index.par]
         if(assume.cladogenetic == TRUE){
