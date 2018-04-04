@@ -4,13 +4,14 @@
 \description{Adaptively samples points for each parameter to obtain an estimate of the confidence intervals.}
 \usage{
 SupportRegionGeoSSE(higeosse.obj, n.points=1000, scale.int=0.1, desired.delta=2, 
-verbose=TRUE)
+min.number.points=10. verbose=TRUE)
 }       
 \arguments{
 \item{higeosse.obj}{an object of class \code{higeosse.fit} that contains the MLE from a model run.}
 \item{n.points}{indicates the number of points to sample.}
 \item{scale.int}{the scaling multiplier that defines interval to randomly sample. By default the value is set to 0.1, meaning that values are drawn at random along an interval that encompasses 10 percent above and below the MLE.}
 \item{desired.delta}{defines the number lnL units away from the MLE to include. By default the value is set to 2.} 
+\item{min.number.points}{sets the minimum number of points that can be returned. By default the value is set to 10.}
 \item{verbose}{a logical indicating whether progress should be printed to the screen. The default is \code{TRUE}.}
 }
 \details{
