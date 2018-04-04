@@ -3,7 +3,7 @@
 \title{Model average equlibrium frequencies}
 \description{Calculates the expected equilibrium frequencies under various geographic models from a single model or a set of models and returns model averaged frequencies.}
 \usage{
-GetModelAveEqFreqs(x, max.time)
+GetModelAveEqFreqs(x, max.time, model.type="hisse")
 }       
 \arguments{
 \item{x}{a \code{higeosse.fit} object, or a list of such objects. 

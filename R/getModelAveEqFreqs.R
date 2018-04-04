@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-GetModelAveEqFreqs <- function(x, max.time, model.type=c("hisse", "higeosse")){
+GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
     
     if(model.type == "hisse"){
         res <- c()
@@ -36,7 +36,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type=c("hisse", "higeosse")){
                 data.new <- data.new[hisse.results[[model.index]]$phy$tip.label,]
                 cache = ParametersToPassNull(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f)
                 if(hisse.results[[model.index]]$root.type=="madfitz"){
-                    get.starting.probs <- DownPassNull(phy=hisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
+                    get.starting.probs <- DownPassNull(phy=hisse.results[[model.index]]$phy, cache=cache, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }else{
                     get.starting.probs <- hisse.results[[model.index]]$root.p
                 }
@@ -112,10 +112,10 @@ EqFreqCID4 <- function(t, y, parms, cache){
     dN1BdT = cache$lambda1B * y[4] - cache$death1B * y[4] - cache$q1B0A * y[4] - cache$q1B1A * y[4] - cache$q1B0B * y[4] - cache$q1B0C * y[4] - cache$q1B1C * y[4] - cache$q1B0D * y[4] - cache$q1B1D * y[4] + cache$q0A1B * y[1] + cache$q1A1B * y[2] + cache$q0B1B * y[3] + cache$q0C1B * y[5] + cache$q1C1B * y[6] + cache$q0D1B * y[7] + cache$q1D1B * y[8]
     dN0CdT = cache$lambda0C * y[5] - cache$death0C * y[5] - cache$q0C0A * y[5] - cache$q0C1A * y[5] - cache$q0C1B * y[5] - cache$q0C0B * y[5] - cache$q0C1C * y[5] - cache$q0C0D * y[5] - cache$q0C1D * y[5] + cache$q0A0C * y[1] + cache$q1A0C * y[2] + cache$q0B0C * y[3] + cache$q1B0C * y[4] + cache$q1C0C * y[6] + cache$q0D0C * y[7] + cache$q1D0C * y[8]
     dN1CdT = cache$lambda1C * y[6] - cache$death1C * y[6] - cache$q1C0A * y[6] - cache$q1C1A * y[6] - cache$q1C0B * y[6] - cache$q1C0C * y[6] - cache$q1C1B * y[6] - cache$q1C0D * y[6] - cache$q1C1D * y[6] + cache$q0A1C * y[1] + cache$q1A1C * y[2] + cache$q0B1C * y[3] + cache$q1B1C * y[4] + cache$q0C1C * y[5] + cache$q0D1C * y[7] + cache$q1D1C * y[8]
-    dN0CdT = cache$lambda0D * y[7] - cache$death0D * y[7] - cache$q0D0A * y[7] - cache$q0D1A * y[7] - cache$q0D1B * y[7] - cache$q0D0B * y[7] - cache$q0D1C * y[7] - cache$q0D0C * y[7] - cache$q0D1D * y[7] + cache$q0A0D * y[1] + cache$q1A0D * y[2] + cache$q0B0D * y[3] + cache$q1B0D * y[4] + cache$q0C0D * y[5] + cache$q1C0D * y[6] + cache$q1D0D * y[8]
-    dN1CdT = cache$lambda1D * y[8] - cache$death1D * y[8] - cache$q1D0A * y[8] - cache$q1D1A * y[8] - cache$q1D0B * y[8] - cache$q1D1B * y[8] - cache$q1D0C * y[8] - cache$q1D1C * y[8] - cache$q1D0D * y[8] + cache$q0A1D * y[1] + cache$q1A1D * y[2] + cache$q0B1D * y[3] + cache$q1B1D * y[4] + cache$q0C1D * y[5] + cache$q1C1D * y[6] + cache$q0D1D * y[7]
+    dN0DdT = cache$lambda0D * y[7] - cache$death0D * y[7] - cache$q0D0A * y[7] - cache$q0D1A * y[7] - cache$q0D1B * y[7] - cache$q0D0B * y[7] - cache$q0D1C * y[7] - cache$q0D0C * y[7] - cache$q0D1D * y[7] + cache$q0A0D * y[1] + cache$q1A0D * y[2] + cache$q0B0D * y[3] + cache$q1B0D * y[4] + cache$q0C0D * y[5] + cache$q1C0D * y[6] + cache$q1D0D * y[8]
+    dN1DdT = cache$lambda1D * y[8] - cache$death1D * y[8] - cache$q1D0A * y[8] - cache$q1D1A * y[8] - cache$q1D0B * y[8] - cache$q1D1B * y[8] - cache$q1D0C * y[8] - cache$q1D1C * y[8] - cache$q1D0D * y[8] + cache$q0A1D * y[1] + cache$q1A1D * y[2] + cache$q0B1D * y[3] + cache$q1B1D * y[4] + cache$q0C1D * y[5] + cache$q1C1D * y[6] + cache$q0D1D * y[7]
     
-    return(list(c(dN0AdT,dN1AdT, dN0BdTdT,dN1BdT, dN0CdTdT,dN1CdT, dN0DdT,dN1DdT)))
+    return(list(c(dN0AdT,dN1AdT, dN0BdT,dN1BdT, dN0CdT,dN1CdT, dN0DdT,dN1DdT)))
 }
 
 
