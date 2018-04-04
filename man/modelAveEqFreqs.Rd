@@ -10,6 +10,7 @@ GetModelAveEqFreqs(x, max.time)
 A list of model can only include models of one type.}
 \item{max.time}{a numeric value that indicates the duration of time
 when calculating equilibrium frequencies.}
+\item{model.type}{indicates which set of models to calculate equilibrium frequencies for. Options are "hisse" or "higeosse"}
 }
 \details{
 Provides a data frame model-averaged equilibrium frequencies across
