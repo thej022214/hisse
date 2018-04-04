@@ -280,6 +280,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 		compD <- matrix(0, nrow=nb.tip + nb.node, ncol=4)
 		compE <- matrix(0, nrow=nb.tip + nb.node, ncol=4)		
 	}
+    print(compD)
 	#Initializes the tip sampling and sets internal nodes to be zero:
 	ncols = dim(compD)[2]
 	if(length(cache$f) == 2){
@@ -418,7 +419,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
         compD[focal,] <- compD[focal,] / tmp
         logcomp <- c(logcomp, log(tmp))
 	}
-
+    print("here?")
 	root.node <- nb.tip + 1L
 	if (is.na(sum(log(compD[root.node,]))) || is.na(log(sum(1-compE[root.node,])))){
 		return(bad.likelihood)

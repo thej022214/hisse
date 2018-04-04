@@ -9,7 +9,6 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
     
     if(model.type == "hisse"){
         res <- c()
-        res <- c()
         hisse.results <- x
         if(class(hisse.results)!="list") { #we have to make a list so we can run this generally
             tmp.list <- list()
@@ -21,9 +20,9 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                 ##Modify the data file
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
                 data.new <- data.new[hisse.results[[model.index]]$phy$tip.label,]
-                cache = ParametersToPass(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f, timeslice=NULL, hidden.states=TRUE)
+                cache = hisse:::ParametersToPass(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f, timeslice=NULL, hidden.states=TRUE)
                 if(hisse.results[[model.index]]$root.type=="madfitz"){
-                    get.starting.probs <- DownPass(phy=hisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
+                    get.starting.probs <- hisse:::DownPass(phy=hisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }else{
                     get.starting.probs <- hisse.results[[model.index]]$root.p
                 }
