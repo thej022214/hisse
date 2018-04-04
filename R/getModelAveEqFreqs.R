@@ -20,7 +20,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                 ##Modify the data file
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
                 data.new <- data.new[hisse.results[[model.index]]$phy$tip.label,]
-                cache = hisse:::ParametersToPass(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f, timeslice=NULL, hidden.states=TRUE)
+                cache = ParametersToPass(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f, timeslice=NULL, hidden.states=TRUE)
                 cache$turnover.beta.factor0 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[21], hisse.results[[model.index]]$solution[25])
                 cache$turnover.beta.factor1 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[22], hisse.results[[model.index]]$solution[26])
                 cache$turnover.beta.factorA = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[23], hisse.results[[model.index]]$solution[27])
@@ -32,7 +32,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                 cache$eps.beta.factorB = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[32], hisse.results[[model.index]]$solution[36])
 
                 if(hisse.results[[model.index]]$root.type=="madfitz"){
-                    get.starting.probs <- hisse:::DownPass(phy=hisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE, ode.eps=0)$compD.root
+                    get.starting.probs <- DownPass(phy=hisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE, ode.eps=0)$compD.root
                 }else{
                     get.starting.probs <- hisse.results[[model.index]]$root.p
                 }
