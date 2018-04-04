@@ -280,7 +280,6 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 		compD <- matrix(0, nrow=nb.tip + nb.node, ncol=4)
 		compE <- matrix(0, nrow=nb.tip + nb.node, ncol=4)		
 	}
-    print(cache$f)
 	#Initializes the tip sampling and sets internal nodes to be zero:
 	ncols = dim(compD)[2]
 	if(length(cache$f) == 2){
@@ -299,10 +298,8 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 	for (i in seq(from = 1, length.out = nb.node)) {
 		#A vector of all the internal nodes:
 		focal <- anc[i]
-        print(focal)
 		desRows <- which(phy$edge[,1]==focal)
 		desNodes <- phy$edge[desRows,2]
-        print(desNodes)
 		#Note: when the tree has been reordered branching.times are no longer valid. Fortunately, we extract this information in the initial cache setup. Also focal is the rootward node, whereas desNodes represent a vector of all descendant nodes:
 		cache$rootward.age <- cache$split.times[which(names(cache$split.times)==focal)]
 		
@@ -333,9 +330,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				times=c(cache$tipward.age, cache$rootward.age)
 				prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
 			}else{
-                print(cache)
 				pars <- list(cache$tot_time, cache$timeslice, cache$turnover.trend.alpha0, cache$turnover.trend.beta0, cache$turnover.beta.factor0, cache$turnover.slice.factor0, cache$eps.trend.alpha0, cache$eps.trend.beta0, cache$eps.beta.factor0, cache$eps.slice.factor0, cache$turnover.trend.alpha1, cache$turnover.trend.beta1, cache$turnover.beta.factor1, cache$turnover.slice.factor1, cache$eps.trend.alpha1, cache$eps.trend.beta1, cache$eps.beta.factor1, cache$eps.slice.factor1, cache$turnover.trend.alphaA, cache$turnover.trend.betaA, cache$turnover.beta.factorA, cache$turnover.slice.factorA, cache$eps.trend.alphaA, cache$eps.trend.betaA, cache$eps.beta.factorA, cache$eps.slice.factorA, cache$turnover.trend.alphaB, cache$turnover.trend.betaB, cache$turnover.beta.factorB, cache$turnover.slice.factorB, cache$eps.trend.alphaB, cache$eps.trend.betaB, cache$eps.beta.factorB, cache$eps.slice.factorB, cache$x_turnover0, cache$x_eps0, cache$x_turnover1, cache$x_eps1, cache$x_turnoverA, cache$x_epsA, cache$x_turnoverB, cache$x_epsB, cache$q01, cache$q10, cache$q0A, cache$qA0, cache$q1B, cache$qB1, cache$q0B, cache$qB0, cache$q1A, cache$qA1, cache$qBA, cache$qAB, cache$q01_slice.factor, cache$q10_slice.factor, cache$q0A_slice.factor, cache$qA0_slice.factor, cache$q1B_slice.factor, cache$qB1_slice.factor, cache$q0B_slice.factor, cache$qB0_slice.factor, cache$q1A_slice.factor, cache$qA1_slice.factor, cache$qBA_slice.factor, cache$qAB_slice.factor, cache$focal_edge_length, cache$tipward_age)
-                print(pars)
 				NUMELEMENTS <- 68 #needed for passing in vector to C
 				padded.pars <- rep(0, NUMELEMENTS)
 				pars <- c(unlist(pars))
@@ -345,7 +340,6 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				times=c(cache$tipward.age, cache$rootward.age)
                 prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_hisse", padded.pars, initfunc="initmod_hisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
 			}
-            print(prob.subtree.cal.full[-1,-1])
 			######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
             if(attributes(prob.subtree.cal.full)$istate[1] < 0){
 				return(bad.likelihood)
@@ -423,7 +417,6 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
         compD[focal,] <- compD[focal,] / tmp
         logcomp <- c(logcomp, log(tmp))
 	}
-    print("here?")
 	root.node <- nb.tip + 1L
 	if (is.na(sum(log(compD[root.node,]))) || is.na(log(sum(1-compE[root.node,])))){
 		return(bad.likelihood)

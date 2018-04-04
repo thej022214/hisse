@@ -21,6 +21,16 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
                 data.new <- data.new[hisse.results[[model.index]]$phy$tip.label,]
                 cache = hisse:::ParametersToPass(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f, timeslice=NULL, hidden.states=TRUE)
+                cache$turnover.beta.factor0 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[21], hisse.results[[model.index]]$solution[25])
+                cache$turnover.beta.factor1 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[22], hisse.results[[model.index]]$solution[26])
+                cache$turnover.beta.factorA = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[23], hisse.results[[model.index]]$solution[27])
+                cache$turnover.beta.factorB = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[24], hisse.results[[model.index]]$solution[28])
+                
+                cache$eps.beta.factor0 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[29], hisse.results[[model.index]]$solution[33])
+                cache$eps.beta.factor1 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[30], hisse.results[[model.index]]$solution[34])
+                cache$eps.beta.factorA = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[31], hisse.results[[model.index]]$solution[35])
+                cache$eps.beta.factorB = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[32], hisse.results[[model.index]]$solution[36])
+
                 if(hisse.results[[model.index]]$root.type=="madfitz"){
                     get.starting.probs <- hisse:::DownPass(phy=hisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE, ode.eps=0)$compD.root
                 }else{
