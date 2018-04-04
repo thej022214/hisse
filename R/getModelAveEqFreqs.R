@@ -53,6 +53,24 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
                 data.new <- data.new[hisse.results[[model.index]]$phy$tip.label,]
                 cache = ParametersToPassNull(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f)
+                transformed.pars <- ParameterTransform(hisse.list[[1]]$solution[1:8], hisse.list[[1]]$solution[9:16])
+                cache$lambda0A <- transformed.pars[1]
+                cache$lambda0B <- transformed.pars[2]
+                cache$lambda0C <- transformed.pars[3]
+                cache$lambda0D <- transformed.pars[4]
+                cache$lambda1A <- transformed.pars[5]
+                cache$lambda1B <- transformed.pars[6]
+                cache$lambda1C <- transformed.pars[7]
+                cache$lambda1D <- transformed.pars[8]
+                cache$death0A <- transformed.pars[9]
+                cache$death0B <- transformed.pars[10]
+                cache$death0C <- transformed.pars[11]
+                cache$death0D <- transformed.pars[12]
+                cache$death1A <- transformed.pars[13]
+                cache$death1B <- transformed.pars[14]
+                cache$death1C <- transformed.pars[15]
+                cache$death1D <- transformed.pars[16]
+
                 if(hisse.results[[model.index]]$root.type=="madfitz"){
                     get.starting.probs <- DownPassNull(phy=hisse.results[[model.index]]$phy, cache=cache, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }else{
