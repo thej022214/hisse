@@ -21,6 +21,15 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
                 data.new <- data.new[hisse.results[[model.index]]$phy$tip.label,]
                 cache = ParametersToPass(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f, timeslice=NULL, hidden.states=TRUE)
+                transformed.pars <- ParameterTransform(hisse.list[[1]]$solution[1:4], hisse.list[[1]]$solution[5:8])
+                cache$lambda0 <- transformed.pars[1]
+                cache$lambda1 <- transformed.pars[2]
+                cache$lambdaA <- transformed.pars[3]
+                cache$lambdaB <- transformed.pars[4]
+                cache$death0 <- transformed.pars[5]
+                cache$death1 <- transformed.pars[6]
+                cache$deathA <- transformed.pars[7]
+                cache$deathB <- transformed.pars[8]
                 cache$turnover.beta.factor0 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[21], hisse.results[[model.index]]$solution[25])
                 cache$turnover.beta.factor1 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[22], hisse.results[[model.index]]$solution[26])
                 cache$turnover.beta.factorA = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[23], hisse.results[[model.index]]$solution[27])
