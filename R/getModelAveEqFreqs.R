@@ -11,12 +11,12 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
         res <- c()
         res <- c()
         hisse.results <- x
-        if(class(higeosse.results)!="list") { #we have to make a list so we can run this generally
+        if(class(hisse.results)!="list") { #we have to make a list so we can run this generally
             tmp.list <- list()
-            tmp.list[[1]] <- higeosse.results
+            tmp.list[[1]] <- hisse.results
             hisse.results <- tmp.list
         }
-        for(model.index in 1:length(higeosse.results)){
+        for(model.index in 1:length(hisse.results)){
             if(class(hisse.results[[model.index]]) == "hisse.fit"){
                 ##Modify the data file
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
@@ -46,7 +46,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                 res <- rbind(res, colSums(out.mat)/sum(out.mat))
             }
         }
-        AIC.vector <- sapply(higeosse.results, "[[", "AIC")
+        AIC.vector <- sapply(hisse.results, "[[", "AIC")
         delta.AIC.vector <- AIC.vector - min(AIC.vector)
         rel.likelihood <- exp(-0.5 * delta.AIC.vector)
         AIC.weight.vector <- rel.likelihood / sum(rel.likelihood)
