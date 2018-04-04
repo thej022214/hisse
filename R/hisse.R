@@ -280,7 +280,6 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 		compD <- matrix(0, nrow=nb.tip + nb.node, ncol=4)
 		compE <- matrix(0, nrow=nb.tip + nb.node, ncol=4)		
 	}
-    print(compD)
 	#Initializes the tip sampling and sets internal nodes to be zero:
 	ncols = dim(compD)[2]
 	if(length(cache$f) == 2){
@@ -294,6 +293,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 			compE[i,] <- rep((1-cache$f[i]), ncols/2)
 		}
 	}
+    print(compD)
 	logcomp <- c()
 	#Start the postorder traversal indexing lists by node number: 
 	for (i in seq(from = 1, length.out = nb.node)) {
