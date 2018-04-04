@@ -280,6 +280,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 		compD <- matrix(0, nrow=nb.tip + nb.node, ncol=4)
 		compE <- matrix(0, nrow=nb.tip + nb.node, ncol=4)		
 	}
+    print(cache$f)
 	#Initializes the tip sampling and sets internal nodes to be zero:
 	ncols = dim(compD)[2]
 	if(length(cache$f) == 2){
