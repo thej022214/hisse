@@ -4,7 +4,7 @@
 \description{Adaptively samples points for each parameter to obtain an estimate of the confidence intervals.}
 \usage{
 SupportRegionGeoSSE(higeosse.obj, n.points=1000, scale.int=0.1, desired.delta=2, 
-min.number.points=10. verbose=TRUE)
+min.number.points=10, verbose=TRUE)
 }       
 \arguments{
 \item{higeosse.obj}{an object of class \code{higeosse.fit} that contains the MLE from a model run.}
