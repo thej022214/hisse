@@ -299,6 +299,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 	for (i in seq(from = 1, length.out = nb.node)) {
 		#A vector of all the internal nodes:
 		focal <- anc[i]
+        print(focal)
 		desRows <- which(phy$edge[,1]==focal)
 		desNodes <- phy$edge[desRows,2]
 		#Note: when the tree has been reordered branching.times are no longer valid. Fortunately, we extract this information in the initial cache setup. Also focal is the rootward node, whereas desNodes represent a vector of all descendant nodes:
@@ -384,7 +385,6 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				v <- v * prob.subtree.cal[5:8]				
 			}
 		}
-        print("got here?")
 		#C call to set_birth_void -- NOTE: The first input is zero as we need to declare the birth_rate. It gets written over and is now the first element in the list that is returned. Everything else should be self explanatory.
 		if(hidden.states == TRUE){			
 			lambda0 <- .C("set_birth_hisse_void", as.double(0.0), as.double(cache$rootward.age), as.double(cache$tot_time), as.double(cache$timeslice), as.double(cache$turnover.trend.alpha0), as.double(cache$turnover.trend.beta0), as.double(cache$turnover.beta.factor0), as.double(cache$turnover.slice.factor0), as.double(cache$eps.trend.alpha0), as.double(cache$eps.trend.beta0), as.double(cache$eps.beta.factor0), as.double(cache$eps.slice.factor0), as.double(cache$turnover.trend.alpha1), as.double(cache$turnover.trend.beta1), as.double(cache$turnover.beta.factor1), as.double(cache$turnover.slice.factor1), as.double(cache$eps.trend.alpha1), as.double(cache$eps.trend.beta1), as.double(cache$eps.beta.factor1), as.double(cache$eps.slice.factor1), as.double(cache$turnover.trend.alphaA), as.double(cache$turnover.trend.betaA), as.double(cache$turnover.beta.factorA), as.double(cache$turnover.slice.factorA), as.double(cache$eps.trend.alphaA), as.double(cache$eps.trend.betaA), as.double(cache$eps.beta.factorA), as.double(cache$eps.slice.factorA), as.double(cache$turnover.trend.alphaB), as.double(cache$turnover.trend.betaB), as.double(cache$turnover.beta.factorB), as.double(cache$turnover.slice.factorB), as.double(cache$eps.trend.alphaB), as.double(cache$eps.trend.betaB), as.double(cache$eps.beta.factorB), as.double(cache$eps.slice.factorB), as.double(cache$x_turnover0), as.double(cache$x_eps0), as.double(cache$x_turnover1), as.double(cache$x_eps1), as.double(cache$x_turnoverA), as.double(cache$x_epsA), as.double(cache$x_turnoverB), as.double(cache$x_epsB), as.double(cache$q01), as.double(cache$q10), as.double(cache$q0A), as.double(cache$qA0), as.double(cache$q1B), as.double(cache$qB1), as.double(cache$q0B), as.double(cache$qB0), as.double(cache$q1A), as.double(cache$qA1), as.double(cache$qBA), as.double(cache$qAB), as.double(cache$focal.edge.length), as.double(cache$tipward.age), as.integer(0))
