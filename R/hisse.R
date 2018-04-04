@@ -302,6 +302,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
         print(focal)
 		desRows <- which(phy$edge[,1]==focal)
 		desNodes <- phy$edge[desRows,2]
+        print(desNodes)
 		#Note: when the tree has been reordered branching.times are no longer valid. Fortunately, we extract this information in the initial cache setup. Also focal is the rootward node, whereas desNodes represent a vector of all descendant nodes:
 		cache$rootward.age <- cache$split.times[which(names(cache$split.times)==focal)]
 		
@@ -342,7 +343,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				times=c(cache$tipward.age, cache$rootward.age)
                 prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_hisse", padded.pars, initfunc="initmod_hisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
 			}
-            print(i)
+            print(prob.subtree.cal.full[-1,-1])
 			######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
             if(attributes(prob.subtree.cal.full)$istate[1] < 0){
 				return(bad.likelihood)
