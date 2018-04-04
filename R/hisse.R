@@ -294,7 +294,6 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 			compE[i,] <- rep((1-cache$f[i]), ncols/2)
 		}
 	}
-    print(compD)
 	logcomp <- c()
 	#Start the postorder traversal indexing lists by node number: 
 	for (i in seq(from = 1, length.out = nb.node)) {
@@ -342,7 +341,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				times=c(cache$tipward.age, cache$rootward.age)
                 prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_hisse", padded.pars, initfunc="initmod_hisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
 			}
-
+            print(i)
 			######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
             if(attributes(prob.subtree.cal.full)$istate[1] < 0){
 				return(bad.likelihood)
