@@ -174,6 +174,7 @@ GetNormalizedDensityPlot <- function(x, limits, kernel, min.breaks=100) {
 
 # function plots reconstructed values for ancestral characters along the edges of the tree
 # Modified by Brian O'Meara, June 9, 2015
+# Modified by Daniel Caetano, April 4, 2018
 contMapGivenAnc <-function(tree,x,res=100,fsize=NULL,ftype=NULL,lwd=4,legend=NULL,
 lims=NULL,outline=TRUE,sig=3,type="phylogram",direction="rightwards",
 plot=TRUE,anc.states=NULL,...){
@@ -198,7 +199,7 @@ plot=TRUE,anc.states=NULL,...){
 		}
 	} #end BCO if loop
 	names(x) <- tree$tip.label[as.numeric(names(x))]
-	y<-c(a,x[tree$tip.label]); names(y)[1:length(tree$tip)+tree$Nnode]<-1:length(tree$tip)
+	y<-c(a,x[tree$tip.label]); names(y)[1:length(tree$tip.label)+tree$Nnode]<-1:length(tree$tip.label)
 	A<-matrix(y[as.character(tree$edge)],nrow(tree$edge),ncol(tree$edge))
 	cols<-rainbow(1001,start=0,end=0.7); names(cols)<-0:1000
 	if(is.null(lims)) lims<-c(min(c(a,x)),max(c(a,x))) #modified by BCO to include anc state in range for lims
