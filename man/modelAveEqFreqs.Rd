@@ -3,7 +3,8 @@
 \title{Model average equlibrium frequencies}
 \description{Calculates the expected equilibrium frequencies under various geographic models from a single model or a set of models and returns model averaged frequencies.}
 \usage{
-GetModelAveEqFreqs(x, max.time, model.type="hisse")
+GetModelAveEqFreqs(x, max.time, model.type="hisse", get.rates=FALSE, 
+rate.type="turnover")
 }       
 \arguments{
 \item{x}{a \code{higeosse.fit} object, or a list of such objects. 
@@ -12,6 +13,8 @@ A list of model can only include models of one type.}
 when calculating equilibrium frequencies.}
 \item{model.type}{indicates which set of models to calculate equilibrium frequencies for. Options are "hisse" or "higeosse"}
 }
+\item{get.rates}{indicates whether you want model-averaged rates based on equilibrium. Default is FALSE, which means just the equilibrium frequencies are returned.}
+\item{rate.type}{if get.rates=TRUE, this specifies which type of rates to be returned. Default is "turnover", but options include "net.div", "extinction.fraction", "speciation", "extinction".}
 \details{
 Provides a data frame model-averaged equilibrium frequencies across
 a set of models. If you give a single higeosse.fir object,
