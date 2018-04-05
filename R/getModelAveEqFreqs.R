@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
+GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE, rate.type="turnover"){
     
     if(model.type == "hisse"){
         res <- c()
@@ -34,7 +34,6 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                 cache$turnover.beta.factor1 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[22], hisse.results[[model.index]]$solution[26])
                 cache$turnover.beta.factorA = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[23], hisse.results[[model.index]]$solution[27])
                 cache$turnover.beta.factorB = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[24], hisse.results[[model.index]]$solution[28])
-                
                 cache$eps.beta.factor0 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[29], hisse.results[[model.index]]$solution[33])
                 cache$eps.beta.factor1 = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[30], hisse.results[[model.index]]$solution[34])
                 cache$eps.beta.factorA = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[31], hisse.results[[model.index]]$solution[35])
@@ -46,9 +45,35 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                     get.starting.probs <- hisse.results[[model.index]]$root.p
                 }
                 out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state0B=get.starting.probs[3], state1B=get.starting.probs[4]), times=c(0, max.time), func=EqFreqHiSSE, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
-                out.mat <- t(matrix(out, 2, 2))
-                colnames(out.mat) <- c("0", "1")
-                res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                if(get.rates == TRUE){
+                    if(rate.type == "turnover"){
+                        state0 <- ((cache$lambda0+cache$death0) * (out[1]/(out[1]+out[3]))) + ((cache$lambdaA+cache$deathA) * (out[3]/(out[1]+out[3])))
+                        state1 <- ((cache$lambda1+cache$death1) * (out[2]/(out[2]+out[4]))) + ((cache$lambdaB+cache$deathB) * (out[4]/(out[2]+out[4])))
+                    }
+                    if(rate.type == "net.div"){
+                        state0 <- ((cache$lambda0-cache$death0) * (out[1]/(out[1]+out[3]))) + ((cache$lambdaA-cache$deathA) * (out[3]/(out[1]+out[3])))
+                        state1 <- ((cache$lambda1-cache$death1) * (out[2]/(out[2]+out[4]))) + ((cache$lambdaB-cache$deathB) * (out[4]/(out[2]+out[4])))
+                    }
+                    if(rate.type == "extinction.fraction"){
+                        state0 <- ((cache$death0/cache$lambda0) * (out[1]/(out[1]+out[3]))) + ((cache$deathA/cache$lambdaA) * (out[3]/(out[1]+out[3])))
+                        state1 <- ((cache$death1/cache$lambda1) * (out[2]/(out[2]+out[4]))) + ((cache$deathB/cache$lambdaB) * (out[4]/(out[2]+out[4])))
+                    }
+                    if(rate.type == "speciation"){
+                        state0 <- (cache$lambda0 * (out[1]/(out[1]+out[3]))) + (cache$lambdaA * (out[3]/(out[1]+out[3])))
+                        state1 <- (cache$lambda1 * (out[2]/(out[2]+out[4]))) + (cache$lambdaB * (out[4]/(out[2]+out[4])))
+                    }
+                    if(rate.type == "extinction"){
+                        state0 <- (cache$death0 * (out[1]/(out[1]+out[3]))) + (cache$deathA * (out[3]/(out[1]+out[3])))
+                        state1 <- (cache$death1 * (out[2]/(out[2]+out[4]))) + (cache$deathB * (out[4]/(out[2]+out[4])))
+                    }
+                    out.mat <- matrix(c(state0, state1), 1, 2)
+                    colnames(out.mat) <- c("0", "1")
+                    res <- rbind(res, out.mat)
+                }else{
+                    out.mat <- t(matrix(out, 2, 2))
+                    colnames(out.mat) <- c("0", "1")
+                    res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                }
             }else{
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
                 data.new <- data.new[hisse.results[[model.index]]$phy$tip.label,]
@@ -77,9 +102,35 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                     get.starting.probs <- hisse.results[[model.index]]$root.p
                 }
                 out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state0B=get.starting.probs[3],state1B=get.starting.probs[4],state0C=get.starting.probs[5],state1C=get.starting.probs[6],state0D=get.starting.probs[7],state1D=get.starting.probs[8]), times=c(0, max.time), func=EqFreqCID4, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
-                out.mat <- t(matrix(out, 2, 4))
-                colnames(out.mat) <- c("0", "1")
-                res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                if(get.rates == TRUE){
+                    if(rate.type == "turnover"){
+                        state0 <- ((cache$lambda0A+cache$death0A) * (out[1]/(out[1]+out[3]+out[5]+out[7]))) + ((cache$lambda0B+cache$death0B) * (out[3]/(out[1]+out[3]+out[5]+out[7]))) + ((cache$lambda0C+cache$death0C) * (out[5]/(out[1]+out[3]+out[5]+out[7]))) + ((cache$lambda0D+cache$death0D) * (out[7]/(out[1]+out[3]+out[5]+out[7])))
+                        state1 <- ((cache$lambda1A+cache$death1A) * (out[2]/(out[2]+out[4]+out[6]+out[8]))) + ((cache$lambda1B+cache$death1B) * (out[4]/(out[2]+out[4]+out[6]+out[8]))) + ((cache$lambda1C+cache$death1C) * (out[6]/(out[2]+out[4]+out[6]+out[8]))) + ((cache$lambda1D+cache$death1D) * (out[8]/(out[2]+out[4]+out[6]+out[8])))
+                    }
+                    if(rate.type == "net.div"){
+                        state0 <- ((cache$lambda0A-cache$death0A) * (out[1]/(out[1]+out[3]+out[5]+out[7]))) + ((cache$lambda0B-cache$death0B) * (out[3]/(out[1]+out[3]+out[5]+out[7]))) + ((cache$lambda0C-cache$death0C) * (out[5]/(out[1]+out[3]+out[5]+out[7]))) + ((cache$lambda0D-cache$death0D) * (out[7]/(out[1]+out[3]+out[5]+out[7])))
+                        state1 <- ((cache$lambda1A-cache$death1A) * (out[2]/(out[2]+out[4]+out[6]+out[8]))) + ((cache$lambda1B-cache$death1B) * (out[4]/(out[2]+out[4]+out[6]+out[8]))) + ((cache$lambda1C-cache$death1C) * (out[6]/(out[2]+out[4]+out[6]+out[8]))) + ((cache$lambda1D-cache$death1D) * (out[8]/(out[2]+out[4]+out[6]+out[8])))
+                    }
+                    if(rate.type == "extinction.fraction"){
+                        state0 <- ((cache$death0A/cache$lambda0A) * (out[1]/(out[1]+out[3]+out[5]+out[7]))) + ((cache$death0B/cache$lambda0B) * (out[3]/(out[1]+out[3]+out[5]+out[7]))) + ((cache$death0C/cache$lambda0C) * (out[5]/(out[1]+out[3]+out[5]+out[7]))) + ((cache$death0D/cache$lambda0D) * (out[7]/(out[1]+out[3]+out[5]+out[7])))
+                        state1 <- ((cache$death1A/cache$lambda1A) * (out[2]/(out[2]+out[4]+out[6]+out[8]))) + ((cache$death1B/cache$lambda1B) * (out[4]/(out[2]+out[4]+out[6]+out[8]))) + ((cache$death1C/cache$lambda1C) * (out[6]/(out[2]+out[4]+out[6]+out[8]))) + ((cache$death1D/cache$lambda1D) * (out[8]/(out[2]+out[4]+out[6]+out[8])))
+                    }
+                    if(rate.type == "speciation"){
+                        state0 <- (cache$lambda0A * (out[1]/(out[1]+out[3]+out[5]+out[7]))) + (cache$lambda0B * (out[3]/(out[1]+out[3]+out[5]+out[7]))) + (cache$lambda0C * (out[5]/(out[1]+out[3]+out[5]+out[7]))) + (cache$lambda0D * (out[7]/(out[1]+out[3]+out[5]+out[7])))
+                        state1 <- (cache$lambda1A * (out[2]/(out[2]+out[4]+out[6]+out[8]))) + (cache$lambda1B * (out[4]/(out[2]+out[4]+out[6]+out[8]))) + (cache$lambda1C * (out[6]/(out[2]+out[4]+out[6]+out[8]))) + (cache$lambda1D * (out[8]/(out[2]+out[4]+out[6]+out[8])))
+                    }
+                    if(rate.type == "extinction"){
+                        state0 <- (cache$death0A * (out[1]/(out[1]+out[3]+out[5]+out[7]))) + (cache$death0B * (out[3]/(out[1]+out[3]+out[5]+out[7]))) + (cache$death0C * (out[5]/(out[1]+out[3]+out[5]+out[7]))) + (cache$death0D * (out[7]/(out[1]+out[3]+out[5]+out[7])))
+                        state1 <- (cache$death1A * (out[2]/(out[2]+out[4]+out[6]+out[8]))) + (cache$death1B * (out[4]/(out[2]+out[4]+out[6]+out[8]))) + (cache$death1C * (out[6]/(out[2]+out[4]+out[6]+out[8]))) + (cache$death1D * (out[8]/(out[2]+out[4]+out[6]+out[8])))
+                    }
+                    out.mat <- matrix(c(state0, state1), 1, 2)
+                    colnames(out.mat) <- c("0", "1")
+                    res <- rbind(res, out.mat)
+                }else{
+                    out.mat <- t(matrix(out, 2, 2))
+                    colnames(out.mat) <- c("0", "1")
+                    res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                }
             }
         }
         AIC.vector <- sapply(hisse.results, "[[", "AIC")
@@ -117,9 +168,15 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse"){
                 }
                 out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state01A=get.starting.probs[3], state0B=get.starting.probs[4],state1B=get.starting.probs[5],state01B=get.starting.probs[6], state0C=get.starting.probs[7],state1C=get.starting.probs[8],state01C=get.starting.probs[9], state0D=get.starting.probs[10],state1D=get.starting.probs[11],state01D=get.starting.probs[12], state0E=get.starting.probs[13],state1E=get.starting.probs[14],state01E=get.starting.probs[15]), times=c(0, max.time), func=EqFreqsMuSSE, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
             }
-            out.mat <- t(matrix(out, 3, 5))
-            colnames(out.mat) <- c("0", "1", "01")
-            res <- rbind(res, colSums(out.mat)/sum(out.mat))
+            #            if(get.rates == TRUE){
+                
+                
+                
+                #}else{
+                out.mat <- t(matrix(out, 3, 5))
+                colnames(out.mat) <- c("0", "1", "01")
+                res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                #}
         }
         AIC.vector <- sapply(higeosse.results, "[[", "AIC")
         delta.AIC.vector <- AIC.vector - min(AIC.vector)
