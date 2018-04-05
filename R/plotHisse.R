@@ -7,15 +7,26 @@
 
 plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width.rate=5, edge.width.state=2, type="fan", rate.range=NULL, show.tip.label=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3", ...) {
 	hisse.results <- x
-	if(class(hisse.results)=="hisse.states") { #we have to make a list so we can run this generally
+	if( inherits(hisse.results, what=c("hisse.states","list")) ){
+            if( inherits(hisse.results, what="hisse.states") ){
+                ## we have to make a list so we can run this generally
 		if(is.null(hisse.results$aic)){
-			#If a user forgot to include the aic, then we add a random value in for them
-			hisse.results$aic = 42
+                    ## If a user forgot to include the aic, then we add a random value in for them
+                    hisse.results$aic = 42
 		}
 		tmp.list <- list()
 		tmp.list[[1]] <- hisse.results
 		hisse.results <- tmp.list
-	} else {
+            } else { ## Then it is a list.
+                ## If x is a list we need to check if all elements have the $aic to make the model average.
+                any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="hisse.states") ) )
+                if( any.other.class ) stop("All elements of the list 'x' need to be of class 'hisse.states'.")
+                
+                any.missing <- any( sapply(hisse.results, function(x) is.null(x$aic) ) )
+                if( any.missing ) stop( "If x is a list, then each reconstruction need to have $aic information in order to make the model average." )
+                
+            }
+        } else {
             stop( "x needs to be an object of class 'hisse.states'." )
         }
 
