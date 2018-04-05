@@ -15,7 +15,12 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 		tmp.list <- list()
 		tmp.list[[1]] <- hisse.results
 		hisse.results <- tmp.list
-	}
+	} else {
+            stop( "x needs to be an object of class 'hisse.states'." )
+        }
+
+        ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
+        old.par <- par()
 	par(fig=c(0,1, 0, 1), new=FALSE)
 	if(is.null(rate.colors)) {
 		rate.colors <- c("blue", "red")
@@ -54,6 +59,9 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 	rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
 	rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
 
+        ## Problem here. The names of rates.tips do not match the species names in tree.to.plot
+        ## This is causing NAs in the matrix A inside the function contMapGivenAnc
+        ## Check if fixing the names in rates.tips fix the issue.
 	rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
 	#change colors
 	rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
@@ -144,6 +152,8 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 
 	}
 
+        ## Return par to the previous state.
+        par( old.par )
 	return(list(rate.tree=rate.tree, state.tree=state.tree))
 }
 
@@ -276,6 +286,9 @@ plot=TRUE,anc.states=NULL,...){
 	} #end BCO if loop
 	names(x) <- tree$tip.label[as.numeric(names(x))]
 	y<-c(a,x[tree$tip.label]); names(y)[1:length(tree$tip)+tree$Nnode]<-1:length(tree$tip)
+        ## Problem is here. Matrix A has many NAs.
+        ## It seems that the node names on tree$edge are matching ok, but the tip names are not matching.
+        ## Everytime a match fails we get a NA.
 	A<-matrix(y[as.character(tree$edge)],nrow(tree$edge),ncol(tree$edge))
 	cols<-rainbow(1001,start=0,end=0.7); names(cols)<-0:1000
 	if(is.null(lims)) lims<-c(min(c(a,x)),max(c(a,x))) #modified by BCO to include anc state in range for lims
