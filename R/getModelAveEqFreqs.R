@@ -207,18 +207,21 @@ EqFreqHiSSE <- function(t, y, parms, cache){
 
 EqFreqCID4 <- function(t, y, parms, cache){
     dN0AdT = cache$lambda0A * y[1] - cache$death0A * y[1] - cache$q0A1A * y[1] - cache$q0A0B * y[1] - cache$q0A1B * y[1] - cache$q0A0C * y[1] - cache$q0A1C * y[1] - cache$q0A0D * y[1] - cache$q0A1D * y[1] + cache$q1A0A * y[2] + cache$q0B0A * y[3] + cache$q1B0A * y[4] + cache$q0C0A * y[5] + cache$q1C0A * y[6] + cache$q0D0A * y[7] + cache$q1D0A * y[8]
-    print(dN0Adt)
+    print(dN0AdT)
     dN1AdT = cache$lambda1A * y[2] - cache$death1A * y[2] - cache$q1A0A * y[2] - cache$q1A0B * y[2] - cache$q1A1B * y[2] - cache$q1A0C * y[2] - cache$q1A1C * y[2] - cache$q1A0D * y[2] - cache$q1A1D * y[2] + cache$q0A1A * y[1] + cache$q0B1A * y[3] + cache$q1B1A * y[4] + cache$q0C1A * y[5] + cache$q1C1A * y[6] + cache$q0D1A * y[7] + cache$q1D1A * y[8]
-    print(dN1Adt)
+    print(dN1AdT)
     dN0BdT = cache$lambda0B * y[3] - cache$death0B * y[3] - cache$q0B0A * y[3] - cache$q0B1A * y[3] - cache$q0B1B * y[3] - cache$q0B0C * y[3] - cache$q0B1C * y[3] - cache$q0B0D * y[3] - cache$q0B1D * y[3] + cache$q0A0B * y[1] + cache$q1A0B * y[2] + cache$q1B0B * y[4] + cache$q0C0B * y[5] + cache$q1C0B * y[6] + cache$q0D0B * y[7] + cache$q1D0B * y[8]
-    print(dN0Bdt)
+    print(dN0BdT)
     dN1BdT = cache$lambda1B * y[4] - cache$death1B * y[4] - cache$q1B0A * y[4] - cache$q1B1A * y[4] - cache$q1B0B * y[4] - cache$q1B0C * y[4] - cache$q1B1C * y[4] - cache$q1B0D * y[4] - cache$q1B1D * y[4] + cache$q0A1B * y[1] + cache$q1A1B * y[2] + cache$q0B1B * y[3] + cache$q0C1B * y[5] + cache$q1C1B * y[6] + cache$q0D1B * y[7] + cache$q1D1B * y[8]
-    print(dN1Bdt)
+    print(dN1BdT)
     dN0CdT = cache$lambda0C * y[5] - cache$death0C * y[5] - cache$q0C0A * y[5] - cache$q0C1A * y[5] - cache$q0C1B * y[5] - cache$q0C0B * y[5] - cache$q0C1C * y[5] - cache$q0C0D * y[5] - cache$q0C1D * y[5] + cache$q0A0C * y[1] + cache$q1A0C * y[2] + cache$q0B0C * y[3] + cache$q1B0C * y[4] + cache$q1C0C * y[6] + cache$q0D0C * y[7] + cache$q1D0C * y[8]
+    print(dN0CdT)
     dN1CdT = cache$lambda1C * y[6] - cache$death1C * y[6] - cache$q1C0A * y[6] - cache$q1C1A * y[6] - cache$q1C0B * y[6] - cache$q1C0C * y[6] - cache$q1C1B * y[6] - cache$q1C0D * y[6] - cache$q1C1D * y[6] + cache$q0A1C * y[1] + cache$q1A1C * y[2] + cache$q0B1C * y[3] + cache$q1B1C * y[4] + cache$q0C1C * y[5] + cache$q0D1C * y[7] + cache$q1D1C * y[8]
+    print(dN1CdT)
     dN0DdT = cache$lambda0D * y[7] - cache$death0D * y[7] - cache$q0D0A * y[7] - cache$q0D1A * y[7] - cache$q0D1B * y[7] - cache$q0D0B * y[7] - cache$q0D1C * y[7] - cache$q0D0C * y[7] - cache$q0D1D * y[7] + cache$q0A0D * y[1] + cache$q1A0D * y[2] + cache$q0B0D * y[3] + cache$q1B0D * y[4] + cache$q0C0D * y[5] + cache$q1C0D * y[6] + cache$q1D0D * y[8]
+    print(dN0DdT)
     dN1DdT = cache$lambda1D * y[8] - cache$death1D * y[8] - cache$q1D0A * y[8] - cache$q1D1A * y[8] - cache$q1D0B * y[8] - cache$q1D1B * y[8] - cache$q1D0C * y[8] - cache$q1D1C * y[8] - cache$q1D0D * y[8] + cache$q0A1D * y[1] + cache$q1A1D * y[2] + cache$q0B1D * y[3] + cache$q1B1D * y[4] + cache$q0C1D * y[5] + cache$q1C1D * y[6] + cache$q0D1D * y[7]
-    
+    print(dN1DdT)
     return(list(c(dN0AdT,dN1AdT, dN0BdT,dN1BdT, dN0CdT,dN1CdT, dN0DdT,dN1DdT)))
 }
 
