@@ -72,8 +72,8 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
             }else{
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
                 data.new <- data.new[hisse.results[[model.index]]$phy$tip.label,]
-                cache = ParametersToPassNull(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f)
-                transformed.pars <- ParameterTransform(hisse.results[[model.index]]$solution[1:8], hisse.results[[model.index]]$solution[9:16])
+                cache = hisse:::ParametersToPassNull(hisse.results[[model.index]]$phy, data.new[,1], model.vec=hisse.results[[model.index]]$solution, f=hisse.results[[model.index]]$f)
+                transformed.pars <- hisse:::ParameterTransform(hisse.results[[model.index]]$solution[1:8], hisse.results[[model.index]]$solution[9:16])
                 cache$lambda0A <- transformed.pars[1]
                 cache$lambda0B <- transformed.pars[2]
                 cache$lambda0C <- transformed.pars[3]
@@ -92,11 +92,11 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                 cache$death1D <- transformed.pars[16]
 
                 if(hisse.results[[model.index]]$root.type=="madfitz"){
-                    get.starting.probs <- DownPassNull(phy=hisse.results[[model.index]]$phy, cache=cache, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
+                    get.starting.probs <- hisse:::DownPassNull(phy=hisse.results[[model.index]]$phy, cache=cache, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }else{
                     get.starting.probs <- hisse.results[[model.index]]$root.p
                 }
-                out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state0B=get.starting.probs[3],state1B=get.starting.probs[4],state0C=get.starting.probs[5],state1C=get.starting.probs[6],state0D=get.starting.probs[7],state1D=get.starting.probs[8]), times=c(0, max.time), func=EqFreqCID4, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
+                out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state0B=get.starting.probs[3],state1B=get.starting.probs[4],state0C=get.starting.probs[5],state1C=get.starting.probs[6],state0D=get.starting.probs[7],state1D=get.starting.probs[8]), times=c(0, max.time), func=hisse:::EqFreqCID4, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
                 if(get.rates == TRUE){
                     rescaled.probs.0 <- c(out[1],out[3],out[5],out[7]) / sum(out[1],out[3],out[5],out[7])
                     rescaled.probs.1 <- c(out[2],out[4],out[6],out[8]) / sum(out[2],out[4],out[6],out[8])
@@ -207,9 +207,13 @@ EqFreqHiSSE <- function(t, y, parms, cache){
 
 EqFreqCID4 <- function(t, y, parms, cache){
     dN0AdT = cache$lambda0A * y[1] - cache$death0A * y[1] - cache$q0A1A * y[1] - cache$q0A0B * y[1] - cache$q0A1B * y[1] - cache$q0A0C * y[1] - cache$q0A1C * y[1] - cache$q0A0D * y[1] - cache$q0A1D * y[1] + cache$q1A0A * y[2] + cache$q0B0A * y[3] + cache$q1B0A * y[4] + cache$q0C0A * y[5] + cache$q1C0A * y[6] + cache$q0D0A * y[7] + cache$q1D0A * y[8]
+    print(dN0Adt)
     dN1AdT = cache$lambda1A * y[2] - cache$death1A * y[2] - cache$q1A0A * y[2] - cache$q1A0B * y[2] - cache$q1A1B * y[2] - cache$q1A0C * y[2] - cache$q1A1C * y[2] - cache$q1A0D * y[2] - cache$q1A1D * y[2] + cache$q0A1A * y[1] + cache$q0B1A * y[3] + cache$q1B1A * y[4] + cache$q0C1A * y[5] + cache$q1C1A * y[6] + cache$q0D1A * y[7] + cache$q1D1A * y[8]
+    print(dN1Adt)
     dN0BdT = cache$lambda0B * y[3] - cache$death0B * y[3] - cache$q0B0A * y[3] - cache$q0B1A * y[3] - cache$q0B1B * y[3] - cache$q0B0C * y[3] - cache$q0B1C * y[3] - cache$q0B0D * y[3] - cache$q0B1D * y[3] + cache$q0A0B * y[1] + cache$q1A0B * y[2] + cache$q1B0B * y[4] + cache$q0C0B * y[5] + cache$q1C0B * y[6] + cache$q0D0B * y[7] + cache$q1D0B * y[8]
+    print(dN0Bdt)
     dN1BdT = cache$lambda1B * y[4] - cache$death1B * y[4] - cache$q1B0A * y[4] - cache$q1B1A * y[4] - cache$q1B0B * y[4] - cache$q1B0C * y[4] - cache$q1B1C * y[4] - cache$q1B0D * y[4] - cache$q1B1D * y[4] + cache$q0A1B * y[1] + cache$q1A1B * y[2] + cache$q0B1B * y[3] + cache$q0C1B * y[5] + cache$q1C1B * y[6] + cache$q0D1B * y[7] + cache$q1D1B * y[8]
+    print(dN1Bdt)
     dN0CdT = cache$lambda0C * y[5] - cache$death0C * y[5] - cache$q0C0A * y[5] - cache$q0C1A * y[5] - cache$q0C1B * y[5] - cache$q0C0B * y[5] - cache$q0C1C * y[5] - cache$q0C0D * y[5] - cache$q0C1D * y[5] + cache$q0A0C * y[1] + cache$q1A0C * y[2] + cache$q0B0C * y[3] + cache$q1B0C * y[4] + cache$q1C0C * y[6] + cache$q0D0C * y[7] + cache$q1D0C * y[8]
     dN1CdT = cache$lambda1C * y[6] - cache$death1C * y[6] - cache$q1C0A * y[6] - cache$q1C1A * y[6] - cache$q1C0B * y[6] - cache$q1C0C * y[6] - cache$q1C1B * y[6] - cache$q1C0D * y[6] - cache$q1C1D * y[6] + cache$q0A1C * y[1] + cache$q1A1C * y[2] + cache$q0B1C * y[3] + cache$q1B1C * y[4] + cache$q0C1C * y[5] + cache$q0D1C * y[7] + cache$q1D1C * y[8]
     dN0DdT = cache$lambda0D * y[7] - cache$death0D * y[7] - cache$q0D0A * y[7] - cache$q0D1A * y[7] - cache$q0D1B * y[7] - cache$q0D0B * y[7] - cache$q0D1C * y[7] - cache$q0D0C * y[7] - cache$q0D1D * y[7] + cache$q0A0D * y[1] + cache$q1A0D * y[2] + cache$q0B0D * y[3] + cache$q1B0D * y[4] + cache$q0C0D * y[5] + cache$q1C0D * y[6] + cache$q1D0D * y[8]
