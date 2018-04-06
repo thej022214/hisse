@@ -127,7 +127,11 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
         rel.likelihood <- exp(-0.5 * delta.AIC.vector)
         AIC.weight.vector <- rel.likelihood / sum(rel.likelihood)
         final.eq.freq <- apply(res, 2, weighted.mean, w=AIC.weight.vector)
-        return(final.eq.freq /sum(final.eq.freq))
+        if(get.rates == TRUE){
+            return(final.eq.freq)
+        }else{
+            return(final.eq.freq /sum(final.eq.freq))
+        }
     }
     
     if(model.type=="higeosse"){
@@ -190,7 +194,11 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
         rel.likelihood <- exp(-0.5 * delta.AIC.vector)
         AIC.weight.vector <- rel.likelihood / sum(rel.likelihood)
         final.eq.freq <- apply(res, 2, weighted.mean, w=AIC.weight.vector)
-        return(final.eq.freq /sum(final.eq.freq))
+        if(get.rates == TRUE){
+            return(final.eq.freq)
+        }else{
+            return(final.eq.freq /sum(final.eq.freq))
+        }
     }
 }
 
