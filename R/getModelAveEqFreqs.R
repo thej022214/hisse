@@ -255,6 +255,7 @@ EqFreqsHiGeoSSE <- function(t, y, parms, cache){
     return(list(c(dN0AdT,dN1AdT,dN01AdT, dN0BdT,dN1BdT,dN01BdT, dN0CdT,dN1CdT,dN01CdT, dN0DdT,dN1DdT,dN01DdT, dN0EdT,dN1EdT,dN01EdT)))
 }
 
+
 #MuSSE equlibrium freqs.
 EqFreqsMuSSE <- function(t, y, parms, cache){
     #cat A:
