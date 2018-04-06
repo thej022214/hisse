@@ -206,6 +206,7 @@ EqFreqHiSSE <- function(t, y, parms, cache){
 
 
 EqFreqCID4 <- function(t, y, parms, cache){
+    print(cache)
     dN0AdT = cache$lambda0A * y[1] - cache$death0A * y[1] - cache$q0A1A * y[1] - cache$q0A0B * y[1] - cache$q0A1B * y[1] - cache$q0A0C * y[1] - cache$q0A1C * y[1] - cache$q0A0D * y[1] - cache$q0A1D * y[1] + cache$q1A0A * y[2] + cache$q0B0A * y[3] + cache$q1B0A * y[4] + cache$q0C0A * y[5] + cache$q1C0A * y[6] + cache$q0D0A * y[7] + cache$q1D0A * y[8]
     print(dN0AdT)
     dN1AdT = cache$lambda1A * y[2] - cache$death1A * y[2] - cache$q1A0A * y[2] - cache$q1A0B * y[2] - cache$q1A1B * y[2] - cache$q1A0C * y[2] - cache$q1A1C * y[2] - cache$q1A0D * y[2] - cache$q1A1D * y[2] + cache$q0A1A * y[1] + cache$q0B1A * y[3] + cache$q1B1A * y[4] + cache$q0C1A * y[5] + cache$q1C1A * y[6] + cache$q0D1A * y[7] + cache$q1D1A * y[8]
