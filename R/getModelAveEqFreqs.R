@@ -16,6 +16,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
             hisse.results <- tmp.list
         }
         for(model.index in 1:length(hisse.results)){
+            print(model.index)
             if(class(hisse.results[[model.index]]) == "hisse.fit"){
                 ##Modify the data file
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
