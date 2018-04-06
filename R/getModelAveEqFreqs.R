@@ -179,7 +179,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                     state1 <- (cache$s1A * rescaled.probs.1[1]) + (cache$s1B * rescaled.probs.1[2]) + (cache$s1C * rescaled.probs.1[3]) + (cache$s1D * rescaled.probs.1[4]) + (cache$s1E * rescaled.probs.1[5])
                     state01 <- (cache$s01A * rescaled.probs.01[1]) + (cache$s01B * rescaled.probs.01[2]) + (cache$s01C * rescaled.probs.01[3]) + (cache$s01D * rescaled.probs.01[4]) + (cache$s01E * rescaled.probs.01[5])
                 }
-                out.mat <- matrix(c(state0, state1), 1, 3)
+                out.mat <- matrix(c(state0, state1, state01), 1, 3)
                 colnames(out.mat) <- c("0", "1", "01")
                 res <- rbind(res, out.mat)
             }else{
