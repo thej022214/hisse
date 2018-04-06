@@ -142,22 +142,21 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
             higeosse.results <- tmp.list
         }
         for(model.index in 1:length(higeosse.results)){
-            print(model.index)
             if(higeosse.results[[model.index]]$assume.cladogenetic == TRUE){
                 ##Modify the data file
                 data.new <- data.frame(higeosse.results[[model.index]]$data[,2], higeosse.results[[model.index]]$data[,2], row.names=higeosse.results[[model.index]]$data[,1])
                 data.new <- data.new[higeosse.results[[model.index]]$phy$tip.label,]
-                cache = hisse:::ParametersToPassHiGeoSSE(higeosse.results[[model.index]]$phy, data.new[,1], model.vec=higeosse.results[[model.index]]$solution, f=higeosse.results[[model.index]]$f, hidden.states=TRUE)
+                cache = ParametersToPassHiGeoSSE(higeosse.results[[model.index]]$phy, data.new[,1], model.vec=higeosse.results[[model.index]]$solution, f=higeosse.results[[model.index]]$f, hidden.states=TRUE)
                 if(higeosse.results[[model.index]]$root.type=="madfitz"){
-                    get.starting.probs <- hisse:::DownPassHiGeosse(phy=higeosse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=higeosse.results[[model.index]]$condition.on.survival, root.type=higeosse.results[[model.index]]$root.type, root.p=higeosse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
+                    get.starting.probs <- DownPassHiGeosse(phy=higeosse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=higeosse.results[[model.index]]$condition.on.survival, root.type=higeosse.results[[model.index]]$root.type, root.p=higeosse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }
                 out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state01A=get.starting.probs[3], state0B=get.starting.probs[4],state1B=get.starting.probs[5],state01B=get.starting.probs[6], state0C=get.starting.probs[7],state1C=get.starting.probs[8],state01C=get.starting.probs[9], state0D=get.starting.probs[10],state1D=get.starting.probs[11],state01D=get.starting.probs[12], state0E=get.starting.probs[13],state1E=get.starting.probs[14],state01E=get.starting.probs[15]), times=c(0, max.time), func=hisse:::EqFreqsHiGeoSSE, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
             }else{
                 data.new <- data.frame(higeosse.results[[model.index]]$data[,2], higeosse.results[[model.index]]$data[,2], row.names=higeosse.results[[model.index]]$data[,1])
                 data.new <- data.new[higeosse.results[[model.index]]$phy$tip.label,]
-                cache = hisse:::ParametersToPassMuSSE(higeosse.results[[model.index]]$phy, data.new[,1], model.vec=higeosse.results[[model.index]]$solution, f=higeosse.results[[model.index]]$f, hidden.states=TRUE)
+                cache = ParametersToPassMuSSE(higeosse.results[[model.index]]$phy, data.new[,1], model.vec=higeosse.results[[model.index]]$solution, f=higeosse.results[[model.index]]$f, hidden.states=TRUE)
                 if(higeosse.results[[model.index]]$root.type=="madfitz"){
-                    get.starting.probs <- hisse:::DownPassMusse(phy=higeosse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=higeosse.results[[model.index]]$condition.on.survival, root.type=higeosse.results[[model.index]]$root.type, root.p=higeosse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
+                    get.starting.probs <- DownPassMusse(phy=higeosse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=higeosse.results[[model.index]]$condition.on.survival, root.type=higeosse.results[[model.index]]$root.type, root.p=higeosse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }
                 out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state01A=get.starting.probs[3], state0B=get.starting.probs[4],state1B=get.starting.probs[5],state01B=get.starting.probs[6], state0C=get.starting.probs[7],state1C=get.starting.probs[8],state01C=get.starting.probs[9], state0D=get.starting.probs[10],state1D=get.starting.probs[11],state01D=get.starting.probs[12], state0E=get.starting.probs[13],state1E=get.starting.probs[14],state01E=get.starting.probs[15]), times=c(0, max.time), func=hisse:::EqFreqsMuSSE, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
             }
@@ -180,8 +179,8 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                     state1 <- (cache$s1A * rescaled.probs.1[1]) + (cache$s1B * rescaled.probs.1[2]) + (cache$s1C * rescaled.probs.1[3]) + (cache$s1D * rescaled.probs.1[4]) + (cache$s1E * rescaled.probs.1[5])
                     state01 <- (cache$s01A * rescaled.probs.01[1]) + (cache$s01B * rescaled.probs.01[2]) + (cache$s01C * rescaled.probs.01[3]) + (cache$s01D * rescaled.probs.01[4]) + (cache$s01E * rescaled.probs.01[5])
                 }
-                out.mat <- matrix(c(state0, state1), 1, 2)
-                colnames(out.mat) <- c("0", "1")
+                out.mat <- matrix(c(state0, state1), 1, 3)
+                colnames(out.mat) <- c("0", "1", "01")
                 res <- rbind(res, out.mat)
             }else{
                 out.mat <- t(matrix(out, 3, 5))
