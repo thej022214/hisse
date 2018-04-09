@@ -1,35 +1,38 @@
 ## Functions associated with simulation of a Hidden areas GeoSSE model using the ClaSSE model. GeoSSE is a subset of a ClaSSE model.
 
-SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.time=Inf, add.jumps=FALSE, add.extinction=FALSE, include.extinct=FALSE, return.HiGeoSSE_pars=FALSE, override.safeties=FALSE){
+SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="0A", max.taxa=Inf, max.time=Inf, add.jumps=FALSE, add.extinction=FALSE, include.extinct=FALSE, return.HiGeoSSE_pars=FALSE, override.safeties=FALSE){
     if(return.HiGeoSSE_pars){
         if( !add.jumps & !add.extinction ){
-            row.names.mod.matrix <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB")
+            row.names.mod.matrix <- c("s01", "s0", "s1", "x0", "x1", "d0", "d1")
         }
         if( add.jumps & !add.extinction ){
-            row.names.mod.matrix <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB", "jdA", "jdB")
+            row.names.mod.matrix <- c("s01", "s0", "s1", "x0", "x1", "d0", "d1", "jd0", "jd1")
         }
         if( !add.jumps & add.extinction ){
-            row.names.mod.matrix <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB", "x*A", "x*B")
+            row.names.mod.matrix <- c("s01", "s0", "s1", "x0", "x1", "d0", "d1", "x*0", "x*1")
         }
         if( add.jumps & add.extinction ){
-            row.names.mod.matrix <- c("sAB", "sA", "sB", "xA", "xB", "dA", "dB", "jdA", "jdB", "x*A", "x*B")
+            row.names.mod.matrix <- c("s01", "s0", "s1", "x0", "x1", "d0", "d1", "jd0", "jd1", "x*0", "x*1")
         }
         mod.matrix <- matrix(data=0, nrow=length(row.names.mod.matrix), ncol=hidden.areas+1)
         rownames( mod.matrix ) <- row.names.mod.matrix
-        colnames( mod.matrix ) <- as.character( 0:hidden.areas )
-        qmatAB <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
-        diag(qmatAB) <- NA
-        trans.names <- paste0("AB", 0:hidden.areas)
-        rownames(qmatAB) <- colnames(qmatAB) <- trans.names
-        qmatA <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
-        diag(qmatA) <- NA
-        trans.names <- paste0("A", 0:hidden.areas)
-        rownames(qmatA) <- colnames(qmatA) <- trans.names
-        qmatB <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
-        diag(qmatB) <- NA
-        trans.names <- paste0("B", 0:hidden.areas)
-        rownames(qmatB) <- colnames(qmatB) <- trans.names
-        par.list <- list( model.pars = mod.matrix, q.AB = qmatAB, q.A = qmatA, q.B = qmatB)
+        colnames( mod.matrix ) <- LETTERS[1:(hidden.areas+1)]
+        qmat01 <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
+        diag(qmat01) <- NA
+        trans.names <- paste0("01", LETTERS[1:(hidden.areas+1)])
+        rownames(qmat01) <- trans.names
+        colnames(qmat01) <- trans.names
+        qmat0 <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
+        diag(qmat0) <- NA
+        trans.names <- paste0("0", LETTERS[1:(hidden.areas+1)])
+        rownames(qmat0) <- trans.names
+        colnames(qmat0) <- trans.names
+        qmat1 <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
+        diag(qmat1) <- NA
+        trans.names <- paste0("1", LETTERS[1:(hidden.areas+1)])
+        rownames(qmat1) <- trans.names
+        colnames(qmat1) <- trans.names
+        par.list <- list( model.pars = mod.matrix, q.01 = qmat01, q.0 = qmat0, q.1 = qmat1 )
         class(par.list) <- append(class(par.list),"HiGeoSSE_pars")
         return( par.list )
     }
@@ -44,10 +47,10 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
     ## If there are no hidden areas in the model, there is a chance the vector of parameters is a vector instead of a matrix.
     if( !is.matrix(pars$model.pars) ) stop("The parameter 'pars$model.pars' need to be a matrix.")
     ## Check if jumps or extinction parameters were provided and, if positive, check if the correct option were selected.
-    if( "jdA" %in% rownames( pars$model.pars ) & !add.jumps ) stop("Detected jump dispersal parameters. Please set 'add.jumps=TRUE'.")
-    if( "jdB" %in% rownames( pars$model.pars ) & !add.jumps ) stop("Detected jump dispersal parameters. Please set 'add.jumps=TRUE'.")
-    if( "x*A" %in% rownames( pars$model.pars ) & !add.extinction ) stop("Detected extra extinction parameters. Please set 'add.extinction=TRUE'.")
-    if( "x*B" %in% rownames( pars$model.pars ) & !add.extinction ) stop("Detected extra extinction parameters. Please set 'add.extinction=TRUE'.")
+    if( "jd0" %in% rownames( pars$model.pars ) & !add.jumps ) stop("Detected jump dispersal parameters. Please set 'add.jumps=TRUE'.")
+    if( "jd1" %in% rownames( pars$model.pars ) & !add.jumps ) stop("Detected jump dispersal parameters. Please set 'add.jumps=TRUE'.")
+    if( "x*0" %in% rownames( pars$model.pars ) & !add.extinction ) stop("Detected extra extinction parameters. Please set 'add.extinction=TRUE'.")
+    if( "x*1" %in% rownames( pars$model.pars ) & !add.extinction ) stop("Detected extra extinction parameters. Please set 'add.extinction=TRUE'.")
 
     ## Generate the key for the translation of the parameters:
     model.pars.vec <- c( pars$model.pars )
@@ -56,29 +59,33 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
     ## Get the transtions for the hidden areas.
     ## Have a feeling this could be more elegant. But, well...
     tr.size <- ((hidden.areas+1)^2)-(hidden.areas+1)
-    AB.vec <- A.vec <- B.vec <- vector("numeric", length=tr.size)
-    AB.nm <- A.nm <- B.nm <- vector("character", length=tr.size)
+    vec.01 <- vector("numeric", length=tr.size)
+    vec.0 <- vector("numeric", length=tr.size)
+    vec.1 <- vector("numeric", length=tr.size)
+    nm.01 <- vector("character", length=tr.size)
+    nm.0 <- vector("character", length=tr.size)
+    nm.1 <- vector("character", length=tr.size)
     count <- 1 ## keep the count for the loop.
     for( i in 1:(hidden.areas+1) ){
         for( j in 1:(hidden.areas+1) ){
             if( i == j ) next
-            AB.vec[count] <- pars$q.AB[i,j]
-            AB.nm[count] <- paste0("qAB", i-1, j-1)
-            A.vec[count] <- pars$q.A[i,j]
-            A.nm[count] <- paste0("qA", i-1, j-1)
-            B.vec[count] <- pars$q.B[i,j]
-            B.nm[count] <- paste0("qB", i-1, j-1)
+            vec.01[count] <- pars$q.01[i,j]
+            nm.01[count] <- paste0("q01", i-1, j-1)
+            vec.0[count] <- pars$q.0[i,j]
+            nm.0[count] <- paste0("q0", i-1, j-1)
+            vec.1[count] <- pars$q.1[i,j]
+            nm.1[count] <- paste0("q1", i-1, j-1)
             count <- count + 1
         }
     }
-    names(AB.vec) <- AB.nm
-    names(A.vec) <- A.nm
-    names(B.vec) <- B.nm
+    names(vec.01) <- nm.01
+    names(vec.0) <- nm.0
+    names(vec.1) <- nm.1
 
     ## Translate from HiGeoSSE par names to ClaSSE.
     ## Need to update 'TranslateParsMakerHiGeoSSE' for the simulations.
     parkey <- TranslateParsMakerHiGeoSSE(k=hidden.areas, add.extinction=add.extinction, add.jumps=add.jumps)
-    higeosse.pars <- c(model.pars.vec, AB.vec, A.vec, B.vec)
+    higeosse.pars <- c(model.pars.vec, vec.01, vec.0, vec.1)
     classe.pars <- vector("numeric", length=nrow(parkey))
     names(classe.pars) <- parkey[,1]
     for( i in 1:length(higeosse.pars) ){
@@ -92,7 +99,7 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
     full.classe.pars[mm] <- classe.pars
 
     ## Translate x0 to ClaSSE format.
-    par.areas <- paste0(c("AB", "A", "B"), rep(0:hidden.areas, each=3))
+    par.areas <- paste0(c("01", "0", "1"), rep(LETTERS[1:(hidden.areas+1)], each=3))
     if( !x0 %in% par.areas ) stop(paste0("x0 needs to be one of ", paste(par.areas, sep="", collapse=", "), " .", collapse=""))
     classe.x0 <- which( par.areas %in% x0 )
 
@@ -100,17 +107,28 @@ SimulateHiGeoSSE <- function(pars, hidden.areas=1, x0="AB0", max.taxa=Inf, max.t
     ## Repeat until we get the sims done. Record how many times it failed.
     attempt <- 0
     sims <- NULL
+    print( "Simulating the phylogeny..." )
     while( is.null(sims) ){
     sims <- diversitree::tree.classe(pars=full.classe.pars, max.taxa=max.taxa, max.t=max.time
                                    , include.extinct=include.extinct, x0=classe.x0)
     attempt <- attempt + 1
+    if( is.null(sims) ) print( paste("Simulation attemp ", attempt," failed. Trying again...", collapse="") )
     }
+    print( "Simulation finished!" )
     
     ## Translate the traits back to HiGeoSSE format.
     tip.state <- sapply(sims$tip.state, function(x) par.areas[x])
     sims$node.state <- sapply(sims$node.state, function(x) par.areas[x])
+
+    ## Return a vector with the true ranges at the tips and a data matrix in the correct format for a call to the HiGeoSSE function.
+    higeosse.par.areas <- rep(0:2, times=hidden.areas+1) ## Code in the order for the HiGeoSSE function.
+    higeosse.tip.state <- sapply(sims$tip.state, function(x) higeosse.par.areas[x])
+    higeosse.mat <- matrix(NA, ncol = 2, nrow = length(higeosse.tip.state) )
+    higeosse.mat[,1] <- names( higeosse.tip.state )
+    higeosse.mat[,2] <- as.numeric( higeosse.tip.state )
+    colnames( higeosse.mat ) <- c("Species", "Range")
     
-    return( list(phy=sims, data=tip.state, sim.attempts=attempt, pars=pars, classe.pars=full.classe.pars) )
+    return( list(phy=sims, data=higeosse.mat, hidden.areas=tip.state, sim.attempts=attempt, pars=pars, classe.pars=full.classe.pars) )
 }
 
 GetArgnamesClasse <- function(k){
@@ -133,17 +151,17 @@ ParNamesKeyClaSSEtoHiGeoSSE <- function(k, add.extinction, add.jumps){
     ## If k >= 3 then all the numbers need to be 0 padded. Need to modify this function.
     ## add.extinction and add.jumps allow for adding additional parameters to the models.
     if( !add.extinction & !add.jumps ){
-        mod.par <- sapply(0:k, function(x) paste0(c("sA", "sA", "sB", "sB", "sAB", "xA", "xB", "dA", "dB", "xA", "xB"), x) )
+        mod.par <- sapply(LETTERS[1:(k+1)], function(x) paste0(c("s0", "s0", "s1", "s1", "s01", "x0", "x1", "d0", "d1", "x0", "x1"), x) )
     }
     if( add.extinction & !add.jumps ){
         ## Here we just need to mark the extirpation and extinction in different ways so the parameters can receive different values.
-        mod.par <- sapply(0:k, function(x) paste0(c("sA", "sA", "sB", "sB", "sAB", "xA", "xB", "dA", "dB", "x*A", "x*B"), x) )
+        mod.par <- sapply(LETTERS[1:(k+1)], function(x) paste0(c("s0", "s0", "s1", "s1", "s01", "x0", "x1", "d0", "d1", "x*0", "x*1"), x) )
     }
     if( !add.extinction & add.jumps ){
-        mod.par <- sapply(0:k, function(x) paste0(c("sA", "sA", "sB", "sB", "sAB", "xA", "xB", "dA", "dB", "jdA", "jdB", "xA", "xB"), x) )
+        mod.par <- sapply(LETTERS[1:(k+1)], function(x) paste0(c("s0", "s0", "s1", "s1", "s01", "x0", "x1", "d0", "d1", "jd0", "jd1", "x0", "x1"), x) )
     }
     if( add.extinction & add.jumps ){
-        mod.par <- sapply(0:k, function(x) paste0(c("sA", "sA", "sB", "sB", "sAB", "xA", "xB", "dA", "dB", "jdA", "jdB", "x*A", "x*B"), x) )
+        mod.par <- sapply(LETTERS[1:(k+1)], function(x) paste0(c("s0", "s0", "s1", "s1", "s01", "x0", "x1", "d0", "d1", "jd0", "jd1", "x*0", "x*1"), x) )
     }
     
     if( k >= 3 ){
@@ -200,8 +218,8 @@ ParNamesKeyClaSSEtoHiGeoSSE <- function(k, add.extinction, add.jumps){
 
 qNamesKeyClaSSEtoGeoSSE <- function(k, area, init){
     ## k: The number of hidden states in the HiGeoSSE model.
-    ## area: One of the three areas AB, A or B.
-    ## init: The initial number for the areas. This is the order that AB, A and B appears in the model. AB = 1, A = 2, B = 3.
+    ## area: One of the three areas 01, 0 or 1.
+    ## init: The initial number for the areas. This is the order that 01, 0 and 1 appears in the model. 01 = 1, 0 = 2, 1 = 3.
     ## Messing with this might change the order of the states in the simulation and you might be simulating stuff different from what you think.
     if( k >= 3 ){
         classe.id <- sprintf("%02d", seq(from=init, by=3, length.out=k+1))
@@ -209,7 +227,7 @@ qNamesKeyClaSSEtoGeoSSE <- function(k, area, init){
     } else{
         classe.id <- seq(from=init, by=3, length.out=k+1)
     }
-    higeosse.id <- seq(from=0, by=1, length.out=k+1)
+    higeosse.id <- LETTERS[1:(k+1)]
 
     q.hidden.classe <- vector(mode="character", length=((k+1)^2)-(k+1))
     q.hidden.higeosse <- vector(mode="character", length=((k+1)^2)-(k+1))
@@ -223,7 +241,9 @@ qNamesKeyClaSSEtoGeoSSE <- function(k, area, init){
             count <- count+1
         }
     }
-    return( cbind(q.hidden.classe, q.hidden.higeosse) )
+    res <- cbind(q.hidden.classe, q.hidden.higeosse)
+    colnames(res) <- c("ClaSSE", "HiGeoSSE")
+    return(res)
 }
 
 TranslateParsMakerHiGeoSSE <- function(k, add.extinction=FALSE, add.jumps=FALSE){
@@ -234,11 +254,11 @@ TranslateParsMakerHiGeoSSE <- function(k, add.extinction=FALSE, add.jumps=FALSE)
     ## add.jumps: if jumps between endemic areas should be added.
 
     divpars <- ParNamesKeyClaSSEtoHiGeoSSE(k, add.extinction=add.extinction, add.jumps=add.jumps)
-    transpars.AB <- qNamesKeyClaSSEtoGeoSSE(k=k, area="AB", init=1)
-    transpars.A <- qNamesKeyClaSSEtoGeoSSE(k=k, area="A", init=2)
-    transpars.B <- qNamesKeyClaSSEtoGeoSSE(k=k, area="B", init=3)
+    transpars.01 <- qNamesKeyClaSSEtoGeoSSE(k=k, area="01", init=1)
+    transpars.0 <- qNamesKeyClaSSEtoGeoSSE(k=k, area="0", init=2)
+    transpars.1 <- qNamesKeyClaSSEtoGeoSSE(k=k, area="1", init=3)
 
-    parkey <- rbind( divpars, transpars.AB, transpars.A, transpars.B )
+    parkey <- rbind( divpars, transpars.01, transpars.0, transpars.1 )
     colnames( parkey ) <- c("classe.pars", "higeosse.pars")
     return( parkey )
 }
