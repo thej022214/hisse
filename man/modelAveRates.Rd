@@ -24,8 +24,7 @@ bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000)) )
   the minimum value and second column is the maximum value (both
   inclusive). The rows are the model parameter in this fixed order:
   turnover, net diversification, speciation, extinction fraction, and
-  extinction. WARNING: The function will not check for errors in the format of this
-  matrix!!}
+  extinction.}
 }
 \details{
 Provides a data frame model-averaged rates for all possible configurations of the model parameters (i.e., turnover, net.div, speciation, extinction, or extinction.fraction), either for all tips or for all nodes.

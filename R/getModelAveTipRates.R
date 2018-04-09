@@ -9,6 +9,21 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
 
     if (!type %in% c("tips", "nodes", "both")) stop("Argument 'type' needs to be one of 'tips', 'nodes', or 'both'.")
 
+    ## Check if the format of bound par matrix is correct.
+    ## This needs to be a numeric matrix with two columns and 5 rows.
+    ## First column are minimums and second colum are maximums.
+    if( !inherits(bound.par.matrix, what = c("matrix","data.frame")) ){
+        stop(" 'bound.par.matrix' needs to be a matrix or data.frame ")
+    }
+    if( !ncol(bound.par.matrix) == 2 | !nrow(bound.par.matrix) == 5 ){
+        stop( " 'bound.par.matrix' needs to be a matrix with 5 rows and 2 columns. See help.")
+    }
+    ## Beware that the test below might misbehave if the lengths are different.
+    ## But since we tested the dimensions, then this seems fine.
+    if( !all( bound.par.matrix[,1] < bound.par.matrix[,2] ) ){
+        stop("Min bounds larger than max! First column of 'bound.par.matrix' are the minimum bounds and second column are the maximum.")
+    }
+    
     ## Create flag to compute the model average for the both nodes and tips or just one of them.
     if( type == "both" ){
         to.mod.ave <- c("tips", "nodes")
