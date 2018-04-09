@@ -18,7 +18,8 @@ legend.bg="cornsilk3",...)
 \item{state.colors}{user specified colors to be used for coloring states.} 
 \item{edge.width.rate}{the width of the rate lines.} 
 \item{edge.width.state}{the width of the state lines, which should be set so that it is narrower than the edge width for rates.}
-\item{type}{a character string specifying the type of phylogeny to be drawn. See \code{ape} for options, default is a circle tree ("fan").}
+\item{type}{a character string specifying the type of phylogeny to be drawn. Options are "fan" (default) and "phylogram". See
+  \code{ape::plot.phylo} function for more options.}
 \item{rate.range}{an optional two element vector. If present, specifies the range of rate values to use for plotting.}
 \item{show.tip.label}{a logical indicating whether tip names should be included.}
 \item{fsize}{sets the font size for the tip labels.}
@@ -33,7 +34,8 @@ chooses what we think is the best option given your data, \dQuote{hist} makes a 
 \item{\dots}{further arguments to be passed to \dQuote{plot} or \dQuote{plot.hisse.states}.}
 }
 \details{
-This function is very similar to the \code{plot.hisse.states} function.
+This function is very similar to the \code{hisse::plot.hisse.states}
+function. See more details in help page for \code{hisse::plot.hisse.states} function.
 }
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
