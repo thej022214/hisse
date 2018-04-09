@@ -569,25 +569,16 @@ ParameterTransformGeoSSE <- function(x, assume.cladogenetic=TRUE){
     return(rates.mat)
 }
 
-
-
 print.hisse.states <- function(x,...){
     print(x$phy)
 }
 
-
-
+print.hisse.geosse.states <- function(x,...){
+    print(x$phy)
+}
 
 ParameterTransform <- function(x, y){
 	speciation <- x / (1+y)
 	extinction <- (x*y) / (1+y)
 	return(c(speciation, extinction))
 }
-
-
-print.hisse.states <- function(x,...){
-	print(x$phy)
-}
-
-
-
