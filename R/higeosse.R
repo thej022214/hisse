@@ -34,6 +34,27 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         }
     }
 
+    ## Return error message if the data is not in the correct format.
+    if( !inherits(data, what = c("matrix","data.matrix")) ){
+        stop("'data' needs to be a matrix or data.matrix with 2 columns. See help.")
+    }
+    if( !ncol( data ) == 2 ){
+        stop("'data' needs to be a matrix or data.matrix with 2 columns. See help.")
+    }
+    ## Check if the states are %in% 0:2:
+    states.check <- all( as.numeric(data[,2]) %in% 0:2 )
+    if( !states.check ){
+        stop("states need to be one of 0, 1, or 2. See help.")
+    }
+
+    ## Check if 'hidden.areas' parameter is congruent with the speciation vector:
+    if( length(speciation) > 3 & !hidden.areas ){
+        stop("Speciation has more than 3 elements but 'hidden.areas' was set to FALSE. Please set 'hidden.areas' to TRUE if the model include more than one rate class.")
+    }
+    if( length(speciation) == 3 & hidden.areas ){
+        stop("Speciation has only 3 elements but 'hidden.areas' was set to TRUE. Please set 'hidden.areas' to FALSE if the model does not include hidden rate classes.")
+    }
+    
     if(assume.cladogenetic == TRUE){
         pars <- numeric(115)
         
@@ -378,13 +399,8 @@ HiGeoSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     cat("Finished. Summarizing results...", "\n")
     
     obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.areas=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
-    ## class(obj) <- append(class(obj), "higeosse.fit")
-    ## return(obj)
-    
-    ## Make some repackaging of the output to be more readable:
-    #out <- FormatOutHiGeoSSE(obj)
-    #class(out) <- append(class(out), "higeosse.fit")
-    #return(out)
+    class(obj) <- append(class(obj), "higeosse.fit")
+    return(obj)
 }
 
 ######################################################################################################################################
@@ -1341,26 +1357,20 @@ ParametersToPassMuSSE <- function(phy, data, f, model.vec, hidden.states){
 
 print.higeosse.fit <- function(x,...){
     ## Function to print a "higeosse.fit" object.
-    ## Assumes x is of class "higeosse.fit" and that it was formated by 'FormatOutHiGeoSSE' function.
-    par.list <- x$solution
-    ntips <- Ntip( x$imput$phy )
-    nareas <- ncol( x$control$trans.matrix )/3
-    output <- c(x$fit$loglik, x$fit$AIC, x$fit$AICc, ntips, nareas-1)
-    names(output) <- c("-lnL", "AIC", "AICc", "n.taxa", "n.hidden.areas")
-    cat("\nFit\n")
+    set.zero <- max( x$index.par )
+    ## Keep only the parameters estimated:
+    par.list <- x$solution[ !x$index.par == set.zero ]
+    ntips <- Ntip( x$phy )
+    nareas <- ncol( x$trans.matrix )/3
+    output <- c(x$loglik, x$AIC, x$AICc, ntips, nareas)
+    names(output) <- c("-lnL", "AIC", "AICc", "n.taxa", "n.hidden.classes")
+    cat("\n")
+    cat("Fit \n")
     print(output)
     cat("\n")
-    cat("(s)peciation, e(x)tirpation, and (d)ispersion:\n")
+    cat("Model parameters: \n")
     cat("\n")
-    print(x$solution$model.pars)
-    cat("\n")
-    cat("Transition between hidden areas:\n")
-    cat("\n")
-    print(x$solution$q.0)
-    cat("\n")
-    print(x$solution$q.1)
-    cat("\n")
-    print(x$solution$q.01)
+    print(par.list)
     cat("\n")
 }
 
