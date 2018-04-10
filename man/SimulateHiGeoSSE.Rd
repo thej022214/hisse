@@ -3,7 +3,7 @@
 \title{Simulate under a HiGeoSSE model}
 \description{Simulation function for the HiGeoSSE model}
 \usage{
-SimulateHiGeoSSE(pars, hidden.areas=1, x0="AB0", max.taxa=Inf,
+SimulateHiGeoSSE(pars, hidden.areas=1, x0="0A", max.taxa=Inf,
 max.time=Inf, add.jumps=FALSE, add.extinction=FALSE, 
 include.extinct=FALSE, return.HiGeoSSE_pars=FALSE, 
 override.safeties=FALSE)} 
