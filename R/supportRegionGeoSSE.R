@@ -87,7 +87,7 @@ AdaptiveConfidenceIntervalSamplingHiGeoSSE <- function(par, lower, upper, desire
             phy$node.label <- NULL
             second <- -DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
         }else{
-            cache = ParametersToPassMuSSE(phy, data.new[,1], f, model.vec=model.vec, hidden.states=hidden.states)
+            cache = ParametersToPassMuSSE(phy, data[,1], f, model.vec=model.vec, hidden.states=hidden.states)
             phy$node.label <- NULL
             second <- -DownPassMusse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
         }
