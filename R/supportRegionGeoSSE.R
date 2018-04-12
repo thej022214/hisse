@@ -77,11 +77,11 @@ AdaptiveConfidenceIntervalSamplingHiGeoSSE <- function(par, lower, upper, desire
     for (i in sequence(n.points)) {
         sim.points <- NA
         while(is.na(sim.points[1])) {
-            sim.points <- exp(GenerateValues(log(par), lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE)))
+            sim.points <- GenerateValues(log(par), lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE)))
         }
         par <- sim.points
         model.vec <- numeric(length(index.par))
-        model.vec[] <- c(sim.points,0)[index.par]
+        model.vec[] <- c(exp(sim.points),0)[index.par]
         if(assume.cladogenetic == TRUE){
             cache = ParametersToPassHiGeoSSE(phy, data[,1], f, model.vec=model.vec, hidden.states=hidden.states)
             phy$node.label <- NULL
