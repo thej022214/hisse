@@ -1,7 +1,7 @@
 \name{MarginReconGeoSSE}
 \alias{MarginReconGeoSSE}
 \title{Ancestral State Estimation based on Marginal Reconstruction for
-  the GeoSSE and HiGeoSSE models.}
+  the GeoSSE and GeoHiSSE models.}
 \description{Estimates the likeliest states for both internal nodes and tips of a phylogeny using the marginal reconstruction algorithm.}
 \usage{
 MarginReconGeoSSE(phy, data, f, pars, hidden.areas=TRUE, 
@@ -18,7 +18,7 @@ n.cores=NULL)
 \item{assume.cladogenetic}{a logical indicating whether the model
   assumes that changes occurr at the nodes. The default is
   \code{TRUE}. Setting this to \code{FALSE} will result in a different
-  models from GeoSSE. Please check \code{hisse::HiGeoSSE} for more details.}
+  models from GeoSSE. Please check \code{hisse::GeoHiSSE} for more details.}
 \item{condition.on.survival}{a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
 \item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
@@ -37,7 +37,7 @@ say the root had to be area A, you would specify \dQuote{root.p = c(0.5,
   0, 0, 0.5, 0, 0)}. There is 'root area is A and there is an equal
 chance for hidden area A0 or A1'.
 
-See help for \dQuote{HiGeoSSE} for more on other parameters for this function.
+See help for \dQuote{GeoHiSSE} for more on other parameters for this function.
 
 }
 \value{

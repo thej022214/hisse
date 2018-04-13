@@ -1,7 +1,7 @@
 
 ######################################################################################################################################
 ######################################################################################################################################
-### EquiFreq -- calculates a model-averaged equilibrium frequency for each state under a set of parameters in HiSSE and hiGeoSSE
+### EquiFreq -- calculates a model-averaged equilibrium frequency for each state under a set of parameters in HiSSE and GeoHiSSE
 ######################################################################################################################################
 ######################################################################################################################################
 
@@ -133,30 +133,30 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
         }
     }
     
-    if(model.type=="higeosse"){
+    if(model.type=="geohisse"){
         res <- c()
-        higeosse.results <- x
-        if(class(higeosse.results)!="list") { #we have to make a list so we can run this generally
+        geohisse.results <- x
+        if(class(geohisse.results)!="list") { #we have to make a list so we can run this generally
             tmp.list <- list()
-            tmp.list[[1]] <- higeosse.results
-            higeosse.results <- tmp.list
+            tmp.list[[1]] <- geohisse.results
+            geohisse.results <- tmp.list
         }
-        for(model.index in 1:length(higeosse.results)){
-            if(higeosse.results[[model.index]]$assume.cladogenetic == TRUE){
+        for(model.index in 1:length(geohisse.results)){
+            if(geohisse.results[[model.index]]$assume.cladogenetic == TRUE){
                 ##Modify the data file
-                data.new <- data.frame(higeosse.results[[model.index]]$data[,2], higeosse.results[[model.index]]$data[,2], row.names=higeosse.results[[model.index]]$data[,1])
-                data.new <- data.new[higeosse.results[[model.index]]$phy$tip.label,]
-                cache = ParametersToPassHiGeoSSE(higeosse.results[[model.index]]$phy, data.new[,1], model.vec=higeosse.results[[model.index]]$solution, f=higeosse.results[[model.index]]$f, hidden.states=TRUE)
-                if(higeosse.results[[model.index]]$root.type=="madfitz"){
-                    get.starting.probs <- DownPassHiGeosse(phy=higeosse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=higeosse.results[[model.index]]$condition.on.survival, root.type=higeosse.results[[model.index]]$root.type, root.p=higeosse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
+                data.new <- data.frame(geohisse.results[[model.index]]$data[,2], geohisse.results[[model.index]]$data[,2], row.names=geohisse.results[[model.index]]$data[,1])
+                data.new <- data.new[geohisse.results[[model.index]]$phy$tip.label,]
+                cache = ParametersToPassgeohisse(geohisse.results[[model.index]]$phy, data.new[,1], model.vec=geohisse.results[[model.index]]$solution, f=geohisse.results[[model.index]]$f, hidden.states=TRUE)
+                if(geohisse.results[[model.index]]$root.type=="madfitz"){
+                    get.starting.probs <- DownPassgeohisse(phy=geohisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=geohisse.results[[model.index]]$condition.on.survival, root.type=geohisse.results[[model.index]]$root.type, root.p=geohisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }
-                out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state01A=get.starting.probs[3], state0B=get.starting.probs[4],state1B=get.starting.probs[5],state01B=get.starting.probs[6], state0C=get.starting.probs[7],state1C=get.starting.probs[8],state01C=get.starting.probs[9], state0D=get.starting.probs[10],state1D=get.starting.probs[11],state01D=get.starting.probs[12], state0E=get.starting.probs[13],state1E=get.starting.probs[14],state01E=get.starting.probs[15]), times=c(0, max.time), func=EqFreqsHiGeoSSE, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
+                out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state01A=get.starting.probs[3], state0B=get.starting.probs[4],state1B=get.starting.probs[5],state01B=get.starting.probs[6], state0C=get.starting.probs[7],state1C=get.starting.probs[8],state01C=get.starting.probs[9], state0D=get.starting.probs[10],state1D=get.starting.probs[11],state01D=get.starting.probs[12], state0E=get.starting.probs[13],state1E=get.starting.probs[14],state01E=get.starting.probs[15]), times=c(0, max.time), func=EqFreqsgeohisse, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
             }else{
-                data.new <- data.frame(higeosse.results[[model.index]]$data[,2], higeosse.results[[model.index]]$data[,2], row.names=higeosse.results[[model.index]]$data[,1])
-                data.new <- data.new[higeosse.results[[model.index]]$phy$tip.label,]
-                cache = ParametersToPassMuSSE(higeosse.results[[model.index]]$phy, data.new[,1], model.vec=higeosse.results[[model.index]]$solution, f=higeosse.results[[model.index]]$f, hidden.states=TRUE)
-                if(higeosse.results[[model.index]]$root.type=="madfitz"){
-                    get.starting.probs <- DownPassMusse(phy=higeosse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=higeosse.results[[model.index]]$condition.on.survival, root.type=higeosse.results[[model.index]]$root.type, root.p=higeosse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
+                data.new <- data.frame(geohisse.results[[model.index]]$data[,2], geohisse.results[[model.index]]$data[,2], row.names=geohisse.results[[model.index]]$data[,1])
+                data.new <- data.new[geohisse.results[[model.index]]$phy$tip.label,]
+                cache = ParametersToPassMuSSE(geohisse.results[[model.index]]$phy, data.new[,1], model.vec=geohisse.results[[model.index]]$solution, f=geohisse.results[[model.index]]$f, hidden.states=TRUE)
+                if(geohisse.results[[model.index]]$root.type=="madfitz"){
+                    get.starting.probs <- DownPassMusse(phy=geohisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=geohisse.results[[model.index]]$condition.on.survival, root.type=geohisse.results[[model.index]]$root.type, root.p=geohisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }
                 out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state01A=get.starting.probs[3], state0B=get.starting.probs[4],state1B=get.starting.probs[5],state01B=get.starting.probs[6], state0C=get.starting.probs[7],state1C=get.starting.probs[8],state01C=get.starting.probs[9], state0D=get.starting.probs[10],state1D=get.starting.probs[11],state01D=get.starting.probs[12], state0E=get.starting.probs[13],state1E=get.starting.probs[14],state01E=get.starting.probs[15]), times=c(0, max.time), func=EqFreqsMuSSE, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
             }
@@ -188,7 +188,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                 res <- rbind(res, colSums(out.mat)/sum(out.mat))
             }
         }
-        AIC.vector <- sapply(higeosse.results, "[[", "AIC")
+        AIC.vector <- sapply(geohisse.results, "[[", "AIC")
         delta.AIC.vector <- AIC.vector - min(AIC.vector)
         rel.likelihood <- exp(-0.5 * delta.AIC.vector)
         AIC.weight.vector <- rel.likelihood / sum(rel.likelihood)
@@ -229,8 +229,8 @@ EqFreqCID4 <- function(t, y, parms, cache){
 }
 
 
-#HiGeoSSE equilibrium freqs.
-EqFreqsHiGeoSSE <- function(t, y, parms, cache){
+#GeoHiSSE equilibrium freqs.
+EqFreqsGeoHiSSE <- function(t, y, parms, cache){
     #cat A:
     dN0AdT  = cache$s0A * y[1] + cache$d01A_0A * y[3] + cache$s01A * y[3] + cache$s0A * y[3] - cache$x0A * y[1] - cache$d0A_01A * y[1] - cache$d0A_1A * y[1] - cache$d0A_0B * y[1] - cache$d0A_0C * y[1] - cache$d0A_0D * y[1] - cache$d0A_0E * y[1] + cache$d0B_0A * y[4] + cache$d0C_0A * y[7] + cache$d0D_0A * y[10] + cache$d0E_0A * y[13]
     dN1AdT  = cache$s1A * y[2] + cache$d01A_1A * y[3] + cache$s01A * y[3] + cache$s1A * y[3] - cache$x1A * y[2] - cache$d1A_01A * y[2] - cache$d1A_0A * y[2] - cache$d1A_1B * y[2] - cache$d1A_1C * y[2] - cache$d1A_1D * y[2] - cache$d1A_1E * y[2] + cache$d1B_1A * y[5] + cache$d1C_1A * y[8] + cache$d1D_1A * y[11] + cache$d1E_1A * y[14]

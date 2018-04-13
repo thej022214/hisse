@@ -2,13 +2,13 @@
 \alias{GetModelWeight}
 \title{Compute model weights}
 \description{Computes the Akaike model weights for a list of HiSSE or
-  HiGeoSSE model fits.}
+  GeoHiSSE model fits.}
 \usage{
 GetModelWeight(...)
 }       
 \arguments{
 \item{...}{Any number of model fits of class 'hisse.fit' or
-  'higeosse.fit' separated by commas OR a single list object composed by
+  'geohisse.fit' separated by commas OR a single list object composed by
 the model fits.}
 }
 \details{

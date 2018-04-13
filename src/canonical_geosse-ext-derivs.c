@@ -35,13 +35,13 @@ void initmod_geosse(void (* odeparms)(int *, double *)){
 //    double D_N1 = y[5];
     
 //    double
-//    sA  = params_higeosse[0],     /* speciation within region A */
-//    sB  = params_higeosse[1],     /* speciation within region B */
-//    sAB = params_higeosse[2],     /* between-region speciation  */
-//    xA  = params_higeosse[3],     /* extinction from region A   */
-//    xB  = params_higeosse[4],     /* extinction from region B   */
-//    dA  = params_higeosse[5],     /* dispersal from A to B      */
-//    dB  = params_higeosse[6];     /* dispersal from B to A      */
+//    sA  = params_geohisse[0],     /* speciation within region A */
+//    sB  = params_geohisse[1],     /* speciation within region B */
+//    sAB = params_geohisse[2],     /* between-region speciation  */
+//    xA  = params_geohisse[3],     /* extinction from region A   */
+//    xB  = params_geohisse[4],     /* extinction from region B   */
+//    dA  = params_geohisse[5],     /* dispersal from A to B      */
+//    dB  = params_geohisse[6];     /* dispersal from B to A      */
 
     /*  dE_2 / dt  */
 //    ydot[0] = -(sA + dA + xA) * E_2

@@ -129,7 +129,7 @@ test_that("HiSSE_Null_Four_test", {
 })
 
 
-test_that("HiGeoSSE_test1", {
+test_that("GeoHiSSE_test1", {
     skip_on_cran()
     
     library(diversitree)
@@ -146,14 +146,14 @@ test_that("HiGeoSSE_test1", {
     model.vec <- numeric(115)
     model.vec[1:11] <- c(pars[1:3], pars[4:5], 0, pars[6], 0, pars[7], pars[5:4])
     phy$node.label <- NULL
-    cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
-    higeosse.full <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=FALSE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
-    comparison <- identical(round(higeosse.full,4), round(diversitree.full,4))
+    cache <- ParametersToPassGeoHiSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
+    geohisse.full <- DownPassGeoHisse(phy=phy, cache=cache, hidden.states=FALSE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    comparison <- identical(round(geohisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
 
 
-test_that("HiGeoSSE_test2", {
+test_that("GeoHiSSE_test2", {
     skip_on_cran()
     
     library(diversitree)
@@ -170,14 +170,14 @@ test_that("HiGeoSSE_test2", {
     model.vec <- numeric(115)
     model.vec[1:11] <- c(pars[1:3], pars[4:5], 0, pars[6], 0, pars[7], pars[5:4])
     phy$node.label <- NULL
-    cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
-    higeosse.full <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
-    comparison <- identical(round(higeosse.full,4), round(diversitree.full,4))
+    cache <- ParametersToPassGeoHiSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
+    geohisse.full <- DownPassGeoHisse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    comparison <- identical(round(geohisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
 
 
-test_that("HiGeoSSE_test3", {
+test_that("GeoHiSSE_test3", {
     skip_on_cran()
     
     library(diversitree)
@@ -194,14 +194,14 @@ test_that("HiGeoSSE_test3", {
     model.vec <- numeric(115)
     model.vec[1:11] <- c(pars[1:3], pars[4:5], 0, pars[6], 0, pars[7], pars[5:4])
     phy$node.label <- NULL
-    cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
-    higeosse.full <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
-    comparison <- identical(round(higeosse.full,4), round(diversitree.full,4))
+    cache <- ParametersToPassGeoHiSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
+    geohisse.full <- DownPassGeoHisse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    comparison <- identical(round(geohisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
 
 
-test_that("HiGeoSSE_test4", {
+test_that("GeoHiSSE_test4", {
     skip_on_cran()
     
     library(diversitree)
@@ -218,14 +218,14 @@ test_that("HiGeoSSE_test4", {
     model.vec <- numeric(115)
     model.vec[1:11] <- c(pars[1:3], pars[4:5], 0, pars[6], 0, pars[7], pars[5:4])
     phy$node.label <- NULL
-    cache <- ParametersToPassHiGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
-    higeosse.full <- DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
-    comparison <- identical(round(higeosse.full,4), round(diversitree.full,4))
+    cache <- ParametersToPassGeoHiSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
+    geohisse.full <- DownPassGeoHisse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    comparison <- identical(round(geohisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
 
 
-test_that("HiGeoSSE_test5", {
+test_that("GeoHiSSE_test5", {
     skip_on_cran()
     
     library(diversitree)
@@ -236,7 +236,7 @@ test_that("HiGeoSSE_test5", {
     pars2 <- c(1.1, 1.6, 0.4, 0.6, 0.5, 0.6, 2.7)
     
     ## Check the likelihood for the hidden null model.
-    sim.pars <- SimulateHiGeoSSE(hidden.areas = 1, return.HiGeoSSE_pars = TRUE)
+    sim.pars <- SimulateGeoHiSSE(hidden.areas = 1, return.GeoHiSSE_pars = TRUE)
     sim.pars$model.pars[,1] <- pars1
     sim.pars$model.pars[,2] <- pars2
     sim.pars$q.AB[2,1] <- 1
@@ -246,11 +246,11 @@ test_that("HiGeoSSE_test5", {
     sim.pars$q.B[2,1] <- 5
     sim.pars$q.B[1,2] <- 6
     
-    sim.data <- SimulateHiGeoSSE(pars=sim.pars, hidden.areas = 1, max.taxa = 500)
+    sim.data <- SimulateGeoHiSSE(pars=sim.pars, hidden.areas = 1, max.taxa = 500)
     #sim.data$classe.pars ## This is the parameters for the ClaSSE model.
     
     ## Just to double check the translation to ClaSSE.
-    par.table <- TranslateParsMakerHiGeoSSE(k=1)
+    par.table <- TranslateParsMakerGeoHiSSE(k=1)
     
     ## Get the likelihood for the ClaSSE model:
     ## Here we assume root value is EQUAL
@@ -261,7 +261,7 @@ test_that("HiGeoSSE_test5", {
     lik.classe <- make.classe(tree=sim.data$phy, states=classe.st, k=6)
     classe.full <- lik.classe(pars=sim.data$classe.pars, root=ROOT.FLAT)
     
-    ## Now the lik for the HiGeoSSE model.
+    ## Now the lik for the GeoHiSSE model.
     states.mat <- data.frame(states, states, row.names=names(states))
     states.mat <- states.mat[sim.data$phy$tip.label,]
     model.vec <- numeric(115)
@@ -271,9 +271,9 @@ test_that("HiGeoSSE_test5", {
     model.vec[1:46] <- order.pars
     
     sim.data$phy$node.label <- NULL
-    cache <- ParametersToPassHiGeoSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
-    higeosse.full <- DownPassHiGeosse(phy=sim.data$phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
-    comparison <- identical(round(higeosse.full,4), round(classe.full,4))
+    cache <- ParametersToPassGeoHiSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
+    geohisse.full <- DownPassGeoHisse(phy=sim.data$phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
+    comparison <- identical(round(geohisse.full,4), round(classe.full,4))
     expect_true(comparison)
 })
 
