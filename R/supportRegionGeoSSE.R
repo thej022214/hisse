@@ -25,8 +25,7 @@ SupportRegionGeoSSE <- function(higeosse.obj, n.points=1000, scale.int=0.1, desi
     
     lower <- exp(higeosse.obj$lower.bounds)
     upper <- exp(higeosse.obj$upper.bounds)
-    upper <- rep(2, length(par))
-    
+
     #Bad Jeremy! Hard-coded column headers...
     if(assume.cladogenetic==TRUE){
         interval.names <- c("lnLik", "s0A", "s1A", "s01A", "x0A", "x1A", "d0A_1A ", "d0A_01A", "d1A_0A", "d1A_01A", "d01A_0A", "d01A_1A", "d0A_0B", "d0A_0C", "d0A_0D", "d0A_0E", "d1A_1B", "d1A_1C", "d1A_1D", "d1A_1E", "d01A_01B", "d01A_01C", "d01A_01D", "d01A_01E", "s0B", "s1B", "s01B", "x0B", "x1B", "d0B_1B ", "d0B_01B", "d1B_0B", "d1B_01B", "d01B_0B", "d01B_1B", "d0B_0A", "d0B_0C", "d0B_0D", "d0B_0E", "d1B_1A", "d1B_1C", "d1B_1D", "d1B_1E", "d01B_01A", "d01B_01C", "d01B_01D", "d01B_01E", "s0C", "s1C", "s01C", "x0C", "x1C", "d0C_1C ", "d0C_01C", "d1C_0C", "d1C_01C", "d01C_0C", "d01C_1C", "d0C_0A", "d0C_0B", "d0C_0D", "d0C_0E", "d1C_1A", "d1C_1B", "d1C_1D", "d1C_1E", "d01C_01A", "d01C_01B", "d01C_01D", "d01C_01E", "s0D", "s1D", "s01D", "x0D", "x1D", "d0D_1D ", "d0D_01D", "d1D_0D", "d1D_01D", "d01D_0D", "d01D_1D", "d0D_0A", "d0D_0B", "d0D_0C", "d0D_0E", "d1D_1A", "d1D_1B", "d1D_1C", "d1D_1E", "d01D_01A", "d01D_01B", "d01D_01C", "d01D_01E", "s0E", "s1E", "s01E", "x0E", "x1E", "d0E_1E ", "d0E_01E", "d1E_0E", "d1E_01E", "d01E_0E", "d01E_1E", "d0E_0A", "d0E_0B", "d0E_0C", "d0E_0D", "d1E_1A", "d1E_1B", "d1E_1C", "d1E_1D", "d01E_01A", "d01E_01B", "d01E_01C", "d01E_01D")
@@ -65,9 +64,9 @@ AdaptiveConfidenceIntervalSamplingHiGeoSSE <- function(par, lower, upper, desire
         phy$node.label <- NULL
         starting <- -DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     }else{
-        cache = ParametersToPassMuSSE(phy, data[,1], f, model.vec=model.vec, hidden.states=hidden.states)
+        cache = hisse:::ParametersToPassMuSSE(phy, data.new[,1], f, model.vec=model.vec, hidden.states=hidden.states)
         phy$node.label <- NULL
-        starting <- -DownPassMusse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+        starting <- -hisse:::DownPassMusse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     }
     #Generate the multipliers for feeling the boundaries:
     min.multipliers <- rep(1, length(par))
@@ -77,7 +76,7 @@ AdaptiveConfidenceIntervalSamplingHiGeoSSE <- function(par, lower, upper, desire
     for (i in sequence(n.points)) {
         sim.points <- NA
         while(is.na(sim.points[1])) {
-            sim.points <- GenerateValues(par, lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE))
+            sim.points <- hisse:::GenerateValues(par, lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE))
         }
         par <- sim.points
         model.vec <- numeric(length(index.par))
