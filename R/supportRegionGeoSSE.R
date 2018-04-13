@@ -64,9 +64,9 @@ AdaptiveConfidenceIntervalSamplingHiGeoSSE <- function(par, lower, upper, desire
         phy$node.label <- NULL
         starting <- -DownPassHiGeosse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     }else{
-        cache = hisse:::ParametersToPassMuSSE(phy, data.new[,1], f, model.vec=model.vec, hidden.states=hidden.states)
+        cache = ParametersToPassMuSSE(phy, data.new[,1], f, model.vec=model.vec, hidden.states=hidden.states)
         phy$node.label <- NULL
-        starting <- -hisse:::DownPassMusse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+        starting <- -DownPassMusse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     }
     #Generate the multipliers for feeling the boundaries:
     min.multipliers <- rep(1, length(par))
@@ -76,7 +76,7 @@ AdaptiveConfidenceIntervalSamplingHiGeoSSE <- function(par, lower, upper, desire
     for (i in sequence(n.points)) {
         sim.points <- NA
         while(is.na(sim.points[1])) {
-            sim.points <- hisse:::GenerateValues(par, lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE))
+            sim.points <- GenerateValues(par, lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE))
         }
         par <- sim.points
         model.vec <- numeric(length(index.par))
