@@ -225,57 +225,55 @@ test_that("GeoHiSSE_test4", {
 })
 
 
-test_that("GeoHiSSE_test5", {
-    skip_on_cran()
+## test_that("GeoHiSSE_test5", {
+##     skip_on_cran()
     
-    library(diversitree)
+##     library(diversitree)
     
-    ## Define some parameters:
-    ## AB, A, B
-    pars1 <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
-    pars2 <- c(1.1, 1.6, 0.4, 0.6, 0.5, 0.6, 2.7)
+##     ## Define some parameters:
+##     ## AB, A, B
+##     pars1 <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
+##     pars2 <- c(1.1, 1.6, 0.4, 0.6, 0.5, 0.6, 2.7)
     
-    ## Check the likelihood for the hidden null model.
-    sim.pars <- SimulateGeoHiSSE(hidden.areas = 1, return.GeoHiSSE_pars = TRUE)
-    sim.pars$model.pars[,1] <- pars1
-    sim.pars$model.pars[,2] <- pars2
-    sim.pars$q.01[2,1] <- 1
-    sim.pars$q.01[1,2] <- 2
-    sim.pars$q.0[2,1] <- 3
-    sim.pars$q.0[1,2] <- 4
-    sim.pars$q.1[2,1] <- 5
-    sim.pars$q.1[1,2] <- 6
+##     ## Check the likelihood for the hidden null model.
+##     sim.pars <- SimulateGeoHiSSE(hidden.areas = 1, return.GeoHiSSE_pars = TRUE)
+##     sim.pars$model.pars[,1] <- pars1
+##     sim.pars$model.pars[,2] <- pars2
+##     sim.pars$q.01[2,1] <- 0.1
+##     sim.pars$q.01[1,2] <- 0.1
+##     sim.pars$q.0[2,1] <- 0.1
+##     sim.pars$q.0[1,2] <- 0.1
+##     sim.pars$q.1[2,1] <- 0.1
+##     sim.pars$q.1[1,2] <- 0.1
+
+##     sim.get.par <- SimulateGeoHiSSE(pars=sim.pars, hidden.areas = 1, max.taxa = 500)
+##     classe.pars <- sim.get.par$classe.pars
+##     sim.data <- NULL
+##     while( is.null(sim.data) ) sim.data <- tree.classe(pars=classe.pars, max.taxa = 500)
+   
+##     ## Get the likelihood for the ClaSSE model:
+##     ## Here we assume root value is EQUAL
+##     sim.data$node.label <- NULL
+##     lik.classe <- make.classe(tree=sim.data, states=sim.data$tip.state, k=6)
+##     classe.full <- lik.classe(pars=classe.pars, root=ROOT.FLAT, condition.surv = TRUE, root.p = NULL)
     
-    sim.data <- SimulateGeoHiSSE(pars=sim.pars, hidden.areas = 1, max.taxa = 500)
-    #sim.data$classe.pars ## This is the parameters for the ClaSSE model.
+##     ## Now the lik for the GeoHiSSE model.
+##     ## Our function starts from 0.
+##     states <- sim.data$tip.state - 1
+##     states.mat <- data.frame(states, states, row.names=names(states))
+##     order.mat <- match(rownames(states.mat), sim.data$tip.label)
+##     states.mat <- states.mat[order.mat,]
+##     model.vec <- numeric(115)
+##     order.pars1 <- c(pars1[c(2,3,1,4:5)],0,pars1[6],0,pars1[c(7,5:4)], 4,0,0,0, 6,0,0,0, 2,0,0,0)
+##     order.pars2 <- c(pars2[c(2,3,1,4:5)],0,pars2[6],0,pars2[c(7,5:4)], 3,0,0,0, 5,0,0,0, 1,0,0,0)
+##     order.pars <- c(order.pars1, order.pars2)
+##     model.vec[1:46] <- order.pars
     
-    ## Just to double check the translation to ClaSSE.
-    par.table <- TranslateParsMakerGeoHiSSE(k=1)
-    
-    ## Get the likelihood for the ClaSSE model:
-    ## Here we assume root value is EQUAL
-    key.number <- c(0,1,2,3,4,5)
-    key.name <- c("AB0","A0","B0", "AB1","A1","B1")
-    states <- sapply(sim.data$data, function(y) key.number[match(y, key.name)])
-    classe.st <- states+1
-    lik.classe <- make.classe(tree=sim.data$phy, states=classe.st, k=6)
-    classe.full <- lik.classe(pars=sim.data$classe.pars, root=ROOT.FLAT)
-    
-    ## Now the lik for the GeoHiSSE model.
-    states.mat <- data.frame(states, states, row.names=names(states))
-    states.mat <- states.mat[sim.data$phy$tip.label,]
-    model.vec <- numeric(115)
-    order.pars1 <- c(pars1[c(2,3,1,4:5)],0,pars1[6],0,pars1[c(7,5:4)], 4,0,0,0, 6,0,0,0, 2,0,0,0)
-    order.pars2 <- c(pars2[c(2,3,1,4:5)],0,pars2[6],0,pars2[c(7,5:4)], 3,0,0,0, 5,0,0,0, 1,0,0,0)
-    order.pars <- c(order.pars1, order.pars2)
-    model.vec[1:46] <- order.pars
-    
-    sim.data$phy$node.label <- NULL
-    cache <- ParametersToPassGeoHiSSE(sim.data$phy, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
-    geohisse.full <- DownPassGeoHisse(phy=sim.data$phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
-    comparison <- identical(round(geohisse.full,4), round(classe.full,4))
-    expect_true(comparison)
-})
+##     cache <- ParametersToPassGeoHiSSE(sim.data, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
+##     geohisse.full <- DownPassGeoHisse(phy=sim.data, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="equal", root.p=NULL)
+##     comparison <- identical(round(geohisse.full,4), round(classe.full,4))
+##     expect_true(comparison)
+## })
 
 
 
