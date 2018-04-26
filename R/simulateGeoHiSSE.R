@@ -66,15 +66,16 @@ SimulateGeoHiSSE <- function(pars, hidden.areas=1, x0="0A", max.taxa=Inf, max.ti
     nm.0 <- vector("character", length=tr.size)
     nm.1 <- vector("character", length=tr.size)
     count <- 1 ## keep the count for the loop.
+    areas.letters <- LETTERS[1:(hidden.areas+1)]
     for( i in 1:(hidden.areas+1) ){
         for( j in 1:(hidden.areas+1) ){
             if( i == j ) next
             vec.01[count] <- pars$q.01[i,j]
-            nm.01[count] <- paste0("q01", i-1, j-1)
+            nm.01[count] <- paste0("q01", areas.letters[i], areas.letters[j])
             vec.0[count] <- pars$q.0[i,j]
-            nm.0[count] <- paste0("q0", i-1, j-1)
+            nm.0[count] <- paste0("q0", areas.letters[i], areas.letters[j])
             vec.1[count] <- pars$q.1[i,j]
-            nm.1[count] <- paste0("q1", i-1, j-1)
+            nm.1[count] <- paste0("q1", areas.letters[i], areas.letters[j])
             count <- count + 1
         }
     }
