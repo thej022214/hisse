@@ -239,12 +239,12 @@ test_that("GeoHiSSE_test5", {
     sim.pars <- SimulateGeoHiSSE(hidden.areas = 1, return.GeoHiSSE_pars = TRUE)
     sim.pars$model.pars[,1] <- pars1
     sim.pars$model.pars[,2] <- pars2
-    sim.pars$q.AB[2,1] <- 1
-    sim.pars$q.AB[1,2] <- 2
-    sim.pars$q.A[2,1] <- 3
-    sim.pars$q.A[1,2] <- 4
-    sim.pars$q.B[2,1] <- 5
-    sim.pars$q.B[1,2] <- 6
+    sim.pars$q.01[2,1] <- 1
+    sim.pars$q.01[1,2] <- 2
+    sim.pars$q.0[2,1] <- 3
+    sim.pars$q.0[1,2] <- 4
+    sim.pars$q.1[2,1] <- 5
+    sim.pars$q.1[1,2] <- 6
     
     sim.data <- SimulateGeoHiSSE(pars=sim.pars, hidden.areas = 1, max.taxa = 500)
     #sim.data$classe.pars ## This is the parameters for the ClaSSE model.
