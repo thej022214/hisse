@@ -12,6 +12,7 @@ r_packages:
   - diversitree
   - knitr
   - testthat
+  - devtools
 env:
   global:
     - R_CHECK_ARGS="--as-cran"
