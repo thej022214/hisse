@@ -2,4 +2,6 @@
 
 hisse! Now with more CRANy goodness.
 
-** Development branch. It might not compile in the current stage. **
+** Development branch. **
+
+All tests are passing. Branch ready for production.
