@@ -2,13 +2,13 @@
 title: "Running HiSSE"
 author: "Jeremy M. Beaulieu"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: 
+output:
+  html_document:
+    df_print: paged
   pdf_document:
     fig_caption: yes
-vignette: >
-   %\VignetteEngine{knitr::rmarkdown}
-   %\VignetteIndexEntry{Running hisse}
-   \usepackage[utf8]{inputenc}
+vignette: |
+  %\VignetteEngine{knitr::rmarkdown} %\VignetteIndexEntry{Running hisse} \usepackage[utf8]{inputenc}
 ---
 
 ## Getting started
