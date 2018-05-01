@@ -1,12 +1,6 @@
 before_install:
   - sudo apt-get -qq update
-<<<<<<< HEAD
   - sudo apt-get install -y libgsl0ldbl
-=======
-#  - sudo apt-get install -y libgsl0ldbl
-  - sudo apt-get install gsl-bin libgsl0-dev
-  #- sudo apt-get install gsl-bin
->>>>>>> da259290d31e731ae6ef5f3d604b743c7656ce58
 #  - sudo apt-get install libgsl0-dev
   - sudo apt-get install gsl-bin
   - sudo apt-get install libgsl0-dev
