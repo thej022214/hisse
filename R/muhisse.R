@@ -29,7 +29,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
     }
     
     ## Return error message if the data is not in the correct format.
-    if( !inherits(data, what = c("matrix","data.matrix")) ){
+    if( !inherits(data, what = c("matrix","data.matrix", "data.frame")) ){
         stop("'data' needs to be a matrix or data.matrix with 3 columns. See help.")
     }
     if( !ncol( data ) == 3 ){
