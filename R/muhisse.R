@@ -61,7 +61,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         category.rates.unique <- 0
         pars.tmp <- c(pars.tmp, trans.tmp)
-        pars[1:12] <- pars.tmp
+        pars[1:20] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==8){
