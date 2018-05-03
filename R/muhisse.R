@@ -32,7 +32,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
     if( !inherits(data, what = c("matrix","data.matrix")) ){
         stop("'data' needs to be a matrix or data.matrix with 3 columns. See help.")
     }
-    if( !ncol( data ) == 2 ){
+    if( !ncol( data ) == 3 ){
         stop("'data' needs to be a matrix or data.matrix with 3 columns. See help.")
     }
     ## Check if the states are %in% 0:2:
