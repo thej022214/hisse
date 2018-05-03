@@ -36,10 +36,10 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         stop("'data' needs to be a matrix or data.matrix with 3 columns. See help.")
     }
     ## Check if the states are %in% 0:2:
-    states.check <- all( as.numeric(data[,c(2:3)]) %in% 0:2 )
-    if( !states.check ){
-        stop("states need to be one of 0, 1, or 2. See help.")
-    }
+    #states.check <- all( as.numeric(data[,c(2:3)]) %in% 0:2 )
+    #if( !states.check ){
+    #    stop("states need to be one of 0, 1, or 2. See help.")
+    #}
     
     ## Check if 'hidden.states' parameter is congruent with the speciation vector:
     if( length(speciation) > 4 & !hidden.states ){
