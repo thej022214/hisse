@@ -227,7 +227,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
     data.new <- data.new[phy$tip.label,]
     
     #This is used to scale starting values to account for sampling:
-    if(length(f) == 3){
+    if(length(f) == 4){
         freqs <- table(data.new[,1])
         if(length(freqs == 2)){
             samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
