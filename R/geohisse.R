@@ -763,7 +763,7 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
                 #res
                 #}
                 #prob.subtree.cal.full <- runSilent()
-                prob.subtree.cal.full <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+                prob.subtree.cal.full <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_noclass", dllname = "hisse", rtol=1e-8, atol=1e-8)
             }else{
                 pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$x01A, cache$d0A_1A, cache$d0A_01A, cache$d1A_0A, cache$d1A_01A, cache$d01A_0A, cache$d01A_1A, cache$d0A_0B, cache$d0A_0C, cache$d0A_0D, cache$d0A_0E, cache$d1A_1B, cache$d1A_1C, cache$d1A_1D, cache$d1A_1E, cache$d01A_01B, cache$d01A_01C, cache$d01A_01D, cache$d01A_01E, cache$s0B, cache$s1B, cache$s01B, cache$x0B, cache$x1B, cache$x01B, cache$d0B_1B , cache$d0B_01B, cache$d1B_0B, cache$d1B_01B, cache$d01B_0B, cache$d01B_1B, cache$d0B_0A, cache$d0B_0C, cache$d0B_0D, cache$d0B_0E, cache$d1B_1A, cache$d1B_1C, cache$d1B_1D, cache$d1B_1E, cache$d01B_01A, cache$d01B_01C, cache$d01B_01D, cache$d01B_01E, cache$s0C, cache$s1C, cache$s01C, cache$x0C, cache$x1C, cache$x01C, cache$d0C_1C , cache$d0C_01C, cache$d1C_0C, cache$d1C_01C, cache$d01C_0C, cache$d01C_1C, cache$d0C_0A, cache$d0C_0B, cache$d0C_0D, cache$d0C_0E, cache$d1C_1A, cache$d1C_1B, cache$d1C_1D, cache$d1C_1E, cache$d01C_01A, cache$d01C_01B, cache$d01C_01D, cache$d01C_01E, cache$s0D, cache$s1D, cache$s01D, cache$x0D, cache$x1D, cache$x01D, cache$d0D_1D , cache$d0D_01D, cache$d1D_0D, cache$d1D_01D, cache$d01D_0D, cache$d01D_1D, cache$d0D_0A, cache$d0D_0B, cache$d0D_0C, cache$d0D_0E, cache$d1D_1A, cache$d1D_1B, cache$d1D_1C, cache$d1D_1E, cache$d01D_01A, cache$d01D_01B, cache$d01D_01C, cache$d01D_01E, cache$s0E, cache$s1E, cache$s01E, cache$x0E, cache$x1E, cache$x01E, cache$d0E_1E, cache$d0E_01E, cache$d1E_0E, cache$d1E_01E, cache$d01E_0E, cache$d01E_1E, cache$d0E_0A, cache$d0E_0B, cache$d0E_0C, cache$d0E_0D, cache$d1E_1A, cache$d1E_1B, cache$d1E_1C, cache$d1E_1D, cache$d01E_01A, cache$d01E_01B, cache$d01E_01C, cache$d01E_01D)
                 NUMELEMENTS <- 120 #needed for passing in vector to C
@@ -781,7 +781,7 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
                 #    res
                 #}
                 #prob.subtree.cal.full <- runSilent()
-                prob.subtree.cal.full <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dllname = "hisse", rtol=1e-8, atol=1e-8)
+                prob.subtree.cal.full <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_hinoclass", dllname = "hisse", rtol=1e-8, atol=1e-8)
             }
             
             ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########

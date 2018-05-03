@@ -15,12 +15,12 @@
 #include <stdio.h>
 #define NUMELEMENTS 12
 
-static double params_musse[NUMELEMENTS];
+static double params_noclass[NUMELEMENTS];
 
 
-void initmod_musse(void (* odeparms)(int *, double *)){
+void initmod_noclass(void (* odeparms)(int *, double *)){
     int N = NUMELEMENTS;
-    odeparms(&N, params_musse);
+    odeparms(&N, params_noclass);
 }
 
 
@@ -36,19 +36,19 @@ void notclasse_derivs(int *neq, double *t, double *y, double *ydot, double *yout
     double D_N2 = y[5];
 
     double
-    s0  = params_musse[0],     /* speciation within region 0 */
-    s1  = params_musse[1],     /* speciation within region 1 */
-    s01 = params_musse[2],     /* between-region speciation  */
-    x0  = params_musse[3],     /* extinction from region 0   */
-    x1  = params_musse[4],     /* extinction from 1          */
-    x01  = params_musse[5],    /* extinction from 01         */
+    s0  = params_noclass[0],     /* speciation within region 0 */
+    s1  = params_noclass[1],     /* speciation within region 1 */
+    s01 = params_noclass[2],     /* between-region speciation  */
+    x0  = params_noclass[3],     /* extinction from region 0   */
+    x1  = params_noclass[4],     /* extinction from 1          */
+    x01  = params_noclass[5],    /* extinction from 01         */
 
-    d0_1  = params_musse[6],   /* jumps from 0 to 1          */
-    d0_01  = params_musse[7],  /* dispersal from A to AB     */
-    d1_0 = params_musse[8],    /* jumps from 1 to 0          */
-    d1_01 = params_musse[9],   /* dispersal from B to AB     */
-    d01_0 = params_musse[10],  /* true extirpation rate      */
-    d01_1 = params_musse[11];  /* true extirpation rate      */
+    d0_1  = params_noclass[6],   /* jumps from 0 to 1          */
+    d0_01  = params_noclass[7],  /* dispersal from A to AB     */
+    d1_0 = params_noclass[8],    /* jumps from 1 to 0          */
+    d1_01 = params_noclass[9],   /* dispersal from B to AB     */
+    d01_0 = params_noclass[10],  /* true extirpation rate      */
+    d01_1 = params_noclass[11];  /* true extirpation rate      */
 
     ydot[0] = -(x0 + d0_1 + d0_01 + s0) * E_0 + (s0 * E_0 * E_0) + x0 + (d0_1 * E_1 + d0_01 * E_2);
     ydot[1] = -(x1 + d1_0 + d1_01 + s1) * E_1 + (s1 * E_1 * E_1) + x1 + (d1_0 * E_0 + d1_01 * E_2);

@@ -1,6 +1,6 @@
 useDynLib(hisse, .registration = TRUE)
 
-export(hisse, hisse.null4, MarginRecon, MarginReconGeoSSE, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo, GetModelAveRates, GetModelAveEqFreqs, GeoHiSSE, TransMatMakerGeoHiSSE, SimulateGeoHiSSE, TranslateParsMakerGeoHiSSE, plot.geohisse.states, SupportRegionGeoSSE, GetModelWeight)
+export(hisse, hisse.null4, MarginRecon, MarginReconGeoSSE, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo, GetModelAveRates, GetModelAveEqFreqs, GeoHiSSE, TransMatMakerGeoHiSSE, SimulateGeoHiSSE, TranslateParsMakerGeoHiSSE, plot.geohisse.states, SupportRegionGeoSSE, GetModelWeight, MuHiSSE, TransMatMakerMuHiSSE, MarginReconMuSSE)
 import(ape, deSolve, GenSA, subplex, nloptr)
 importFrom(data.table, data.table, setkey)
 importFrom(parallel, mclapply)
@@ -13,7 +13,7 @@ importFrom("stats", "dbeta", "density", "quantile", "reorder", "rexp", "runif", 
 importFrom("diversitree", "tree.classe")
 importFrom("stats", "setNames")
 
-exportClasses('hisse.fit', 'hisse.null4.fit', 'geohisse.fit', 'hisse.states', 'hisse.support', 'geohisse.support', 'hisse.geosse.states')
+exportClasses('hisse.fit', 'hisse.null4.fit', 'geohisse.fit', 'hisse.states', 'hisse.support', 'geohisse.support', 'hisse.geosse.states', 'muhisse.fit', 'muhisse.states')
 S3method(print, hisse.fit)
 S3method(print, hisse.null4.fit)
 S3method(print, hisse.states)
