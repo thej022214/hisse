@@ -315,7 +315,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
 ######################################################################################################################################
 
 
-DevOptimizeMuHiSSE <- function(p, pars, phy, data, f, hidden.states, assume.cladogenetic, condition.on.survival, root.type, root.p, np, ode.eps) {
+DevOptimizeMuHiSSE <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, np, ode.eps) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
     ## print(p.new)
