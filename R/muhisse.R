@@ -223,7 +223,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
     
     cat("Initializing...", "\n")
     
-    data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+    data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
     
     #This is used to scale starting values to account for sampling:
