@@ -247,8 +247,8 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=TRUE)
     }else{
         init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=FALSE)
-        if(init.pars[4] == 0){
-            init.pars[4:6] = 1e-6
+        if(init.pars[5:8] == 0){
+            init.pars[5:8] = 1e-6
         }
     }
     names(init.pars) <- NULL
