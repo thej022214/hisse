@@ -518,11 +518,11 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
         }
     }
     
-    data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+    data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
     model.vec = pars
     
-    cache = ParametersToPassMuHiSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.states)
+    cache = ParametersToPassMuHiSSE(phy, data.new, model.vec, f=f, hidden.states=hidden.states)
     
     nb.tip <- length(phy$tip.label)
     nb.node <- phy$Nnode
