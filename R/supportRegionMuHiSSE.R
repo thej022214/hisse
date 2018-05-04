@@ -19,7 +19,7 @@ SupportRegionMuHiSSE <- function(muhisse.obj, n.points=1000, scale.int=0.1, desi
     for(i in np.sequence){
         par[i] <- muhisse.obj$solution[which(muhisse.obj$index.par == np.sequence[i])[1]]
     }
-    hidden.states=muhisse.obj$hidden.areas
+    hidden.states=muhisse.obj$hidden.states
     condition.on.survival=muhisse.obj$condition.on.survival
     root.type=muhisse.obj$root.type
     root.p=muhisse.obj$root.p
