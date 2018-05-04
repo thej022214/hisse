@@ -121,7 +121,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         }
 
         if(class(hisse.results[[1]])=="muhisse.states"){
-            states.internal <- ConvertManyToMultiState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
+            states.internal <- ConvertManyToMultiState(hisse.results, which.element="node.mat", AIC.weights=AIC.weights)
         }
 
 
