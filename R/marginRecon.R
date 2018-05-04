@@ -640,7 +640,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
             rates.mat <- ParameterTransformMuHiSSE(rates.mat)
         }else{
-            obj$node.mat <- matrix(unlist(node.marginals), ncol = 3+1, byrow = TRUE)
+            obj$node.mat <- matrix(unlist(node.marginals), ncol = 4+1, byrow = TRUE)
             obj$tip.mat = cbind(1:Ntip(phy), cache$states)
             rates.mat <- matrix(0, 2, 4)
             rates.mat[1,] <- model.vec[c(1:4)]
