@@ -144,7 +144,7 @@ GenerateValues <- function(par, lower, upper, scale.int, max.tries=100, expand.p
 }
 
 
-print.geohisse.support <- function(x,...){
+print.muhisse.support <- function(x,...){
     
     cat("\nSupport Region\n")
     print(x$ci[,-1])
