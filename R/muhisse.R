@@ -539,7 +539,7 @@ DownPassMuHisse <- function(phy, cache, hidden.states, bad.likelihood=-10000000,
             compE[focal,] <- phi[1:4]
             if(!is.null(node)){
                 if(node == focal){
-                    fixer = c(0,0,0,0)
+                    fixer = numeric(4)
                     fixer[state] = 1
                     compD[focal,] <- compD[focal,] * fixer
                 }
