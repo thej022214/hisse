@@ -773,7 +773,7 @@ print.hisse.geosse.states <- function(x,...){
     print(x$phy)
 }
 
-print.musse.states <- function(x,...){
+print.muhisse.states <- function(x,...){
     print(x$phy)
 }
 
