@@ -56,7 +56,7 @@ AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired
     actual.params = which(index.par < max(index.par))
     model.vec <- numeric(length(index.par))
     model.vec[] <- c(par,0)[index.par]
-    cache = ParametersToPassMuSSE(phy, data[,1], f, model.vec=model.vec, hidden.states=hidden.states)
+    cache = ParametersToPassMuSSE(phy, data, f, model.vec=model.vec, hidden.states=hidden.states)
     phy$node.label <- NULL
     starting <- -DownPassMuHisse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
 
