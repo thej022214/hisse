@@ -321,9 +321,10 @@ DevOptimizeMuHiSSE <- function(p, pars, phy, data, f, hidden.states, condition.o
     ## print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
+    print(model.vec)
     cache = ParametersToPassMuHiSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
     logl <- DownPassMuHisse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
-    
+    print(logl)
     return(-logl)
 }
 
