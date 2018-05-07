@@ -13,8 +13,8 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
-        if(hidden.states ==TRUE & length(root.p)==2){
-            root.p <- rep(root.p, 2)
+        if(hidden.states ==TRUE & length(root.p)==4){
+            root.p <- rep(root.p, 4)
             root.p <- root.p / sum(root.p)
             warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
         }
@@ -24,7 +24,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         stop("Rate matrix needed. See TransMatMakerMuHiSSE() to create one.")
     }
     
-    if(hidden.states == TRUE & dim(trans.rate)[1]<3){
+    if(hidden.states == TRUE & dim(trans.rate)[1]<4){
         stop("You chose a hidden state but this is not reflected in the transition matrix")
     }
     
@@ -229,7 +229,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
     #This is used to scale starting values to account for sampling:
     if(length(f) == 4){
         freqs <- table(data.new[,1])
-        if(length(freqs == 2)){
+        if(length(freqs == 4)){
             samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
         }else{
             samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
@@ -638,6 +638,7 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
             if(x[i]==2 & y[i]==2){states[i,1:16]=1}
         }
     }
+    
     if(hidden.states == "TEST1"){
         states = matrix(0,Ntip(phy),32)
         for(i in 1:Ntip(phy)){
