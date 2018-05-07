@@ -20,6 +20,10 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         }
     }
     
+    if(!root.type == "madfitz" & !root.type == "equal" & !root.type == "user"){
+        stop("Check that you specified a proper root.type option. Options are 'madfitz', 'equal', or 'user'.", call.=FALSE)
+    }
+    
     if(is.null(trans.rate)){
         stop("Rate matrix needed. See TransMatMakerMuHiSSE() to create one.")
     }
