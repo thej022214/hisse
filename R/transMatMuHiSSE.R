@@ -5,11 +5,11 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-TransMatMakerMuHiSSE <- function(hidden.states=0, make.null=FALSE, include.diagonals=FALSE){
-    if(hidden.states == 0){
+TransMatMakerMuHiSSE <- function(hidden.traits=0, make.null=FALSE, include.diagonals=FALSE){
+    if(hidden.traits == 0){
         trans.mat <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
     }else{
-        if(hidden.states == 1){
+        if(hidden.traits == 1){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
                 sub.mat2 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
@@ -28,7 +28,7 @@ TransMatMakerMuHiSSE <- function(hidden.states=0, make.null=FALSE, include.diago
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)")
         }
         
-        if(hidden.states == 2){
+        if(hidden.traits == 2){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -47,7 +47,7 @@ TransMatMakerMuHiSSE <- function(hidden.states=0, make.null=FALSE, include.diago
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)")
         }
         
-        if(hidden.states == 3){
+        if(hidden.traits == 3){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -67,7 +67,7 @@ TransMatMakerMuHiSSE <- function(hidden.states=0, make.null=FALSE, include.diago
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)")
         }
         
-        if(hidden.states == 4){
+        if(hidden.traits == 4){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -88,7 +88,7 @@ TransMatMakerMuHiSSE <- function(hidden.states=0, make.null=FALSE, include.diago
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)")
         }
         
-        if(hidden.states == 5){
+        if(hidden.traits == 5){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -110,7 +110,7 @@ TransMatMakerMuHiSSE <- function(hidden.states=0, make.null=FALSE, include.diago
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)")
         }
         
-        if(hidden.states == 6){
+        if(hidden.traits == 6){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -133,7 +133,7 @@ TransMatMakerMuHiSSE <- function(hidden.states=0, make.null=FALSE, include.diago
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)")
         }
         
-        if(hidden.states == 7){
+        if(hidden.traits == 7){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
                 max.par <- max(sub.mat1, na.rm=TRUE)
