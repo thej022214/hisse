@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, speciation.upper=1000, extinction.upper=1000, trans.upper=100, ode.eps=0){
+MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=1000, eps.upper=1000, trans.upper=100, ode.eps=0){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -45,22 +45,22 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
     #    stop("states need to be one of 0, 1, or 2. See help.")
     #}
     
-    ## Check if 'hidden.states' parameter is congruent with the speciation vector:
-    if( length(speciation) > 4 & !hidden.states ){
-        stop("Speciation has more than 4 elements but 'hidden.states' was set to FALSE. Please set 'hidden.states' to TRUE if the model include more than one rate class.")
+    ## Check if 'hidden.states' parameter is congruent with the turnover vector:
+    if( length(turnover) > 4 & !hidden.states ){
+        stop("Turnover has more than 4 elements but 'hidden.states' was set to FALSE. Please set 'hidden.states' to TRUE if the model include more than one rate class.")
     }
-    if( length(speciation) == 4 & hidden.states ){
-        stop("Speciation has only 4 elements but 'hidden.states' was set to TRUE. Please set 'hidden.states' to FALSE if the model does not include hidden rate classes.")
+    if( length(turnover) == 4 & hidden.states ){
+        stop("Turnover has only 4 elements but 'hidden.states' was set to TRUE. Please set 'hidden.states' to FALSE if the model does not include hidden rate classes.")
     }
     
     pars <- numeric(384)
     
     if(dim(trans.rate)[2]==4){
         rate.cats <- 1
-        pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
         trans.tmp <- c(trans.rate["(00)", "(01)"], trans.rate["(00)", "(10)"], trans.rate["(00)", "(11)"], trans.rate["(01)", "(00)"], trans.rate["(01)", "(10)"], trans.rate["(01)", "(11)"], trans.rate["(10)", "(00)"], trans.rate["(10)", "(01)"], trans.rate["(10)", "(11)"], trans.rate["(11)", "(00)"], trans.rate["(11)", "(01)"], trans.rate["(11)", "(10)"])
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         category.rates.unique <- 0
@@ -70,10 +70,10 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
     
     if(dim(trans.rate)[2]==8){
         rate.cats <- 2
-        pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)")
         cols <- c("(01A)", "(10A)", "(11A)", "(00A)", "(10A)", "(11A)", "(00A)", "(01A)", "(11A)", "(00A)", "(01A)", "(10A)", "(01B)", "(10B)", "(11B)", "(00B)", "(10B)", "(11B)", "(00B)", "(01B)", "(11B)", "(00B)", "(01B)", "(10B)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -83,16 +83,16 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
         category.rate.shiftA <- c(category.rate.shift[1], rep(0,6), category.rate.shift[2], rep(0,6), category.rate.shift[3], rep(0,6), category.rate.shift[4], rep(0,6))
         category.rate.shiftB <- c(category.rate.shift[5], rep(0,6), category.rate.shift[6], rep(0,6), category.rate.shift[7], rep(0,6), category.rate.shift[8], rep(0,6))
-        pars.tmp <- c(speciation[1:4], extinction.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, speciation[5:8], extinction.tmp[5:8], trans.tmp[13:24], category.rate.shiftB)
+        pars.tmp <- c(turnover[1:4], eps.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, turnover[5:8], eps.tmp[5:8], trans.tmp[13:24], category.rate.shiftB)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==12){
         rate.cats <- 3
-        pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)", "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)")
         cols <- c("(01A)", "(10A)", "(11A)", "(00A)", "(10A)", "(11A)", "(00A)", "(01A)", "(11A)", "(00A)", "(01A)", "(10A)", "(01B)", "(10B)", "(11B)", "(00B)", "(10B)", "(11B)", "(00B)", "(01B)", "(11B)", "(00B)", "(01B)", "(10B)", "(01C)", "(10C)", "(11C)", "(00C)", "(10C)", "(11C)", "(00C)", "(01C)", "(11C)", "(00C)", "(01C)", "(10C)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -103,16 +103,16 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,5), category.rate.shift[3:4], rep(0,5), category.rate.shift[5:6], rep(0,5), category.rate.shift[7:8], rep(0,5))
         category.rate.shiftB <- c(category.rate.shift[9:10], rep(0,5), category.rate.shift[11:12], rep(0,5), category.rate.shift[13:14], rep(0,5), category.rate.shift[15:16], rep(0,5))
         category.rate.shiftC <- c(category.rate.shift[17:18], rep(0,5), category.rate.shift[19:20], rep(0,5), category.rate.shift[21:22], rep(0,5), category.rate.shift[23:24], rep(0,5))
-        pars.tmp <- c(speciation[1:4], extinction.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, speciation[5:8], extinction.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, speciation[9:12], extinction.tmp[9:12], trans.tmp[25:36], category.rate.shiftC)
+        pars.tmp <- c(turnover[1:4], eps.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, turnover[5:8], eps.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, turnover[9:12], eps.tmp[9:12], trans.tmp[25:36], category.rate.shiftC)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==16){
         rate.cats <- 4
-        pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)", "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)", "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)")
         cols <- c("(01A)", "(10A)", "(11A)", "(00A)", "(10A)", "(11A)", "(00A)", "(01A)", "(11A)", "(00A)", "(01A)", "(10A)", "(01B)", "(10B)", "(11B)", "(00B)", "(10B)", "(11B)", "(00B)", "(01B)", "(11B)", "(00B)", "(01B)", "(10B)", "(01C)", "(10C)", "(11C)", "(00C)", "(10C)", "(11C)", "(00C)", "(01C)", "(11C)", "(00C)", "(01C)", "(10C)", "(01D)", "(10D)", "(11D)", "(00D)", "(10D)", "(11D)", "(00D)", "(01D)", "(11D)", "(00D)", "(01D)", "(10D)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -124,16 +124,16 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         category.rate.shiftB <- c(category.rate.shift[13:15], rep(0,4), category.rate.shift[16:18], rep(0,4), category.rate.shift[19:21], rep(0,4), category.rate.shift[22:24], rep(0,4))
         category.rate.shiftC <- c(category.rate.shift[25:27], rep(0,4), category.rate.shift[28:30], rep(0,4), category.rate.shift[31:33], rep(0,4), category.rate.shift[34:36], rep(0,4))
         category.rate.shiftD <- c(category.rate.shift[37:39], rep(0,4), category.rate.shift[40:42], rep(0,4), category.rate.shift[43:45], rep(0,4), category.rate.shift[46:48], rep(0,4))
-        pars.tmp <- c(speciation[1:4], extinction.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, speciation[5:8], extinction.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, speciation[9:12], extinction.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, speciation[13:16], extinction.tmp[13:16], trans.tmp[37:48], category.rate.shiftD)
+        pars.tmp <- c(turnover[1:4], eps.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, turnover[5:8], eps.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, turnover[9:12], eps.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, turnover[13:16], eps.tmp[13:16], trans.tmp[37:48], category.rate.shiftD)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==20){
         rate.cats <- 5
-        pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)", "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)", "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)","(00E)", "(00E)", "(00E)", "(01E)", "(01E)", "(01E)", "(10E)", "(10E)", "(10E)", "(11E)", "(11E)", "(11E)")
         cols <- c("(01A)", "(10A)", "(11A)", "(00A)", "(10A)", "(11A)", "(00A)", "(01A)", "(11A)", "(00A)", "(01A)", "(10A)", "(01B)", "(10B)", "(11B)", "(00B)", "(10B)", "(11B)", "(00B)", "(01B)", "(11B)", "(00B)", "(01B)", "(10B)", "(01C)", "(10C)", "(11C)", "(00C)", "(10C)", "(11C)", "(00C)", "(01C)", "(11C)", "(00C)", "(01C)", "(10C)", "(01D)", "(10D)", "(11D)", "(00D)", "(10D)", "(11D)", "(00D)", "(01D)", "(11D)", "(00D)", "(01D)", "(10D)", "(01E)", "(10E)", "(11E)", "(00E)", "(10E)", "(11E)", "(00E)", "(01E)", "(11E)", "(00E)", "(01E)", "(10E)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -146,16 +146,16 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         category.rate.shiftC <- c(category.rate.shift[33:36], rep(0,3), category.rate.shift[37:40], rep(0,3), category.rate.shift[41:44], rep(0,3), category.rate.shift[45:48], rep(0,3))
         category.rate.shiftD <- c(category.rate.shift[49:52], rep(0,3), category.rate.shift[53:56], rep(0,3), category.rate.shift[57:60], rep(0,3), category.rate.shift[61:64], rep(0,3))
         category.rate.shiftE <- c(category.rate.shift[65:68], rep(0,3), category.rate.shift[69:72], rep(0,3), category.rate.shift[73:76], rep(0,3), category.rate.shift[77:80], rep(0,3))
-        pars.tmp <- c(speciation[1:4], extinction.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, speciation[5:8], extinction.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, speciation[9:12], extinction.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, speciation[13:16], extinction.tmp[13:16], trans.tmp[37:48], category.rate.shiftD, speciation[17:20], extinction.tmp[17:20], trans.tmp[49:60], category.rate.shiftE)
+        pars.tmp <- c(turnover[1:4], eps.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, turnover[5:8], eps.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, turnover[9:12], eps.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, turnover[13:16], eps.tmp[13:16], trans.tmp[37:48], category.rate.shiftD, turnover[17:20], eps.tmp[17:20], trans.tmp[49:60], category.rate.shiftE)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==24){
         rate.cats <- 6
-        pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)", "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)", "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)", "(00E)", "(00E)", "(00E)", "(01E)", "(01E)", "(01E)", "(10E)", "(10E)", "(10E)", "(11E)", "(11E)", "(11E)", "(00F)", "(00F)", "(00F)", "(01F)", "(01F)", "(01F)", "(10F)", "(10F)", "(10F)", "(11F)", "(11F)", "(11F)")
         cols <- c("(01A)", "(10A)", "(11A)", "(00A)", "(10A)", "(11A)", "(00A)", "(01A)", "(11A)", "(00A)", "(01A)", "(10A)", "(01B)", "(10B)", "(11B)", "(00B)", "(10B)", "(11B)", "(00B)", "(01B)", "(11B)", "(00B)", "(01B)", "(10B)", "(01C)", "(10C)", "(11C)", "(00C)", "(10C)", "(11C)", "(00C)", "(01C)", "(11C)", "(00C)", "(01C)", "(10C)", "(01D)", "(10D)", "(11D)", "(00D)", "(10D)", "(11D)", "(00D)", "(01D)", "(11D)", "(00D)", "(01D)", "(10D)", "(01E)", "(10E)", "(11E)", "(00E)", "(10E)", "(11E)", "(00E)", "(01E)", "(11E)", "(00E)", "(01E)", "(10E)", "(01F)", "(10F)", "(11F)", "(00F)", "(10F)", "(11F)", "(00F)", "(01F)", "(11F)", "(00F)", "(01F)", "(10F)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -169,16 +169,16 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         category.rate.shiftD <- c(category.rate.shift[61:65], rep(0,2), category.rate.shift[66:70], rep(0,2), category.rate.shift[71:75], rep(0,2), category.rate.shift[76:80], rep(0,2))
         category.rate.shiftE <- c(category.rate.shift[81:85], rep(0,2), category.rate.shift[86:90], rep(0,2), category.rate.shift[91:95], rep(0,2), category.rate.shift[96:100], rep(0,2))
         category.rate.shiftF <- c(category.rate.shift[101:105], rep(0,2), category.rate.shift[106:110], rep(0,2), category.rate.shift[111:115], rep(0,2), category.rate.shift[116:120], rep(0,2))
-        pars.tmp <- c(speciation[1:4], extinction.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, speciation[5:8], extinction.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, speciation[9:12], extinction.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, speciation[13:16], extinction.tmp[13:16], trans.tmp[37:48], category.rate.shiftD, speciation[17:20], extinction.tmp[17:20], trans.tmp[49:60], category.rate.shiftE, speciation[21:24], extinction.tmp[21:24], trans.tmp[61:72], category.rate.shiftF)
+        pars.tmp <- c(turnover[1:4], eps.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, turnover[5:8], eps.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, turnover[9:12], eps.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, turnover[13:16], eps.tmp[13:16], trans.tmp[37:48], category.rate.shiftD, turnover[17:20], eps.tmp[17:20], trans.tmp[49:60], category.rate.shiftE, turnover[21:24], eps.tmp[21:24], trans.tmp[61:72], category.rate.shiftF)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==28){
         rate.cats <- 7
-        pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)", "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)", "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)", "(00E)", "(00E)", "(00E)", "(01E)", "(01E)", "(01E)", "(10E)", "(10E)", "(10E)", "(11E)", "(11E)", "(11E)", "(00F)", "(00F)", "(00F)", "(01F)", "(01F)", "(01F)", "(10F)", "(10F)", "(10F)", "(11F)", "(11F)", "(11F)", "(00G)", "(00G)", "(00G)", "(01G)", "(01G)", "(01G)", "(10G)", "(10G)", "(10G)", "(11G)", "(11G)", "(11G)")
         cols <- c("(01A)", "(10A)", "(11A)", "(00A)", "(10A)", "(11A)", "(00A)", "(01A)", "(11A)", "(00A)", "(01A)", "(10A)", "(01B)", "(10B)", "(11B)", "(00B)", "(10B)", "(11B)", "(00B)", "(01B)", "(11B)", "(00B)", "(01B)", "(10B)", "(01C)", "(10C)", "(11C)", "(00C)", "(10C)", "(11C)", "(00C)", "(01C)", "(11C)", "(00C)", "(01C)", "(10C)", "(01D)", "(10D)", "(11D)", "(00D)", "(10D)", "(11D)", "(00D)", "(01D)", "(11D)", "(00D)", "(01D)", "(10D)", "(01E)", "(10E)", "(11E)", "(00E)", "(10E)", "(11E)", "(00E)", "(01E)", "(11E)", "(00E)", "(01E)", "(10E)", "(01F)", "(10F)", "(11F)", "(00F)", "(10F)", "(11F)", "(00F)", "(01F)", "(11F)", "(00F)", "(01F)", "(10F)", "(01G)", "(10G)", "(11G)", "(00G)", "(10G)", "(11G)", "(00G)", "(01G)", "(11G)", "(00G)", "(01G)", "(10G)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -193,16 +193,16 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         category.rate.shiftE <- c(category.rate.shift[97:102], rep(0,1), category.rate.shift[103:108], rep(0,1), category.rate.shift[109:114], rep(0,1), category.rate.shift[115:120], rep(0,1))
         category.rate.shiftF <- c(category.rate.shift[121:126], rep(0,1), category.rate.shift[127:132], rep(0,1), category.rate.shift[133:138], rep(0,1), category.rate.shift[139:144], rep(0,1))
         category.rate.shiftG <- c(category.rate.shift[145:150], rep(0,1), category.rate.shift[151:156], rep(0,1), category.rate.shift[157:162], rep(0,1), category.rate.shift[163:168], rep(0,1))
-        pars.tmp <- c(speciation[1:4], extinction.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, speciation[5:8], extinction.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, speciation[9:12], extinction.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, speciation[13:16], extinction.tmp[13:16], trans.tmp[37:48], category.rate.shiftD, speciation[17:20], extinction.tmp[17:20], trans.tmp[49:60], category.rate.shiftE, speciation[21:24], extinction.tmp[21:24], trans.tmp[61:72], category.rate.shiftF, speciation[25:28], extinction.tmp[25:28], trans.tmp[73:84], category.rate.shiftG)
+        pars.tmp <- c(turnover[1:4], eps.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, turnover[5:8], eps.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, turnover[9:12], eps.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, turnover[13:16], eps.tmp[13:16], trans.tmp[37:48], category.rate.shiftD, turnover[17:20], eps.tmp[17:20], trans.tmp[49:60], category.rate.shiftE, turnover[21:24], eps.tmp[21:24], trans.tmp[61:72], category.rate.shiftF, turnover[25:28], eps.tmp[25:28], trans.tmp[73:84], category.rate.shiftG)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==32){
         rate.cats <- 8
-        pars.tmp <- speciation
-        extinction.tmp <- extinction
-        extinction.tmp[which(extinction.tmp > 0)] = (extinction.tmp[which( extinction.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extinction.tmp)
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)", "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)", "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)", "(00E)", "(00E)", "(00E)", "(01E)", "(01E)", "(01E)", "(10E)", "(10E)", "(10E)", "(11E)", "(11E)", "(11E)", "(00F)", "(00F)", "(00F)", "(01F)", "(01F)", "(01F)", "(10F)", "(10F)", "(10F)", "(11F)", "(11F)", "(11F)", "(00G)", "(00G)", "(00G)", "(01G)", "(01G)", "(01G)", "(10G)", "(10G)", "(10G)", "(11G)", "(11G)", "(11G)", "(00H)", "(00H)", "(00H)", "(01H)", "(01H)", "(01H)", "(10H)", "(10H)", "(10H)", "(11H)", "(11H)", "(11H)")
         cols <- c("(01A)", "(10A)", "(11A)", "(00A)", "(10A)", "(11A)", "(00A)", "(01A)", "(11A)", "(00A)", "(01A)", "(10A)", "(01B)", "(10B)", "(11B)", "(00B)", "(10B)", "(11B)", "(00B)", "(01B)", "(11B)", "(00B)", "(01B)", "(10B)", "(01C)", "(10C)", "(11C)", "(00C)", "(10C)", "(11C)", "(00C)", "(01C)", "(11C)", "(00C)", "(01C)", "(10C)", "(01D)", "(10D)", "(11D)", "(00D)", "(10D)", "(11D)", "(00D)", "(01D)", "(11D)", "(00D)", "(01D)", "(10D)", "(01E)", "(10E)", "(11E)", "(00E)", "(10E)", "(11E)", "(00E)", "(01E)", "(11E)", "(00E)", "(01E)", "(10E)", "(01F)", "(10F)", "(11F)", "(00F)", "(10F)", "(11F)", "(00F)", "(01F)", "(11F)", "(00F)", "(01F)", "(10F)", "(01G)", "(10G)", "(11G)", "(00G)", "(10G)", "(11G)", "(00G)", "(01G)", "(11G)", "(00G)", "(01G)", "(10G)", "(01H)", "(10H)", "(11H)", "(00H)", "(10H)", "(11H)", "(00H)", "(01H)", "(11H)", "(00H)", "(01H)", "(10H)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
@@ -218,7 +218,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         category.rate.shiftF <- c(category.rate.shift[141:168])
         category.rate.shiftG <- c(category.rate.shift[169:196])
         category.rate.shiftH <- c(category.rate.shift[197:224])
-        pars.tmp <- c(speciation[1:4], extinction.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, speciation[5:8], extinction.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, speciation[9:12], extinction.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, speciation[13:16], extinction.tmp[13:16], trans.tmp[37:48], category.rate.shiftD, speciation[17:20], extinction.tmp[17:20], trans.tmp[49:60], category.rate.shiftE, speciation[21:24], extinction.tmp[21:24], trans.tmp[61:72], category.rate.shiftF, speciation[25:28], extinction.tmp[25:28], trans.tmp[73:84], category.rate.shiftG, speciation[29:32], extinction.tmp[29:32], trans.tmp[85:96], category.rate.shiftH)
+        pars.tmp <- c(turnover[1:4], eps.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, turnover[5:8], eps.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, turnover[9:12], eps.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, turnover[13:16], eps.tmp[13:16], trans.tmp[37:48], category.rate.shiftD, turnover[17:20], eps.tmp[17:20], trans.tmp[49:60], category.rate.shiftE, turnover[21:24], eps.tmp[21:24], trans.tmp[61:72], category.rate.shiftF, turnover[25:28], eps.tmp[25:28], trans.tmp[73:84], category.rate.shiftG, turnover[29:32], eps.tmp[29:32], trans.tmp[85:96], category.rate.shiftH)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
 
@@ -247,7 +247,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         }
     }
     
-    if(sum(extinction)==0){
+    if(sum(eps)==0){
         init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=TRUE)
     }else{
         init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=FALSE)
@@ -263,7 +263,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c
         def.set.pars <- rep(c(log(starting.vals[1:4]), log(starting.vals[5:8]), log(starting.vals[9:20]), rep(log(0.01), 28)), rate.cats)
     }
     if(bounded.search == TRUE){
-        upper.full <- rep(c(rep(log(speciation.upper),4), rep(log(extinction.upper),4), rep(log(trans.upper),12), rep(log(10), 28)), rate.cats)
+        upper.full <- rep(c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper),12), rep(log(10), 28)), rate.cats)
     }else{
         upper.full <- rep(21,length(def.set.pars))
     }
