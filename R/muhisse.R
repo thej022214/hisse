@@ -303,7 +303,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         loglik = -out$objective
     }
     
-    names(solution) <- c("lambda00A","lambda01A","lambda10A","lambda11A","mu00A","mu01A","mu10A","mu11A","q00A_01A","q00A_10A","q00A_11A","q01A_00A","q01A_10A","q01A_11A","q10A_00A","q10A_01A","q10A_11A","q11A_00A","q11A_01A","q11A_10A","q00A_00B","q00A_00C","q00A_00D","q00A_00E","q00A_00F","q00A_00G","q00A_00H","q01A_01B","q01A_01C","q01A_01D","q01A_01E","q01A_01F","q01A_01G","q01A_01H","q10A_10B","q10A_10C","q10A_10D","q10A_10E","q10A_10F","q10A_10G","q10A_10H","q11A_11B","q11A_11C","q11A_11D","q11A_11E","q11A_11F","q11A_11G","q11A_11H","lambda00B","lambda01B","lambda10B","lambda11B","mu00B","mu01B","mu10B","mu11B","q00B_01B","q00B_10B","q00B_11B","q01B_00B","q01B_10B","q01B_11B","q10B_00B","q10B_01B","q10B_11B","q11B_00B","q11B_01B","q11B_10B","q00B_00A","q00B_00C","q00B_00D","q00B_00E","q00B_00F","q00B_00G","q00B_00H","q01B_01A","q01B_01C","q01B_01D","q01B_01E","q01B_01F","q01B_01G","q01B_01H","q10B_10A","q10B_10C","q10B_10D","q10B_10E","q10B_10F","q10B_10G","q10B_10H","q11B_11A","q11B_11C","q11B_11D","q11B_11E","q11B_11F","q11B_11G","q11B_11H","lambda00C","lambda01C","lambda10C","lambda11C","mu00C","mu01C","mu10C","mu11C","q00C_01C","q00C_10C","q00C_11C","q01C_00C","q01C_10C","q01C_11C","q10C_00C","q10C_01C","q10C_11C","q11C_00C","q11C_01C","q11C_10C","q00C_00A","q00C_00B","q00C_00D","q00C_00E","q00C_00F","q00C_00G","q00C_00H","q01C_01A","q01C_01B","q01C_01D","q01C_01E","q01C_01F","q01C_01G","q01C_01H","q10C_10A","q10C_10B","q10C_10D","q10C_10E","q10C_10F","q10C_10G","q10C_10H","q11C_11A","q11C_11B","q11C_11D","q11C_11E","q11C_11F","q11C_11G","q11C_11H","lambda00D","lambda01D","lambda10D","lambda11D","mu00D","mu01D","mu10D","mu11D","q00D_01D","q00D_10D","q00D_11D","q01D_00D","q01D_10D","q01D_11D","q10D_00D","q10D_01D","q10D_11D","q11D_00D","q11D_01D","q11D_10D","q00D_00A","q00D_00B","q00D_00C","q00D_00E","q00D_00F","q00D_00G","q00D_00H","q01D_01A","q01D_01B","q01D_01C","q01D_01E","q01D_01F","q01D_01G","q01D_01H","q10D_10A","q10D_10B","q10D_10C","q10D_10E","q10D_10F","q10D_10G","q10D_10H","q11D_11A","q11D_11B","q11D_11C","q11D_11E","q11D_11F","q11D_11G","q11D_11H","lambda00E","lambda01E","lambda10E","lambda11E","mu00E","mu01E","mu10E","mu11E","q00E_01E","q00E_10E","q00E_11E","q01E_00E","q01E_10E","q01E_11E","q10E_00E","q10E_01E","q10E_11E","q11E_00E","q11E_01E","q11E_10E","q00E_00A","q00E_00B","q00E_00C","q00E_00D","q00E_00F","q00E_00G","q00E_00H","q01E_01A","q01E_01B","q01E_01C","q01E_01D","q01E_01F","q01E_01G","q01E_01H","q10E_10A","q10E_10B","q10E_10C","q10E_10D","q10E_10F","q10E_10G","q10E_10H","q11E_11A","q11E_11B","q11E_11C","q11E_11D","q11E_11F","q11E_11G","q11E_11H","lambda00F","lambda01F","lambda10F","lambda11F","mu00F","mu01F","mu10F","mu11F","q00F_01F","q00F_10F","q00F_11F","q01F_00F","q01F_10F","q01F_11F","q10F_00F","q10F_01F","q10F_11F","q11F_00F","q11F_01F","q11F_10F","q00F_00A","q00F_00B","q00F_00C","q00F_00D","q00F_00E","q00F_00G","q00F_00H","q01F_01A","q01F_01B","q01F_01C","q01F_01D","q01F_01E","q01F_01G","q01F_01H","q10F_10A","q10F_10B","q10F_10C","q10F_10D","q10F_10E","q10F_10G","q10F_10H","q11F_11A","q11F_11B","q11F_11C","q11F_11D","q11F_11E","q11F_11G","q11F_11H","lambda00G","lambda01G","lambda10G","lambda11G","mu00G","mu01G","mu10G","mu11G","q00G_01G","q00G_10G","q00G_11G","q01G_00G","q01G_10G","q01G_11G","q10G_00G","q10G_01G","q10G_11G","q11G_00G","q11G_01G","q11G_10G","q00G_00A","q00G_00B","q00G_00C","q00G_00D","q00G_00E","q00G_00F","q00G_00H","q01G_01A","q01G_01B","q01G_01C","q01G_01D","q01G_01E","q01G_01F","q01G_01H","q10G_10A","q10G_10B","q10G_10C","q10G_10D","q10G_10E","q10G_10F","q10G_10H","q11G_11A","q11G_11B","q11G_11C","q11G_11D","q11G_11E","q11G_11F","q11G_11H","lambda00H","lambda01H","lambda10H","lambda11H","mu00H","mu01H","mu10H","mu11H","q00H_01H","q00H_10H","q00H_11H","q01H_00H","q01H_10H","q01H_11H","q10H_00H","q10H_01H","q10H_11H","q11H_00H","q11H_01H","q11H_10H","q00H_00A","q00H_00B","q00H_00C","q00H_00D","q00H_00E","q00H_00F","q00H_00G","q01H_01A","q01H_01B","q01H_01C","q01H_01D","q01H_01E","q01H_01F","q01H_01G","q10H_10A","q10H_10B","q10H_10C","q10H_10D","q10H_10E","q10H_10F","q10H_10G","q11H_11A","q11H_11B","q11H_11C","q11H_11D","q11H_11E","q11H_11F","q11H_11G")
+    names(solution) <- c("turnover00A","turnover01A","turnover10A","turnover11A","eps00A","eps01A","eps10A","eps11A","q00A_01A","q00A_10A","q00A_11A","q01A_00A","q01A_10A","q01A_11A","q10A_00A","q10A_01A","q10A_11A","q11A_00A","q11A_01A","q11A_10A","q00A_00B","q00A_00C","q00A_00D","q00A_00E","q00A_00F","q00A_00G","q00A_00H","q01A_01B","q01A_01C","q01A_01D","q01A_01E","q01A_01F","q01A_01G","q01A_01H","q10A_10B","q10A_10C","q10A_10D","q10A_10E","q10A_10F","q10A_10G","q10A_10H","q11A_11B","q11A_11C","q11A_11D","q11A_11E","q11A_11F","q11A_11G","q11A_11H","turnover00B","turnover01B","turnover10B","turnover11B","eps00B","eps01B","eps10B","eps11B","q00B_01B","q00B_10B","q00B_11B","q01B_00B","q01B_10B","q01B_11B","q10B_00B","q10B_01B","q10B_11B","q11B_00B","q11B_01B","q11B_10B","q00B_00A","q00B_00C","q00B_00D","q00B_00E","q00B_00F","q00B_00G","q00B_00H","q01B_01A","q01B_01C","q01B_01D","q01B_01E","q01B_01F","q01B_01G","q01B_01H","q10B_10A","q10B_10C","q10B_10D","q10B_10E","q10B_10F","q10B_10G","q10B_10H","q11B_11A","q11B_11C","q11B_11D","q11B_11E","q11B_11F","q11B_11G","q11B_11H","turnover00C","turnover01C","turnover10C","turnover11C","eps00C","eps01C","eps10C","eps11C","q00C_01C","q00C_10C","q00C_11C","q01C_00C","q01C_10C","q01C_11C","q10C_00C","q10C_01C","q10C_11C","q11C_00C","q11C_01C","q11C_10C","q00C_00A","q00C_00B","q00C_00D","q00C_00E","q00C_00F","q00C_00G","q00C_00H","q01C_01A","q01C_01B","q01C_01D","q01C_01E","q01C_01F","q01C_01G","q01C_01H","q10C_10A","q10C_10B","q10C_10D","q10C_10E","q10C_10F","q10C_10G","q10C_10H","q11C_11A","q11C_11B","q11C_11D","q11C_11E","q11C_11F","q11C_11G","q11C_11H","turnover00D","turnover01D","turnover10D","turnover11D","eps00D","eps01D","eps10D","eps11D","q00D_01D","q00D_10D","q00D_11D","q01D_00D","q01D_10D","q01D_11D","q10D_00D","q10D_01D","q10D_11D","q11D_00D","q11D_01D","q11D_10D","q00D_00A","q00D_00B","q00D_00C","q00D_00E","q00D_00F","q00D_00G","q00D_00H","q01D_01A","q01D_01B","q01D_01C","q01D_01E","q01D_01F","q01D_01G","q01D_01H","q10D_10A","q10D_10B","q10D_10C","q10D_10E","q10D_10F","q10D_10G","q10D_10H","q11D_11A","q11D_11B","q11D_11C","q11D_11E","q11D_11F","q11D_11G","q11D_11H","turnover00E","turnover01E","turnover10E","turnover11E","eps00E","eps01E","eps10E","eps11E","q00E_01E","q00E_10E","q00E_11E","q01E_00E","q01E_10E","q01E_11E","q10E_00E","q10E_01E","q10E_11E","q11E_00E","q11E_01E","q11E_10E","q00E_00A","q00E_00B","q00E_00C","q00E_00D","q00E_00F","q00E_00G","q00E_00H","q01E_01A","q01E_01B","q01E_01C","q01E_01D","q01E_01F","q01E_01G","q01E_01H","q10E_10A","q10E_10B","q10E_10C","q10E_10D","q10E_10F","q10E_10G","q10E_10H","q11E_11A","q11E_11B","q11E_11C","q11E_11D","q11E_11F","q11E_11G","q11E_11H","turnover00F","turnover01F","turnover10F","turnover11F","eps00F","eps01F","eps10F","eps11F","q00F_01F","q00F_10F","q00F_11F","q01F_00F","q01F_10F","q01F_11F","q10F_00F","q10F_01F","q10F_11F","q11F_00F","q11F_01F","q11F_10F","q00F_00A","q00F_00B","q00F_00C","q00F_00D","q00F_00E","q00F_00G","q00F_00H","q01F_01A","q01F_01B","q01F_01C","q01F_01D","q01F_01E","q01F_01G","q01F_01H","q10F_10A","q10F_10B","q10F_10C","q10F_10D","q10F_10E","q10F_10G","q10F_10H","q11F_11A","q11F_11B","q11F_11C","q11F_11D","q11F_11E","q11F_11G","q11F_11H","turnover00G","turnover01G","turnover10G","turnover11G","eps00G","eps01G","eps10G","eps11G","q00G_01G","q00G_10G","q00G_11G","q01G_00G","q01G_10G","q01G_11G","q10G_00G","q10G_01G","q10G_11G","q11G_00G","q11G_01G","q11G_10G","q00G_00A","q00G_00B","q00G_00C","q00G_00D","q00G_00E","q00G_00F","q00G_00H","q01G_01A","q01G_01B","q01G_01C","q01G_01D","q01G_01E","q01G_01F","q01G_01H","q10G_10A","q10G_10B","q10G_10C","q10G_10D","q10G_10E","q10G_10F","q10G_10H","q11G_11A","q11G_11B","q11G_11C","q11G_11D","q11G_11E","q11G_11F","q11G_11H","turnover00H","turnover01H","turnover10H","turnover11H","eps00H","eps01H","eps10H","eps11H","q00H_01H","q00H_10H","q00H_11H","q01H_00H","q01H_10H","q01H_11H","q10H_00H","q10H_01H","q10H_11H","q11H_00H","q11H_01H","q11H_10H","q00H_00A","q00H_00B","q00H_00C","q00H_00D","q00H_00E","q00H_00F","q00H_00G","q01H_01A","q01H_01B","q01H_01C","q01H_01D","q01H_01E","q01H_01F","q01H_01G","q10H_10A","q10H_10B","q10H_10C","q10H_10D","q10H_10E","q10H_10F","q10H_10G","q11H_11A","q11H_11B","q11H_11C","q11H_11D","q11H_11E","q11H_11F","q11H_11G")
     
     cat("Finished. Summarizing results...", "\n")
     
@@ -872,14 +872,14 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11D_11H = model.vec[192]
     
     ##Hidden State E
-    obj$lambda00E = model.vec[193]
-    obj$lambda01E = model.vec[194]
-    obj$lambda10E = model.vec[195]
-    obj$lambda11E = model.vec[196]
-    obj$mu00E = model.vec[197]
-    obj$mu01E = model.vec[198]
-    obj$mu10E = model.vec[199]
-    obj$mu11E = model.vec[200]
+    obj$lambda00E = model.vec[193] / (1 + model.vec[197])
+    obj$lambda01E = model.vec[194] / (1 + model.vec[198])
+    obj$lambda10E = model.vec[195] / (1 + model.vec[199])
+    obj$lambda11E = model.vec[196] / (1 + model.vec[200])
+    obj$mu00E = (model.vec[197] * model.vec[193]) / (1 + model.vec[197])
+    obj$mu01E = (model.vec[198] * model.vec[194]) / (1 + model.vec[198])
+    obj$mu10E = (model.vec[199] * model.vec[195]) / (1 + model.vec[199])
+    obj$mu11E = (model.vec[200] * model.vec[196]) / (1 + model.vec[200])
     obj$q00E_01E = model.vec[201]
     obj$q00E_10E = model.vec[202]
     obj$q00E_11E = model.vec[203]
@@ -923,14 +923,14 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11E_11H = model.vec[240]
     
     ##Hidden State F
-    obj$lambda00F = model.vec[241]
-    obj$lambda01F = model.vec[242]
-    obj$lambda10F = model.vec[243]
-    obj$lambda11F = model.vec[244]
-    obj$mu00F = model.vec[245]
-    obj$mu01F = model.vec[246]
-    obj$mu10F = model.vec[247]
-    obj$mu11F = model.vec[248]
+    obj$lambda00F = model.vec[241] / (1 + model.vec[245])
+    obj$lambda01F = model.vec[242] / (1 + model.vec[246])
+    obj$lambda10F = model.vec[243] / (1 + model.vec[247])
+    obj$lambda11F = model.vec[244] / (1 + model.vec[248])
+    obj$mu00F = (model.vec[245] * model.vec[241]) / (1 + model.vec[245])
+    obj$mu01F = (model.vec[246] * model.vec[242]) / (1 + model.vec[246])
+    obj$mu10F = (model.vec[247] * model.vec[243]) / (1 + model.vec[247])
+    obj$mu11F = (model.vec[248] * model.vec[244]) / (1 + model.vec[248])
     obj$q00F_01F = model.vec[249]
     obj$q00F_10F = model.vec[250]
     obj$q00F_11F = model.vec[251]
@@ -974,14 +974,14 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11F_11H = model.vec[288]
     
     ##Hidden State G
-    obj$lambda00G = model.vec[289]
-    obj$lambda01G = model.vec[290]
-    obj$lambda10G = model.vec[291]
-    obj$lambda11G = model.vec[292]
-    obj$mu00G = model.vec[293]
-    obj$mu01G = model.vec[294]
-    obj$mu10G = model.vec[295]
-    obj$mu11G = model.vec[296]
+    obj$lambda00G = model.vec[289] / (1 + model.vec[293])
+    obj$lambda01G = model.vec[290] / (1 + model.vec[294])
+    obj$lambda10G = model.vec[291] / (1 + model.vec[295])
+    obj$lambda11G = model.vec[292] / (1 + model.vec[296])
+    obj$mu00G = (model.vec[293] * model.vec[289]) / (1 + model.vec[293])
+    obj$mu01G = (model.vec[294] * model.vec[290]) / (1 + model.vec[294])
+    obj$mu10G = (model.vec[295] * model.vec[291]) / (1 + model.vec[295])
+    obj$mu11G = (model.vec[296] * model.vec[292]) / (1 + model.vec[296])
     obj$q00G_01G = model.vec[297]
     obj$q00G_10G = model.vec[298]
     obj$q00G_11G = model.vec[299]
@@ -1025,14 +1025,14 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11G_11H = model.vec[336]
     
     ##Hidden State H
-    obj$lambda00H = model.vec[337]
-    obj$lambda01H = model.vec[338]
-    obj$lambda10H = model.vec[339]
-    obj$lambda11H = model.vec[340]
-    obj$mu00H = model.vec[341]
-    obj$mu01H = model.vec[342]
-    obj$mu10H = model.vec[343]
-    obj$mu11H = model.vec[344]
+    obj$lambda00H = model.vec[337] / (1 + model.vec[341])
+    obj$lambda01H = model.vec[338] / (1 + model.vec[342])
+    obj$lambda10H = model.vec[339] / (1 + model.vec[343])
+    obj$lambda11H = model.vec[340] / (1 + model.vec[344])
+    obj$mu00H = (model.vec[341] * model.vec[337]) / (1 + model.vec[341])
+    obj$mu01H = (model.vec[342] * model.vec[338]) / (1 + model.vec[342])
+    obj$mu10H = (model.vec[343] * model.vec[339]) / (1 + model.vec[343])
+    obj$mu11H = (model.vec[344] * model.vec[340]) / (1 + model.vec[344])
     obj$q00H_01H = model.vec[345]
     obj$q00H_10H = model.vec[346]
     obj$q00H_11H = model.vec[347]
