@@ -4,11 +4,11 @@
 \description{Sets up and executes a MuHiSSE model (Multicharacter Hidden State Speciation
  and Extinction) on a phylogeny and character distribution.}
 \usage{
-MuHiSSE(phy, data, f=c(1,1,1,1), speciation=c(1,2,3,4), extinction=c(1,2,3,4), 
+MuHiSSE(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), 
 hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, 
 bounded.search=TRUE,  max.tol=.Machine$double.eps^.50, starting.vals=NULL,
-speciation.upper=1000, extinction.upper=1000, trans.upper=100, ode.eps=0)
+turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
@@ -23,13 +23,13 @@ speciation.upper=1000, extinction.upper=1000, trans.upper=100, ode.eps=0)
   of species in areas '01' and '0' and 50 percent of species in area '1' are
   included in the phylogeny. By default all species are assumed to be
   sampled.}
-\item{speciation}{a numeric vector of length equal to 4+(number of
+\item{turnover}{a numeric vector of length equal to 4+(number of
   \code{hidden.states} * 4). A MuSSE model has 4 speciation parameters:
   lambda00, lambda01, lambda10, and lambda11. A MuHiSSE model with 
   one hidden states has 8 speciation parameters: lambda0A, s1A, s01A, s0B, s1B, s01B. And so on. The length of the numeric
 vector needs to match the number of speciation parameters in the
 model. See 'Details'.}
-\item{extinction}{a numeric vector of length equal to4+(number of
+\item{eps}{a numeric vector of length equal to4+(number of
   \code{hidden.states} * 4). A MuSSE model has 4 extinction parameters:
   mu00, mu01, mu10, and mu11. A MuHiSSE model with one hidden area has 8 extinction
 parameters: mu00A, mu01A, mu10A, mu11A, mu00B, mu01B, mu10B, and mu11B. And so on. The length of the numeric
@@ -59,8 +59,8 @@ model. See 'Details'.}
   \code{subplex}.}
 \item{starting.vals}{a vector of starting values for the diversification parameters
   to be used instead of the default settings.}
-\item{speciation.upper}{sets the upper bound for the speciation parameters.}
-\item{extinction.upper}{sets the upper bound for the extinction parameters.}
+\item{turnover.upper}{sets the upper bound for the turnover parameters.}
+\item{eps.upper}{sets the upper bound for the eps parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
 \item{ode.eps}{sets the tolerance for the integration at the end of a
   branch. Essentially if the sum of compD is less than this tolerance,
