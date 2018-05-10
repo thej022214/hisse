@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=1000, eps.upper=1000, trans.upper=100, ode.eps=0){
+MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -258,7 +258,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     names(init.pars) <- NULL
     
     if(is.null(starting.vals)){
-        def.set.pars <- rep(c(log(init.pars[1:4]), log(init.pars[5:8]), log(init.pars[9:20]), rep(log(.01), 28)), rate.cats)
+        def.set.pars <- rep(c(log(init.pars[1:4]+init.pars[5:8]), log(init.pars[5:8]/init.pars[1:4]), log(init.pars[9:20]), rep(log(.01), 28)), rate.cats)
     }else{
         def.set.pars <- rep(c(log(starting.vals[1:4]), log(starting.vals[5:8]), log(starting.vals[9:20]), rep(log(0.01), 28)), rate.cats)
     }
@@ -668,14 +668,14 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$f = f
     
     ##Hidden State A
-    obj$lambda00A = model.vec[1]
-    obj$lambda01A = model.vec[2]
-    obj$lambda10A = model.vec[3]
-    obj$lambda11A = model.vec[4]
-    obj$mu00A = model.vec[5]
-    obj$mu01A = model.vec[6]
-    obj$mu10A = model.vec[7]
-    obj$mu11A = model.vec[8]
+    obj$lambda00A = model.vec[1] / (1 + model.vec[5])
+    obj$lambda01A = model.vec[2] / (1 + model.vec[6])
+    obj$lambda10A = model.vec[3] / (1 + model.vec[7])
+    obj$lambda11A = model.vec[4] / (1 + model.vec[8])
+    obj$mu00A = (model.vec[5] * model.vec[1]) / (1 + model.vec[5])
+    obj$mu01A = (model.vec[6] * model.vec[2]) / (1 + model.vec[6])
+    obj$mu10A = (model.vec[7] * model.vec[3]) / (1 + model.vec[7])
+    obj$mu11A = (model.vec[8] * model.vec[4]) / (1 + model.vec[8])
     obj$q00A_01A = model.vec[9]
     obj$q00A_10A = model.vec[10]
     obj$q00A_11A = model.vec[11]
@@ -719,14 +719,14 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11A_11H = model.vec[48]
     
     ##Hidden State B
-    obj$lambda00B = model.vec[49]
-    obj$lambda01B = model.vec[50]
-    obj$lambda10B = model.vec[51]
-    obj$lambda11B = model.vec[52]
-    obj$mu00B = model.vec[53]
-    obj$mu01B = model.vec[54]
-    obj$mu10B = model.vec[55]
-    obj$mu11B = model.vec[56]
+    obj$lambda00B = model.vec[49] / (1 + model.vec[53])
+    obj$lambda01B = model.vec[50] / (1 + model.vec[54])
+    obj$lambda10B = model.vec[51] / (1 + model.vec[55])
+    obj$lambda11B = model.vec[52] / (1 + model.vec[56])
+    obj$mu00B = (model.vec[53] * model.vec[49]) / (1 + model.vec[53])
+    obj$mu01B = (model.vec[54] * model.vec[50]) / (1 + model.vec[54])
+    obj$mu10B = (model.vec[55] * model.vec[51]) / (1 + model.vec[55])
+    obj$mu11B = (model.vec[56] * model.vec[52]) / (1 + model.vec[56])
     obj$q00B_01B = model.vec[57]
     obj$q00B_10B = model.vec[58]
     obj$q00B_11B = model.vec[59]
@@ -770,14 +770,14 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11B_11H = model.vec[96]
     
     ##Hidden State C
-    obj$lambda00C = model.vec[97]
-    obj$lambda01C = model.vec[98]
-    obj$lambda10C = model.vec[99]
-    obj$lambda11C = model.vec[100]
-    obj$mu00C = model.vec[101]
-    obj$mu01C = model.vec[102]
-    obj$mu10C = model.vec[103]
-    obj$mu11C = model.vec[104]
+    obj$lambda00C = model.vec[97] / (1 + model.vec[101])
+    obj$lambda01C = model.vec[98] / (1 + model.vec[102])
+    obj$lambda10C = model.vec[99] / (1 + model.vec[103])
+    obj$lambda11C = model.vec[100] / (1 + model.vec[104])
+    obj$mu00C = (model.vec[101] * model.vec[97]) / (1 + model.vec[101])
+    obj$mu01C = (model.vec[102] * model.vec[98]) / (1 + model.vec[102])
+    obj$mu10C = (model.vec[103] * model.vec[99]) / (1 + model.vec[103])
+    obj$mu11C = (model.vec[104] * model.vec[100]) / (1 + model.vec[104])
     obj$q00C_01C = model.vec[105]
     obj$q00C_10C = model.vec[106]
     obj$q00C_11C = model.vec[107]
@@ -821,14 +821,14 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11C_11H = model.vec[144]
 
     ##Hidden State D
-    obj$lambda00D = model.vec[145]
-    obj$lambda01D = model.vec[146]
-    obj$lambda10D = model.vec[147]
-    obj$lambda11D = model.vec[148]
-    obj$mu00D = model.vec[149]
-    obj$mu01D = model.vec[150]
-    obj$mu10D = model.vec[151]
-    obj$mu11D = model.vec[152]
+    obj$lambda00D = model.vec[145] / (1 + model.vec[149])
+    obj$lambda01D = model.vec[146] / (1 + model.vec[150])
+    obj$lambda10D = model.vec[147] / (1 + model.vec[151])
+    obj$lambda11D = model.vec[148] / (1 + model.vec[152])
+    obj$mu00D = (model.vec[149] * model.vec[145]) / (1 + model.vec[149])
+    obj$mu01D = (model.vec[150] * model.vec[146]) / (1 + model.vec[150])
+    obj$mu10D = (model.vec[151] * model.vec[147]) / (1 + model.vec[151])
+    obj$mu11D = (model.vec[152] * model.vec[148]) / (1 + model.vec[152])
     obj$q00D_01D = model.vec[153]
     obj$q00D_10D = model.vec[154]
     obj$q00D_11D = model.vec[155]
