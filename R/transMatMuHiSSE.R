@@ -49,8 +49,8 @@ TransMatMakerMuHiSSE <- function(hidden.traits=0, make.null=FALSE, include.diago
         
         if(hidden.traits == 3){
             if(make.special.for.teo == TRUE){
-                sub.mat1 <- hisse:::TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
-                sub.mat2 <- hisse:::TransMatMuSSEsingle(cat.number=2, include.diagonals=include.diagonals)
+                sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
+                sub.mat2 <- TransMatMuSSEsingle(cat.number=2, include.diagonals=include.diagonals)
                 max.par <- max(sub.mat2, na.rm=TRUE)
                 sub.mat3 <- matrix(NA, 4, 4)
                 diag(sub.mat3) <- max.par + 1
