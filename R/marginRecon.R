@@ -578,7 +578,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             rates.mat <- matrix(0, 2, 32)
             rates.mat[1,] <- model.vec[c(1:4, 49:52, 97:100, 145:148, 193:196, 241:244, 289:292, 337:340)]
             rates.mat[2,] <- model.vec[c(5:8, 53:56, 101:104, 149:152, 197:200, 245:248, 293:296, 341:344)]
-            rownames(rates.mat) <- c("speciation", "extinction")
+            rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
             rates.mat <- ParameterTransformMuHiSSE(rates.mat)
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
@@ -586,7 +586,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             rates.mat <- matrix(0, 2, 4)
             rates.mat[1,] <- model.vec[c(1:4)]
             rates.mat[2,] <- model.vec[c(5:8)]
-            rownames(rates.mat) <- c("speciation", "extinction")
+            rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(01A)","(10A)","(11A)")
             rates.mat <- ParameterTransformMuHiSSE(rates.mat)
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(01A)","(10A)","(11A)")
@@ -635,7 +635,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             rates.mat <- matrix(0, 2, 32)
             rates.mat[1,] <- model.vec[c(1:4, 49:52, 97:100, 145:148, 193:196, 241:244, 289:292, 337:340)]
             rates.mat[2,] <- model.vec[c(5:8, 53:56, 101:104, 149:152, 197:200, 245:248, 293:296, 341:344)]
-            rownames(rates.mat) <- c("speciation", "extinction")
+            rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
             colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
             rates.mat <- ParameterTransformMuHiSSE(rates.mat)
@@ -645,7 +645,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             rates.mat <- matrix(0, 2, 4)
             rates.mat[1,] <- model.vec[c(1:4)]
             rates.mat[2,] <- model.vec[c(5:8)]
-            rownames(rates.mat) <- c("speciation", "extinction")
+            rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(01A)","(10A)","(11A)")
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(01A)","(10A)","(11A)")
             rates.mat <- ParameterTransformMuHiSSE(rates.mat)
@@ -737,19 +737,19 @@ ParameterTransformGeoSSE <- function(x, assume.cladogenetic=TRUE){
 ParameterTransformMuHiSSE <- function(x){
     if(dim(x)[2] == 32){
         rates.mat <- matrix(0, 3, 32)
-        rownames(rates.mat) <- c("turnover", "net.div", "extinction.fraction")
+        rownames(rates.mat) <- c("net.div", "speciation", "extinction")
         colnames(rates.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
-        rates.mat[1,] <- x[1,] + x[2,]
+        rates.mat[1,] <- x[1,] - x[2,]
         rates.mat[2,] <- x[1,] - x[2,]
-        rates.mat[3,] <- x[2,] / x[1,]
+        rates.mat[3,] <- (x[1,] * x[2,]) / ( 1 + x[2,])
         rates.mat[3,is.na(rates.mat[3,])] = 0
     }else{
         rates.mat <- matrix(0, 3, 4)
-        rownames(rates.mat) <- c("turnover", "net.div", "extinction.fraction")
+        rownames(rates.mat) <- c("net.div", "speciation", "extinction")
         colnames(rates.mat) <- c("(00A)","(01A)","(10A)","(11A)")
-        rates.mat[1,] <- x[1,] + x[2,]
-        rates.mat[2,] <- x[1,] - x[2,]
-        rates.mat[3,] <- x[2,] / x[1,]
+        rates.mat[1,] <- x[1,] - x[2,]
+        rates.mat[2,] <- x[1,] / ( 1 + x[2,])
+        rates.mat[3,] <- (x[1,] * x[2,]) / ( 1 + x[2,])
         rates.mat[3,is.na(rates.mat[3,])] = 0
     }
     rates.mat <- rbind(x, rates.mat)
