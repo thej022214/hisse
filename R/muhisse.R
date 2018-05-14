@@ -187,7 +187,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
         category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
         category.rate.shiftA <- c(category.rate.shift[1:6], rep(0,1), category.rate.shift[7:12], rep(0,1), category.rate.shift[13:18], rep(0,1), category.rate.shift[19:24], rep(0,1))
-        category.rate.shiftB <- c(category.rate.shift[25:30], rep(0,1), category.rate.shift[31:36], rep(0,1), category.rate.shift[32:42], rep(0,1), category.rate.shift[43:48], rep(0,1))
+        category.rate.shiftB <- c(category.rate.shift[25:30], rep(0,1), category.rate.shift[31:36], rep(0,1), category.rate.shift[37:42], rep(0,1), category.rate.shift[43:48], rep(0,1))
         category.rate.shiftC <- c(category.rate.shift[49:54], rep(0,1), category.rate.shift[55:60], rep(0,1), category.rate.shift[61:66], rep(0,1), category.rate.shift[67:72], rep(0,1))
         category.rate.shiftD <- c(category.rate.shift[73:78], rep(0,1), category.rate.shift[79:84], rep(0,1), category.rate.shift[85:90], rep(0,1), category.rate.shift[91:96], rep(0,1))
         category.rate.shiftE <- c(category.rate.shift[97:102], rep(0,1), category.rate.shift[103:108], rep(0,1), category.rate.shift[109:114], rep(0,1), category.rate.shift[115:120], rep(0,1))
