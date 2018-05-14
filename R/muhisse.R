@@ -74,13 +74,16 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         eps.tmp <- eps
         eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, eps.tmp)
+        for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)")
         cols <- c("(01A)", "(10A)", "(11A)", "(00A)", "(10A)", "(11A)", "(00A)", "(01A)", "(11A)", "(00A)", "(01A)", "(10A)", "(01B)", "(10B)", "(11B)", "(00B)", "(10B)", "(11B)", "(00B)", "(01B)", "(11B)", "(00B)", "(01B)", "(10B)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, trans.tmp)
-        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-        category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+        rows <- c("(00A)", "(01A)", "(10A)", "(11A)", "(00B)", "(01B)", "(10B)", "(11B)")
+        cols <- c("(00B)", "(01B)", "(10B)", "(11B)", "(00A)", "(01A)", "(10A)", "(11A)")
+        category.tmp <- trans.rate[cbind(rows,cols)]
+        category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shiftA <- c(category.rate.shift[1], rep(0,6), category.rate.shift[2], rep(0,6), category.rate.shift[3], rep(0,6), category.rate.shift[4], rep(0,6))
         category.rate.shiftB <- c(category.rate.shift[5], rep(0,6), category.rate.shift[6], rep(0,6), category.rate.shift[7], rep(0,6), category.rate.shift[8], rep(0,6))
         pars.tmp <- c(turnover[1:4], eps.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, turnover[5:8], eps.tmp[5:8], trans.tmp[13:24], category.rate.shiftB)
