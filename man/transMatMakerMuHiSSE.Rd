@@ -3,7 +3,8 @@
 \title{Transition Rate matrix generator for the MuHiSSE model}
 \description{Generates and manipulates the index of the transition rate parameters to be optimized.}
 \usage{
-TransMatMakerMuHiSSE(hidden.traits=0, make.null=FALSE, include.diagonals=FALSE)
+TransMatMakerMuHiSSE(hidden.traits=0, make.null=FALSE, include.diagonals=FALSE,
+make.special.for.teo=FALSE)
 }       
 \arguments{
 \item{hidden.traits}{a numeric value with the number of hidden states in
@@ -13,6 +14,7 @@ TransMatMakerMuHiSSE(hidden.traits=0, make.null=FALSE, include.diagonals=FALSE)
   transition rates are the same across all hidden states and (2) the transition rates
   between hidden states (such as 00A <-> 01A) are the same.}
 \item{include.diagonals}{allows for dual transitions, e.g., 00->11 and 11->00 transitions.}
+\item{make.special.for.teo}{Testing proof of concept for Teo.}
 }
 \details{
   Outputs the full index of the rate parameters that are to be optimized.

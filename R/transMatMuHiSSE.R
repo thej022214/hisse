@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-TransMatMakerMuHiSSE <- function(hidden.traits=0, make.null=FALSE, include.diagonals=FALSE){
+TransMatMakerMuHiSSE <- function(hidden.traits=0, make.null=FALSE, include.diagonals=FALSE, make.special.for.teo=FALSE){
     if(hidden.traits == 0){
         trans.mat <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
     }else{
@@ -48,21 +48,37 @@ TransMatMakerMuHiSSE <- function(hidden.traits=0, make.null=FALSE, include.diago
         }
         
         if(hidden.traits == 3){
-            if(make.null == TRUE){
-                sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
-                max.par <- max(sub.mat1, na.rm=TRUE)
-                sub.mat2 <- matrix(NA, 4, 4)
-                diag(sub.mat2) <- max.par + 1
-                trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1))
-            }else{
-                sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
-                sub.mat2 <- TransMatMuSSEsingle(cat.number=2, include.diagonals=include.diagonals)
-                sub.mat3 <- TransMatMuSSEsingle(cat.number=3, include.diagonals=include.diagonals)
-                sub.mat4 <- TransMatMuSSEsingle(cat.number=4, include.diagonals=include.diagonals)
-                sub.mat5 <- matrix(NA, 4, 4)
+            if(make.special.for.teo=TRUE){
+                sub.mat1 <- hisse:::TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
+                sub.mat2 <- hisse:::TransMatMuSSEsingle(cat.number=2, include.diagonals=include.diagonals)
+                max.par <- max(sub.mat2, na.rm=TRUE)
+                sub.mat3 <- matrix(NA, 4, 4)
+                diag(sub.mat3) <- max.par + 1
+                max.par <- max(sub.mat3, na.rm=TRUE)
+                sub.mat4 <- matrix(NA, 4, 4)
+                diag(sub.mat4) <- max.par + 1
+                trans.mat.1 <- rbind(cbind(sub.mat1, sub.mat4), cbind(sub.mat3, sub.mat2))
                 max.par <- max(sub.mat4, na.rm=TRUE)
+                sub.mat5 <- matrix(NA, 8, 8)
                 diag(sub.mat5) <- max.par + 1
-                trans.mat <- rbind(cbind(sub.mat1, sub.mat5, sub.mat5, sub.mat5), cbind(sub.mat5, sub.mat2, sub.mat5, sub.mat5), cbind(sub.mat5, sub.mat5, sub.mat3, sub.mat5), cbind(sub.mat5, sub.mat5, sub.mat5, sub.mat4))
+                trans.mat <- rbind(cbind(trans.mat.1,sub.mat5), cbind(sub.mat5, trans.mat.1))
+            }else{
+                if(make.null == TRUE){
+                    sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
+                    max.par <- max(sub.mat1, na.rm=TRUE)
+                    sub.mat2 <- matrix(NA, 4, 4)
+                    diag(sub.mat2) <- max.par + 1
+                    trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1))
+                }else{
+                    sub.mat1 <- TransMatMuSSEsingle(cat.number=1, include.diagonals=include.diagonals)
+                    sub.mat2 <- TransMatMuSSEsingle(cat.number=2, include.diagonals=include.diagonals)
+                    sub.mat3 <- TransMatMuSSEsingle(cat.number=3, include.diagonals=include.diagonals)
+                    sub.mat4 <- TransMatMuSSEsingle(cat.number=4, include.diagonals=include.diagonals)
+                    sub.mat5 <- matrix(NA, 4, 4)
+                    max.par <- max(sub.mat4, na.rm=TRUE)
+                    diag(sub.mat5) <- max.par + 1
+                    trans.mat <- rbind(cbind(sub.mat1, sub.mat5, sub.mat5, sub.mat5), cbind(sub.mat5, sub.mat2, sub.mat5, sub.mat5), cbind(sub.mat5, sub.mat5, sub.mat3, sub.mat5), cbind(sub.mat5, sub.mat5, sub.mat5, sub.mat4))
+                }
             }
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)")
         }
