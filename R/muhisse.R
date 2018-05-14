@@ -116,13 +116,17 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         eps.tmp <- eps
         eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, eps.tmp)
+        for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)", "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)", "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)")
         cols <- c("(01A)", "(10A)", "(11A)", "(00A)", "(10A)", "(11A)", "(00A)", "(01A)", "(11A)", "(00A)", "(01A)", "(10A)", "(01B)", "(10B)", "(11B)", "(00B)", "(10B)", "(11B)", "(00B)", "(01B)", "(11B)", "(00B)", "(01B)", "(10B)", "(01C)", "(10C)", "(11C)", "(00C)", "(10C)", "(11C)", "(00C)", "(01C)", "(11C)", "(00C)", "(01C)", "(10C)", "(01D)", "(10D)", "(11D)", "(00D)", "(10D)", "(11D)", "(00D)", "(01D)", "(11D)", "(00D)", "(01D)", "(10D)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, trans.tmp)
-        category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-        category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+        rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)",  "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)",   "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)",    "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)")
+        cols <- c("(00B)", "(00C)", "(00D)", "(01B)", "(01C)", "(01D)", "(10B)", "(10C)", "(10D)", "(11B)", "(11C)", "(11D)",  "(00A)", "(00C)", "(00D)", "(01A)", "(01C)", "(01D)", "(10A)", "(10C)", "(10D)", "(11A)", "(11C)", "(11D)",   "(00A)", "(00B)", "(00D)", "(01A)", "(01B)", "(01D)", "(10A)", "(10B)", "(10D)", "(11A)", "(11B)", "(11D)",    "(00A)", "(00B)", "(00C)", "(01A)", "(01B)", "(01C)", "(10A)", "(10B)", "(10C)", "(11A)", "(11B)", "(11C)")
+        category.tmp <- trans.rate[cbind(rows,cols)]
+        category.rate.shift <- category.tmp + for.late.adjust
+        category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:3], rep(0,4), category.rate.shift[4:6], rep(0,4), category.rate.shift[7:9], rep(0,4), category.rate.shift[10:12], rep(0,4))
         category.rate.shiftB <- c(category.rate.shift[13:15], rep(0,4), category.rate.shift[16:18], rep(0,4), category.rate.shift[19:21], rep(0,4), category.rate.shift[22:24], rep(0,4))
         category.rate.shiftC <- c(category.rate.shift[25:27], rep(0,4), category.rate.shift[28:30], rep(0,4), category.rate.shift[31:33], rep(0,4), category.rate.shift[34:36], rep(0,4))
