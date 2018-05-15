@@ -103,8 +103,8 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         trans.tmp <- trans.rate[cbind(rows,cols)]
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, trans.tmp)
-        rows <- c("(00A)", "(00A)", "(01A)", "(01A)", "(10A)", "(10A)", "(11A)", "(11A)",  "(00B)", "(00B)",  "(01B)", "(01B)", "(10B)", "(10B)", "(11B)", "(11B)",   "(00C)", "(00C)", "(01C)", "(01C)", "(10C)", "(10C)", "(11C)", "(11C)")
-        cols <- c("(00B)", "(00C)", "(01B)", "(01C)", "(10B)", "(10C)", "(11B)", "(11C)",  "(00A)", "(00C)",  "(01A)", "(01C)", "(10A)", "(10C)", "(11A)", "(11C)",   "(00A)", "(00B)", "(01A)", "(01B)", "(10A)", "(10B)", "(11A)", "(11B)")
+        rows <- c("(00A)", "(00A)", "(01A)", "(01A)", "(10A)", "(10A)", "(11A)", "(11A)", "(00B)", "(00B)", "(01B)", "(01B)", "(10B)", "(10B)", "(11B)", "(11B)", "(00C)", "(00C)", "(01C)", "(01C)", "(10C)", "(10C)", "(11C)", "(11C)")
+        cols <- c("(00B)", "(00C)", "(01B)", "(01C)", "(10B)", "(10C)", "(11B)", "(11C)", "(00A)", "(00C)", "(01A)", "(01C)", "(10A)", "(10C)", "(11A)", "(11C)", "(00A)", "(00B)", "(01A)", "(01B)", "(10A)", "(10B)", "(11A)", "(11B)")
         category.tmp <- trans.rate[cbind(rows,cols)]
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
@@ -127,8 +127,8 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         trans.tmp <- trans.rate[cbind(rows,cols)]
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, trans.tmp)
-        rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)",  "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)",   "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)",    "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)")
-        cols <- c("(00B)", "(00C)", "(00D)", "(01B)", "(01C)", "(01D)", "(10B)", "(10C)", "(10D)", "(11B)", "(11C)", "(11D)",  "(00A)", "(00C)", "(00D)", "(01A)", "(01C)", "(01D)", "(10A)", "(10C)", "(10D)", "(11A)", "(11C)", "(11D)",   "(00A)", "(00B)", "(00D)", "(01A)", "(01B)", "(01D)", "(10A)", "(10B)", "(10D)", "(11A)", "(11B)", "(11D)",    "(00A)", "(00B)", "(00C)", "(01A)", "(01B)", "(01C)", "(10A)", "(10B)", "(10C)", "(11A)", "(11B)", "(11C)")
+        rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)", "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)", "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)")
+        cols <- c("(00B)", "(00C)", "(00D)", "(01B)", "(01C)", "(01D)", "(10B)", "(10C)", "(10D)", "(11B)", "(11C)", "(11D)", "(00A)", "(00C)", "(00D)", "(01A)", "(01C)", "(01D)", "(10A)", "(10C)", "(10D)", "(11A)", "(11C)", "(11D)", "(00A)", "(00B)", "(00D)", "(01A)", "(01B)", "(01D)", "(10A)", "(10B)", "(10D)", "(11A)", "(11B)", "(11D)", "(00A)", "(00B)", "(00C)", "(01A)", "(01B)", "(01C)", "(10A)", "(10B)", "(10C)", "(11A)", "(11B)", "(11C)")
         category.tmp <- trans.rate[cbind(rows,cols)]
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
@@ -308,8 +308,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
-            opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 10, "ftol_rel" = max.tol)
-            #opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 10, "ftol_rel" = max.tol)
+            opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
             out = nloptr(x0=ip, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
