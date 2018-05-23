@@ -354,7 +354,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
 DevOptimizeMuHiSSE <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, np, ode.eps) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
-    ## print(p.new)
+    print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
     cache = ParametersToPassMuHiSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
