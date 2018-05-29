@@ -466,7 +466,7 @@ DownPassMuHisse <- function(phy, cache, hidden.states, bad.likelihood=-10000000,
                 prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", padded.pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
                 #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", padded.pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8)
             }
-            print(prob.subtree.call.full)
+
             ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
             if(attributes(prob.subtree.cal.full)$istate[1] < 0){
                 return(bad.likelihood)
