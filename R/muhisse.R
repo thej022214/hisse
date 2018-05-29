@@ -693,10 +693,19 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
             if(data[i]==4){states[i,4]=1}
         }
     }
-    
+    if(hidden.states == "TEST3"){
+        states = matrix(0,Ntip(phy),4)
+        for(i in 1:Ntip(phy)){
+            if(data[i]==0){states[i,1]=1}
+            if(data[i]==1){states[i,2]=1}
+            if(data[i]==2){states[i,3]=1}
+            if(data[i]==3){states[i,4]=1}
+        }
+    }
 
 
-    
+
+
     
     obj$states = states
     obj$tot_time = max(branching.times(phy))
