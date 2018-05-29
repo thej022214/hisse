@@ -498,6 +498,13 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
 }
 
 
+
+######################################################################################################################################
+######################################################################################################################################
+### UTILITY FUNCTIONS
+######################################################################################################################################
+######################################################################################################################################
+
 ParameterTransform <- function(x, y){
     speciation <- x / (1+y)
     extinction <- (x*y) / (1+y)
@@ -516,7 +523,7 @@ ParameterTransformGeoSSE <- function(x, assume.cladogenetic=TRUE){
             rates.mat[2,] <- x[1,] - x[2,]
             rates.mat[3,] <- x[2,] / x[1,]
             for(widespread.index in c(3,9,15)){
-                rates.mat[1:2,widespread.index] <- sum(x[1:2,c(widespread.index-2,widespread.index-2,widespread.index)])
+                rates.mat[1:2,widespread.index] <- sum(x[1:2,c(widespread.index-2,widespread.index-1,widespread.index)])
                 rates.mat[3,widespread.index] <- 0
                 #rates.mat[1,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) + sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
                 #rates.mat[2,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) - sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
@@ -546,11 +553,6 @@ ParameterTransformGeoSSE <- function(x, assume.cladogenetic=TRUE){
             rates.mat[1,] <- x[1,] + x[2,]
             rates.mat[2,] <- x[1,] - x[2,]
             rates.mat[3,] <- x[2,] / x[1,]
-            for(widespread.index in c(3,9,15)){
-                rates.mat[1,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) + sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
-                rates.mat[2,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)]) - sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)])
-                rates.mat[3,widespread.index] <- sum(x[2,c(widespread.index-2,widespread.index-2,widespread.index)]) / sum(x[1,c(widespread.index-2,widespread.index-2,widespread.index)])
-            }
             rates.mat[3,is.na(rates.mat[3,])] = 0
         }else{
             rates.mat <- matrix(0, 3, 3)
@@ -559,9 +561,6 @@ ParameterTransformGeoSSE <- function(x, assume.cladogenetic=TRUE){
             rates.mat[1,] <- x[1,] + x[2,]
             rates.mat[2,] <- x[1,] - x[2,]
             rates.mat[3,] <- x[2,] / x[1,]
-            rates.mat[1,3] <- sum(x[1,c(1,2,3)]) + sum(x[2,c(1,2,3)])
-            rates.mat[2,3] <- sum(x[1,c(1,2,3)]) - sum(x[2,c(1,2,3)])
-            rates.mat[3,3] <- sum(x[2,c(1,2,3)]) / sum(x[1,c(1,2,3)])
             rates.mat[3,is.na(rates.mat[3,])] = 0
         }
     }
@@ -569,16 +568,26 @@ ParameterTransformGeoSSE <- function(x, assume.cladogenetic=TRUE){
     return(rates.mat)
 }
 
+
+
+ParameterTransform <- function(x, y){
+    speciation <- x / (1+y)
+    extinction <- (x*y) / (1+y)
+    return(c(speciation, extinction))
+}
+
+
 print.hisse.states <- function(x,...){
     print(x$phy)
 }
+
 
 print.hisse.geosse.states <- function(x,...){
     print(x$phy)
 }
 
-ParameterTransform <- function(x, y){
-	speciation <- x / (1+y)
-	extinction <- (x*y) / (1+y)
-	return(c(speciation, extinction))
+print.musse.states <- function(x,...){
+    print(x$phy)
 }
+
+

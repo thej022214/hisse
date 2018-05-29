@@ -584,7 +584,7 @@ DownPassGeoHisse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
                     return(bad.likelihood)
 				}
                 #This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-                if(sum(prob.subtree.cal[10:18]) < ode.eps){
+                if(sum(prob.subtree.cal[16:30]) < ode.eps){
                     return(bad.likelihood)
                 }
                 

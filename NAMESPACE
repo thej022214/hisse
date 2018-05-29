@@ -13,7 +13,7 @@ importFrom("stats", "dbeta", "density", "quantile", "reorder", "rexp", "runif", 
 importFrom("diversitree", "tree.classe")
 importFrom("stats", "setNames")
 
-exportClasses('hisse.fit', 'hisse.null4.fit', 'geohisse.fit', 'hisse.states', 'hisse.support', 'geohisse.support')
+exportClasses('hisse.fit', 'hisse.null4.fit', 'geohisse.fit', 'hisse.states', 'hisse.support', 'geohisse.support', 'hisse.geosse.states')
 S3method(print, hisse.fit)
 S3method(print, hisse.null4.fit)
 S3method(print, hisse.states)
