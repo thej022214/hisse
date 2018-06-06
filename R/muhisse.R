@@ -1,4 +1,14 @@
 
+#library(ape)
+#library(deSolve)
+#library(subplex)
+#library(phytools)
+#library(nloptr)
+#library(GenSA)
+#library(data.table)
+#dyn.load("canonical-musse-ext-derivs.so")
+#dyn.load("muhisse-ext-derivs.so")
+
 ######################################################################################################################################
 ######################################################################################################################################
 ### MuHiSSE -- Expanded set of MuSSE models for examining diversification in relation to multiple trait evolution
@@ -249,7 +259,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         pars.tmp <- c(turnover[1:4], eps.tmp[1:4], trans.tmp[1:12], category.rate.shiftA, turnover[5:8], eps.tmp[5:8], trans.tmp[13:24], category.rate.shiftB, turnover[9:12], eps.tmp[9:12], trans.tmp[25:36], category.rate.shiftC, turnover[13:16], eps.tmp[13:16], trans.tmp[37:48], category.rate.shiftD, turnover[17:20], eps.tmp[17:20], trans.tmp[49:60], category.rate.shiftE, turnover[21:24], eps.tmp[21:24], trans.tmp[61:72], category.rate.shiftF, turnover[25:28], eps.tmp[25:28], trans.tmp[73:84], category.rate.shiftG, turnover[29:32], eps.tmp[29:32], trans.tmp[85:96], category.rate.shiftH)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
-
+    
     np <- max(pars)
     pars[pars==0] <- np+1
     
@@ -260,11 +270,11 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     
     #This is used to scale starting values to account for sampling:
     if(length(f) == 4){
-        freqs <- table(data.new[,1])
+        freqs <- table(apply(data.new, 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "01" = 2, "10" = 3, "11" = 4)))
         if(length(freqs == 4)){
-            samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
+            samp.freq.tree <- Ntip(phy) / sum(freqs / f)
         }else{
-            samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
+            samp.freq.tree <- Ntip(phy) / sum(freqs / f)
         }
     }else{
         if(length(f) == Ntip(phy)){
@@ -305,17 +315,24 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     }
     lower <- rep(-20, length(ip))
     
+    # Some new prerequisites #
+    gen <- FindGenerations(phy)
+    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
+    nb.tip <- Ntip(phy)
+    nb.node <- phy$Nnode
+    ##########################
+    
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = nloptr(x0=ip, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeMuHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = subplex(ip, fn=DevOptimizeMuHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
@@ -323,12 +340,11 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
         opts <- list("algorithm"="NLOPT_GD_STOGO", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out.sann = GenSA(ip, fn=DevOptimizeMuHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out.sann = GenSA(ip, fn=DevOptimizeMuHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         #out.sann <- stogo(x0=ip, fn=DevOptimizeMuHiSSE, gr=NULL, upper=upper, lower=lower, pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
-        print(out.sann)
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         
@@ -351,15 +367,15 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
 ######################################################################################################################################
 
 
-DevOptimizeMuHiSSE <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, np, ode.eps) {
+DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, ode.eps) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
     ## print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache = ParametersToPassMuHiSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
-    logl <- DownPassMuHisse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
-
+    cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
+    logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+    
     return(-logl)
 }
 
@@ -367,280 +383,36 @@ DevOptimizeMuHiSSE <- function(p, pars, phy, data, f, hidden.states, condition.o
 
 ######################################################################################################################################
 ######################################################################################################################################
-### The MuHiSSE type down pass that carries out the integration and returns the likelihood:
+### The various utility functions used
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPassMuHisse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.eps=0) {
-    #Some preliminaries:
-    nb.tip <- length(phy$tip.label)
-    nb.node <- phy$Nnode
-    phy <- reorder(phy, "pruningwise")
-    anc <- unique(phy$edge[,1])
-    TIPS <- 1:nb.tip
-    
-    if(hidden.states == FALSE){
-        compD <- matrix(0, nrow=nb.tip + nb.node, ncol=4)
-        compE <- matrix(0, nrow=nb.tip + nb.node, ncol=4)
-    }else{
-        compD <- matrix(0, nrow=nb.tip + nb.node, ncol=32)
-        compE <- matrix(0, nrow=nb.tip + nb.node, ncol=32)
-        if(root.type=="user"){
-            root.p.new <- numeric(32)
-            root.p.new[1:length(root.p)] <- root.p
-            root.p <- root.p.new
-        }
-    }
-    #Initializes the tip sampling and sets internal nodes to be zero:
-    ncols = dim(compD)[2]
-    if(length(cache$f) == 4){
-        for(i in 1:(nb.tip)){
-            compD[i,] <- cache$f * cache$states[i,]
-            compE[i,] <- rep((1-cache$f), ncols/4)
-        }
-    }else{
-        for(i in 1:(nb.tip)){
-            compD[i,] <- cache$f[i] * cache$states[i,]
-            compE[i,] <- rep((1-cache$f[i]), ncols/4)
-        }
-    }
-    logcomp <- c()
-    #Start the postorder traversal indexing lists by node number:
-    for (i in seq(from = 1, length.out = nb.node)) {
-        #A vector of all the internal nodes:
-        focal <- anc[i]
-        desRows <- which(phy$edge[,1]==focal)
-        desNodes <- phy$edge[desRows,2]
-        #Note: when the tree has been reordered branching.times are no longer valid. Fortunately, we extract this information in the initial cache setup. Also focal is the rootward node, whereas desNodes represent a vector of all descendant nodes:
-        cache$rootward.age <- cache$split.times[which(names(cache$split.times)==focal)]
+FindGenerations <- function(phy){
+    generation <- list()
+    known <- 1:Ntip(phy)
+    unknown <- phy$edge[,1]
+    needed <- phy$edge[,2]
+    root <- min(unknown)
+    i <- 1
+    repeat{
+        knowable <- unknown[needed %in% known]
+        knowable <- knowable[duplicated(knowable)]
+        generation[[i]] <-  knowable
         
-        v <- c()
-        phi <- c()
-        for (desIndex in sequence(length(desRows))){
-            cache$focal.edge.length <- phy$edge.length[desRows[desIndex]]
-            cache$tipward.age <- cache$rootward.age - cache$focal.edge.length
-            #Strange rounding errors. A tip age should be zero. This ensures that:
-            if(cache$tipward.age < .Machine$double.eps^0.5){
-                cache$tipward.age = 0
-            }
-            cache$node.D <- compD[desNodes[desIndex],]
-            cache$node.E <- compE[desNodes[desIndex],]
-            ##Call to lsoda that utilizes C code. Requires a lot of inputs. Note that for now we hardcode the NUMELEMENTS arguments. The reason for this is because with lsoda we can only pass a vector of parameters.
-            if(hidden.states == FALSE){
-                pars <- list(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$mu00A, cache$mu01A, cache$mu10A, cache$mu11A, cache$q00A_01A, cache$q00A_10A, cache$q00A_11A, cache$q01A_00A, cache$q01A_10A, cache$q01A_11A, cache$q10A_00A, cache$q10A_01A, cache$q10A_11A, cache$q11A_00A, cache$q11A_01A, cache$q11A_10A)
-                NUMELEMENTS <- 20 #needed for passing in vector to C
-                padded.pars <- rep(0, NUMELEMENTS)
-                pars <- c(unlist(pars))
-                stopifnot(length(padded.pars)<=NUMELEMENTS)
-                padded.pars[sequence(length(pars))]<-pars
-                yini <-c(E00=cache$node.E[1], E01=cache$node.E[2], E10=cache$node.E[3], E11=cache$node.E[4], D00=cache$node.D[1], D01=cache$node.D[2], D10=cache$node.D[3], D11=cache$node.D[4])
-                times=c(cache$tipward.age, cache$rootward.age)
-                
-                #runSilent <- function() {
-                #options(warn = -1)
-                #on.exit(options(warn = 0))
-                #capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                #capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dll = "notclasse-ext-derivs", rtol=1e-8, atol=1e-8))
-                #res
-                #}
-                #prob.subtree.cal.full <- runSilent()
-                prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-                #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", padded.pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
-            }else{
-                pars <- list(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$mu00A, cache$mu01A, cache$mu10A, cache$mu11A, cache$q00A_01A, cache$q00A_10A, cache$q00A_11A, cache$q01A_00A, cache$q01A_10A, cache$q01A_11A, cache$q10A_00A, cache$q10A_01A, cache$q10A_11A, cache$q11A_00A, cache$q11A_01A, cache$q11A_10A, cache$q00A_00B, cache$q00A_00C, cache$q00A_00D, cache$q00A_00E, cache$q00A_00F, cache$q00A_00G, cache$q00A_00H, cache$q01A_01B, cache$q01A_01C, cache$q01A_01D, cache$q01A_01E, cache$q01A_01F, cache$q01A_01G, cache$q01A_01H, cache$q10A_10B, cache$q10A_10C, cache$q10A_10D, cache$q10A_10E, cache$q10A_10F, cache$q10A_10G, cache$q10A_10H, cache$q11A_11B, cache$q11A_11C, cache$q11A_11D, cache$q11A_11E, cache$q11A_11F, cache$q11A_11G, cache$q11A_11H, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$mu00B, cache$mu01B, cache$mu10B, cache$mu11B, cache$q00B_01B, cache$q00B_10B, cache$q00B_11B, cache$q01B_00B, cache$q01B_10B, cache$q01B_11B, cache$q10B_00B, cache$q10B_01B, cache$q10B_11B, cache$q11B_00B, cache$q11B_01B, cache$q11B_10B, cache$q00B_00A, cache$q00B_00C, cache$q00B_00D, cache$q00B_00E, cache$q00B_00F, cache$q00B_00G, cache$q00B_00H, cache$q01B_01A, cache$q01B_01C, cache$q01B_01D, cache$q01B_01E, cache$q01B_01F, cache$q01B_01G, cache$q01B_01H, cache$q10B_10A, cache$q10B_10C, cache$q10B_10D, cache$q10B_10E, cache$q10B_10F, cache$q10B_10G, cache$q10B_10H, cache$q11B_11A, cache$q11B_11C, cache$q11B_11D, cache$q11B_11E, cache$q11B_11F, cache$q11B_11G, cache$q11B_11H, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$mu00C, cache$mu01C, cache$mu10C, cache$mu11C, cache$q00C_01C, cache$q00C_10C, cache$q00C_11C, cache$q01C_00C, cache$q01C_10C, cache$q01C_11C, cache$q10C_00C, cache$q10C_01C, cache$q10C_11C, cache$q11C_00C, cache$q11C_01C, cache$q11C_10C, cache$q00C_00A, cache$q00C_00B, cache$q00C_00D, cache$q00C_00E, cache$q00C_00F, cache$q00C_00G, cache$q00C_00H, cache$q01C_01A, cache$q01C_01B, cache$q01C_01D, cache$q01C_01E, cache$q01C_01F, cache$q01C_01G, cache$q01C_01H, cache$q10C_10A, cache$q10C_10B, cache$q10C_10D, cache$q10C_10E, cache$q10C_10F, cache$q10C_10G, cache$q10C_10H, cache$q11C_11A, cache$q11C_11B, cache$q11C_11D, cache$q11C_11E, cache$q11C_11F, cache$q11C_11G, cache$q11C_11H, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$mu00D, cache$mu01D, cache$mu10D, cache$mu11D, cache$q00D_01D, cache$q00D_10D, cache$q00D_11D, cache$q01D_00D, cache$q01D_10D, cache$q01D_11D, cache$q10D_00D, cache$q10D_01D, cache$q10D_11D, cache$q11D_00D, cache$q11D_01D, cache$q11D_10D, cache$q00D_00A, cache$q00D_00B, cache$q00D_00C, cache$q00D_00E, cache$q00D_00F, cache$q00D_00G, cache$q00D_00H, cache$q01D_01A, cache$q01D_01B, cache$q01D_01C, cache$q01D_01E, cache$q01D_01F, cache$q01D_01G, cache$q01D_01H, cache$q10D_10A, cache$q10D_10B, cache$q10D_10C, cache$q10D_10E, cache$q10D_10F, cache$q10D_10G, cache$q10D_10H, cache$q11D_11A, cache$q11D_11B, cache$q11D_11C, cache$q11D_11E, cache$q11D_11F, cache$q11D_11G, cache$q11D_11H, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$mu00E, cache$mu01E, cache$mu10E, cache$mu11E, cache$q00E_01E, cache$q00E_10E, cache$q00E_11E, cache$q01E_00E, cache$q01E_10E, cache$q01E_11E, cache$q10E_00E, cache$q10E_01E, cache$q10E_11E, cache$q11E_00E, cache$q11E_01E, cache$q11E_10E, cache$q00E_00A, cache$q00E_00B, cache$q00E_00C, cache$q00E_00D, cache$q00E_00F, cache$q00E_00G, cache$q00E_00H, cache$q01E_01A, cache$q01E_01B, cache$q01E_01C, cache$q01E_01D, cache$q01E_01F, cache$q01E_01G, cache$q01E_01H, cache$q10E_10A, cache$q10E_10B, cache$q10E_10C, cache$q10E_10D, cache$q10E_10F, cache$q10E_10G, cache$q10E_10H, cache$q11E_11A, cache$q11E_11B, cache$q11E_11C, cache$q11E_11D, cache$q11E_11F, cache$q11E_11G, cache$q11E_11H, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$mu00F, cache$mu01F, cache$mu10F, cache$mu11F, cache$q00F_01F, cache$q00F_10F, cache$q00F_11F, cache$q01F_00F, cache$q01F_10F, cache$q01F_11F, cache$q10F_00F, cache$q10F_01F, cache$q10F_11F, cache$q11F_00F, cache$q11F_01F, cache$q11F_10F, cache$q00F_00A, cache$q00F_00B, cache$q00F_00C, cache$q00F_00D, cache$q00F_00E, cache$q00F_00G, cache$q00F_00H, cache$q01F_01A, cache$q01F_01B, cache$q01F_01C, cache$q01F_01D, cache$q01F_01E, cache$q01F_01G, cache$q01F_01H, cache$q10F_10A, cache$q10F_10B, cache$q10F_10C, cache$q10F_10D, cache$q10F_10E, cache$q10F_10G, cache$q10F_10H, cache$q11F_11A, cache$q11F_11B, cache$q11F_11C, cache$q11F_11D, cache$q11F_11E, cache$q11F_11G, cache$q11F_11H, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$mu00G, cache$mu01G, cache$mu10G, cache$mu11G, cache$q00G_01G, cache$q00G_10G, cache$q00G_11G, cache$q01G_00G, cache$q01G_10G, cache$q01G_11G, cache$q10G_00G, cache$q10G_01G, cache$q10G_11G, cache$q11G_00G, cache$q11G_01G, cache$q11G_10G, cache$q00G_00A, cache$q00G_00B, cache$q00G_00C, cache$q00G_00D, cache$q00G_00E, cache$q00G_00F, cache$q00G_00H, cache$q01G_01A, cache$q01G_01B, cache$q01G_01C, cache$q01G_01D, cache$q01G_01E, cache$q01G_01F, cache$q01G_01H, cache$q10G_10A, cache$q10G_10B, cache$q10G_10C, cache$q10G_10D, cache$q10G_10E, cache$q10G_10F, cache$q10G_10H, cache$q11G_11A, cache$q11G_11B, cache$q11G_11C, cache$q11G_11D, cache$q11G_11E, cache$q11G_11F, cache$q11G_11H, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H, cache$mu00H, cache$mu01H, cache$mu10H, cache$mu11H, cache$q00H_01H, cache$q00H_10H, cache$q00H_11H, cache$q01H_00H, cache$q01H_10H, cache$q01H_11H, cache$q10H_00H, cache$q10H_01H, cache$q10H_11H, cache$q11H_00H, cache$q11H_01H, cache$q11H_10H, cache$q00H_00A, cache$q00H_00B, cache$q00H_00C, cache$q00H_00D, cache$q00H_00E, cache$q00H_00F, cache$q00H_00G, cache$q01H_01A, cache$q01H_01B, cache$q01H_01C, cache$q01H_01D, cache$q01H_01E, cache$q01H_01F, cache$q01H_01G, cache$q10H_10A, cache$q10H_10B, cache$q10H_10C, cache$q10H_10D, cache$q10H_10E, cache$q10H_10F, cache$q10H_10G, cache$q11H_11A, cache$q11H_11B, cache$q11H_11C, cache$q11H_11D, cache$q11H_11E, cache$q11H_11F, cache$q11H_11G)
-                NUMELEMENTS <- 384 #needed for passing in vector to C
-                padded.pars <- rep(0, NUMELEMENTS)
-                pars <- c(unlist(pars))
-                stopifnot(length(padded.pars)<=NUMELEMENTS)
-                padded.pars[sequence(length(pars))]<-pars
-                yini <- c(E00A = cache$node.E[1], E01A = cache$node.E[2], E10A = cache$node.E[3], E11A = cache$node.E[4], E00B = cache$node.E[5], E01B = cache$node.E[6], E10B = cache$node.E[7], E11B = cache$node.E[8], E00C = cache$node.E[9], E01C = cache$node.E[10], E10C = cache$node.E[11], E11C = cache$node.E[12], E00D = cache$node.E[13], E01D = cache$node.E[14], E10D = cache$node.E[15], E11D = cache$node.E[16], E00E = cache$node.E[17], E01E = cache$node.E[18], E10E = cache$node.E[19], E11E = cache$node.E[20], E00F = cache$node.E[21], E01F = cache$node.E[22], E10F = cache$node.E[23], E11F = cache$node.E[24], E00G = cache$node.E[25], E01G = cache$node.E[26], E10G = cache$node.E[27], E11G = cache$node.E[28], E00H = cache$node.E[29], E01H = cache$node.E[30], E10H = cache$node.E[31], E11H = cache$node.E[32], D00A = cache$node.D[1], D01A = cache$node.D[2], D10A = cache$node.D[3], D11A = cache$node.D[4], D00B = cache$node.D[5], D01B = cache$node.D[6], D10B = cache$node.D[7], D11B = cache$node.D[8], D00C = cache$node.D[9], D01C = cache$node.D[10], D10C = cache$node.D[11], D11C = cache$node.D[12], D00D = cache$node.D[13], D01D = cache$node.D[14], D10D = cache$node.D[15], D11D = cache$node.D[16], D00E = cache$node.D[17], D01E = cache$node.D[18], D10E = cache$node.D[19], D11E = cache$node.D[20], D00F = cache$node.D[21], D01F = cache$node.D[22], D10F = cache$node.D[23], D11F = cache$node.D[24], D00G = cache$node.D[25], D01G = cache$node.D[26], D10G = cache$node.D[27], D11G = cache$node.D[28], D00H = cache$node.D[29], D01H = cache$node.D[30], D10H = cache$node.D[31], D11H = cache$node.D[32])
-                times=c(cache$tipward.age, cache$rootward.age)
-                #runSilent <- function() {
-                #    options(warn = -1)
-                #    on.exit(options(warn = 0))
-                #    capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                #capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dll = "notclasse-more-ext-derivs", rtol=1e-8, atol=1e-8))
-                #    res
-                #}
-                #prob.subtree.cal.full <- runSilent()
-                prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", padded.pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-                #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", padded.pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8)
-            }
-
-            ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
-            if(attributes(prob.subtree.cal.full)$istate[1] < 0){
-                return(bad.likelihood)
-            }else{
-                prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-            }
-            ##############################################################################
-            
-            if(hidden.states == FALSE){
-                if(is.nan(prob.subtree.cal[5]) | is.nan(prob.subtree.cal[6]) | is.nan(prob.subtree.cal[7]) | is.nan(prob.subtree.cal[8])){
-                    return(bad.likelihood)
-                }
-                #This is default and cannot change, but if we get a negative probability, discard the results:
-                if(prob.subtree.cal[5]<0 | prob.subtree.cal[6]<0 | prob.subtree.cal[7]<0 | prob.subtree.cal[8]<0){
-                    return(bad.likelihood)
-                }
-                #This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-                if(sum(prob.subtree.cal[5:8]) < ode.eps){
-                    return(bad.likelihood)
-                }
-                
-                #Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
-                phi <- c(phi, prob.subtree.cal[1:4])
-                v <- rbind(v, prob.subtree.cal[5:8])
-            }else{
-                if(any(is.nan(prob.subtree.cal[33:64]))){
-                    return(bad.likelihood)
-                }
-                #This is default and cannot change, but if we get a negative probability, discard the results:
-                if(any(prob.subtree.cal[33:64] < 0)){
-                    return(bad.likelihood)
-                }
-                #This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-                if(sum(prob.subtree.cal[33:64]) < ode.eps){
-                    return(bad.likelihood)
-                }
-                
-                #Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
-                phi <- c(phi, prob.subtree.cal[1:32])
-                v <- rbind(v, prob.subtree.cal[33:64])
-            }
-        }
-        ##Allows for a 4-state MuSSE model. Important for cases where you have a random tree and a random trait.
-        if(hidden.states == TRUE){
-            compD[focal,1] <- v[1,1] * v[2,1] * cache$lambda00A
-            compD[focal,2] <- v[1,2] * v[2,2] * cache$lambda01A
-            compD[focal,3] <- v[1,3] * v[2,3] * cache$lambda10A
-            compD[focal,4] <- v[1,4] * v[2,4] * cache$lambda11A
-            v <- v[,-c(1:4)]
-
-            compD[focal,5] <- v[1,1] * v[2,1] * cache$lambda00B
-            compD[focal,6] <- v[1,2] * v[2,2] * cache$lambda01B
-            compD[focal,7] <- v[1,3] * v[2,3] * cache$lambda10B
-            compD[focal,8] <- v[1,4] * v[2,4] * cache$lambda11B
-            v <- v[,-c(1:4)]
-            
-            compD[focal,9] <- v[1,1] * v[2,1] * cache$lambda00C
-            compD[focal,10] <- v[1,2] * v[2,2] * cache$lambda01C
-            compD[focal,11] <- v[1,3] * v[2,3] * cache$lambda10C
-            compD[focal,12] <- v[1,4] * v[2,4] * cache$lambda11C
-            v <- v[,-c(1:4)]
-            
-            compD[focal,13] <- v[1,1] * v[2,1] * cache$lambda00D
-            compD[focal,14] <- v[1,2] * v[2,2] * cache$lambda01D
-            compD[focal,15] <- v[1,3] * v[2,3] * cache$lambda10D
-            compD[focal,16] <- v[1,4] * v[2,4] * cache$lambda11D
-            v <- v[,-c(1:4)]
-
-            compD[focal,17] <- v[1,1] * v[2,1] * cache$lambda00E
-            compD[focal,18] <- v[1,2] * v[2,2] * cache$lambda01E
-            compD[focal,19] <- v[1,3] * v[2,3] * cache$lambda10E
-            compD[focal,20] <- v[1,4] * v[2,4] * cache$lambda11E
-            v <- v[,-c(1:4)]
-
-            compD[focal,21] <- v[1,1] * v[2,1] * cache$lambda00F
-            compD[focal,22] <- v[1,2] * v[2,2] * cache$lambda01F
-            compD[focal,23] <- v[1,3] * v[2,3] * cache$lambda10F
-            compD[focal,24] <- v[1,4] * v[2,4] * cache$lambda11F
-            v <- v[,-c(1:4)]
-
-            compD[focal,25] <- v[1,1] * v[2,1] * cache$lambda00G
-            compD[focal,26] <- v[1,2] * v[2,2] * cache$lambda01G
-            compD[focal,27] <- v[1,3] * v[2,3] * cache$lambda10G
-            compD[focal,28] <- v[1,4] * v[2,4] * cache$lambda11G
-            v <- v[,-c(1:4)]
-
-            compD[focal,29] <- v[1,1] * v[2,1] * cache$lambda00H
-            compD[focal,30] <- v[1,2] * v[2,2] * cache$lambda01H
-            compD[focal,31] <- v[1,3] * v[2,3] * cache$lambda10H
-            compD[focal,32] <- v[1,4] * v[2,4] * cache$lambda11H
-
-            compE[focal,] <- phi[1:32]
-            if(!is.null(node)){
-                fixer = numeric(32)
-                fixer[state] = 1
-                if(node == focal){
-                    compD[focal,] <- compD[focal,] * fixer
-                }
-                #compE[focal,] <- compE[focal,] * fixer
-            }
-        }else{
-            compD[focal,1] <- v[1,1] * v[2,1] * cache$lambda00A
-            compD[focal,2] <- v[1,2] * v[2,2] * cache$lambda01A
-            compD[focal,3] <- v[1,3] * v[2,3] * cache$lambda10A
-            compD[focal,4] <- v[1,4] * v[2,4] * cache$lambda11A
-            compE[focal,] <- phi[1:4]
-            if(!is.null(node)){
-                if(node == focal){
-                    fixer = numeric(4)
-                    fixer[state] = 1
-                    compD[focal,] <- compD[focal,] * fixer
-                }
-            }
-        }
-        ###########################
-        #Logcompensation bit for dealing with underflow issues. Need to give a necessary shoutout to Rich FitzJohn -- we follow his diversitree approach. VERIFIED that it works properly:
-        tmp <- sum(compD[focal,])
-        compD[focal,] <- compD[focal,] / tmp
-        logcomp <- c(logcomp, log(tmp))
-        
+        known <- c(known, knowable)
+        needed <- needed[!unknown %in% knowable]
+        unknown <- unknown[!unknown %in% knowable]
+        i <- i + 1
+        if (any(root == knowable)) break
     }
-    root.node <- nb.tip + 1L
-    if (is.na(sum(log(compD[root.node,]))) || is.na(log(sum(1-compE[root.node,])))){
-        return(bad.likelihood)
-    }else{
-        if(root.type == "madfitz"){
-            root.p = compD[root.node,]/sum(compD[root.node,])
-            root.p[which(is.na(root.p))] = 0
-        }
-        if(root.type == "equal"){
-            root.p = c(rep(1/length(which(compD[root.node,] > 0)), length(compD[root.node,])))
-            root.p[which(!compD[root.node,] > 0)] = 0
-        }
-        if(root.type == "user"){
-            root.p = root.p
-        }
-        if(condition.on.survival == TRUE){
-            if(hidden.states == FALSE){
-                lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A)
-                compD[root.node,] <- compD[root.node,] / sum(root.p * lambda * (1 - compE[root.node,])^2)
-                #Corrects for possibility that you have 0/0:
-                compD[root.node,which(is.na(compD[root.node,]))] = 0
-            }else{
-                lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H)
-                compD[root.node,] <- compD[root.node,] / sum(root.p * lambda * (1 - compE[root.node,])^2)
-                #Corrects for possibility that you have 0/0:
-                compD[root.node,which(is.na(compD[root.node,]))] = 0
-            }
-        }
-        loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
-    }
-    if(get.phi==TRUE){
-        obj = NULL
-        obj$compD.root = compD[root.node,]/sum(compD[root.node,])
-        obj$compE = compE
-        obj$root.p = root.p
-        return(obj)
-    }else{
-        return(loglik)
-    }
+    res <- generation
+    return(res)
 }
 
 
-
-######################################################################################################################################
-######################################################################################################################################
-### Cache object for storing parameters that are used throughout MuHiSSE:
-######################################################################################################################################
-######################################################################################################################################
-
-ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
-    #Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
-    obj <- NULL
-    obj$phy = phy
+OrganizeData <- function(data, phy, f, hidden.states){
+    nb.tip <- length(phy$tip.label)
+    nb.node <- phy$Nnode
     
     if(hidden.states == FALSE){
         states = matrix(0,Ntip(phy),4)
@@ -657,7 +429,10 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
             if(x[i]==1 & y[i]==2){states[i,c(3,4)]=1}
             if(x[i]==2 & y[i]==2){states[i,1:4]=1}
         }
+        compD <- matrix(0, nrow=nb.tip, ncol=4)
+        compE <- matrix(0, nrow=nb.tip, ncol=4)
     }
+    
     if(hidden.states == TRUE){
         states = matrix(0,Ntip(phy),32)
         x <- data[,1]
@@ -673,6 +448,8 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
             if(x[i]==1 & y[i]==2){states[i,c(3,7,11,15,19,23,27,31, 4,8,12,16,20,24,28,32)]=1}
             if(x[i]==2 & y[i]==2){states[i,1:16]=1}
         }
+        compD <- matrix(0, nrow=nb.tip, ncol=32)
+        compE <- matrix(0, nrow=nb.tip, ncol=32)
     }
     
     if(hidden.states == "TEST1"){
@@ -683,7 +460,10 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
             if(data[i]==3){states[i,c(3,7,11,15,19,23,27,31)]=1}
             if(data[i]==4){states[i,c(4,8,12,16,20,24,28,32)]=1}
         }
+        compD <- matrix(0, nrow=nb.tip, ncol=32)
+        compE <- matrix(0, nrow=nb.tip, ncol=32)
     }
+    
     if(hidden.states == "TEST2"){
         states = matrix(0,Ntip(phy),4)
         for(i in 1:Ntip(phy)){
@@ -692,24 +472,295 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
             if(data[i]==3){states[i,3]=1}
             if(data[i]==4){states[i,4]=1}
         }
+        compD <- matrix(0, nrow=nb.tip, ncol=4)
+        compE <- matrix(0, nrow=nb.tip, ncol=4)
+        
     }
-    if(hidden.states == "TEST3"){
-        states = matrix(0,Ntip(phy),4)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==0){states[i,1]=1}
-            if(data[i]==1){states[i,2]=1}
-            if(data[i]==2){states[i,3]=1}
-            if(data[i]==3){states[i,4]=1}
+    
+    #Initializes the tip sampling and sets internal nodes to be zero:
+    ncols = dim(compD)[2]
+    if(length(f) == 4){
+        for(i in 1:(nb.tip)){
+            compD[i,] <- f * states[i,]
+            compE[i,] <- rep((1-f), ncols/4)
+        }
+    }else{
+        for(i in 1:(nb.tip)){
+            compD[i,] <- f[i] * states[i,]
+            compE[i,] <- rep((1-f[i]), ncols/4)
         }
     }
-
-
-
-
     
-    obj$states = states
-    obj$tot_time = max(branching.times(phy))
-    obj$f = f
+    node.ages <- c(rep(0, Ntip(phy)), branching.times(phy))
+    table.ages <- matrix(0, dim(phy$edge)[1], 2)
+    for(row.index in 1:dim(phy$edge)[1]){
+        table.ages[row.index,1] <- node.ages[phy$edge[row.index,1]]
+        table.ages[row.index,2] <- node.ages[phy$edge[row.index,2]]
+    }
+    tmp.df <- cbind(table.ages, phy$edge.length, phy$edge[,1], phy$edge[,2], 0, matrix(0, nrow(table.ages), ncol(compD)), matrix(0, nrow(table.ages), ncol(compE)))
+    colnames(tmp.df) <- c("RootwardAge", "TipwardAge", "BranchLength", "FocalNode", "DesNode", "comp", paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"))
+    dat.tab <- as.data.table(tmp.df)
+    setkey(dat.tab, DesNode)
+    for (j in 1:(dim(compD)[2])){
+        dat.tab[J(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
+        dat.tab[J(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
+    }
+    return(dat.tab)
+}
+
+
+SingleChildProb <- function(cache, compD, compE, start.time, end.time, x){
+    if(cache$hidden.states == TRUE){
+        pars <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$mu00A, cache$mu01A, cache$mu10A, cache$mu11A, cache$q00A_01A, cache$q00A_10A, cache$q00A_11A, cache$q01A_00A, cache$q01A_10A, cache$q01A_11A, cache$q10A_00A, cache$q10A_01A, cache$q10A_11A, cache$q11A_00A, cache$q11A_01A, cache$q11A_10A, cache$q00A_00B, cache$q00A_00C, cache$q00A_00D, cache$q00A_00E, cache$q00A_00F, cache$q00A_00G, cache$q00A_00H, cache$q01A_01B, cache$q01A_01C, cache$q01A_01D, cache$q01A_01E, cache$q01A_01F, cache$q01A_01G, cache$q01A_01H, cache$q10A_10B, cache$q10A_10C, cache$q10A_10D, cache$q10A_10E, cache$q10A_10F, cache$q10A_10G, cache$q10A_10H, cache$q11A_11B, cache$q11A_11C, cache$q11A_11D, cache$q11A_11E, cache$q11A_11F, cache$q11A_11G, cache$q11A_11H, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$mu00B, cache$mu01B, cache$mu10B, cache$mu11B, cache$q00B_01B, cache$q00B_10B, cache$q00B_11B, cache$q01B_00B, cache$q01B_10B, cache$q01B_11B, cache$q10B_00B, cache$q10B_01B, cache$q10B_11B, cache$q11B_00B, cache$q11B_01B, cache$q11B_10B, cache$q00B_00A, cache$q00B_00C, cache$q00B_00D, cache$q00B_00E, cache$q00B_00F, cache$q00B_00G, cache$q00B_00H, cache$q01B_01A, cache$q01B_01C, cache$q01B_01D, cache$q01B_01E, cache$q01B_01F, cache$q01B_01G, cache$q01B_01H, cache$q10B_10A, cache$q10B_10C, cache$q10B_10D, cache$q10B_10E, cache$q10B_10F, cache$q10B_10G, cache$q10B_10H, cache$q11B_11A, cache$q11B_11C, cache$q11B_11D, cache$q11B_11E, cache$q11B_11F, cache$q11B_11G, cache$q11B_11H, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$mu00C, cache$mu01C, cache$mu10C, cache$mu11C, cache$q00C_01C, cache$q00C_10C, cache$q00C_11C, cache$q01C_00C, cache$q01C_10C, cache$q01C_11C, cache$q10C_00C, cache$q10C_01C, cache$q10C_11C, cache$q11C_00C, cache$q11C_01C, cache$q11C_10C, cache$q00C_00A, cache$q00C_00B, cache$q00C_00D, cache$q00C_00E, cache$q00C_00F, cache$q00C_00G, cache$q00C_00H, cache$q01C_01A, cache$q01C_01B, cache$q01C_01D, cache$q01C_01E, cache$q01C_01F, cache$q01C_01G, cache$q01C_01H, cache$q10C_10A, cache$q10C_10B, cache$q10C_10D, cache$q10C_10E, cache$q10C_10F, cache$q10C_10G, cache$q10C_10H, cache$q11C_11A, cache$q11C_11B, cache$q11C_11D, cache$q11C_11E, cache$q11C_11F, cache$q11C_11G, cache$q11C_11H, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$mu00D, cache$mu01D, cache$mu10D, cache$mu11D, cache$q00D_01D, cache$q00D_10D, cache$q00D_11D, cache$q01D_00D, cache$q01D_10D, cache$q01D_11D, cache$q10D_00D, cache$q10D_01D, cache$q10D_11D, cache$q11D_00D, cache$q11D_01D, cache$q11D_10D, cache$q00D_00A, cache$q00D_00B, cache$q00D_00C, cache$q00D_00E, cache$q00D_00F, cache$q00D_00G, cache$q00D_00H, cache$q01D_01A, cache$q01D_01B, cache$q01D_01C, cache$q01D_01E, cache$q01D_01F, cache$q01D_01G, cache$q01D_01H, cache$q10D_10A, cache$q10D_10B, cache$q10D_10C, cache$q10D_10E, cache$q10D_10F, cache$q10D_10G, cache$q10D_10H, cache$q11D_11A, cache$q11D_11B, cache$q11D_11C, cache$q11D_11E, cache$q11D_11F, cache$q11D_11G, cache$q11D_11H, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$mu00E, cache$mu01E, cache$mu10E, cache$mu11E, cache$q00E_01E, cache$q00E_10E, cache$q00E_11E, cache$q01E_00E, cache$q01E_10E, cache$q01E_11E, cache$q10E_00E, cache$q10E_01E, cache$q10E_11E, cache$q11E_00E, cache$q11E_01E, cache$q11E_10E, cache$q00E_00A, cache$q00E_00B, cache$q00E_00C, cache$q00E_00D, cache$q00E_00F, cache$q00E_00G, cache$q00E_00H, cache$q01E_01A, cache$q01E_01B, cache$q01E_01C, cache$q01E_01D, cache$q01E_01F, cache$q01E_01G, cache$q01E_01H, cache$q10E_10A, cache$q10E_10B, cache$q10E_10C, cache$q10E_10D, cache$q10E_10F, cache$q10E_10G, cache$q10E_10H, cache$q11E_11A, cache$q11E_11B, cache$q11E_11C, cache$q11E_11D, cache$q11E_11F, cache$q11E_11G, cache$q11E_11H, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$mu00F, cache$mu01F, cache$mu10F, cache$mu11F, cache$q00F_01F, cache$q00F_10F, cache$q00F_11F, cache$q01F_00F, cache$q01F_10F, cache$q01F_11F, cache$q10F_00F, cache$q10F_01F, cache$q10F_11F, cache$q11F_00F, cache$q11F_01F, cache$q11F_10F, cache$q00F_00A, cache$q00F_00B, cache$q00F_00C, cache$q00F_00D, cache$q00F_00E, cache$q00F_00G, cache$q00F_00H, cache$q01F_01A, cache$q01F_01B, cache$q01F_01C, cache$q01F_01D, cache$q01F_01E, cache$q01F_01G, cache$q01F_01H, cache$q10F_10A, cache$q10F_10B, cache$q10F_10C, cache$q10F_10D, cache$q10F_10E, cache$q10F_10G, cache$q10F_10H, cache$q11F_11A, cache$q11F_11B, cache$q11F_11C, cache$q11F_11D, cache$q11F_11E, cache$q11F_11G, cache$q11F_11H, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$mu00G, cache$mu01G, cache$mu10G, cache$mu11G, cache$q00G_01G, cache$q00G_10G, cache$q00G_11G, cache$q01G_00G, cache$q01G_10G, cache$q01G_11G, cache$q10G_00G, cache$q10G_01G, cache$q10G_11G, cache$q11G_00G, cache$q11G_01G, cache$q11G_10G, cache$q00G_00A, cache$q00G_00B, cache$q00G_00C, cache$q00G_00D, cache$q00G_00E, cache$q00G_00F, cache$q00G_00H, cache$q01G_01A, cache$q01G_01B, cache$q01G_01C, cache$q01G_01D, cache$q01G_01E, cache$q01G_01F, cache$q01G_01H, cache$q10G_10A, cache$q10G_10B, cache$q10G_10C, cache$q10G_10D, cache$q10G_10E, cache$q10G_10F, cache$q10G_10H, cache$q11G_11A, cache$q11G_11B, cache$q11G_11C, cache$q11G_11D, cache$q11G_11E, cache$q11G_11F, cache$q11G_11H, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H, cache$mu00H, cache$mu01H, cache$mu10H, cache$mu11H, cache$q00H_01H, cache$q00H_10H, cache$q00H_11H, cache$q01H_00H, cache$q01H_10H, cache$q01H_11H, cache$q10H_00H, cache$q10H_01H, cache$q10H_11H, cache$q11H_00H, cache$q11H_01H, cache$q11H_10H, cache$q00H_00A, cache$q00H_00B, cache$q00H_00C, cache$q00H_00D, cache$q00H_00E, cache$q00H_00F, cache$q00H_00G, cache$q01H_01A, cache$q01H_01B, cache$q01H_01C, cache$q01H_01D, cache$q01H_01E, cache$q01H_01F, cache$q01H_01G, cache$q10H_10A, cache$q10H_10B, cache$q10H_10C, cache$q10H_10D, cache$q10H_10E, cache$q10H_10F, cache$q10H_10G, cache$q11H_11A, cache$q11H_11B, cache$q11H_11C, cache$q11H_11D, cache$q11H_11E, cache$q11H_11F, cache$q11H_11G)
+        yini <- c(E00A = compE[1], E01A = compE[2], E10A = compE[3], E11A = compE[4], E00B = compE[5], E01B = compE[6], E10B = compE[7], E11B = compE[8], E00C = compE[9], E01C = compE[10], E10C = compE[11], E11C = compE[12], E00D = compE[13], E01D = compE[14], E10D = compE[15], E11D = compE[16], E00E = compE[17], E01E = compE[18], E10E = compE[19], E11E = compE[20], E00F = compE[21], E01F = compE[22], E10F = compE[23], E11F = compE[24], E00G = compE[25], E01G = compE[26], E10G = compE[27], E11G = compE[28], E00H = compE[29], E01H = compE[30], E10H = compE[31], E11H = compE[32], D00A = compD[1], D01A = compD[2], D10A = compD[3], D11A = compD[4], D00B = compD[5], D01B = compD[6], D10B = compD[7], D11B = compD[8], D00C = compD[9], D01C = compD[10], D10C = compD[11], D11C = compD[12], D00D = compD[13], D01D = compD[14], D10D = compD[15], D11D = compD[16], D00E = compD[17], D01E = compD[18], D10E = compD[19], D11E = compD[20], D00F = compD[21], D01F = compD[22], D10F = compD[23], D11F = compD[24], D00G = compD[25], D01G = compD[26], D10G = compD[27], D11G = compD[28], D00H = compD[29], D01H = compD[30], D10H = compD[31], D11H = compD[32])
+        times=c(start.time, end.time)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+    }else{
+        pars <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$mu00A, cache$mu01A, cache$mu10A, cache$mu11A, cache$q00A_01A, cache$q00A_10A, cache$q00A_11A, cache$q01A_00A, cache$q01A_10A, cache$q01A_11A, cache$q10A_00A, cache$q10A_01A, cache$q10A_11A, cache$q11A_00A, cache$q11A_01A, cache$q11A_10A)
+        yini <-c(E00=compE[1], E01=compE[2], E10=compE[3], E11=compE[4], D00=compD[1], D01=compD[2], D10=compD[3], D11=compD[4])
+        times=c(start.time, end.time)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+    }
+    ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
+    if(attributes(prob.subtree.cal.full)$istate[1] < 0){
+        prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+        if(cache$hidden.states == TRUE){
+            prob.subtree.cal[33:64] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }else{
+            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }else{
+        prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+    }
+    ##############################################################################
+    
+    if(cache$hidden.states == TRUE){
+        if(any(is.nan(prob.subtree.cal[33:64]))){
+            prob.subtree.cal[33:64] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        #This is default and cannot change, but if we get a negative probability, discard the results:
+        if(any(prob.subtree.cal[33:64] < 0)){
+            prob.subtree.cal[33:64] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        if(sum(prob.subtree.cal[33:64]) < cache$ode.eps){
+            prob.subtree.cal[33:64] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }else{
+        if(is.nan(prob.subtree.cal[5]) | is.nan(prob.subtree.cal[6]) | is.nan(prob.subtree.cal[7]) | is.nan(prob.subtree.cal[8])){
+            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        #This is default and cannot change, but if we get a negative probability, discard the results:
+        if(prob.subtree.cal[5]<0 | prob.subtree.cal[6]<0 | prob.subtree.cal[7]<0 | prob.subtree.cal[8]<0){
+            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        if(sum(prob.subtree.cal[5:8]) < cache$ode.eps){
+            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }
+    return(prob.subtree.cal)
+}
+
+
+FocalNodeProb <- function(cache, dat.tab, generations){
+    setkey(dat.tab, FocalNode)
+    CurrentGenData <- dat.tab[J(generations)]
+    if(cache$hidden.states == TRUE){
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:38], z[39:79],  z[2], z[1])))
+        v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),33:64] * tmp[seq(2,nrow(tmp),2),33:64], length(unique(CurrentGenData$FocalNode)), 32)
+        v.mat <- v.mat * matrix(c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H), length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
+        phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
+        if(!is.null(cache$node)){
+            if(which(generations == cache$node)){
+                fixer = numeric(32)
+                fixer[cache$state] = 1
+                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            }
+        }
+    }else{
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:10], z[11:14],  z[2], z[1])))
+        v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),5:8] * tmp[seq(2,nrow(tmp),2),5:8], length(unique(CurrentGenData$FocalNode)), 4)
+        v.mat <- v.mat * matrix(c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A), length(unique(CurrentGenData$FocalNode)), 4, byrow=TRUE)
+        phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
+        if(!is.null(cache$node)){
+            if(which(generations == cache$node)){
+                fixer = numeric(4)
+                fixer[cache$state] = 1
+                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            }
+        }
+    }
+    tmp.comp <- rowSums(v.mat)
+    tmp.probs <- v.mat / tmp.comp
+    setkey(dat.tab, DesNode)
+    for (j in 1:(dim(tmp.probs)[2])){
+        dat.tab[J(c(generations)), paste("compD", j, sep="_") := tmp.probs[,j]]
+        dat.tab[J(c(generations)), paste("compE", j, sep="_") := phi.mat[,j]]
+    }
+    dat.tab[J(c(generations)), "comp" := tmp.comp]
+    return(dat.tab)
+}
+
+
+#Have to calculate root prob separately because it is no a descendant in our table. Could add it, but I worry about the NA that is required.
+GetRootProb <- function(cache, dat.tab, generations){
+    
+    setkey(dat.tab, FocalNode)
+    CurrentGenData <- dat.tab[J(generations)]
+    if(cache$hidden.states == TRUE){
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:38], z[39:79],  z[2], z[1])))
+        v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),33:64] * tmp[seq(2,nrow(tmp),2),33:64], length(unique(CurrentGenData$FocalNode)), 32)
+        v.mat <- v.mat * matrix(c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H), length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
+        phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
+        if(!is.null(cache$node)){
+            if(which(generations == cache$node)){
+                fixer = numeric(32)
+                fixer[cache$state] = 1
+                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            }
+        }
+    }else{
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:10], z[11:14],  z[2], z[1])))
+        v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),5:8] * tmp[seq(2,nrow(tmp),2),5:8], length(unique(CurrentGenData$FocalNode)), 4)
+        v.mat <- v.mat * matrix(c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A), length(unique(CurrentGenData$FocalNode)), 4, byrow=TRUE)
+        phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
+        if(!is.null(cache$node)){
+            if(which(generations == cache$node)){
+                fixer = numeric(4)
+                fixer[cache$state] = 1
+                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            }
+        }
+    }
+    
+    tmp.comp <- rowSums(v.mat)
+    tmp.probs <- v.mat / tmp.comp
+    
+    return(cbind(tmp.comp, phi.mat, tmp.probs))
+}
+
+
+
+######################################################################################################################################
+######################################################################################################################################
+### The MuHiSSE type down pass that carries out the integration and returns the likelihood:
+######################################################################################################################################
+######################################################################################################################################
+
+DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL) {
+    
+    nb.tip <- cache$nb.tip
+    nb.node <- cache$nb.node
+    TIPS <- 1:nb.tip
+    for(i in 1:length(gen)){
+        if(i == length(gen)){
+            if(!is.null(node)){
+                if(node %in% gen[[i]]){
+                    cache$node <- node
+                    cache$state <- state
+                    res.tmp <- GetRootProb(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
+                    cache$node <- NULL
+                    cache$state <- NULL
+                }else{
+                    res.tmp <- GetRootProb(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
+                }
+            }else{
+                res.tmp <- GetRootProb(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
+            }
+            if(cache$hidden.states == TRUE){
+                compD.root <- res.tmp[c(34:65)]
+                compE.root <- res.tmp[c(2:33)]
+            }else{
+                compD.root <- res.tmp[c(6:9)]
+                compE.root <- res.tmp[c(2:5)]
+            }
+            setkey(dat.tab, DesNode)
+            comp <- dat.tab[["comp"]]
+            comp <- c(comp[-TIPS], res.tmp[1])
+        }else{
+            if(!is.null(node)){
+                if(node %in% gen[[i]]){
+                    cache$node <- node
+                    cache$state <- state
+                    dat.tab <- FocalNodeProb(cache, dat.tab, gen[[i]])
+                    cache$node <- NULL
+                    cache$state <- NULL
+                }else{
+                    dat.tab <- FocalNodeProb(cache, dat.tab, gen[[i]])
+                }
+            }else{
+                dat.tab <- FocalNodeProb(cache, dat.tab, gen[[i]])
+            }
+        }
+    }
+    if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
+        return(log(cache$bad.likelihood)^13)
+    }else{
+        if(root.type == "madfitz"){
+            root.p = compD.root/sum(compD.root)
+            root.p[which(is.na(root.p))] = 0
+        }
+        if(root.type == "equal"){
+            root.p = c(rep(1/length(which(compD.root > 0)), length(compD.root)))
+            root.p[which(!compD.root > 0)] = 0
+        }
+        if(root.type == "user"){
+            root.p = root.p
+        }
+        if(condition.on.survival == TRUE){
+            if(cache$hidden.states == FALSE){
+                lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A)
+                compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
+                #Corrects for possibility that you have 0/0:
+                compD.root[which(is.na(compD.root))] = 0
+            }else{
+                lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H)
+                compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
+                #Corrects for possibility that you have 0/0:
+                compD.root[which(is.na(compD.root))] = 0
+            }
+        }
+        loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
+        if(!is.finite(loglik)){
+            return(log(cache$bad.likelihood)^7)
+        }
+    }
+    if(get.phi==TRUE){
+        obj = NULL
+        obj$compD.root = compD.root/sum(compD.root)
+        obj$compE = compE
+        obj$root.p = root.p
+        return(obj)
+    }else{
+        return(loglik)
+    }
+}
+
+
+######################################################################################################################################
+######################################################################################################################################
+### Cache object for storing parameters that are used throughout MuHiSSE:
+######################################################################################################################################
+######################################################################################################################################
+
+ParametersToPassMuHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, bad.likelihood, ode.eps){
+    #Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
+    obj <- NULL
+    
+    obj$hidden.states <- hidden.states
+    obj$nb.tip <- nb.tip
+    obj$nb.node <- nb.node
+    obj$bad.likelihood <- bad.likelihood
+    obj$ode.eps <- ode.eps
     
     ##Hidden State A
     obj$lambda00A = model.vec[1] / (1 + model.vec[5])
@@ -732,7 +783,7 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11A_00A = model.vec[18]
     obj$q11A_01A = model.vec[19]
     obj$q11A_10A = model.vec[20]
-
+    
     obj$q00A_00B = model.vec[21]
     obj$q00A_00C = model.vec[22]
     obj$q00A_00D = model.vec[23]
@@ -863,7 +914,7 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11C_11F = model.vec[142]
     obj$q11C_11G = model.vec[143]
     obj$q11C_11H = model.vec[144]
-
+    
     ##Hidden State D
     obj$lambda00D = model.vec[145] / (1 + model.vec[149])
     obj$lambda01D = model.vec[146] / (1 + model.vec[150])
@@ -1118,8 +1169,6 @@ ParametersToPassMuHiSSE <- function(phy, data, f, model.vec, hidden.states){
     obj$q11H_11E = model.vec[382]
     obj$q11H_11F = model.vec[383]
     obj$q11H_11G = model.vec[384]
-    
-    obj$split.times = sort(branching.times(phy), decreasing=TRUE)
     
     return(obj)
 }

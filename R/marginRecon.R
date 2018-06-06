@@ -518,18 +518,23 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
         }
     }
     
-    data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
-    data.new <- data.new[phy$tip.label,]
     model.vec = pars
     
-    cache = ParametersToPassMuHiSSE(phy, data.new, model.vec, f=f, hidden.states=hidden.states)
+    # Some new prerequisites #
+    gen <- FindGenerations(phy)
+    dat.tab <- OrganizeData(data=data, phy=phy, f=f, hidden.states=hidden.states)
+    nb.tip <- Ntip(phy)
+    nb.node <- phy$Nnode
+    ##########################
+    
+    cache = ParametersToPassMuHiSSE(model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
     
     nb.tip <- length(phy$tip.label)
     nb.node <- phy$Nnode
-    if(hidden.states == FALSE){
-        nstates = 4
-    }else{
+    if(hidden.states == TRUE){
         nstates = 32
+    }else{
+        nstates = 4
     }
     nodes <- unique(phy$edge[,1])
     
@@ -539,7 +544,8 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             focal <- nodes[i]
             marginal.probs.tmp <- c()
             for (j in 1:nstates){
-                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                
             }
             best.probs = max(marginal.probs.tmp)
             marginal.probs.rescaled = marginal.probs.tmp - best.probs
@@ -556,7 +562,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
                 for (j in nstates){
                     cache$states[i,] = 0
                     cache$states[i,j] = 1
-                    marginal.probs.tmp[j] <- DownPassMuHisse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                    marginal.probs.tmp[j] <- DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
                 }
                 cache$states[i,] = cache$states.keep
                 best.probs = max(marginal.probs.tmp[nstates])
@@ -569,7 +575,13 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
         }
         obj <- NULL
         if(!hidden.states == TRUE){
-            marginal.probs[1:nb.tip,] = cache$states
+            setkey(dat.tab, DesNode)
+            tmp.stuff <- as.data.frame(dat.tab[1:nb.tip,])
+            print(tmp.stuff)
+            print(class(tmp.stuff))
+            for(j in 1:4){
+                marginal.probs[1:nb.tip,j] <- tmp.stuff[,j+6]
+            }
         }
         marginal.probs <- cbind(1:(nb.node+nb.tip), marginal.probs)
         obj$node.mat = marginal.probs[-(1:nb.tip),]
@@ -599,7 +611,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             focal <- node
             marginal.probs.tmp <- c()
             for (j in 1:nstates){
-                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
             }
             best.probs = max(marginal.probs.tmp)
             marginal.probs.rescaled = marginal.probs.tmp - best.probs
@@ -616,7 +628,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
                 for (j in nstates){
                     cache$states[tip,] = 0
                     cache$states[tip,j] = 1
-                    marginal.probs.tmp[j] <- DownPassMuHisse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                    marginal.probs.tmp[j] <- DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
                 }
                 cache$states[tip,] = cache$states.keep
                 best.probs = max(marginal.probs.tmp[nstates])
