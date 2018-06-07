@@ -411,6 +411,9 @@ FindGenerations <- function(phy){
 
 
 OrganizeData <- function(data, phy, f, hidden.states){
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
+
     nb.tip <- length(phy$tip.label)
     nb.node <- phy$Nnode
     
@@ -502,8 +505,8 @@ OrganizeData <- function(data, phy, f, hidden.states){
     dat.tab <- as.data.table(tmp.df)
     setkey(dat.tab, DesNode)
     for (j in 1:(dim(compD)[2])){
-        dat.tab[J(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
-        dat.tab[J(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
+        dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
+        dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
     }
     return(dat.tab)
 }
@@ -572,8 +575,12 @@ SingleChildProb <- function(cache, compD, compE, start.time, end.time, x){
 
 
 FocalNodeProb <- function(cache, dat.tab, generations){
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
+    FocalNode = NULL
+
     setkey(dat.tab, FocalNode)
-    CurrentGenData <- dat.tab[J(generations)]
+    CurrentGenData <- dat.tab[data.table(generations)]
     if(cache$hidden.states == TRUE){
         tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:38], z[39:79],  z[2], z[1])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),33:64] * tmp[seq(2,nrow(tmp),2),33:64], length(unique(CurrentGenData$FocalNode)), 32)
@@ -603,19 +610,21 @@ FocalNodeProb <- function(cache, dat.tab, generations){
     tmp.probs <- v.mat / tmp.comp
     setkey(dat.tab, DesNode)
     for (j in 1:(dim(tmp.probs)[2])){
-        dat.tab[J(c(generations)), paste("compD", j, sep="_") := tmp.probs[,j]]
-        dat.tab[J(c(generations)), paste("compE", j, sep="_") := phi.mat[,j]]
+        dat.tab[data.table(c(generations)), paste("compD", j, sep="_") := tmp.probs[,j]]
+        dat.tab[data.table(c(generations)), paste("compE", j, sep="_") := phi.mat[,j]]
     }
-    dat.tab[J(c(generations)), "comp" := tmp.comp]
+    dat.tab[data.table(c(generations)), "comp" := tmp.comp]
     return(dat.tab)
 }
 
 
 #Have to calculate root prob separately because it is no a descendant in our table. Could add it, but I worry about the NA that is required.
 GetRootProb <- function(cache, dat.tab, generations){
-    
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    FocalNode = NULL
+
     setkey(dat.tab, FocalNode)
-    CurrentGenData <- dat.tab[J(generations)]
+    CurrentGenData <- dat.tab[data.table(generations)]
     if(cache$hidden.states == TRUE){
         tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:38], z[39:79],  z[2], z[1])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),33:64] * tmp[seq(2,nrow(tmp),2),33:64], length(unique(CurrentGenData$FocalNode)), 32)
@@ -657,6 +666,10 @@ GetRootProb <- function(cache, dat.tab, generations){
 ######################################################################################################################################
 
 DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL) {
+    
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
+    compE = NULL
     
     nb.tip <- cache$nb.tip
     nb.node <- cache$nb.node

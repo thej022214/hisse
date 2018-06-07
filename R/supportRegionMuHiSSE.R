@@ -52,13 +52,19 @@ SupportRegionMuHiSSE <- function(muhisse.obj, n.points=1000, scale.int=0.1, desi
 
 
 AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired.delta=2, n.points=5000, verbose=TRUE, phy, data, index.par, f, hidden.states, condition.on.survival, root.type, root.p, scale.int, min.number.points=10) {
+    
+    # Some new prerequisites #
+    gen <- FindGenerations(phy)
+    dat.tab <- OrganizeData(data=data, phy=phy, f=f, hidden.states=hidden.states)
+    ##########################
+
     #Wrangle the data so that we can make use of DownPass easily:
     actual.params = which(index.par < max(index.par))
     model.vec <- numeric(length(index.par))
     model.vec[] <- c(par,0)[index.par]
-    cache = ParametersToPassMuHiSSE(phy, data, f, model.vec=model.vec, hidden.states=hidden.states)
+    cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
     phy$node.label <- NULL
-    starting <- -DownPassMuHisse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+    starting <- -DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
 
     #Generate the multipliers for feeling the boundaries:
     min.multipliers <- rep(1, length(par))
@@ -73,9 +79,9 @@ AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired
         par <- sim.points
         model.vec <- numeric(length(index.par))
         model.vec[] <- c(sim.points,0)[index.par]
-        cache = ParametersToPassMuHiSSE(phy, data, f, model.vec=model.vec, hidden.states=hidden.states)
-            phy$node.label <- NULL
-            second <- -DownPassMuHisse(phy=phy, cache=cache, hidden.states=TRUE, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+        cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
+        phy$node.label <- NULL
+        starting <- -DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
         results[i+1,] <- c(second, sim.points)
         if(i%%20==0) {
             for (j in sequence(length(par))) {

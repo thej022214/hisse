@@ -525,8 +525,10 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
     dat.tab <- OrganizeData(data=data, phy=phy, f=f, hidden.states=hidden.states)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
     ##########################
-    
+
     cache = ParametersToPassMuHiSSE(model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
     
     nb.tip <- length(phy$tip.label)
