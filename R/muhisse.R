@@ -285,7 +285,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }
     }
     
-    if(!is.null(restart.obj)){
+    if(is.null(restart.obj)){
         if(sum(eps)==0){
             init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=TRUE)
         }else{
@@ -316,6 +316,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }
         lower <- rep(-20, length(ip))
     }else{
+        print("here?")
         upper <- restart.obj$upper.bounds
         lower <- restart.obj$lower.bounds
         pars <- restart.obj$index.par
