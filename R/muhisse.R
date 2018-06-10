@@ -316,7 +316,6 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }
         lower <- rep(-20, length(ip))
     }else{
-        print("here?")
         upper <- restart.obj$upper.bounds
         lower <- restart.obj$lower.bounds
         pars <- restart.obj$index.par
@@ -386,7 +385,7 @@ DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.t
     model.vec[] <- c(p.new, 0)[pars]
     cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
     logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-    print(logl)
+
     return(-logl)
 }
 
