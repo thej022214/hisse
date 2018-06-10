@@ -321,7 +321,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         pars <- restart.obj$index.par
         ip <- numeric(length(unique(restart.obj$index.par))-1)
         for(k in 1:length(ip)){
-            ip[k] <- restart.obj$solution[which(restart.obj$index.par==k)][1]
+            ip[k] <- log(restart.obj$solution[which(restart.obj$index.par==k)][1])
         }
     }
     
