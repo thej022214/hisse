@@ -8,7 +8,8 @@ MuHiSSE(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4),
 hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, 
 bounded.search=TRUE,  max.tol=.Machine$double.eps^.50, starting.vals=NULL,
-turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0)
+turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, 
+ode.eps=0)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
@@ -62,6 +63,7 @@ model. See 'Details'.}
 \item{turnover.upper}{sets the upper bound for the turnover parameters.}
 \item{eps.upper}{sets the upper bound for the eps parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
+\item{restart.obj}{an object that contains everything to restart an optimization.}
 \item{ode.eps}{sets the tolerance for the integration at the end of a
   branch. Essentially if the sum of compD is less than this tolerance,
   then it assumes the results are unstable and discards them. The

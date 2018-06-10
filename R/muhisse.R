@@ -15,7 +15,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
+MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -285,35 +285,45 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }
     }
     
-    if(sum(eps)==0){
-        init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=TRUE)
+    if(!is.null(restart.obj)){
+        if(sum(eps)==0){
+            init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=TRUE)
+        }else{
+            init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=FALSE)
+            if(any(init.pars[5:8] == 0)){
+                init.pars[5:8] = 1e-6
+            }
+        }
+        names(init.pars) <- NULL
+        
+        if(is.null(starting.vals)){
+            def.set.pars <- rep(c(log(init.pars[1:4]+init.pars[5:8]), log(init.pars[5:8]/init.pars[1:4]), log(init.pars[9:20]), rep(log(.01), 28)), rate.cats)
+        }else{
+            def.set.pars <- rep(c(log(starting.vals[1:4]), log(starting.vals[5:8]), log(starting.vals[9:20]), rep(log(0.01), 28)), rate.cats)
+        }
+        if(bounded.search == TRUE){
+            upper.full <- rep(c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper),12), rep(log(10), 28)), rate.cats)
+        }else{
+            upper.full <- rep(21,length(def.set.pars))
+        }
+        
+        np.sequence <- 1:np
+        ip <- numeric(np)
+        upper <- numeric(np)
+        for(i in np.sequence){
+            ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
+            upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
+        }
+        lower <- rep(-20, length(ip))
     }else{
-        init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=FALSE)
-        if(any(init.pars[5:8] == 0)){
-            init.pars[5:8] = 1e-6
+        upper <- restart.obj$upper.bounds
+        lower <- restart.obj$lower.bounds
+        pars <- restart.obj$index.par
+        ip <- numeric(length(unique(restart.obj$index.par))-1)
+        for(k in 1:length(ip)){
+            ip[k] <- restart.obj$solution[which(restart.obj$index.par==k)][1]
         }
     }
-    names(init.pars) <- NULL
-    
-    if(is.null(starting.vals)){
-        def.set.pars <- rep(c(log(init.pars[1:4]+init.pars[5:8]), log(init.pars[5:8]/init.pars[1:4]), log(init.pars[9:20]), rep(log(.01), 28)), rate.cats)
-    }else{
-        def.set.pars <- rep(c(log(starting.vals[1:4]), log(starting.vals[5:8]), log(starting.vals[9:20]), rep(log(0.01), 28)), rate.cats)
-    }
-    if(bounded.search == TRUE){
-        upper.full <- rep(c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper),12), rep(log(10), 28)), rate.cats)
-    }else{
-        upper.full <- rep(21,length(def.set.pars))
-    }
-    
-    np.sequence <- 1:np
-    ip <- numeric(np)
-    upper <- numeric(np)
-    for(i in np.sequence){
-        ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
-        upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
-    }
-    lower <- rep(-20, length(ip))
     
     # Some new prerequisites #
     gen <- FindGenerations(phy)
@@ -375,7 +385,7 @@ DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.t
     model.vec[] <- c(p.new, 0)[pars]
     cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
     logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-    
+    print(logl)
     return(-logl)
 }
 
