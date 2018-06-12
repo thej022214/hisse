@@ -196,6 +196,7 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
             class(obj) = "hisse.support"
             return(obj)
         }
+    }
 }
 
 
