@@ -65,14 +65,12 @@ AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired
     cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
     phy$node.label <- NULL
     starting <- -DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-    print(starting)
     #Generate the multipliers for feeling the boundaries:
     min.multipliers <- rep(1, length(par))
     max.multipliers <- rep(1, length(par))
     results <- data.frame(data.frame(matrix(nrow=n.points+1, ncol=1+length(par))))
     results[1,] <- unname(c(starting, par))
     for (i in sequence(n.points)) {
-        print(i)
         sim.points <- NA
         while(is.na(sim.points[1])) {
             sim.points <- GenerateValues(par, lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE))
@@ -82,13 +80,8 @@ AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired
         model.vec[] <- c(sim.points,0)[index.par]
         cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
         phy$node.label <- NULL
-        print("here?")
         second <- -DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-        print(starting)
-        print(results)
-        print(sim.points)
         results[i+1,] <- c(second, sim.points)
-        print("poop")
         if(i%%20==0) {
             for (j in sequence(length(par))) {
                 returned.range <- range(results[which((results[,1]-min(results[,1], na.rm=TRUE))<desired.delta), j+1], na.rm=TRUE)
