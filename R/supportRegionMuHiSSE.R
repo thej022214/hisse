@@ -85,7 +85,10 @@ AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired
         print("here?")
         starting <- -DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
         print(starting)
+        print(results)
+        print(sim.points)
         results[i+1,] <- c(second, sim.points)
+        print("poop")
         if(i%%20==0) {
             for (j in sequence(length(par))) {
                 returned.range <- range(results[which((results[,1]-min(results[,1], na.rm=TRUE))<desired.delta), j+1], na.rm=TRUE)
@@ -111,7 +114,6 @@ AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired
         if (verbose && i%%100==0) {
             cat(paste(i, "of", n.points, "points done"), "\n")
         }
-        print("poop")
     }
     while(length(which((results[,1]-min(results[,1], na.rm=TRUE))<desired.delta))<min.number.points) {
         warning("Did not generate enough points in the region; restarting to create additional points")
