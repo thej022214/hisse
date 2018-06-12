@@ -111,8 +111,8 @@ AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired
         if (verbose && i%%100==0) {
             cat(paste(i, "of", n.points, "points done"), "\n")
         }
+        print("poop")
     }
-    print("poop")
     while(length(which((results[,1]-min(results[,1], na.rm=TRUE))<desired.delta))<min.number.points) {
         warning("Did not generate enough points in the region; restarting to create additional points")
         print(paste("Now doing an additional", 2+round(n.points/4), "points to the", dim(results)[1], "ones already done because not enough points in the good enough region were sampled"))
