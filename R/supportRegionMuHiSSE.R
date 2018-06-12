@@ -37,9 +37,8 @@ SupportRegionMuHiSSE <- function(muhisse.obj, n.points=1000, scale.int=0.1, desi
         interval.results.final[i,] <- c(par.rep,0)[muhisse.obj$index.par]
     }
     interval.results.final <- cbind(interval.results[,1], interval.results.final)
-    print(interval.results.final)
     interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
-    print(interval.results.in)
+    print(class(interval.results.in))
     ci.interval = apply(interval.results.in, 2, quantile)
     colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
     obj = NULL
