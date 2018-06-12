@@ -38,7 +38,6 @@ SupportRegionMuHiSSE <- function(muhisse.obj, n.points=1000, scale.int=0.1, desi
     }
     interval.results.final <- cbind(interval.results[,1], interval.results.final)
     interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
-    print(class(interval.results.in))
     if(class(interval.results.in)=="numeric"){
         stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
     }else{
