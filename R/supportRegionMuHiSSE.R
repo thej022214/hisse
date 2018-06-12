@@ -72,6 +72,7 @@ AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired
     results <- data.frame(data.frame(matrix(nrow=n.points+1, ncol=1+length(par))))
     results[1,] <- unname(c(starting, par))
     for (i in sequence(n.points)) {
+        print(i)
         sim.points <- NA
         while(is.na(sim.points[1])) {
             sim.points <- GenerateValues(par, lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE))
