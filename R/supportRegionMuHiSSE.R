@@ -39,14 +39,18 @@ SupportRegionMuHiSSE <- function(muhisse.obj, n.points=1000, scale.int=0.1, desi
     interval.results.final <- cbind(interval.results[,1], interval.results.final)
     interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
     print(class(interval.results.in))
-    ci.interval = apply(interval.results.in, 2, quantile)
-    colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
-    obj = NULL
-    obj$ci <- ci.interval
-    obj$points.within.region = interval.results.in
-    obj$all.points = interval.results.final
-    class(obj) = "muhisse.support"
-    return(obj)
+    if(class(interval.results.in)=="numeric"){
+        stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
+    }else{
+        ci.interval = apply(interval.results.in, 2, quantile)
+        colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
+        obj = NULL
+        obj$ci <- ci.interval
+        obj$points.within.region = interval.results.in
+        obj$all.points = interval.results.final
+        class(obj) = "muhisse.support"
+        return(obj)
+    }
 }
 
 
