@@ -543,11 +543,12 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
     if(is.null(n.cores)){
         marginal.probs <- matrix(0, nb.node+nb.tip, nstates)
         for (i in seq(from = 1, length.out = nb.node)) {
+            print("um hi?")
             focal <- nodes[i]
             marginal.probs.tmp <- c()
             for (j in 1:nstates){
+                print(j)
                 marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
-                
             }
             best.probs = max(marginal.probs.tmp)
             marginal.probs.rescaled = marginal.probs.tmp - best.probs
