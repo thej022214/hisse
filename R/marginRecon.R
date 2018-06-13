@@ -46,6 +46,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
                 focal <- nodes[i]
                 marginal.probs.tmp <- c()
                 for (j in 1:nstates){
+                    print(j)
                     marginal.probs.tmp <- c(marginal.probs.tmp, DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
                 }
                 best.probs = max(marginal.probs.tmp)
