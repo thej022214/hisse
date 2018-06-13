@@ -751,16 +751,16 @@ ParameterTransformMuHiSSE <- function(x){
         rates.mat <- matrix(0, 3, 32)
         rownames(rates.mat) <- c("net.div", "speciation", "extinction")
         colnames(rates.mat) <- c("(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
-        rates.mat[1,] <- x[1,] - x[2,]
-        rates.mat[2,] <- x[1,] - x[2,]
+        rates.mat[1,] <- (x[1,] / (1 + x[2,])) - ((x[1,] * x[2,]) / (1 + x[2,]))
+        rates.mat[2,] <- x[1,] / (1 + x[2,])
         rates.mat[3,] <- (x[1,] * x[2,]) / (1 + x[2,])
         rates.mat[3,is.na(rates.mat[3,])] = 0
     }else{
         rates.mat <- matrix(0, 3, 4)
         rownames(rates.mat) <- c("net.div", "speciation", "extinction")
         colnames(rates.mat) <- c("(00A)","(01A)","(10A)","(11A)")
-        rates.mat[1,] <- x[1,] - x[2,]
-        rates.mat[2,] <- x[1,] / ( 1 + x[2,])
+        rates.mat[1,] <- (x[1,] / (1 + x[2,])) - ((x[1,] * x[2,]) / (1 + x[2,]))
+        rates.mat[2,] <- x[1,] / (1 + x[2,])
         rates.mat[3,] <- (x[1,] * x[2,]) / (1 + x[2,])
         rates.mat[3,is.na(rates.mat[3,])] = 0
     }
