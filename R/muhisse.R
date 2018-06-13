@@ -598,7 +598,6 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
         if(!is.null(cache$node)){
             if(which(generations == cache$node)){
-                print("bad!")
                 fixer = numeric(32)
                 fixer[cache$state] = 1
                 v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
@@ -692,7 +691,6 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                     cache$node <- node
                     cache$state <- state
                     res.tmp <- GetRootProb(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
-                    print(res.tmp)
                     cache$node <- NULL
                     cache$state <- NULL
                 }else{
