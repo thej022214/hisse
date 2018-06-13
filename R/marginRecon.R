@@ -532,8 +532,6 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
     ##########################
 
     cache = ParametersToPassMuHiSSE(model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
-    ll <- DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type)
-    print(ll)
     
     if(hidden.states == TRUE){
         nstates = 32
@@ -548,9 +546,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             focal <- nodes[i]
             marginal.probs.tmp <- c()
             for (j in 1:nstates){
-                print(j)
                 marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
-                print(marginal.probs.tmp)
             }
             best.probs = max(marginal.probs.tmp)
             marginal.probs.rescaled = marginal.probs.tmp - best.probs
