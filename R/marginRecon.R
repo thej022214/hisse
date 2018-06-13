@@ -46,13 +46,11 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
                 focal <- nodes[i]
                 marginal.probs.tmp <- c()
                 for (j in 1:nstates){
-                    print(j)
                     marginal.probs.tmp <- c(marginal.probs.tmp, DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
                 }
                 best.probs = max(marginal.probs.tmp)
                 marginal.probs.rescaled = marginal.probs.tmp - best.probs
                 marginal.probs[focal,] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
-                print(marginal.probs[focal,])
                 if (verbose && i%%100==0) {
                     cat(paste(i, "of", nb.node, "nodes done"), "\n")
                 }
@@ -554,6 +552,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             best.probs = max(marginal.probs.tmp)
             marginal.probs.rescaled = marginal.probs.tmp - best.probs
             marginal.probs[focal,] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+            print(marginal.probs[focal,])
             if (verbose && i%%100==0) {
                 cat(paste(i, "of", nb.node, "nodes done"), "\n")
             }
