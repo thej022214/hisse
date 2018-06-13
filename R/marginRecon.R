@@ -578,8 +578,6 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
         if(!hidden.states == TRUE){
             setkey(dat.tab, DesNode)
             tmp.stuff <- as.data.frame(dat.tab[1:nb.tip,])
-            print(tmp.stuff)
-            print(class(tmp.stuff))
             for(j in 1:4){
                 marginal.probs[1:nb.tip,j] <- tmp.stuff[,j+6]
             }
