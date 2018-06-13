@@ -519,10 +519,12 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
     }
     
     model.vec = pars
-    
+
     # Some new prerequisites #
+    data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
+    data.new <- data.new[phy$tip.label,]
     gen <- FindGenerations(phy)
-    dat.tab <- OrganizeData(data=data, phy=phy, f=f, hidden.states=hidden.states)
+    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
