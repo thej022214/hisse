@@ -646,6 +646,7 @@ GetRootProb <- function(cache, dat.tab, generations){
                 print("good!")
                 fixer = numeric(32)
                 fixer[cache$state] = 1
+                print(fixer)
                 v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
                 print(v.mat)
             }
