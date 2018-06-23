@@ -632,13 +632,13 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
             TipEval <- function(tip){
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
-                nstates = which(!dat.tab[i,7:38] == 0)
-                cache$states.keep <- as.data.frame(dat.tab[i,7:38])
+                nstates = which(!dat.tab[tip,7:38] == 0)
+                cache$states.keep <- as.data.frame(dat.tab[tip,7:38])
                 for (j in nstates){
                     cache$to.change <- cache$states.keep
-                    tmp.state <- 1 * c(cache$to.change[i,j])
-                    cache$to.change[i,] <- 0
-                    cache$to.change[i,j] <- tmp.state
+                    tmp.state <- 1 * c(cache$to.change[tip,j])
+                    cache$to.change[tip,] <- 0
+                    cache$to.change[tip,j] <- tmp.state
                     for (k in 1:dim(cache$to.change)[2]){
                         dat.tab[i, paste("compD", k, sep="_") := cache$to.change[,k]]
                     }
