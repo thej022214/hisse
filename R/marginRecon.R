@@ -531,7 +531,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
     DesNode = NULL
     ##########################
 
-    cache = ParametersToPassMuHiSSE(model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
+    cache <- ParametersToPassMuHiSSE(model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
     
     if(hidden.states == TRUE){
         nstates = 32
@@ -629,15 +629,16 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
         
         if(hidden.states==TRUE){
             TipEval <- function(tip){
+                dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[tip,7:38] == 0)
                 cache$states.keep <- as.data.frame(dat.tab[tip,7:38])
                 for (j in nstates){
                     cache$to.change <- cache$states.keep
-                    tmp.state <- 1 * c(cache$to.change[tip,j])
-                    cache$to.change[tip,] <- 0
-                    cache$to.change[tip,j] <- tmp.state
+                    tmp.state <- 1 * c(cache$to.change[1,j])
+                    cache$to.change[1,] <- 0
+                    cache$to.change[1,j] <- tmp.state
                     for (k in 1:dim(cache$to.change)[2]){
                         dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
                     }
@@ -652,7 +653,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
                 marginal.probs[nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
                 return(c(tip, marginal.probs))
             }
-            tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
+            tip.marginals <- mclapply(1:4, TipEval, mc.cores=2)
         }
         obj <- NULL
         
