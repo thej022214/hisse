@@ -653,7 +653,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
                 marginal.probs[nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
                 return(c(tip, marginal.probs))
             }
-            tip.marginals <- mclapply(1:4, TipEval, mc.cores=2)
+            tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         }
         obj <- NULL
         
