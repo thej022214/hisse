@@ -39,11 +39,11 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     }
 
     ## Return error message if the data is not in the correct format.
-    if( !inherits(data, what = c("matrix","data.matrix")) ){
-        stop("'data' needs to be a matrix or data.matrix with 2 columns. See help.")
+    if( !inherits(data, what = c("matrix","data.frame")) ){
+        stop("'data' needs to be a matrix or data.frame with 2 columns. See help.")
     }
     if( !ncol( data ) == 2 ){
-        stop("'data' needs to be a matrix or data.matrix with 2 columns. See help.")
+        stop("'data' needs to be a matrix or data.frame with 2 columns. See help.")
     }
     ## Check if the states are %in% 0:2:
     states.check <- all( as.numeric(data[,2]) %in% 0:2 )

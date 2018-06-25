@@ -43,11 +43,11 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     }
     
     ## Return error message if the data is not in the correct format.
-    if( !inherits(data, what = c("matrix","data.matrix", "data.frame")) ){
-        stop("'data' needs to be a matrix or data.matrix with 3 columns. See help.")
+    if( !inherits(data, what = c("matrix", "data.frame")) ){
+        stop("'data' needs to be a matrix or data.frame with 3 columns. See help.")
     }
     if( !ncol( data ) == 3 ){
-        stop("'data' needs to be a matrix or data.matrix with 3 columns. See help.")
+        stop("'data' needs to be a matrix or data.frame with 3 columns. See help.")
     }
     ## Check if the states are %in% 0:2:
     #states.check <- all( as.numeric(data[,c(2:3)]) %in% 0:2 )
