@@ -563,9 +563,9 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
                 cache$states.keep <- as.data.frame(dat.tab[i,7:38])
                 for (j in nstates){
                     cache$to.change <- cache$states.keep
-                    tmp.state <- 1 * c(cache$to.change[i,j])
-                    cache$to.change[i,] <- 0
-                    cache$to.change[i,j] <- tmp.state
+                    tmp.state <- 1 * c(cache$to.change[1,j])
+                    cache$to.change[1,] <- 0
+                    cache$to.change[1,j] <- tmp.state
                     for (k in 1:dim(cache$to.change)[2]){
                         dat.tab[i, paste("compD", k, sep="_") := cache$to.change[,k]]
                     }
