@@ -85,29 +85,37 @@ void classe_geosse_equivalent_derivs(int *neq, double *t, double *y, double *ydo
     double D_N2 = y[5];
     
     double
-    s00A  = params_geosse[0],     /* speciation within region A */
-    s11A  = params_geosse[1],     /* speciation within region B */
-    s01A = params_geosse[2],     /* between-region speciation  */
-    x00A  = params_geosse[3],     /* extinction from region A   */
-    x11A  = params_geosse[4],     /* extinction from region B   */
-    d00A_11A  = params_geosse[5],   /* jumps from 0 to 1          */
-    d00A_01A  = params_geosse[6],  /* dispersal from A to AB     */
-    d11A_00A = params_geosse[7],    /* jumps from 1 to 0          */
-    d11A_01A = params_geosse[8],   /* dispersal from B to AB     */
-    d01A_00A = params_geosse[9],   /* true extirpation rate      */
-    d01A_11A = params_geosse[10];  /* true extirpation rate      */
+    sA  = params_geosse[0],     /* speciation within region A */
+    sB  = params_geosse[1],     /* speciation within region B */
+    sAB = params_geosse[2],     /* between-region speciation  */
+    xA  = params_geosse[3],     /* extinction from region A   */
+    xB  = params_geosse[4],     /* extinction from region B   */
+    d0_1  = params_geosse[5],   /* jumps from 0 to 1          */
+    d0_01  = params_geosse[6],  /* dispersal from A to AB     */
+    d1_0 = params_geosse[7],    /* jumps from 1 to 0          */
+    d1_01 = params_geosse[8],   /* dispersal from B to AB     */
+    d01_0 = params_geosse[9],   /* true extirpation rate      */
+    d01_1 = params_geosse[10];  /* true extirpation rate      */
     
-    ydot[0] =  -(s00A + d00A_11A + d00A_01A +x00A) * E_0 + (d00A_11A*E_1 + d00A_01A*E_2) + x00A+s00A*E_0*E_0;
+    /*  dE_2 / dt  */
+    ydot[0] = -(sA + d0_1 + d0_01 + xA) * E_0 + (d0_1 * E_1 + d0_01 * E_2) + xA + (sA * E_0 * E_0);
     
-    ydot[1] =  -(s11A + (d11A_00A + d11A_01A)+x11A) * E_1 + (d11A_00A*E_0 + d11A_01A*E_2) + x11A+s11A*E_1*E_1;
+    /*  dE_3 / dt  */
+    ydot[1] = -(sB + d1_0 + d1_01 + xB) * E_1 + (d1_0 * E_0 + d1_01 * E_2) + xB + (sB * E_1 * E_1);
     
-    ydot[2] =  -(s01A + s00A + s11A + (d01A_00A + d01A_11A)) * E_2 + (d01A_00A*E_0 + d01A_11A*E_1) + s00A*E_2*E_0 + s11A*E_2*E_1 + s01A*E_1*E_0;
+    /*  dE_1 / dt  */
+    ydot[2] = -(sAB + sA + sB + d01_0 + d01_1) * E_2 + (d01_0 * E_0 + d01_1 * E_1) + sA * E_0 * E_2 + sB * E_2 * E_1 + sAB * E_0 * E_1;
     
-    ydot[3] =  -(s00A+(d00A_11A + d00A_01A)+x00A) * D_N0 + (d00A_11A*D_N1 + d00A_01A*D_N2) + 2*s00A*E_0*D_N0;
+    /*  dD_N2 / dt  */
+    ydot[3] = -(sA + d0_1 + d0_01 + xA) * D_N0 + (d0_1 * D_N1 + d0_01 * D_N2) + sA * (D_N0 * E_0 + D_N0 * E_0);
     
-    ydot[4] =  -(s11A+(d11A_00A + d11A_01A)+x11A) * D_N1 + (d11A_00A*D_N0 + d11A_01A*D_N2) + 2*s11A*E_1*D_N1;
+    /*  dD_N3 / dt  */
+    ydot[4] = -(sB + d1_0 + d1_01 + xB) * D_N1 + (d1_0 * D_N0 + d1_01 * D_N2) + sB * (D_N1 * E_1 + D_N1 * E_1);
     
-    ydot[5] =  -(s01A + s00A + s11A + (d01A_00A + d01A_11A)) * D_N2 + (d01A_00A*D_N0 + d01A_11A*D_N1) + s00A*(E_0*D_N2+E_2*D_N0) + s11A*(E_1*D_N2 + E_2*D_N1) + s01A*(E_0*D_N1 + E_1*D_N0);
+    /*  dD_N1 / dt  */
+    ydot[5] = -(sAB + sA + sB + d01_0 + d01_1) * D_N2 + (d01_0 * D_N0 + d01_1 * D_N1) + sAB * (D_N0 * E_1 + D_N1 * E_0) + sA * (E_0 * D_N2 + E_2 * D_N0) + sB * (E_1 * D_N2 + E_2 * D_N1);
     
 }
+
+
 
