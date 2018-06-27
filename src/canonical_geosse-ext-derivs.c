@@ -97,17 +97,17 @@ void classe_geosse_equivalent_derivs(int *neq, double *t, double *y, double *ydo
     d01A_00A = params_geosse[9],   /* true extirpation rate      */
     d01A_11A = params_geosse[10];  /* true extirpation rate      */
     
-    ydot[0] =  -(s00A + d00A_11A + d00A_01A +x00A) * E00A + (d00A_11A*E11A + d00A_01A*E01A) + x00A+s00A*E00A*E00A;
+    ydot[0] =  -(s00A + d00A_11A + d00A_01A +x00A) * E_0 + (d00A_11A*E_1 + d00A_01A*E_2) + x00A+s00A*E_0*E_0;
     
-    ydot[1] =  -(s11A + (d11A_00A + d11A_01A)+x11A) * E11A + (d11A_00A*E00A + d11A_01A*E01A) + x11A+s11A*E11A*E11A;
+    ydot[1] =  -(s11A + (d11A_00A + d11A_01A)+x11A) * E_1 + (d11A_00A*E_0 + d11A_01A*E_2) + x11A+s11A*E_1*E_1;
     
-    ydot[2] =  -(s01A + s00A + s11A + (d01A_00A + d01A_11A)) * E01A + (d01A_00A*E00A + d01A_11A*E11A) + s00A*E01A*E00A + s11A*E01A*E11A + s01A*E11A*E00A;
+    ydot[2] =  -(s01A + s00A + s11A + (d01A_00A + d01A_11A)) * E_2 + (d01A_00A*E_0 + d01A_11A*E_1) + s00A*E_2*E_0 + s11A*E_2*E_1 + s01A*E_1*E_0;
     
-    ydot[3] =  -(s00A+(d00A_11A + d00A_01A)+x00A) * D00A + (d00A_11A*D11A + d00A_01A*D01A) + 2*s00A*E00A*D00A;
+    ydot[3] =  -(s00A+(d00A_11A + d00A_01A)+x00A) * D_N0 + (d00A_11A*D_N1 + d00A_01A*D_N2) + 2*s00A*E_0*D_N0;
     
-    ydot[4] =  -(s11A+(d11A_00A + d11A_01A)+x11A) * D11A + (d11A_00A*D00A + d11A_01A*D01A) + 2*s11A*E11A*D11A;
+    ydot[4] =  -(s11A+(d11A_00A + d11A_01A)+x11A) * D_N1 + (d11A_00A*D_N0 + d11A_01A*D_N2) + 2*s11A*E_1*D_N1;
     
-    ydot[5] =  -(s01A + s00A + s11A + (d01A_00A + d01A_11A)) * D01A + (d01A_00A*D00A + d01A_11A*D11A) + s00A*(E00A*D01A+E01A*D00A) + s11A*(E11A*D01A + E01A*D11A) + s01A*(E00A*D11A + E11A*D00A);
+    ydot[5] =  -(s01A + s00A + s11A + (d01A_00A + d01A_11A)) * D_N2 + (d01A_00A*D_N0 + d01A_11A*D_N1) + s00A*(E_0*D_N2+E_2*D_N0) + s11A*(E_1*D_N2 + E_2*D_N1) + s01A*(E_0*D_N1 + E_1*D_N0);
     
 }
 
