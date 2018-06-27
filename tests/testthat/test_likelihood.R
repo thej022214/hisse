@@ -218,8 +218,8 @@ test_that("GeoHiSSE_test4", {
     model.vec <- numeric(115)
     model.vec[1:11] <- c(pars[1:3], pars[4:5], 0, pars[6], 0, pars[7], pars[5:4])
     phy$node.label <- NULL
-    cache <- ParametersToPassGeoHiSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
-    geohisse.full <- DownPassGeoHisse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    cache <- hisse:::ParametersToPassGeoHiSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
+    geohisse.full <- hisse:::DownPassGeoHisse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     comparison <- identical(round(geohisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
