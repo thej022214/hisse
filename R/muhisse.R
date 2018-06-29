@@ -592,7 +592,7 @@ FocalNodeProb <- function(cache, dat.tab, generations){
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[data.table(generations)]
     if(cache$hidden.states == TRUE){
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:38], z[39:79],  z[2], z[1])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:38], z[39:70],  z[2], z[1])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),33:64] * tmp[seq(2,nrow(tmp),2),33:64], length(unique(CurrentGenData$FocalNode)), 32)
         v.mat <- v.mat * matrix(c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H), length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
@@ -636,7 +636,7 @@ GetRootProb <- function(cache, dat.tab, generations){
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[data.table(generations)]
     if(cache$hidden.states == TRUE){
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:38], z[39:79],  z[2], z[1])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:38], z[39:70],  z[2], z[1])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),33:64] * tmp[seq(2,nrow(tmp),2),33:64], length(unique(CurrentGenData$FocalNode)), 32)
         v.mat <- v.mat * matrix(c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H), length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
