@@ -41,13 +41,13 @@ void fnotclasse_derivs(int *neq, double *t, double *y, double *ydot, double *you
     s01 = params_fnoclass[2],     /* between-region speciation  */
     x0  = params_fnoclass[3],     /* extinction from region 0   */
     x1  = params_fnoclass[4],     /* extinction from 1          */
-    x01  = 0,    /* extinction from 01         */
+    x01 = 0,                      /* extinction from 01         */
 
     d0_1  = params_fnoclass[5],   /* jumps from 0 to 1          */
-    d0_01  = params_fnoclass[6],  /* dispersal from A to AB     */
-    d1_0 = params_fnoclass[7],    /* jumps from 1 to 0          */
+    d0_01 = params_fnoclass[6],   /* dispersal from A to AB     */
+    d1_0  = params_fnoclass[7],   /* jumps from 1 to 0          */
     d1_01 = params_fnoclass[8],   /* dispersal from B to AB     */
-    d01_0 = params_fnoclass[9],  /* true extirpation rate      */
+    d01_0 = params_fnoclass[9],   /* true extirpation rate      */
     d01_1 = params_fnoclass[10];  /* true extirpation rate      */
 
     ydot[0] = -(x0 + d0_1 + d0_01 + s0) * E_0 + (s0 * E_0 * E_0) + x0 + (d0_1 * E_1 + d0_01 * E_2);
