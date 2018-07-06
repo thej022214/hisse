@@ -376,7 +376,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
             init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
         }else{
             #init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
-            iniit.pars <- starting.point.generator(phy, k=3, samp.freq.tree=samp.freq.tree, q.div=5, yule=FALSE)
+            init.pars <- starting.point.generator(phy, k=3, samp.freq.tree=samp.freq.tree, q.div=5, yule=FALSE)
         }
         names(init.pars) <- NULL
         
