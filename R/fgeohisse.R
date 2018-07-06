@@ -465,10 +465,11 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
 DevOptimizeGeoHiSSEfast <- function(p, pars, dat.tab, gen, hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, ode.eps) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
-    ## print(p.new)
+    print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
     cache = ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
+    print(cache$s01A)
     if(any(c(cache$s01A,cache$s01B,cache$s01C,cache$s01D,cache$s01E,cache$s01F,cache$s01G,cache$s01H,cache$s01I,cache$s01J)<0)){
         return(log(cache$bad.likelihood)^13)
     }else{
@@ -934,12 +935,12 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[10]==0){
-        obj$d01A_00A = model.vec[5]
+        obj$d01A_00A = obj$x11A
     }else{
         obj$d01A_00A = model.vec[10]
     }
     if(model.vec[11]==0){
-        obj$d01A_11A = model.vec[4]
+        obj$d01A_11A = obj$x00A
     }else{
         obj$d01A_11A = model.vec[11]
     }
