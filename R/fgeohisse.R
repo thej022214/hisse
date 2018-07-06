@@ -375,17 +375,21 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         if(sum(extirpation)==0){
             init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
         }else{
-            init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
+            #init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
+            iniit.pars <- starting.point.generator(phy, k=3, samp.freq.tree=samp.freq.tree, q.div=5, yule=FALSE)
         }
         names(init.pars) <- NULL
         
         if(is.null(starting.vals)){
-            def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]*.1),3), rep(log(.01), 27)), rate.cats)
+            #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]*.1),3), rep(log(.01), 27)), rate.cats)
+            def.set.pars <- rep(c(log(init.pars[1:3]+c(init.pars[4:5], sum(init.pars[1:2]))), log(init.pars[4:5]/init.pars[1:2]), rep(log(init.pars[7:8]),3), rep(log(.01), 27)), rate.cats)
         }else{
-            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[6:7]*.1),3), rep(log(0.01), 27)), rate.cats)
+            #def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[6:7]*.1),3), rep(log(0.01), 27)), rate.cats)
+            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[7:8]),3), rep(log(0.01), 27)), rate.cats)
         }
         if(bounded.search == TRUE){
-            upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
+            #upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
+            upper.full <- rep(c(rep(log(10000),3), rep(log(3),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
         }else{
             upper.full <- rep(21,length(def.set.pars))
         }
@@ -465,8 +469,12 @@ DevOptimizeGeoHiSSEfast <- function(p, pars, dat.tab, gen, hidden.states, assume
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
     cache = ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
-    logl <- DownPassGeoHissefast(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-    return(-logl)
+    if(any(c(cache$s01A,cache$s01B,cache$s01C,cache$s01D,cache$s01E,cache$s01F,cache$s01G,cache$s01H,cache$s01I,cache$s01J)<0)){
+        return(log(cache$bad.likelihood)^13)
+    }else{
+        logl <- DownPassGeoHissefast(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+        return(-logl)
+    }
 }
 
 
@@ -914,11 +922,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     ######REMAINING ISSUE -- OPTIMIZING FIXED PARAMETERS of TURNOVER AND EPS. Can be done, just a bit trickier than usual.
     ##Hidden State A
-    obj$s00A = model.vec[1]
-    obj$s11A = model.vec[2]
-    obj$s01A = model.vec[3]
-    obj$x00A = model.vec[4]
-    obj$x11A = model.vec[5]
+    obj$s00A = model.vec[1] / (1 + model.vec[4])
+    obj$s11A = model.vec[2] / (1 + model.vec[5])
+    obj$s01A = model.vec[3] - obj$s00A - obj$s11A
+    obj$x00A = model.vec[4] * model.vec[1] / (1 + model.vec[4])
+    obj$x11A = model.vec[5] * model.vec[2] / (1 + model.vec[5])
     obj$d00A_11A = model.vec[6]
     obj$d00A_01A = model.vec[7]
     obj$d11A_00A = model.vec[8]
