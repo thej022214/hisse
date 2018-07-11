@@ -344,8 +344,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, speciation[16:18], extirpation.tmp[11:12], trans.tmp[31:36], category.rate.shiftF, speciation[19:21], extirpation.tmp[13:14], trans.tmp[37:42], category.rate.shiftG, speciation[22:24], extirpation.tmp[15:16], trans.tmp[43:48], category.rate.shiftH, speciation[25:27], extirpation.tmp[17:18], trans.tmp[49:54], category.rate.shiftI, speciation[28:30], extirpation.tmp[19:20], trans.tmp[55:60], category.rate.shiftJ)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
-    
-    
+
     np <- max(pars)
     pars[pars==0] <- np+1
     
