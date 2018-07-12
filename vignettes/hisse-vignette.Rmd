@@ -2,13 +2,13 @@
 title: "Running HiSSE"
 author: "Jeremy M. Beaulieu"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: 
+output:
+  html_document:
+    df_print: paged
   pdf_document:
     fig_caption: yes
-vignette: >
-   %\VignetteEngine{knitr::rmarkdown}
-   %\VignetteIndexEntry{Running hisse}
-   \usepackage[utf8]{inputenc}
+vignette: |
+  %\VignetteEngine{knitr::rmarkdown} %\VignetteIndexEntry{Running hisse} \usepackage[utf8]{inputenc}
 ---
 
 ## Getting started
@@ -173,7 +173,9 @@ knitr::opts_chunk$set(fig.width=7, fig.height=5)
 ```
 Our HiSSE package provides plotting functionality in `plot.hisse.states()` for character state reconstructions of `class hisse.states` output by our `MarginRecon()` function. Specifically, the function provides an overlay of the state reconstructions on the rate estimates. There are a couple of options for how these reconstructions to be plotted. First, a single `hisse.states` object can be supplied and it will provide a heat map of the diversification rate parameter of choice. Users can choose among turnover, net diversification ("net.div"), speciation, extinction, or extinction fraction ("extinction.fraction"). I've provided example `hisse.states` output from the example data set simulated above. This particular model assumed two diversification rate parameters -- i.e., turnover.anc=c(1,1,1,2), and eps.anc=c(1,1,1,1). Let's load this file and check that everything has loaded correctly and is of the proper `hisse.states` class:
 ```{r, eval=TRUE}
-load("testrecon1.Rsave")
+# pp.recon <- MarginRecon(phy=phy, data=sim.dat, f = pp$f, pars = pp$solution
+#                         , hidden.states = pp$hidden.states, aic = pp$AIC)
+load("testrecon1.Rsave") # Line above shows the command to create this result.
 class(pp.recon)
 pp.recon
 ```
@@ -218,7 +220,8 @@ Although this is similar to the plot above, which shows no real rate differences
 Note that the above code is obviously a pretty lame way of generating a list. An even easier way would be to do something like this:
 ```{r, eval=FALSE}
 # First, suck in all the files with .Rsave line ending in your working directory:
-files = system("ls -1 | grep .Rsave", intern=TRUE)
+# files = system("ls -1 | grep .Rsave", intern=TRUE) # This will not run in a Windows system.
+files = dir( pattern = "*.Rsave" ) # This is system independent.
 # Create an empty list object
 hisse.results.list = list()
 # Now loop through all files, adding the embedded pp.recon object in each

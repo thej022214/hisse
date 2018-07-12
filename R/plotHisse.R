@@ -7,15 +7,31 @@
 
 plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width.rate=5, edge.width.state=2, type="fan", rate.range=NULL, show.tip.label=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3", ...) {
 	hisse.results <- x
-	if(class(hisse.results)=="hisse.states") { #we have to make a list so we can run this generally
+	if( inherits(hisse.results, what=c("hisse.states","list")) ){
+            if( inherits(hisse.results, what="hisse.states") ){
+                ## we have to make a list so we can run this generally
 		if(is.null(hisse.results$aic)){
-			#If a user forgot to include the aic, then we add a random value in for them
-			hisse.results$aic = 42
+                    ## If a user forgot to include the aic, then we add a random value in for them
+                    hisse.results$aic = 42
 		}
 		tmp.list <- list()
 		tmp.list[[1]] <- hisse.results
 		hisse.results <- tmp.list
-	}
+            } else { ## Then it is a list.
+                ## If x is a list we need to check if all elements have the $aic to make the model average.
+                any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="hisse.states") ) )
+                if( any.other.class ) stop("All elements of the list 'x' need to be of class 'hisse.states'.")
+                
+                any.missing <- any( sapply(hisse.results, function(x) is.null(x$aic) ) )
+                if( any.missing ) stop( "If x is a list, then each reconstruction need to have $aic information in order to make the model average." )
+                
+            }
+        } else {
+            stop( "x needs to be an object of class 'hisse.states'." )
+        }
+
+        ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
+        old.par <- par(no.readonly=T)
 	par(fig=c(0,1, 0, 1), new=FALSE)
 	if(is.null(rate.colors)) {
 		rate.colors <- c("blue", "red")
@@ -144,6 +160,104 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 
 	}
 
+        ## Return par to the previous state.
+        par( old.par )
+	return(list(rate.tree=rate.tree, state.tree=state.tree))
+}
+
+
+plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width.rate=5, edge.width.state=2, type="fan", rate.range=NULL, show.tip.label=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3", ...) {
+    hisse.results <- x
+    	if( inherits(hisse.results, what=c("hisse.geosse.states","list")) ){
+            if( inherits(hisse.results, what="hisse.geosse.states") ){
+                ## we have to make a list so we can run this generally
+		if(is.null(hisse.results$aic)){
+                    ## If a user forgot to include the aic, then we add a random value in for them
+                    hisse.results$aic = 42
+		}
+		tmp.list <- list()
+		tmp.list[[1]] <- hisse.results
+		hisse.results <- tmp.list
+            } else { ## Then it is a list.
+                ## If x is a list we need to check if all elements have the $aic to make the model average.
+                any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="hisse.geosse.states") ) )
+                if( any.other.class ) stop("All elements of the list 'x' need to be of class 'hisse.geosse.states'.")
+                
+                any.missing <- any( sapply(hisse.results, function(x) is.null(x$aic) ) )
+                if( any.missing ) stop( "If x is a list, then each reconstruction need to have $aic information in order to make the model average." )
+                
+            }
+        } else {
+            stop( "x needs to be an object of class 'hisse.geosse.states'." )
+        }
+
+            ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
+    old.par <- par(no.readonly=T)
+    
+	par(fig=c(0,1, 0, 1), new=FALSE)
+	if(is.null(rate.colors)) {
+		rate.colors <- c("blue", "red")
+	}
+	if(is.null(state.colors)) {
+		state.colors <- c("white", "black", "yellow")
+	}
+    rates.tips <- ConvertManyToRate(hisse.results, rate.param, "tip.mat")
+    rates.internal <- ConvertManyToRate(hisse.results, rate.param, "node.mat")
+	states.tips <- NA
+	states.internal <- NA
+	if (do.observed.only) {
+        states.tips <- ConvertManyToMultiState(hisse.results, "tip.mat")
+        states.internal <- ConvertManyToMultiState(hisse.results, "node.mat")
+	} else {
+		stop("So far we can easily plot just the binary observed state; if you want to plot the hidden states, use a different function")
+	}
+	tree.to.plot <- hisse.results[[1]]$phy
+	if(!show.tip.label) { #this is b/c you cannot suppress plotting tip labels in phytools plotSimmap
+		rep.rev <- function(x, y) {
+			result<-paste(rep(y,x), collapse="", sep="")
+			return(result)
+		}
+		tree.to.plot$tip.label <- sapply(sequence(length(tree.to.plot$tip.label)), rep.rev, " ")
+		fsize=0
+	}
+#	rate.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToRate(hisse.object$tip.mat, rate.vector= rate.vector), plot=FALSE, anc.states=ConvertToRate(hisse.object$node.mat, rate.vector= rate.vector), ...)
+	rate.lims <- range(c(rates.tips, rates.internal))
+	if(!is.null(rate.range)) {
+		if(min(rate.range) > min(rate.lims) | max(rate.range) < max(rate.lims)) {
+			warning(paste("Did not override rate.lims: the specified rate.range (", rate.range[1], ", ", rate.range[2], ") did not contain all the values for the observed rates (", rate.lims[1], ", ", rate.lims[2], ")"))
+		} else {
+			rate.lims <- rate.range
+		}
+	}
+	rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
+	rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
+
+    rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
+	#change colors
+	rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
+	rate.tree$cols[] <- rate.colors
+	#rate.tree$cols[] <- adjustcolor(rate.tree$cols[], alpha.f=0.3)
+	plot(rate.tree, outline=FALSE, lwd=edge.width.rate, legend=FALSE, type=type, fsize=fsize, ...)
+	par(fig=c(0,1, 0, 1), new=TRUE)
+	#state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
+
+##### NEW STUFF ######
+    states.tips.tmp <- rowSums(states.tips %*% c(0,1,2))
+    names(states.tips.tmp) <- 1:length(states.tips.tmp)
+    states.internal.tmp <- rowSums(states.internal %*% c(0,1,2))
+    names(states.internal.tmp) <- (length(states.tips.tmp)+1):(length(states.internal.tmp)+length(states.tips.tmp))
+    state.lims <- range(c(states.tips.tmp, states.internal.tmp))
+    state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
+    state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
+    state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims, ...)
+    #state.colors <- grey(seq(1,0,length.out=length(state.tree$cols)))
+    state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
+    state.tree$cols[]<- state.colors
+    plot(state.tree, outline=FALSE, lwd=edge.width.state, legend=FALSE, type=type, fsize=fsize, ...)
+######################
+
+            ## Return par to the previous state.
+        par( old.par )
 	return(list(rate.tree=rate.tree, state.tree=state.tree))
 }
 
@@ -175,6 +289,7 @@ GetNormalizedDensityPlot <- function(x, limits, kernel, min.breaks=100) {
 # function plots reconstructed values for ancestral characters along the edges of the tree
 # Modified by Brian O'Meara, June 9, 2015
 # Modified by Daniel Caetano, April 4, 2018
+
 contMapGivenAnc <-function(tree,x,res=100,fsize=NULL,ftype=NULL,lwd=4,legend=NULL,
 lims=NULL,outline=TRUE,sig=3,type="phylogram",direction="rightwards",
 plot=TRUE,anc.states=NULL,...){
@@ -199,7 +314,11 @@ plot=TRUE,anc.states=NULL,...){
 		}
 	} #end BCO if loop
 	names(x) <- tree$tip.label[as.numeric(names(x))]
-	y<-c(a,x[tree$tip.label]); names(y)[1:length(tree$tip.label)+tree$Nnode]<-1:length(tree$tip.label)
+
+	y <- c(a, x[tree$tip.label])
+    ## Fixed a problem here. Previous version was calling 'tree$tip' which is not an element of tree.
+    names(y)[1:length(tree$tip.label)+tree$Nnode] <- 1:length(tree$tip.label)
+
 	A<-matrix(y[as.character(tree$edge)],nrow(tree$edge),ncol(tree$edge))
 	cols<-rainbow(1001,start=0,end=0.7); names(cols)<-0:1000
 	if(is.null(lims)) lims<-c(min(c(a,x)),max(c(a,x))) #modified by BCO to include anc state in range for lims
@@ -260,6 +379,22 @@ makeMappedEdge<-function(edge,maps){
 	return(mapped.edge)
 }
 
+MergeAcrossHidden <- function(x) {
+	x.trimmed <- x[,-1]
+	hidden.deleted <- gsub("[^0-9]", "", colnames(x.trimmed))
+	all.observed.states <- unique(hidden.deleted)
+	x.new <- data.frame(matrix(0, nrow=length(x[,1]), ncol=length(all.observed.states)))
+	for (state.index in sequence(length(all.observed.states))) {
+		state.indices <- which(hidden.deleted==all.observed.states[state.index])
+		x.new[,state.index] <- rowSums(data.frame(x.trimmed[,state.indices])) #wrapping in data.frame since it drops to vector if length(state.indices)==1
+	}
+	x.new <- x.new/rowSums(x.new) #normalize
+	rownames(x.new) <- x[,1]
+	colnames(x.new) <- all.observed.states
+	return(x.new)
+}
+
+
 #Get prob of it being 1
 ConvertToBinaryState <- function(x) {
 	x.trimmed <- x[,-1]
@@ -282,31 +417,72 @@ ConvertToBinaryState <- function(x) {
 
 
 ConvertToRate <- function(x, rate.vector) {
-	x.trimmed <- x[,-1]
-	x.trimmed <- x.trimmed / rowSums(x.trimmed) #normalize to 1 (which it should be already)
-	result.vector <- rep(0, dim(x.trimmed)[1])
-	for (i in sequence(dim(x.trimmed)[2])) {
-		result.vector <- result.vector + rate.vector[i] * x.trimmed[,i]	#get weighted mean
-	}
-	names(result.vector) <- x[,1]
-	return(result.vector)
+    x.trimmed <- x[,-1]
+    ## Here is the problem!! This will cause the division by infinite!
+    x.trimmed <- x.trimmed / rowSums(x.trimmed) #normalize to 1 (which it should be already)
+    result.vector <- rep(0, dim(x.trimmed)[1])
+    for (i in sequence(dim(x.trimmed)[2])) {
+        result.vector <- result.vector + rate.vector[i] * x.trimmed[,i]	#get weighted mean
+    }
+    names(result.vector) <- x[,1]
+    return(result.vector)
+}
+
+ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weights=NULL) {
+    if( is.null(AIC.weights) ){
+        AIC.weights <- GetAICWeights(hisse.results)
+    }
+    storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
+    for (i in sequence(length(hisse.results))) {
+        rate.vector <- hisse.results[[i]]$rates.mat[rate.param,]
+        storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=rate.vector))
+    }
+    final.results <- apply(storage.matrix, 1, weighted.mean, w=AIC.weights)
+    return(final.results)
+}
+
+CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix){
+    ## Check if every column of the matrices in the list x is within the bounds set to the each of the parameters.
+    ## Drop all the models that are not. Models are the columns in each of the matrices in the list x.
+
+    check.keep.mod <- matrix(nrow = 5, ncol = n.models)
+    for( i in 1:5 ){
+        lim.range <- bound.par.matrix[i, ]
+        check.keep.mod[i,] <- apply(x[[i]], 2, function(y) all( y >= lim.range[1] & y <= lim.range[2] ) )
+    }
+    ## Check if all parameters for the particular model to be averaged are within the bounds.
+    keep.mod <- apply(check.keep.mod, 2, all)
+    if( !all(keep.mod) ){
+        warning( paste0(" Models in position ", paste(which(!keep.mod), collapse=", ")," have parameters outside the bounds defined by 'bound.matrix' argument. These will NOT be included in the reconstruction.") )
+    }
+    if( sum( keep.mod ) > 1 ){
+        final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, weighted.mean, w=AIC.weights[keep.mod]) )
+    }
+    if( sum( keep.mod ) == 1 ){
+        final.results <- lapply(x, function(y) y[,keep.mod]) ## No need to make the weighted.mean
+    }
+    if( sum( keep.mod ) < 1 ) stop( "No models left to reconstruct! Check if parameter estimates for models are outside the bounds defined by 'bound.matrix'." )
+    return( final.results )
+}
+
+ConvertManyToRate_ModelAve <- function(hisse.results, rate.param, which.element) {
+    storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
+    for (i in sequence(length(hisse.results))) {
+        rate.vector <- hisse.results[[i]]$rates.mat[rate.param,]
+        ## Some cases can have 'Inf' values for the rate.vector. This will produce NAs.
+        ## Will happen in the case of problem with 0 speciation values. In the vector for extinction fraction.
+        ## Need to check if the rate vector has some 'NA', 'NaN', or 'Inf'. Do something about it and throw a warning message.
+        if( any( is.infinite( rate.vector ) ) ) stop( paste0("One or more values for ", rate.param, " are 'Inf'. Check model parameters." ) )
+        storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=rate.vector))
+    }
+    return(storage.matrix)
 }
 
 
-ConvertManyToRate <- function(hisse.results, rate.param, which.element) {
-	AIC.weights <- GetAICWeights(hisse.results)
-	storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
-	for (i in sequence(length(hisse.results))) {
-		rate.vector <- hisse.results[[i]]$rates.mat[rate.param,]
-		storage.matrix <- cbind(storage.matrix, ConvertToRate(x=hisse.results[[i]][[which.element]], rate.vector=hisse.results[[i]]$rates.mat[rate.param,]))
-	}
-	final.results <- apply(storage.matrix, 1, weighted.mean, w=AIC.weights)
-	return(final.results)
-}
-
-
-ConvertManyToBinaryState <- function(hisse.results, which.element) {
-	AIC.weights <- GetAICWeights(hisse.results)
+ConvertManyToBinaryState <- function(hisse.results, which.element, AIC.weights=NULL) {
+        if( is.null(AIC.weights) ){
+             AIC.weights <- GetAICWeights(hisse.results)
+        }
 	storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
 	for (i in sequence(length(hisse.results))) {
 		storage.matrix <- cbind(storage.matrix, ConvertToBinaryState(x=hisse.results[[i]][[which.element]]))
@@ -315,6 +491,19 @@ ConvertManyToBinaryState <- function(hisse.results, which.element) {
 	return(final.results)
 }
 
+ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights=NULL) {
+        if( is.null(AIC.weights) ){
+             AIC.weights <- GetAICWeights(hisse.results)
+        }
+	storage.array <- array(dim=c(nrow(hisse.results[[1]][[which.element]]), length(unique(gsub("[^0-9]", "", colnames(hisse.results[[1]][[which.element]][,-1])))), length(hisse.results)))
+	for (i in sequence(length(hisse.results))) {
+		storage.array[,,i] <- as.matrix(MergeAcrossHidden(x=hisse.results[[i]][[which.element]]))
+	}
+	final.results <- apply(storage.array, c(1,2), weighted.mean, w=AIC.weights)
+	rownames(final.results) <- rownames(hisse.results[[1]][[which.element]])
+	colnames(final.results) <- unique(gsub("[^0-9]", "", colnames(hisse.results[[1]][[which.element]][,-1])))
+	return(final.results)
+}
 
 GetAICWeights <- function(hisse.results) {
 	AIC.vector <- sapply(hisse.results, "[[", "aic")

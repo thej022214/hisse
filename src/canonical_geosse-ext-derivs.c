@@ -13,7 +13,7 @@
 #include <R_ext/Rdynload.h>
 #include <Rmath.h>
 #include <stdio.h>
-#define NUMELEMENTS 7
+#define NUMELEMENTS 11
 
 static double params_geosse[NUMELEMENTS];
 
@@ -35,13 +35,13 @@ void initmod_geosse(void (* odeparms)(int *, double *)){
 //    double D_N1 = y[5];
     
 //    double
-//    sA  = params_higeosse[0],     /* speciation within region A */
-//    sB  = params_higeosse[1],     /* speciation within region B */
-//    sAB = params_higeosse[2],     /* between-region speciation  */
-//    xA  = params_higeosse[3],     /* extinction from region A   */
-//    xB  = params_higeosse[4],     /* extinction from region B   */
-//    dA  = params_higeosse[5],     /* dispersal from A to B      */
-//    dB  = params_higeosse[6];     /* dispersal from B to A      */
+//    sA  = params_geohisse[0],     /* speciation within region A */
+//    sB  = params_geohisse[1],     /* speciation within region B */
+//    sAB = params_geohisse[2],     /* between-region speciation  */
+//    xA  = params_geohisse[3],     /* extinction from region A   */
+//    xB  = params_geohisse[4],     /* extinction from region B   */
+//    dA  = params_geohisse[5],     /* dispersal from A to B      */
+//    dB  = params_geohisse[6];     /* dispersal from B to A      */
 
     /*  dE_2 / dt  */
 //    ydot[0] = -(sA + dA + xA) * E_2
@@ -90,12 +90,12 @@ void classe_geosse_equivalent_derivs(int *neq, double *t, double *y, double *ydo
     sAB = params_geosse[2],     /* between-region speciation  */
     xA  = params_geosse[3],     /* extinction from region A   */
     xB  = params_geosse[4],     /* extinction from region B   */
-    d0_1  = 0,
-    d0_01  = params_geosse[5],  /* dispersal from A to AB     */
-    d1_0 = 0,
-    d1_01 = params_geosse[6],   /* dispersal from B to AB     */
-    d01_0 = xA,
-    d01_1 = xB;
+    d0_1  = params_geosse[5],   /* jumps from 0 to 1          */
+    d0_01  = params_geosse[6],  /* dispersal from A to AB     */
+    d1_0 = params_geosse[7],    /* jumps from 1 to 0          */
+    d1_01 = params_geosse[8],   /* dispersal from B to AB     */
+    d01_0 = params_geosse[9],   /* true extirpation rate      */
+    d01_1 = params_geosse[10];  /* true extirpation rate      */
     
     /*  dE_2 / dt  */
     ydot[0] = -(sA + d0_1 + d0_01 + xA) * E_0 + (d0_1 * E_1 + d0_01 * E_2) + xA + (sA * E_0 * E_0);
@@ -104,7 +104,7 @@ void classe_geosse_equivalent_derivs(int *neq, double *t, double *y, double *ydo
     ydot[1] = -(sB + d1_0 + d1_01 + xB) * E_1 + (d1_0 * E_0 + d1_01 * E_2) + xB + (sB * E_1 * E_1);
     
     /*  dE_1 / dt  */
-    ydot[2] = -(sAB + sA + sB + d01_0 + d01_0) * E_2 + (d01_0 * E_0 + d01_1 * E_1) + sA * E_0 * E_2 + sB * E_2 * E_1 + sAB * E_0 * E_1;
+    ydot[2] = -(sAB + sA + sB + d01_0 + d01_1) * E_2 + (d01_0 * E_0 + d01_1 * E_1) + sA * E_0 * E_2 + sB * E_2 * E_1 + sAB * E_0 * E_1;
     
     /*  dD_N2 / dt  */
     ydot[3] = -(sA + d0_1 + d0_01 + xA) * D_N0 + (d0_1 * D_N1 + d0_01 * D_N2) + sA * (D_N0 * E_0 + D_N0 * E_0);

@@ -151,31 +151,6 @@ DevOptimizeNull <- function(p, pars, phy, data, f, condition.on.survival, root.t
 	return(-logl)
 }
 
-
-#Taken from the BiSSE code -- credit goes to Rich FitzJohn:
-starting.point.tree <- function(phy, yule=FALSE) {
-	p.yule <- c(yule(phy)$lambda, 0)
-	if(yule){
-		p.yule
-	}else{
-		suppressWarnings(c(birthdeath(phy)$para[2] / (1-birthdeath(phy)$para[1]), ((birthdeath(phy)$para[1] * birthdeath(phy)$para[2]) / (1-birthdeath(phy)$para[1]))))
-	}
-}
-
-
-starting.point.generator <- function(phy, k, samp.freq.tree, q.div=5, yule=FALSE) {
-	pars.bd <- suppressWarnings(starting.point.tree(phy, yule))
-	#Rescale parameters to account for sampling, if necessary, using Stadler 2013: 
-	pars.bd[1] = pars.bd[1] / samp.freq.tree
-	pars.bd[2] = pars.bd[2] - (pars.bd[1]*samp.freq.tree) * (1 - 1/samp.freq.tree)
-	r <- if  ( pars.bd[1] > pars.bd[2] )
-    (pars.bd[1] - pars.bd[2]) else pars.bd[1]
-	p <- rep(c(pars.bd, r / q.div), c(k, k, k * (k-1)))
-	names(p) <- NULL
-	p
-}
-
-
 ######################################################################################################################################
 ######################################################################################################################################
 ### The down pass that carries out the integration and returns the likelihood: 
