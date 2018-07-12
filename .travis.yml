@@ -1,7 +1,10 @@
 addons:
   apt:
     packages:
-      - libgsl2
+      - libgsl23
+      - libgslcblas0
+      - libgsl-dev
+      - libgsl-dbg
       - gsl-bin
 before_install:
 #  - sudo apt-get -qq update
