@@ -10,8 +10,8 @@ extern void initmod_hisse();
 extern void initmod_hisse_null();
 extern void initmod_geosse();
 extern void initmod_geohisse();
-extern void initmod_musse();
-extern void initmod_mussem();
+extern void initmod_noclass();
+extern void initmod_hinoclass();
 
 extern void maddison_DE_bisse(void *, void *, void *, void *, void *, void *);
 extern void maddison_DE_hisse(void *, void *, void *, void *, void *, void *);
@@ -31,8 +31,8 @@ static const R_CMethodDef CEntries[] = {
     {"initmod_hisse_null",              (DL_FUNC) &initmod_hisse_null,              0},
     {"initmod_geosse",		            (DL_FUNC) &initmod_geosse,                  0},
     {"initmod_geohisse",		        (DL_FUNC) &initmod_geohisse,                0},
-    {"initmod_musse",		            (DL_FUNC) &initmod_musse,                   0},
-    {"initmod_mussem",		            (DL_FUNC) &initmod_mussem,                  0},
+    {"initmod_noclass",		            (DL_FUNC) &initmod_noclass,                   0},
+    {"initmod_hinoclass",		        (DL_FUNC) &initmod_hinoclass,                  0},
     {"maddison_DE_bisse",               (DL_FUNC) &maddison_DE_bisse,               6},
     {"maddison_DE_hisse",               (DL_FUNC) &maddison_DE_hisse,               6},
     {"maddison_DE_hisse_null",          (DL_FUNC) &maddison_DE_hisse_null,          6},
