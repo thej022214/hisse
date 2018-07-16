@@ -933,7 +933,12 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11A = model.vec[5]
     obj$s00A = model.vec[1] / (1 + model.vec[4])
     obj$s11A = model.vec[2] / (1 + model.vec[5])
-    obj$s01A = model.vec[3] - obj$s00A - obj$s11A
+    if(model.vec[3] == 0 & assume.cladogenetic==TRUE){
+        #For the independent models
+        obj$s01A = obj$s00A
+    }else{
+        obj$s01A = model.vec[3] - obj$s00A - obj$s11A
+    }
     obj$x00A = (model.vec[4] * model.vec[1]) / (1 + model.vec[4])
     obj$x11A = (model.vec[5] * model.vec[2]) / (1 + model.vec[5])
     
@@ -992,7 +997,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11B = model.vec[43]
     obj$s00B = model.vec[39] / (1 + model.vec[42])
     obj$s11B = model.vec[40] / (1 + model.vec[43])
-    obj$s01B = model.vec[41] - obj$s00B - obj$s11B
+    if(model.vec[41] == 0 & assume.cladogenetic==TRUE){
+        obj$s01B = obj$s00B
+    }else{
+        obj$s01B = model.vec[41] - obj$s00B - obj$s11B
+    }
     obj$x00B = (model.vec[42] * model.vec[39]) / (1 + model.vec[42])
     obj$x11B = (model.vec[43] * model.vec[40]) / (1 + model.vec[43])
 
@@ -1051,6 +1060,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11C = model.vec[81]
     obj$s00C = model.vec[77] / (1 + model.vec[80])
     obj$s11C = model.vec[78] / (1 + model.vec[81])
+    if(model.vec[79] == 0 & assume.cladogenetic==TRUE){
+        obj$s01C = obj$s00C
+    }else{
+        obj$s01C = model.vec[79] - obj$s00C - obj$s11C
+    }
     obj$s01C = model.vec[79] - obj$s00C - obj$s11C
     obj$x00C = (model.vec[80] * model.vec[77]) / (1 + model.vec[80])
     obj$x11C = (model.vec[81] * model.vec[78]) / (1 + model.vec[81])
@@ -1110,7 +1124,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11D = model.vec[119]
     obj$s00D = model.vec[115] / (1 + model.vec[118])
     obj$s11D = model.vec[116] / (1 + model.vec[119])
-    obj$s01D = model.vec[117] - obj$s00D - obj$s11D
+    if(model.vec[79] == 0 & assume.cladogenetic==TRUE){
+        obj$s01D = obj$s00D
+    }else{
+        obj$s01D = model.vec[117] - obj$s00D - obj$s11D
+    }
     obj$x00D = (model.vec[118] * model.vec[115]) / (1 + model.vec[118])
     obj$x11D = (model.vec[119] * model.vec[116]) / (1 + model.vec[119])
 
@@ -1169,7 +1187,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11E = model.vec[157]
     obj$s00E = model.vec[153] / (1 + model.vec[156])
     obj$s11E = model.vec[154] / (1 + model.vec[157])
-    obj$s01E = model.vec[155] - obj$s00E - obj$s11E
+    if(model.vec[155] == 0 & assume.cladogenetic==TRUE){
+        obj$s01E = obj$s00E
+    }else{
+        obj$s01E = model.vec[155] - obj$s00E - obj$s11E
+    }
     obj$x00E = (model.vec[156] * model.vec[153]) / (1 + model.vec[156])
     obj$x11E = (model.vec[157] * model.vec[154]) / (1 + model.vec[157])
 
@@ -1228,7 +1250,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11F = model.vec[195]
     obj$s00F = model.vec[191] / (1 + model.vec[194])
     obj$s11F = model.vec[192] / (1 + model.vec[195])
-    obj$s01F = model.vec[193] - obj$s00F - obj$s11F
+    if(model.vec[193] == 0 & assume.cladogenetic==TRUE){
+        obj$s01F = obj$s00F
+    }else{
+        obj$s01F = model.vec[193] - obj$s00F - obj$s11F
+    }
     obj$x00F = (model.vec[194] * model.vec[191]) / (1 + model.vec[194])
     obj$x11F = (model.vec[195] * model.vec[192]) / (1 + model.vec[195])
 
@@ -1287,7 +1313,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11G = model.vec[233]
     obj$s00G = model.vec[229] / (1 + model.vec[232])
     obj$s11G = model.vec[230] / (1 + model.vec[233])
-    obj$s01G = model.vec[231] - obj$s00G - obj$s11G
+    if(model.vec[231] == 0 & assume.cladogenetic==TRUE){
+        obj$s01G = obj$s00G
+    }else{
+        obj$s01G = model.vec[231] - obj$s00G - obj$s11G
+    }
     obj$x00G = (model.vec[232] * model.vec[229]) / (1 + model.vec[232])
     obj$x11G = (model.vec[233] * model.vec[230]) / (1 + model.vec[233])
 
@@ -1346,7 +1376,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11H = model.vec[271]
     obj$s00H = model.vec[267] / (1 + model.vec[270])
     obj$s11H = model.vec[268] / (1 + model.vec[271])
-    obj$s01H = model.vec[269] - obj$s00H - obj$s11H
+    if(model.vec[269] == 0 & assume.cladogenetic==TRUE){
+        obj$s01H = obj$s00H
+    }else{
+        obj$s01H = model.vec[269] - obj$s00H - obj$s11H
+    }
     obj$x00H = (model.vec[270] * model.vec[267]) / (1 + model.vec[270])
     obj$x11H = (model.vec[271] * model.vec[268]) / (1 + model.vec[271])
 
@@ -1405,7 +1439,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11I = model.vec[309]
     obj$s00I = model.vec[305] / (1 + model.vec[308])
     obj$s11I = model.vec[306] / (1 + model.vec[309])
-    obj$s01I = model.vec[307] - obj$s00I - obj$s11I
+    if(model.vec[307] == 0 & assume.cladogenetic==TRUE){
+        obj$s01I = obj$s00I
+    }else{
+        obj$s01I = model.vec[307] - obj$s00I - obj$s11I
+    }
     obj$x00I = (model.vec[308] * model.vec[305]) / (1 + model.vec[308])
     obj$x11I = (model.vec[309] * model.vec[306]) / (1 + model.vec[309])
 
@@ -1464,7 +1502,11 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11J = model.vec[347]
     obj$s00J = model.vec[343] / (1 + model.vec[346])
     obj$s11J = model.vec[344] / (1 + model.vec[347])
-    obj$s01J = model.vec[345] - obj$s00J - obj$s11J
+    if(model.vec[345] == 0 & assume.cladogenetic==TRUE){
+        obj$s01J = obj$s00J
+    }else{
+        obj$s01J = model.vec[345] - obj$s00J - obj$s11J
+    }
     obj$x00J = (model.vec[346] * model.vec[343]) / (1 + model.vec[346])
     obj$x11J = (model.vec[347] * model.vec[344]) / (1 + model.vec[347])
 
