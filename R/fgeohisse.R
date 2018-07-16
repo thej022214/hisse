@@ -1123,7 +1123,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11D = model.vec[119]
     obj$s00D = model.vec[115] / (1 + model.vec[118])
     obj$s11D = model.vec[116] / (1 + model.vec[119])
-    if(model.vec[79] == 0 & assume.cladogenetic==TRUE){
+    if(model.vec[117] == 0 & assume.cladogenetic==TRUE){
         obj$s01D = obj$s00D
     }else{
         obj$s01D = model.vec[117] - obj$s00D - obj$s11D
