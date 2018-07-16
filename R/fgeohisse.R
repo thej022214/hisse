@@ -381,15 +381,15 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         
         if(is.null(starting.vals)){
             #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]*.1),3), rep(log(.01), 27)), rate.cats)
-            def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[7:8]*.1),3), rep(log(.01), 27)), rate.cats)
-            #def.set.pars <- rep(c(log(init.pars[1:3]+c(init.pars[4:5], sum(init.pars[1:2]))), log(init.pars[4:5]/init.pars[1:2]), rep(log(init.pars[7:8]),3), rep(log(.01), 27)), rate.cats)
+            #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[7:8]*.1),3), rep(log(.01), 27)), rate.cats)
+            def.set.pars <- rep(c(log(init.pars[1:2]+c(init.pars[4:5], sum(init.pars[1:3]))), log(init.pars[4:5]/init.pars[1:2]), rep(log(init.pars[7:8]),3), rep(log(0.001), 27)), rate.cats)
         }else{
-            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(starting.vals[6:7]),3), rep(log(0.01), 27)), rate.cats)
+            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(starting.vals[6:7]),3), rep(log(0.001), 27)), rate.cats)
             #def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[7:8]),3), rep(log(0.01), 27)), rate.cats)
         }
         if(bounded.search == TRUE){
-            upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
-            #upper.full <- rep(c(rep(log(10000),3), rep(log(3),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
+            #upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
+            upper.full <- rep(c(rep(log(10000),3), rep(log(3),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
         }else{
             upper.full <- rep(21,length(def.set.pars))
         }
@@ -469,8 +469,12 @@ DevOptimizeGeoHiSSEfast <- function(p, pars, dat.tab, gen, hidden.states, assume
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
     cache = ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
-    logl <- DownPassGeoHissefast(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-    return(-logl)
+    if(any(cache$s01A<0, cache$s01B <0, cache$s01C<0, cache$s01D<0, cache$s01E<0, cache$s01F<0, cache$s01G<0, cache$s01H<0, cache$s01I<0, cache$s01J<0)){
+        return(-log(cache$bad.likelihood)^13)
+    }else{
+        logl <- DownPassGeoHissefast(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+        return(-logl)
+    }
 }
 
 
@@ -918,11 +922,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     ######REMAINING ISSUE -- OPTIMIZING FIXED PARAMETERS of TURNOVER AND EPS. Can be done, just a bit trickier than usual.
     ##Hidden State A
-    obj$s00A = model.vec[1]
-    obj$s11A = model.vec[2]
-    obj$s01A = model.vec[3]
-    obj$x00A = model.vec[4]
-    obj$x11A = model.vec[5]
+    #obj$s00A = model.vec[1]
+    #obj$s11A = model.vec[2]
+    #obj$s01A = model.vec[3]
+    #obj$x00A = model.vec[4]
+    #obj$x11A = model.vec[5]
+    obj$s00A = model.vec[1] / (1 + model.vec[4])
+    obj$s11A = model.vec[2] / (1 + model.vec[5])
+    obj$s01A = model.vec[3] - obj$s00A - obj$s11A
+    obj$x00A = (model.vec[4] * model.vec[1]) / (1 + model.vec[4])
+    obj$x11A = (model.vec[5] * model.vec[2]) / (1 + model.vec[5])
+    
     obj$d00A_11A = model.vec[6]
     obj$d00A_01A = model.vec[7]
     obj$d11A_00A = model.vec[8]
@@ -930,12 +940,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[10]==0){
-        obj$d01A_00A = model.vec[5]
+        #obj$d01A_00A = model.vec[5]
+        obj$d01A_00A = obj$x11A
     }else{
         obj$d01A_00A = model.vec[10]
     }
     if(model.vec[11]==0){
-        obj$d01A_11A = model.vec[4]
+        #obj$d01A_11A = model.vec[4]
+        obj$d01A_11A = obj$x00A
     }else{
         obj$d01A_11A = model.vec[11]
     }
@@ -969,11 +981,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d01A_01J = model.vec[38]
     
     ##Hidden State B
-    obj$s00B = model.vec[39]
-    obj$s11B = model.vec[40]
-    obj$s01B = model.vec[41]
-    obj$x00B = model.vec[42]
-    obj$x11B = model.vec[43]
+    #obj$s00B = model.vec[39]
+    #obj$s11B = model.vec[40]
+    #obj$s01B = model.vec[41]
+    #obj$x00B = model.vec[42]
+    #obj$x11B = model.vec[43]
+    obj$s00B = model.vec[39] / (1 + model.vec[42])
+    obj$s11B = model.vec[40] / (1 + model.vec[43])
+    obj$s01B = model.vec[41] - obj$s00B - obj$s11B
+    obj$x00B = (model.vec[42] * model.vec[39]) / (1 + model.vec[42])
+    obj$x11B = (model.vec[43] * model.vec[40]) / (1 + model.vec[43])
+
     obj$d00B_11B = model.vec[44]
     obj$d00B_01B = model.vec[45]
     obj$d11B_00B = model.vec[46]
@@ -981,12 +999,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[48]==0){
-        obj$d01B_00B = model.vec[43]
+        #obj$d01B_00B = model.vec[43]
+        obj$d01B_00B = obj$x11B
     }else{
         obj$d01B_00B = model.vec[48]
     }
     if(model.vec[49]==0){
-        obj$d01B_11B = model.vec[42]
+        #obj$d01B_11B = model.vec[42]
+        obj$d01B_11B = obj$x00B
     }else{
         obj$d01B_11B = model.vec[49]
     }
@@ -1020,11 +1040,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d01B_01J = model.vec[76]
     
     ##Hidden State C
-    obj$s00C = model.vec[77]
-    obj$s11C = model.vec[78]
-    obj$s01C = model.vec[79]
-    obj$x00C = model.vec[80]
-    obj$x11C = model.vec[81]
+    #obj$s00C = model.vec[77]
+    #obj$s11C = model.vec[78]
+    #obj$s01C = model.vec[79]
+    #obj$x00C = model.vec[80]
+    #obj$x11C = model.vec[81]
+    obj$s00C = model.vec[77] / (1 + model.vec[80])
+    obj$s11C = model.vec[78] / (1 + model.vec[81])
+    obj$s01C = model.vec[79] - obj$s00C - obj$s11C
+    obj$x00C = (model.vec[80] * model.vec[77]) / (1 + model.vec[80])
+    obj$x11C = (model.vec[81] * model.vec[78]) / (1 + model.vec[81])
+
     obj$d00C_11C = model.vec[82]
     obj$d00C_01C = model.vec[83]
     obj$d11C_00C = model.vec[84]
@@ -1032,12 +1058,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[86]==0){
-        obj$d01C_00C = model.vec[81]
+        #obj$d01C_00C = model.vec[81]
+        obj$d01C_00C = obj$x11C
     }else{
         obj$d01C_00C = model.vec[86]
     }
     if(model.vec[87]==0){
-        obj$d01C_11C = model.vec[80]
+        #obj$d01C_11C = model.vec[80]
+        obj$d01C_11C = obj$x00C
     }else{
         obj$d01C_11C = model.vec[87]
     }
@@ -1071,11 +1099,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d01C_01J = model.vec[114]
     
     ##Hidden State D
-    obj$s00D = model.vec[115]
-    obj$s11D = model.vec[116]
-    obj$s01D = model.vec[117]
-    obj$x00D = model.vec[118]
-    obj$x11D = model.vec[119]
+    #obj$s00D = model.vec[115]
+    #obj$s11D = model.vec[116]
+    #obj$s01D = model.vec[117]
+    #obj$x00D = model.vec[118]
+    #obj$x11D = model.vec[119]
+    obj$s00D = model.vec[115] / (1 + model.vec[118])
+    obj$s11D = model.vec[116] / (1 + model.vec[119])
+    obj$s01D = model.vec[117] - obj$s00D - obj$s11D
+    obj$x00D = (model.vec[118] * model.vec[115]) / (1 + model.vec[118])
+    obj$x11D = (model.vec[119] * model.vec[116]) / (1 + model.vec[119])
+
     obj$d00D_11D = model.vec[120]
     obj$d00D_01D = model.vec[121]
     obj$d11D_00D = model.vec[122]
@@ -1083,12 +1117,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[124]==0){
-        obj$d01D_00D = model.vec[119]
+        #obj$d01D_00D = model.vec[119]
+        obj$d01D_00D = obj$x11D
     }else{
         obj$d01D_00D = model.vec[124]
     }
     if(model.vec[125]==0){
-        obj$d01D_11D = model.vec[118]
+        #obj$d01D_11D = model.vec[118]
+        obj$d01D_11D = obj$x00D
     }else{
         obj$d01D_11D = model.vec[125]
     }
@@ -1122,11 +1158,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d01D_01J = model.vec[152]
     
     ##Hidden State E
-    obj$s00E = model.vec[153]
-    obj$s11E = model.vec[154]
-    obj$s01E = model.vec[155]
-    obj$x00E = model.vec[156]
-    obj$x11E = model.vec[157]
+    #obj$s00E = model.vec[153]
+    #obj$s11E = model.vec[154]
+    #obj$s01E = model.vec[155]
+    #obj$x00E = model.vec[156]
+    #obj$x11E = model.vec[157]
+    obj$s00E = model.vec[153] / (1 + model.vec[156])
+    obj$s11E = model.vec[154] / (1 + model.vec[157])
+    obj$s01E = model.vec[155] - obj$s00E - obj$s11E
+    obj$x00E = (model.vec[156] * model.vec[153]) / (1 + model.vec[156])
+    obj$x11E = (model.vec[157] * model.vec[154]) / (1 + model.vec[157])
+
     obj$d00E_11E = model.vec[158]
     obj$d00E_01E = model.vec[159]
     obj$d11E_00E = model.vec[160]
@@ -1134,12 +1176,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[162]==0){
-        obj$d01E_00E = model.vec[157]
+        #obj$d01E_00E = model.vec[157]
+        obj$d01E_00E = obj$x11E
     }else{
         obj$d01E_00E = model.vec[162]
     }
     if(model.vec[163]==0){
-        obj$d01E_11E = model.vec[156]
+        #obj$d01E_11E = model.vec[156]
+        obj$d01E_11E = obj$x00E
     }else{
         obj$d01E_11E = model.vec[163]
     }
@@ -1173,11 +1217,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d01E_01J = model.vec[190]
     
     ##Hidden State F
-    obj$s00F = model.vec[191]
-    obj$s11F = model.vec[192]
-    obj$s01F = model.vec[193]
-    obj$x00F = model.vec[194]
-    obj$x11F = model.vec[195]
+    #obj$s00F = model.vec[191]
+    #obj$s11F = model.vec[192]
+    #obj$s01F = model.vec[193]
+    #obj$x00F = model.vec[194]
+    #obj$x11F = model.vec[195]
+    obj$s00F = model.vec[191] / (1 + model.vec[194])
+    obj$s11F = model.vec[192] / (1 + model.vec[195])
+    obj$s01F = model.vec[193] - obj$s00F - obj$s11F
+    obj$x00F = (model.vec[194] * model.vec[191]) / (1 + model.vec[194])
+    obj$x11F = (model.vec[195] * model.vec[192]) / (1 + model.vec[195])
+
     obj$d00F_11F = model.vec[196]
     obj$d00F_01F = model.vec[197]
     obj$d11F_00F = model.vec[198]
@@ -1185,12 +1235,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[200]==0){
-        obj$d01F_00F = model.vec[195]
+        #obj$d01F_00F = model.vec[195]
+        obj$d01F_00F = obj$x11F
     }else{
         obj$d01F_00F = model.vec[200]
     }
     if(model.vec[201]==0){
-        obj$d01F_11F = model.vec[194]
+        #obj$d01F_11F = model.vec[194]
+        obj$d01F_11F = obj$x00F
     }else{
         obj$d01F_11F = model.vec[201]
     }
@@ -1224,11 +1276,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d01F_01J = model.vec[228]
     
     ##Hidden State G
-    obj$s00G = model.vec[229]
-    obj$s11G = model.vec[230]
-    obj$s01G = model.vec[231]
-    obj$x00G = model.vec[232]
-    obj$x11G = model.vec[233]
+    #obj$s00G = model.vec[229]
+    #obj$s11G = model.vec[230]
+    #obj$s01G = model.vec[231]
+    #obj$x00G = model.vec[232]
+    #obj$x11G = model.vec[233]
+    obj$s00G = model.vec[229] / (1 + model.vec[232])
+    obj$s11G = model.vec[230] / (1 + model.vec[233])
+    obj$s01G = model.vec[231] - obj$s00G - obj$s11G
+    obj$x00G = (model.vec[232] * model.vec[229]) / (1 + model.vec[232])
+    obj$x11G = (model.vec[233] * model.vec[230]) / (1 + model.vec[233])
+
     obj$d00G_11G = model.vec[234]
     obj$d00G_01G = model.vec[235]
     obj$d11G_00G = model.vec[236]
@@ -1236,12 +1294,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[238]==0){
-        obj$d01G_00G = model.vec[233]
+        #obj$d01G_00G = model.vec[233]
+        obj$d01G_00G = obj$x11G
     }else{
         obj$d01G_00G = model.vec[238]
     }
     if(model.vec[239]==0){
-        obj$d01G_11G = model.vec[232]
+        #obj$d01G_11G = model.vec[232]
+        obj$d01G_11G = obj$x00G
     }else{
         obj$d01G_11G = model.vec[239]
     }
@@ -1275,11 +1335,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d01G_01J = model.vec[266]
     
     ##Hidden State H
-    obj$s00H = model.vec[267]
-    obj$s11H = model.vec[268]
-    obj$s01H = model.vec[269]
-    obj$x00H = model.vec[270]
-    obj$x11H = model.vec[271]
+    #obj$s00H = model.vec[267]
+    #obj$s11H = model.vec[268]
+    #obj$s01H = model.vec[269]
+    #obj$x00H = model.vec[270]
+    #obj$x11H = model.vec[271]
+    obj$s00H = model.vec[267] / (1 + model.vec[270])
+    obj$s11H = model.vec[268] / (1 + model.vec[271])
+    obj$s01H = model.vec[269] - obj$s00H - obj$s11H
+    obj$x00H = (model.vec[270] * model.vec[267]) / (1 + model.vec[270])
+    obj$x11H = (model.vec[271] * model.vec[268]) / (1 + model.vec[271])
+
     obj$d00H_11H = model.vec[272]
     obj$d00H_01H = model.vec[273]
     obj$d11H_00H = model.vec[274]
@@ -1287,12 +1353,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[276]==0){
-        obj$d01H_00H = model.vec[271]
+        #obj$d01H_00H = model.vec[271]
+        obj$d01H_00H = obj$x11H
     }else{
         obj$d01H_00H = model.vec[276]
     }
     if(model.vec[277]==0){
-        obj$d01H_11H = model.vec[270]
+        #obj$d01H_11H = model.vec[270]
+        obj$d01H_11H = obj$x00H
     }else{
         obj$d01H_11H = model.vec[277]
     }
@@ -1326,11 +1394,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d01H_01J = model.vec[304]
     
     ##Hidden State I
-    obj$s00I = model.vec[305]
-    obj$s11I = model.vec[306]
-    obj$s01I = model.vec[307]
-    obj$x00I = model.vec[308]
-    obj$x11I = model.vec[309]
+    #obj$s00I = model.vec[305]
+    #obj$s11I = model.vec[306]
+    #obj$s01I = model.vec[307]
+    #obj$x00I = model.vec[308]
+    #obj$x11I = model.vec[309]
+    obj$s00I = model.vec[305] / (1 + model.vec[308])
+    obj$s11I = model.vec[306] / (1 + model.vec[309])
+    obj$s01I = model.vec[307] - obj$s00I - obj$s11I
+    obj$x00I = (model.vec[308] * model.vec[305]) / (1 + model.vec[308])
+    obj$x11I = (model.vec[309] * model.vec[306]) / (1 + model.vec[309])
+
     obj$d00I_11I = model.vec[310]
     obj$d00I_01I = model.vec[311]
     obj$d11I_00I = model.vec[312]
@@ -1338,12 +1412,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[314]==0){
-        obj$d01I_00I = model.vec[309]
+        #obj$d01I_00I = model.vec[309]
+        obj$d01I_00I = obj$x11I
     }else{
         obj$d01I_00I = model.vec[314]
     }
     if(model.vec[315]==0){
-        obj$d01I_11I = model.vec[308]
+        #obj$d01I_11I = model.vec[308]
+        obj$d01I_11I = obj$x00I
     }else{
         obj$d01I_11I = model.vec[315]
     }
@@ -1377,11 +1453,17 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d01I_01J = model.vec[342]
     
     ##Hidden State J
-    obj$s00J = model.vec[343]
-    obj$s11J = model.vec[344]
-    obj$s01J = model.vec[345]
-    obj$x00J = model.vec[346]
-    obj$x11J = model.vec[347]
+    #obj$s00J = model.vec[343]
+    #obj$s11J = model.vec[344]
+    #obj$s01J = model.vec[345]
+    #obj$x00J = model.vec[346]
+    #obj$x11J = model.vec[347]
+    obj$s00J = model.vec[343] / (1 + model.vec[346])
+    obj$s11J = model.vec[344] / (1 + model.vec[347])
+    obj$s01J = model.vec[345] - obj$s00J - obj$s11J
+    obj$x00J = (model.vec[346] * model.vec[343]) / (1 + model.vec[346])
+    obj$x11J = (model.vec[347] * model.vec[344]) / (1 + model.vec[347])
+
     obj$d00J_11J = model.vec[348]
     obj$d00J_01J = model.vec[349]
     obj$d11J_00J = model.vec[350]
@@ -1389,12 +1471,14 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     
     #This sets the extirpation if necessary
     if(model.vec[352]==0){
-        obj$d01J_00J = model.vec[347]
+        #obj$d01J_00J = model.vec[347]
+        obj$d01J_00J = obj$x11J
     }else{
         obj$d01J_00J = model.vec[352]
     }
     if(model.vec[353]==0){
-        obj$d01J_11J = model.vec[346]
+        #obj$d01J_11J = model.vec[346]
+        obj$d01J_11J = obj$x00J
     }else{
         obj$d01J_11J = model.vec[353]
     }
