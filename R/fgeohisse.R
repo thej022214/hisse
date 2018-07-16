@@ -389,7 +389,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         }
         if(bounded.search == TRUE){
             #upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
-            upper.full <- rep(c(rep(log(10000),3), rep(log(3),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
+            upper.full <- rep(c(rep(log(10000),3), rep(log(3),2), rep(log(trans.upper), 2*3), rep(log(10), 27)), rate.cats)
         }else{
             upper.full <- rep(21,length(def.set.pars))
         }
@@ -465,7 +465,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
 DevOptimizeGeoHiSSEfast <- function(p, pars, dat.tab, gen, hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, ode.eps) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
-    ## print(p.new)
+    print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
     cache = ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
