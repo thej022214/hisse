@@ -382,7 +382,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         if(is.null(starting.vals)){
             #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]*.1),3), rep(log(.01), 27)), rate.cats)
             #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[7:8]*.1),3), rep(log(.01), 27)), rate.cats)
-            def.set.pars <- rep(c(log(init.pars[1:2]+c(init.pars[4:5], sum(init.pars[1:3]))), log(init.pars[4:5]/init.pars[1:2]), rep(log(init.pars[7:8]),3), rep(log(0.001), 27)), rate.cats)
+            def.set.pars <- rep(c(log(init.pars[1:2] + init.pars[4:5], sum(init.pars[1:3]))), log(init.pars[4:5]/init.pars[1:2]), rep(log(init.pars[7:8]),3), rep(log(0.001), 27)), rate.cats)
         }else{
             def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(starting.vals[6:7]),3), rep(log(0.001), 27)), rate.cats)
             #def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[7:8]),3), rep(log(0.01), 27)), rate.cats)
@@ -470,9 +470,11 @@ DevOptimizeGeoHiSSEfast <- function(p, pars, dat.tab, gen, hidden.states, assume
     model.vec[] <- c(p.new, 0)[pars]
     cache = ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
     if(any(cache$s01A<0, cache$s01B <0, cache$s01C<0, cache$s01D<0, cache$s01E<0, cache$s01F<0, cache$s01G<0, cache$s01H<0, cache$s01I<0, cache$s01J<0)){
+        print("bad")
         return(-log(cache$bad.likelihood)^13)
     }else{
         logl <- DownPassGeoHissefast(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+        print(logl)
         return(-logl)
     }
 }
