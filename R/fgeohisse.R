@@ -382,7 +382,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         if(is.null(starting.vals)){
             #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]*.1),3), rep(log(.01), 27)), rate.cats)
             #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[7:8]*.1),3), rep(log(.01), 27)), rate.cats)
-            def.set.pars <- rep(c(log(init.pars[1]+init.pars[4], init.pars[2]+init.pars[5], sum(init.pars[1:3])), log(init.pars[4:5]/init.pars[1:2]), rep(log(init.pars[7:8]),3), rep(log(0.001), 27)), rate.cats)
+            def.set.pars <- rep(c(log(init.pars[1]+init.pars[4]), log(init.pars[2]+init.pars[5]), log(sum(init.pars[1:3])), log(init.pars[4]/init.pars[1]),  log(init.pars[5]/init.pars[2]), rep(log(init.pars[7:8]),3), rep(log(0.001), 27)), rate.cats)
         }else{
             def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(starting.vals[6:7]),3), rep(log(0.001), 27)), rate.cats)
             #def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[7:8]),3), rep(log(0.01), 27)), rate.cats)
