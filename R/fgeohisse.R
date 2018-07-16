@@ -1065,7 +1065,6 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     }else{
         obj$s01C = model.vec[79] - obj$s00C - obj$s11C
     }
-    obj$s01C = model.vec[79] - obj$s00C - obj$s11C
     obj$x00C = (model.vec[80] * model.vec[77]) / (1 + model.vec[80])
     obj$x11C = (model.vec[81] * model.vec[78]) / (1 + model.vec[81])
 
