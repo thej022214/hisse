@@ -730,8 +730,11 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
     if(hidden.areas == TRUE){
         if(is.null(total.hidden)){
             nstates = 30
+            nstates.to.eval <- 30
+            nstates.not.eval <- 0
         }else{
-            nstates = 3 * total.hidden
+            nstates = 30
+            nstates.to.eval <- 3 * total.hidden
             nstates.not.eval <- 30 - nstates
         }
     }else{
@@ -744,7 +747,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         for (i in seq(from = 1, length.out = nb.node)) {
             focal <- nodes[i]
             marginal.probs.tmp <- c()
-            for (j in 1:nstates){
+            for (j in 1:nstates.to.eval){
                 marginal.probs.tmp <- c(marginal.probs.tmp, DownPassGeoHissefast(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
             }
             marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
@@ -761,7 +764,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[i,7:36] == 0)
                 cache$states.keep <- as.data.frame(dat.tab[i,7:36])
-                for (j in nstates){
+                for (j in nstates.to.eval){
                     cache$to.change <- cache$states.keep
                     tmp.state <- 1 * c(cache$to.change[1,j])
                     cache$to.change[1,] <- 0
@@ -774,6 +777,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 for (k in 1:dim(cache$to.change)[2]){
                     dat.tab[i, paste("compD", k, sep="_") := cache$states.keep[,k]]
                 }
+                marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
                 best.probs = max(marginal.probs.tmp[nstates])
                 marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
                 marginal.probs[i,nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
