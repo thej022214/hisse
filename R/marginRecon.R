@@ -751,11 +751,9 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 marginal.probs.tmp <- c(marginal.probs.tmp, DownPassGeoHissefast(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
             }
             marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
-            print(marginal.probs.tmp)
             best.probs = max(marginal.probs.tmp)
             marginal.probs.rescaled = marginal.probs.tmp - best.probs
             marginal.probs[focal,] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
-            print(marginal.probs[focal,])
             if (verbose && i%%100==0) {
                 cat(paste(i, "of", nb.node, "nodes done"), "\n")
             }
