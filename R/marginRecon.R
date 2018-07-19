@@ -821,9 +821,10 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         NodeEval <- function(node){
             focal <- node
             marginal.probs.tmp <- c()
-            for (j in 1:nstates){
+            for (j in 1:nstates.to.eval){
                 marginal.probs.tmp <- c(marginal.probs.tmp, DownPassGeoHissefast(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
             }
+            marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
             best.probs = max(marginal.probs.tmp)
             marginal.probs.rescaled = marginal.probs.tmp - best.probs
             marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
@@ -838,7 +839,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[tip,7:36] == 0)
                 cache$states.keep <- as.data.frame(dat.tab[tip,7:36])
-                for (j in nstates){
+                for (j in nstates.to.eval){
                     cache$to.change <- cache$states.keep
                     tmp.state <- 1 * c(cache$to.change[1,j])
                     cache$to.change[1,] <- 0
@@ -851,6 +852,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 for (k in 1:dim(cache$to.change)[2]){
                     dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
                 }
+                marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
                 best.probs = max(marginal.probs.tmp[nstates])
                 marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
                 marginal.probs <- numeric(30)
@@ -995,7 +997,7 @@ ParameterTransformMuHiSSE <- function(x){
 ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
     ## Also need to add the extirpation bit as well to the rate matrix. -- especially if we separate it. It is an event that "represents" extinction of a range. So should it count?
     if(assume.cladogenetic == TRUE){
-        if(dim(x)[2] == 15){
+        if(dim(x)[2] == 30){
             rates.mat <- matrix(0, 3, 30)
             rownames(rates.mat) <- c("speciation", "extinction", "net.div")
             colnames(rates.mat) <- c("00A", "11A", "01A", "00B", "11B", "01B", "00C", "11C", "01C", "00D", "11D", "01D", "00E", "11E", "01E", "00F", "11F", "01F", "00G", "11G", "01G", "00H", "11H", "01H", "00I", "11I", "01I", "00J", "11J", "01J")
@@ -1021,7 +1023,7 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
             rates.mat[3,3] <- sum(x[1,c(1,2,3)])
         }
     }else{
-        if(dim(x)[2] == 15){
+        if(dim(x)[2] == 30){
             rates.mat <- matrix(0, 3, 30)
             rownames(rates.mat) <- c("speciation", "extinction", "net.div")
             colnames(rates.mat) <- c("00A", "11A", "01A", "00B", "11B", "01B", "00C", "11C", "01C", "00D", "11D", "01D", "00E", "11E", "01E", "00F", "11F", "01F", "00G", "11G", "01G", "00H", "11H", "01H", "00I", "11I", "01I", "00J", "11J", "01J")
