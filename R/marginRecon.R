@@ -735,7 +735,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         }else{
             nstates = 30
             nstates.to.eval <- 3 * total.hidden
-            nstates.not.eval <- 30 - nstates
+            nstates.not.eval <- 30 - nstates.to.eval
         }
     }else{
         nstates = 3
