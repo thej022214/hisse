@@ -763,6 +763,9 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[i,7:36] == 0)
+                if(!is.null(tot.hidden)){
+                    nstates = nstates[1:tot.hidden]
+                }
                 cache$states.keep <- as.data.frame(dat.tab[i,7:36])
                 for (j in nstates){
                     cache$to.change <- cache$states.keep
@@ -837,6 +840,9 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[tip,7:36] == 0)
+                if(!is.null(tot.hidden)){
+                    nstates = nstates[1:tot.hidden]
+                }
                 cache$states.keep <- as.data.frame(dat.tab[tip,7:36])
                 for (j in nstates.to.eval){
                     cache$to.change <- cache$states.keep
@@ -851,7 +857,6 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 for (k in 1:dim(cache$to.change)[2]){
                     dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
                 }
-                marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
                 best.probs = max(marginal.probs.tmp[nstates])
                 marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
                 marginal.probs <- numeric(30)
