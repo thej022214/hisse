@@ -698,14 +698,14 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
+MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
-        if(hidden.states ==TRUE & length(root.p)==3){
+        if(hidden.areas ==TRUE & length(root.p)==3){
             root.p <- rep(root.p, 3)
             root.p <- root.p / sum(root.p)
             warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
@@ -718,16 +718,16 @@ MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.
     data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
     gen <- FindGenerations(phy)
-    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
+    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.areas)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
-    if(hidden.states == TRUE){
+    if(hidden.areas == TRUE){
         nstates = 30
     }else{
         nstates = 3
@@ -749,7 +749,7 @@ MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.
                 cat(paste(i, "of", nb.node, "nodes done"), "\n")
             }
         }
-        if(hidden.states==TRUE){
+        if(hidden.areas==TRUE){
             for (i in seq(from = 1, length.out = nb.tip)) {
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
@@ -777,7 +777,7 @@ MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.
             }
         }
         obj <- NULL
-        if(!hidden.states == TRUE){
+        if(!hidden.areas == TRUE){
             setkey(dat.tab, DesNode)
             tmp.stuff <- as.data.frame(dat.tab[1:nb.tip,])
             for(j in 1:3){
@@ -787,13 +787,13 @@ MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.
         marginal.probs <- cbind(1:(nb.node+nb.tip), marginal.probs)
         obj$node.mat = marginal.probs[-(1:nb.tip),]
         obj$tip.mat = marginal.probs[1:nb.tip,]
-        if(hidden.states == TRUE){
+        if(hidden.areas == TRUE){
             rates.mat <- matrix(0, 2, 30)
             rates.mat[1,] <- model.vec[c(1:3, 39:41, 77:79, 115:117, 153:155, 191:193, 229:231, 267:269, 305:307, 343:345)]
             rates.mat[2,] <- model.vec[c(4:5, 42:43, 80:81, 118:119, 156:157, 194:195, 232:233, 270:271, 308:309, 346:347)]
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)", "(00I)","(11I)","(01I)", "(00J)","(11J)","(01J)")
-            rates.mat <- ParameterTransformfGeoHiSSE(rates.mat)
+            rates.mat <- ParameterTransformfGeoSSE(rates.mat)
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)", "(00I)","(11I)","(01I)", "(00J)","(11J)","(01J)")
         }else{
             rates.mat <- matrix(0, 2, 3)
@@ -801,7 +801,7 @@ MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.
             rates.mat[2,] <- model.vec[c(4:5)]
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(11A)","(01A)")
-            rates.mat <- ParameterTransformfGeoHiSSE(rates.mat)
+            rates.mat <- ParameterTransformfGeoSSE(rates.mat)
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(11A)","(01A)")
         }
         obj$rates.mat = rates.mat
@@ -821,9 +821,9 @@ MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         
-        if(hidden.states==TRUE){
+        if(hidden.areas==TRUE){
             TipEval <- function(tip){
-                dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
+                dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.areas)
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[tip,7:36] == 0)
@@ -851,7 +851,7 @@ MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.
         }
         obj <- NULL
         
-        if(hidden.states == TRUE){
+        if(hidden.areas == TRUE){
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 30+1, byrow = TRUE)
             obj$tip.mat = matrix(unlist(tip.marginals), ncol = 30+1, byrow = TRUE)
             rates.mat <- matrix(0, 2, 30)
@@ -860,7 +860,7 @@ MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)", "(00I)","(11I)","(01I)", "(00J)","(11J)","(01J)")
             colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)", "(00I)","(11I)","(01I)", "(00J)","(11J)","(01J)")
-            rates.mat <- ParameterTransformfGeoHiSSE(rates.mat)
+            rates.mat <- ParameterTransformfGeoSSE(rates.mat)
         }else{
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 3+1, byrow = TRUE)
             obj$tip.mat = cbind(1:Ntip(phy), cache$states)
@@ -870,7 +870,7 @@ MarginReconfGeoHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, assume.
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(11A)","(01A)")
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(11A)","(01A)")
-            rates.mat <- ParameterTransformfGeoHiSSE(rates.mat)
+            rates.mat <- ParameterTransformfGeoSSE(rates.mat)
         }
         obj$rates.mat = rates.mat
         phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
