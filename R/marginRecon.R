@@ -1007,7 +1007,7 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
             for(widespread.index in c(3,6,9,12,15,18,21,24,27,30)){
                 rates.mat[1,widespread.index] <- x[1,widespread.index] - rates.mat[1,widespread.index-1] - rates.mat[1, widespread.index-2]
                 rates.mat[2,widespread.index] <- 0
-                rates.mat[3,widespread.index] <- sum(x[2,c(widespread.index-2,widespread.index-1,widespread.index)])
+                rates.mat[3,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-1,widespread.index)])
             }
             rates.mat[3,is.na(rates.mat[3,])] = 0
         }else{
