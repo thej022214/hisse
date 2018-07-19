@@ -763,7 +763,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[i,7:36] == 0)
-                if(!is.null(tot.hidden)){
+                if(!is.null(total.hidden)){
                     nstates = nstates[1:tot.hidden]
                 }
                 cache$states.keep <- as.data.frame(dat.tab[i,7:36])
@@ -841,7 +841,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[tip,7:36] == 0)
                 if(!is.null(tot.hidden)){
-                    nstates = nstates[1:tot.hidden]
+                    nstates = nstates[1:total.hidden]
                 }
                 cache$states.keep <- as.data.frame(dat.tab[tip,7:36])
                 for (j in nstates.to.eval){
