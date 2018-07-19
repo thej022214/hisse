@@ -717,15 +717,15 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
     # Some new prerequisites #
     data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
-    gen <- FindGenerations(phy)
-    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.areas)
+    gen <- hisse:::FindGenerations(phy)
+    dat.tab <- hisse:::OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.areas)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- hisse:::ParametersToPassGeoHiSSEfast(model.vec, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
     if(hidden.areas == TRUE){
         nstates = 30
