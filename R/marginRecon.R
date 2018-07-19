@@ -728,7 +728,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
     cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
     if(hidden.areas == TRUE){
-        if(is.null()){
+        if(is.null(total.hidden)){
             nstates = 30
         }else{
             nstates = 3 * total.hidden
