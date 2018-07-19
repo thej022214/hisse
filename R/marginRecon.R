@@ -751,9 +751,11 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 marginal.probs.tmp <- c(marginal.probs.tmp, DownPassGeoHissefast(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
             }
             marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
+            print(marginal.probs.tmp)
             best.probs = max(marginal.probs.tmp)
             marginal.probs.rescaled = marginal.probs.tmp - best.probs
             marginal.probs[focal,] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+            print(marginal.probs[focal,])
             if (verbose && i%%100==0) {
                 cat(paste(i, "of", nb.node, "nodes done"), "\n")
             }
@@ -764,7 +766,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[i,7:36] == 0)
                 cache$states.keep <- as.data.frame(dat.tab[i,7:36])
-                for (j in nstates.to.eval){
+                for (j in nstates){
                     cache$to.change <- cache$states.keep
                     tmp.state <- 1 * c(cache$to.change[1,j])
                     cache$to.change[1,] <- 0
@@ -777,7 +779,6 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 for (k in 1:dim(cache$to.change)[2]){
                     dat.tab[i, paste("compD", k, sep="_") := cache$states.keep[,k]]
                 }
-                marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
                 best.probs = max(marginal.probs.tmp[nstates])
                 marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
                 marginal.probs[i,nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
