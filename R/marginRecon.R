@@ -698,7 +698,7 @@ MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.o
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
+MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL, total.hidden=NULL){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -728,7 +728,12 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
     cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
     if(hidden.areas == TRUE){
-        nstates = 30
+        if(is.null()){
+            nstates = 30
+        }else{
+            nstates = 3 * total.hidden
+            nstates.not.eval <- 30 - nstates
+        }
     }else{
         nstates = 3
     }
@@ -742,6 +747,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             for (j in 1:nstates){
                 marginal.probs.tmp <- c(marginal.probs.tmp, DownPassGeoHissefast(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
             }
+            marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
             best.probs = max(marginal.probs.tmp)
             marginal.probs.rescaled = marginal.probs.tmp - best.probs
             marginal.probs[focal,] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
