@@ -806,17 +806,17 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             rates.mat[1,] <- model.vec[c(1:3, 39:41, 77:79, 115:117, 153:155, 191:193, 229:231, 267:269, 305:307, 343:345)]
             rates.mat[2,] <- c(model.vec[c(4:5)],0, model.vec[c(42:43)],0,  model.vec[c(80:81)],0, model.vec[c(118:119)],0, model.vec[c(156:157)],0, model.vec[c(194:195)],0, model.vec[c(232:233)],0, model.vec[c(270:271)],0, model.vec[c(308:309)],0, model.vec[c(346:347)],0)
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
-            colnames(rates.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)", "(00I)","(11I)","(01I)", "(00J)","(11J)","(01J)")
+            colnames(rates.mat) <- c("00A", "11A", "01A", "00B", "11B", "01B", "00C", "11C", "01C", "00D", "11D", "01D", "00E", "11E", "01E", "00F", "11F", "01F", "00G", "11G", "01G", "00H", "11H", "01H", "00I", "11I", "01I", "00J", "11J", "01J")
             rates.mat <- ParameterTransformfGeoSSE(rates.mat)
-            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)", "(00I)","(11I)","(01I)", "(00J)","(11J)","(01J)")
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "00A", "11A", "01A", "00B", "11B", "01B", "00C", "11C", "01C", "00D", "11D", "01D", "00E", "11E", "01E", "00F", "11F", "01F", "00G", "11G", "01G", "00H", "11H", "01H", "00I", "11I", "01I", "00J", "11J", "01J")
         }else{
             rates.mat <- matrix(0, 2, 3)
             rates.mat[1,] <- model.vec[c(1:3)]
             rates.mat[2,] <- c(model.vec[c(4, 5)], 0)
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
-            colnames(rates.mat) <- c("(00A)","(11A)","(01A)")
+            colnames(rates.mat) <- c("00A","11A","01A")
             rates.mat <- ParameterTransformfGeoSSE(rates.mat)
-            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(11A)","(01A)")
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "00A","11A","01A")
         }
         obj$rates.mat = rates.mat
         phy$node.label = apply(marginal.probs[,-1], 1, which.max)[-(1:nb.tip)]
@@ -876,8 +876,9 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             rates.mat[1,] <- model.vec[c(1:3, 39:41, 77:79, 115:117, 153:155, 191:193, 229:231, 267:269, 305:307, 343:345)]
             rates.mat[2,] <- c(model.vec[c(4:5)],0, model.vec[c(42:43)],0,  model.vec[c(80:81)],0, model.vec[c(118:119)],0, model.vec[c(156:157)],0, model.vec[c(194:195)],0, model.vec[c(232:233)],0, model.vec[c(270:271)],0, model.vec[c(308:309)],0, model.vec[c(346:347)],0)
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
-            colnames(rates.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)", "(00I)","(11I)","(01I)", "(00J)","(11J)","(01J)")
-            colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)", "(00I)","(11I)","(01I)", "(00J)","(11J)","(01J)")
+            colnames(rates.mat) <- c("00A", "11A", "01A", "00B", "11B", "01B", "00C", "11C", "01C", "00D", "11D", "01D", "00E", "11E", "01E", "00F", "11F", "01F", "00G", "11G", "01G", "00H", "11H", "01H", "00I", "11I", "01I", "00J", "11J", "01J")
+
+            colnames(obj$node.mat) <- colnames(obj$tip.mat) <- c("id", "00A", "11A", "01A", "00B", "11B", "01B", "00C", "11C", "01C", "00D", "11D", "01D", "00E", "11E", "01E", "00F", "11F", "01F", "00G", "11G", "01G", "00H", "11H", "01H", "00I", "11I", "01I", "00J", "11J", "01J")
             rates.mat <- ParameterTransformfGeoSSE(rates.mat)
         }else{
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 3+1, byrow = TRUE)
@@ -888,8 +889,8 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             rates.mat[2,] <- c(model.vec[c(4,5)], 0)
             print("or here?")
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
-            colnames(rates.mat) <- c("(00A)","(11A)","(01A)")
-            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(11A)","(01A)")
+            colnames(rates.mat) <- c("00A","11A","01A")
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "00A","11A","01A")
             rates.mat <- ParameterTransformfGeoSSE(rates.mat)
         }
         obj$rates.mat = rates.mat
