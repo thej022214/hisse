@@ -846,6 +846,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                 if(!is.null(total.hidden)){
                     nstates = nstates[1:total.hidden]
                 }
+                print(paste("nstates", nstates))
                 cache$states.keep <- as.data.frame(dat.tab[tip,7:36])
                 for (j in nstates.to.eval){
                     cache$to.change <- cache$states.keep
