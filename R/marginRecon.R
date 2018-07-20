@@ -857,6 +857,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                         dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
                     }
                     cache$to.change[1,j] <- tmp.state
+                    print(tmp.state)
                     marginal.probs.tmp[j] <- DownPassGeoHissefast(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
                 }
                 for (k in 1:dim(cache$to.change)[2]){
