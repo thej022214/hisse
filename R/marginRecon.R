@@ -839,14 +839,13 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         print("here?")
         if(hidden.areas==TRUE){
             TipEval <- function(tip){
-                dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.areas)
+                dat.tab <- OrganizeDataGeo(data=data.new, phy=phy, f=f, hidden.states=hidden.areas)
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[tip,7:36] == 0)
-                #if(!is.null(total.hidden)){
-                #    nstates = nstates[1:total.hidden]
-                #}
-                print(paste("nstates", nstates))
+                if(!is.null(total.hidden)){
+                    nstates = nstates[1:total.hidden]
+                }
                 cache$states.keep <- as.data.frame(dat.tab[tip,7:36])
                 for (j in nstates.to.eval){
                     cache$to.change <- cache$states.keep
@@ -857,7 +856,6 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
                         dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
                     }
                     cache$to.change[1,j] <- tmp.state
-                    print(dat.tab)
                     marginal.probs.tmp[j] <- DownPassGeoHissefast(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
                 }
                 for (k in 1:dim(cache$to.change)[2]){
