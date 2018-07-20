@@ -884,7 +884,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             obj$tip.mat = cbind(1:Ntip(phy), cache$states)
             rates.mat <- matrix(0, 2, 3)
             rates.mat[1,] <- model.vec[c(1:3)]
-            rates.mat[2,] <- c(model.vec[c(4, 5)], 0)
+            rates.mat[2,] <- c(model.vec[c(4,5)], 0)
             print("or here?")
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(11A)","(01A)")
@@ -1019,7 +1019,7 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
         }else{
             rates.mat <- matrix(0, 3, 3)
             rownames(rates.mat) <- c("speciation", "extinction", "net.div")
-            colnames(rates.mat) <- c("00", "11", "01")
+            colnames(rates.mat) <- c("00A", "11A", "01A")
             rates.mat[1,] <- x[1,] / (1 + x[2,])
             rates.mat[2,] <- (x[1,] * x[2,]) / (1 + x[2,])
             rates.mat[3,] <- x[1,] - x[2,]
@@ -1040,7 +1040,7 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
         }else{
             rates.mat <- matrix(0, 3, 3)
             rownames(rates.mat) <- c("speciation", "extinction", "net.div")
-            colnames(rates.mat) <- c("00", "11", "01")
+            colnames(rates.mat) <- c("00A", "11A", "01A")
             rates.mat[1,] <- x[1,] / (1 + x[2,])
             rates.mat[2,] <- (x[1,] * x[2,]) / (1 + x[2,])
             rates.mat[3,] <- x[1,] - x[2,]
