@@ -763,6 +763,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         }
         if(hidden.areas==TRUE){
             for (i in seq(from = 1, length.out = nb.tip)) {
+                dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.areas)
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[i,7:36] == 0)
@@ -835,8 +836,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
             return(c(node, marginal.probs))
         }
-        node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-        print("here?")
+        #node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         if(hidden.areas==TRUE){
             TipEval <- function(tip){
                 dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.areas)
@@ -889,7 +889,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             rates.mat <- matrix(0, 2, 3)
             rates.mat[1,] <- model.vec[c(1:3)]
             rates.mat[2,] <- c(model.vec[c(4,5)], 0)
-            print("or here?")
+
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(11A)","(01A)")
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(11A)","(01A)")
