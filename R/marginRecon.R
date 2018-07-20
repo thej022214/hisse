@@ -739,6 +739,8 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         }
     }else{
         nstates = 3
+        nstates.to.eval <- 3
+        nstates.not.eval <- 0
     }
     nodes <- unique(phy$edge[,1])
     
