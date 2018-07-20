@@ -835,7 +835,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
             return(c(node, marginal.probs))
         }
-        #node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
+        node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         print("here?")
         if(hidden.areas==TRUE){
             TipEval <- function(tip){
