@@ -881,7 +881,8 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             rates.mat <- ParameterTransformfGeoSSE(rates.mat)
         }else{
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 3+1, byrow = TRUE)
-            obj$tip.mat = cbind(1:Ntip(phy), dat.tab[tip,7:9])
+            setkey(dat.tab, DesNode)
+            obj$tip.mat = cbind(1:Ntip(phy), dat.tab[1:Ntip(phy),7:9])
             rates.mat <- matrix(0, 2, 3)
             rates.mat[1,] <- model.vec[c(1:3)]
             rates.mat[2,] <- c(model.vec[c(4,5)], 0)
