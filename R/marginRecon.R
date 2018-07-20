@@ -764,7 +764,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         if(hidden.areas==TRUE){
             for (i in seq(from = 1, length.out = nb.tip)) {
                 setkey(dat.tab, DesNode)
-                marginal.probs.tmp <- numeric(4)
+                marginal.probs.tmp <- numeric(30)
                 nstates = which(!dat.tab[i,7:36] == 0)
                 if(!is.null(total.hidden)){
                     nstates = nstates[1:total.hidden]
@@ -841,7 +841,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             TipEval <- function(tip){
                 dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.areas)
                 setkey(dat.tab, DesNode)
-                marginal.probs.tmp <- numeric(4)
+                marginal.probs.tmp <- numeric(30)
                 nstates = which(!dat.tab[tip,7:36] == 0)
                 if(!is.null(total.hidden)){
                     nstates = nstates[1:total.hidden]
