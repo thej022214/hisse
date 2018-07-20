@@ -841,10 +841,11 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             TipEval <- function(tip){
                 dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.areas)
                 setkey(dat.tab, DesNode)
-                marginal.probs.tmp <- numeric(30)
+                marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[tip,7:36] == 0)
                 if(!is.null(total.hidden)){
                     nstates = nstates[1:total.hidden]
+                    marginal.probs.tmp <- numeric(length(1:total.hidden))
                 }
                 cache$states.keep <- as.data.frame(dat.tab[tip,7:36])
                 for (j in nstates.to.eval){
