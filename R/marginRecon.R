@@ -1019,7 +1019,7 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
         }else{
             rates.mat <- matrix(0, 3, 3)
             rownames(rates.mat) <- c("speciation", "extinction", "net.div")
-            colnames(rates.mat) <- c("00A", "11A", "01A")
+            colnames(rates.mat) <- c("(00A)", "(11A)", "(01A)")
             rates.mat[1,] <- x[1,] / (1 + x[2,])
             rates.mat[2,] <- (x[1,] * x[2,]) / (1 + x[2,])
             rates.mat[3,] <- x[1,] - x[2,]
@@ -1040,7 +1040,7 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
         }else{
             rates.mat <- matrix(0, 3, 3)
             rownames(rates.mat) <- c("speciation", "extinction", "net.div")
-            colnames(rates.mat) <- c("00A", "11A", "01A")
+            colnames(rates.mat) <- c("(00A)", "(11A)", "(01A)")
             rates.mat[1,] <- x[1,] / (1 + x[2,])
             rates.mat[2,] <- (x[1,] * x[2,]) / (1 + x[2,])
             rates.mat[3,] <- x[1,] - x[2,]
