@@ -885,7 +885,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             rates.mat <- matrix(0, 2, 3)
             rates.mat[1,] <- model.vec[c(1:3)]
             rates.mat[2,] <- c(model.vec[c(4, 5)], 0)
-
+            print("or here?")
             rownames(rates.mat) <- c("turnover", "extinction.fraction")
             colnames(rates.mat) <- c("(00A)","(11A)","(01A)")
             colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", "(00A)","(11A)","(01A)")
