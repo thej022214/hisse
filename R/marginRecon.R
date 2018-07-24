@@ -905,7 +905,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         obj$aic = aic
     }
     
-    class(obj) = "geohisse.states"
+    class(obj) = "hisse.geosse.states"
     return(obj)
 }
 
@@ -1014,7 +1014,7 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
             colnames(rates.mat) <- c("00A", "11A", "01A", "00B", "11B", "01B", "00C", "11C", "01C", "00D", "11D", "01D", "00E", "11E", "01E", "00F", "11F", "01F", "00G", "11G", "01G", "00H", "11H", "01H", "00I", "11I", "01I", "00J", "11J", "01J")
             rates.mat[1,] <- x[1,] / (1 + x[2,])
             rates.mat[2,] <- (x[1,] * x[2,]) / (1 + x[2,])
-            rates.mat[3,] <- x[1,] - x[2,]
+            rates.mat[3,] <- rates.mat[1,] - rates.mat[2,]
             for(widespread.index in c(3,6,9,12,15,18,21,24,27,30)){
                 rates.mat[1,widespread.index] <- x[1,widespread.index] - rates.mat[1,widespread.index-1] - rates.mat[1, widespread.index-2]
                 rates.mat[2,widespread.index] <- 0
@@ -1027,7 +1027,8 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
             colnames(rates.mat) <- c("(00A)", "(11A)", "(01A)")
             rates.mat[1,] <- x[1,] / (1 + x[2,])
             rates.mat[2,] <- (x[1,] * x[2,]) / (1 + x[2,])
-            rates.mat[3,] <- x[1,] - x[2,]
+            rates.mat[3,] <- rates.mat[1,] - rates.mat[2,]
+
             rates.mat[3,is.na(rates.mat[3,])] = 0
             rates.mat[1,3] <- x[1,3] - rates.mat[1,2] - rates.mat[1, 1]
             rates.mat[2,3] <- 0
