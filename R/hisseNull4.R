@@ -157,7 +157,7 @@ DevOptimizeNull <- function(p, pars, phy, data, f, condition.on.survival, root.t
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.eps=1e-8) {
+DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.eps=0) {
 	#Some preliminaries:
 	nb.tip <- length(phy$tip.label)
 	nb.node <- phy$Nnode
