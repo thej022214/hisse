@@ -269,7 +269,7 @@ starting.point.generator <- function(phy, k, samp.freq.tree, q.div=5, yule=FALSE
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.eps=1e-8) {
+DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.eps=0) {
 	#Some preliminaries:
 	nb.tip <- length(phy$tip.label)
 	nb.node <- phy$Nnode
