@@ -102,12 +102,18 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
             interval.results.final[,17] <- mu.1D
         }
         interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
-        ci.interval = apply(interval.results.in, 2, quantile)
-        colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
-        obj = NULL
-        obj$ci <- ci.interval
-        obj$points.within.region = interval.results.in
-        obj$all.points = interval.results.final
+        if(class(interval.results.in)=="numeric"){
+            stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
+        }else{
+            ci.interval = apply(interval.results.in, 2, quantile)
+            colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
+            obj = NULL
+            obj$ci <- ci.interval
+            obj$points.within.region = interval.results.in
+            obj$all.points = interval.results.final
+            class(obj) = "hisse.support"
+            return(obj)
+        }
     }else{
         phy <- hisse.obj$phy
         data <- hisse.obj$data
@@ -177,16 +183,19 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
             interval.results.final[,9] <- mu.1B
         }
         interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
-        ci.interval = apply(interval.results.in, 2, quantile)
-        colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
-
-        obj = NULL
-        obj$ci <- ci.interval[,1:21]
-        obj$points.within.region = interval.results.in[,1:21]
-        obj$all.points = interval.results.final[,1:21]
+        if(class(interval.results.in)=="numeric"){
+            stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
+        }else{
+            ci.interval = apply(interval.results.in, 2, quantile)
+            colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
+            obj = NULL
+            obj$ci <- ci.interval[,1:21]
+            obj$points.within.region = interval.results.in[,1:21]
+            obj$all.points = interval.results.final[,1:21]
+            class(obj) = "hisse.support"
+            return(obj)
+        }
     }
-    class(obj) = "hisse.support"
-    return(obj)
 }
 
 
