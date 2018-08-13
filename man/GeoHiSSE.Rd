@@ -49,7 +49,9 @@ model. See 'Details'.}
   the procedure described by FitzJohn et al. 2009, \dQuote{madfitz},
   assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The
-  default is \code{NULL}.}
+  default is \code{NULL}. Order of the areas is the same as in 'data'.
+  Such that: root.p[1] = 0 (widespread area '01'); root.p[2] = 1 (endemic
+  area '0'); root.p[3] = 2 (endemic area '1').}
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using
