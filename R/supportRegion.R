@@ -313,8 +313,12 @@ GenerateValues <- function(par, lower, upper, scale.int, max.tries=100, expand.p
             new.vals[i] <- runif(1, min.val, max.val)
             if(rbinom(1,1,.1)==1) { #ten percent of the time, try something else
               new.vals[i] <- max.val+100
-              while(new.vals[i]>=max.val) {
+              ntries <- 0
+              while(new.vals[i]>max.val & ntries < 10) {
                 new.vals[i] <- min.val + rexp(1, 1/((max.val-min.val)/2))
+              }
+              if(new.vals[i] > max.val) {
+                new.vals[i] <- runif(1, min.val, max.val) #we give up
               }
             }
             if(new.vals[i]<lower[i]) {
