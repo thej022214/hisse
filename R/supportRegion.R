@@ -316,6 +316,7 @@ GenerateValues <- function(par, lower, upper, scale.int, max.tries=100, expand.p
               ntries <- 0
               while(new.vals[i]>max.val & ntries < 10) {
                 new.vals[i] <- min.val + rexp(1, 1/((max.val-min.val)/2))
+                ntries <- ntries + 1
               }
               if(new.vals[i] > max.val) {
                 new.vals[i] <- runif(1, min.val, max.val) #we give up
