@@ -68,6 +68,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                         out.mat <- t(matrix(out, 2, 2))
                         colnames(out.mat) <- c("0", "1")
                         rownames(out.mat) <- c("A", "B")
+                        print(out.mat)
                         return(out.mat / sum(out.mat))
                     }else{
                         out.mat <- t(matrix(out, 2, 2))
@@ -222,7 +223,7 @@ EqFreqHiSSE <- function(t, y, parms, cache){
     dN0BdT = cache$lambdaA * y[3] - cache$deathA * y[3] - cache$qA0 * y[3] - cache$qA1 * y[3] - cache$qAB * y[3] + cache$q0A * y[1] + cache$q1A * y[2] + cache$qBA * y[4]
     dN1BdT = cache$lambdaB * y[4] - cache$deathB * y[4] - cache$qB0 * y[4] - cache$qB1 * y[4] - cache$qBA * y[4] + cache$q0B * y[1] + cache$q1B * y[2] + cache$qAB * y[3]
     
-    return(list(c(dN0AdT,dN1AdT,dN0AdT,dN1BdT)))
+    return(list(c(dN0AdT,dN1AdT,dN0BdT,dN1BdT)))
 }
 
 
