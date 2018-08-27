@@ -68,7 +68,6 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                         out.mat <- t(matrix(out, 2, 2))
                         colnames(out.mat) <- c("0", "1")
                         rownames(out.mat) <- c("A", "B")
-                        print(out.mat)
                         return(out.mat / sum(out.mat))
                     }else{
                         out.mat <- t(matrix(out, 2, 2))
@@ -198,9 +197,16 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                 colnames(out.mat) <- c("0", "1", "01")
                 res <- rbind(res, out.mat)
             }else{
-                out.mat <- t(matrix(out, 3, 5))
-                colnames(out.mat) <- c("0", "1", "01")
-                res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                if(get.all.states == TRUE){
+                    out.mat <- t(matrix(out, 3, 5))
+                    colnames(out.mat) <- c("0", "1", "01")
+                    rownames(out.mat) <- c("A", "B", "C", "D", "E")
+                    return(out.mat / sum(out.mat))
+                }else{
+                    out.mat <- t(matrix(out, 3, 5))
+                    colnames(out.mat) <- c("0", "1", "01")
+                    res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                }
             }
         }
         AIC.vector <- sapply(geohisse.results, "[[", "AIC")
