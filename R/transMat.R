@@ -48,6 +48,7 @@ ParDrop <- function(rate.mat.index=NULL, drop.par=NULL){
 		drop.locs <- which(rate.mat.index == drop.par[drop.which],arr.ind=TRUE)
 		rate.mat.index[drop.locs] <- NA
 	}
+    rate.mat.index[rate.mat.index==0] = NA
 	max <- max - length(drop.par)
 	exclude <- which(is.na(rate.mat.index))
 	rate.mat.index[-exclude] <- 1:max
