@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE, rate.type="turnover"){
+GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE, rate.type="turnover", get.all.states=FALSE){
     
     if(model.type == "hisse"){
         res <- c()
@@ -64,9 +64,16 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                     colnames(out.mat) <- c("0", "1")
                     res <- rbind(res, out.mat)
                 }else{
-                    out.mat <- t(matrix(out, 2, 2))
-                    colnames(out.mat) <- c("0", "1")
-                    res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                    if(get.all.states == TRUE){
+                        out.mat <- t(matrix(out, 2, 2))
+                        colnames(out.mat) <- c("0", "1")
+                        rownames(out.mat) <- c("A", "B")
+                        return(out.mat / sum(out.mat))
+                    }else{
+                        out.mat <- t(matrix(out, 2, 2))
+                        colnames(out.mat) <- c("0", "1")
+                        res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                    }
                 }
             }else{
                 data.new <- data.frame(hisse.results[[model.index]]$data[,2], hisse.results[[model.index]]$data[,2], row.names=hisse.results[[model.index]]$data[,1])
@@ -116,11 +123,12 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                     res <- rbind(res, out.mat)
                 }else{
                     if(get.all.states == TRUE){
-                        out.mat <- t(matrix(out, 2, 2))
+                        out.mat <- t(matrix(out, 2, 4))
                         colnames(out.mat) <- c("0", "1")
-                        res <- rbind(res, colSums(out.mat)/sum(out.mat))
+                        rownames(out.mat) <- c("A", "B", "C", "D")
+                        return(out.mat / sum(out.mat))
                     }else{
-                        out.mat <- t(matrix(out, 2, 2))
+                        out.mat <- t(matrix(out, 2, 4))
                         colnames(out.mat) <- c("0", "1")
                         res <- rbind(res, colSums(out.mat)/sum(out.mat))
                     }
