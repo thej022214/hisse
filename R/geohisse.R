@@ -81,13 +81,17 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             extirpation.tmp <- extirpation
             extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
             pars.tmp <- c(pars.tmp, extirpation.tmp)
+            for.late.adjust <- max(pars.tmp)
             rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)")
             cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)")
             trans.tmp <- trans.rate[cbind(rows,cols)]
             trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
             pars.tmp <- c(pars.tmp, trans.tmp)
-            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            rows <- c(rep("(0A)", 1), rep("(1A)", 1), rep("(01A)", 1), rep("(0B)", 1), rep("(1B)", 1), rep("(01B)", 1))
+            cols <- c("(0B)", "(1B)", "(01B)", "(0A)", "(1A)", "(01A)")
+            category.tmp <- trans.rate[cbind(rows,cols)]
+            category.rate.shift <- category.tmp + for.late.adjust
+            category.rate.shift[is.na(category.rate.shift)] <- 0
             category.rate.shiftA <- c(category.rate.shift[1], rep(0,3), category.rate.shift[2], rep(0,3), category.rate.shift[3], rep(0,3))
             category.rate.shiftB <- c(category.rate.shift[4], rep(0,3), category.rate.shift[5], rep(0,3), category.rate.shift[6], rep(0,3))
             pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB)
@@ -100,13 +104,17 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             extirpation.tmp <- extirpation
             extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
             pars.tmp <- c(pars.tmp, extirpation.tmp)
+            for.late.adjust <- max(pars.tmp)
             rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)")
             cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)")
             trans.tmp <- trans.rate[cbind(rows,cols)]
             trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
             pars.tmp <- c(pars.tmp, trans.tmp)
-            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            rows <- c(rep("(0A)", 2), rep("(1A)", 2), rep("(01A)", 2), rep("(0B)", 2), rep("(1B)", 2), rep("(01B)", 2), rep("(0C)", 2), rep("(1C)", 2), rep("(01C)", 2))
+            cols <- c("(0B)", "(0C)", "(1B)", "(1C)", "(01B)", "(01C)", "(0A)", "(0C)", "(1A)", "(1C)", "(01A)", "(01C)", "(0A)", "(0B)", "(1A)", "(1B)", "(01A)", "(01B)")
+            category.tmp <- trans.rate[cbind(rows,cols)]
+            category.rate.shift <- category.tmp + for.late.adjust
+            category.rate.shift[is.na(category.rate.shift)] <- 0
             category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,2), category.rate.shift[3:4], rep(0,2), category.rate.shift[5:6], rep(0,2))
             category.rate.shiftB <- c(category.rate.shift[7:8], rep(0,2), category.rate.shift[9:10], rep(0,2), category.rate.shift[11:12], rep(0,2))
             category.rate.shiftC <- c(category.rate.shift[13:14], rep(0,2), category.rate.shift[15:16], rep(0,2), category.rate.shift[17:18], rep(0,2))
@@ -120,13 +128,17 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             extirpation.tmp <- extirpation
             extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
             pars.tmp <- c(pars.tmp, extirpation.tmp)
+            for.late.adjust <- max(pars.tmp)
             rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)")
             cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)")
             trans.tmp <- trans.rate[cbind(rows,cols)]
             trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
             pars.tmp <- c(pars.tmp, trans.tmp)
-            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            rows <- c(rep("(0A)", 3), rep("(1A)", 3), rep("(01A)", 3), rep("(0B)", 3), rep("(1B)", 3), rep("(01B)", 3), rep("(0C)", 3), rep("(1C)", 3), rep("(01C)", 3), rep("(0D)", 3), rep("(1D)", 3), rep("(01D)", 3))
+            cols <- c("(0B)", "(0C)", "(0D)", "(1B)", "(1C)", "(1D)", "(01B)", "(01C)", "(01D)", "(0A)", "(0C)", "(0D)", "(1A)", "(1C)", "(1D)", "(01A)", "(01C)", "(01D)", "(0A)", "(0B)", "(0D)", "(1A)", "(1B)", "(1D)", "(01A)", "(01B)", "(01D)", "(0A)", "(0B)", "(0C)", "(1A)", "(1B)", "(1C)", "(01A)", "(01B)", "(01C)")
+            category.tmp <- trans.rate[cbind(rows,cols)]
+            category.rate.shift <- category.tmp + for.late.adjust
+            category.rate.shift[is.na(category.rate.shift)] <- 0
             category.rate.shiftA <- c(category.rate.shift[1:3], rep(0,1), category.rate.shift[4:6], rep(0,1), category.rate.shift[7:9], rep(0,1))
             category.rate.shiftB <- c(category.rate.shift[10:12], rep(0,1), category.rate.shift[13:15], rep(0,1), category.rate.shift[16:18], rep(0,1))
             category.rate.shiftC <- c(category.rate.shift[19:21], rep(0,1), category.rate.shift[22:24], rep(0,1), category.rate.shift[25:27], rep(0,1))
@@ -143,13 +155,17 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
             extirpation.tmp <- extirpation
             extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
             pars.tmp <- c(pars.tmp, extirpation.tmp)
+            for.late.adjust <- max(pars.tmp)
             rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)", "(0E)", "(0E)",  "(1E)", "(1E)",  "(01E)", "(01E)")
             cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)",  "(1E)", "(01E)", "(0E)", "(01E)", "(0E)",  "(1E)")
             trans.tmp <- trans.rate[cbind(rows,cols)]
             trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
             pars.tmp <- c(pars.tmp, trans.tmp)
-            category.tmp <- trans.rate[which(trans.rate==max(trans.rate, na.rm=TRUE))]
-            category.rate.shift <- rep(max(pars.tmp)+1, length(category.tmp))
+            rows <- c(rep("(0A)", 4), rep("(1A)", 4), rep("(01A)", 4), rep("(0B)", 4), rep("(1B)", 4), rep("(01B)", 4), rep("(0C)", 4), rep("(1C)", 4), rep("(01C)", 4), rep("(0D)", 4), rep("(1D)", 4), rep("(01D)", 4), rep("(0E)", 4), rep("(1E)", 4), rep("(01E)", 4))
+            cols <- c("(0B)", "(0C)", "(0D)", "(0E)", "(1B)", "(1C)", "(1D)", "(1E)", "(01B)", "(01C)", "(01D)", "(01E)", "(0A)", "(0C)", "(0D)", "(0E)", "(1A)", "(1C)", "(1D)", "(1E)", "(01A)", "(01C)", "(01D)", "(01E)", "(0A)", "(0B)", "(0D)", "(0E)", "(1A)", "(1B)", "(1D)", "(1E)", "(01A)", "(01B)", "(01D)", "(01E)", "(0A)", "(0B)", "(0C)", "(0E)", "(1A)", "(1B)", "(1C)", "(1E)", "(01A)", "(01B)", "(01C)", "(01E)", "(0A)", "(0B)", "(0C)", "(0D)", "(1A)", "(1B)", "(1C)", "(1D)", "(01A)", "(01B)", "(01C)", "(01D)")
+            category.tmp <- trans.rate[cbind(rows,cols)]
+            category.rate.shift <- category.tmp + for.late.adjust
+            category.rate.shift[is.na(category.rate.shift)] <- 0
             category.rate.shiftA <- category.rate.shift[1:12]
             category.rate.shiftB <- category.rate.shift[13:24]
             category.rate.shiftC <- category.rate.shift[25:36]
