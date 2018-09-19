@@ -4,12 +4,12 @@
 \description{Sets up and executes a GeoHiSSE model (Hidden Geographic State Speciation
  and Extinction) on a very large phylogeny and character distribution.}
 \usage{
-fGeoHiSSE(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1,2), 
+fGeoHiSSE(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,2), 
 hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, 
 condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE,
 sann.its=10000, bounded.search=TRUE,  max.tol=.Machine$double.eps^.50,
-mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, 
-extirpation.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0)
+mag.san.start=0.5, starting.vals=NULL, turnover.upper=1000, 
+extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
@@ -24,22 +24,20 @@ extirpation.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0)
   of species in areas '01' and '0' and 50 percent of species in area '1' are
   included in the phylogeny. By default all species are assumed to be
   sampled.}
-\item{speciation}{a numeric vector of length equal to 3+(number of
-  \code{hidden.areas} * 3). A GeoSSE model has 3 speciation parameters:
-  s0, s1 and s01. A GeoHiSSE model with one hidden area has 6 speciation
-parameters: s0A, s1A, s01A, s0B, s1B, s01B. And so on. The length of the numeric
-vector needs to match the number of speciation parameters in the
-model. See 'Details'.}
-\item{extirpation}{a numeric vector of length equal to 2+(number of
-  \code{hidden.areas} * 2). A GeoSSE model has 2 extirpation parameters:
-  x0 and x1. A GeoHiSSE model with one hidden area has 4 extirpation
-parameters: x0A, x1A, x0B, and x1B. And so on. The length of the numeric
-vector needs to match the number of extirpation parameters in the
-model. See 'Details'.}
+\item{turnover}{a numeric vector of length equal to 3+(number of
+  \code{hidden.areas} * 3). A fGeoSSE model has 3 turnover parameters:
+  tau00, tau11 and tau01. A fGeoHiSSE model with one hidden area has 6 speciation
+parameters: tau00A, tau11A, tau01A, tau00B, tau11B, and tau01B, and so on. The length of the numeric vector needs to match the number of speciation parameters in the model.}
+\item{extinct.frac}{a numeric vector of length equal to 2+(number of
+  \code{hidden.areas} * 2). A fGeoSSE model has 2 extinct fraction parameters:
+  ef00 and ef11. A fGeoHiSSE model with one hidden area has 4 extinct.frac
+parameters: ef00A, ef11A, ef00B, and ef11B, and so on. The length of the numeric
+vector needs to match the number of extinct.frac parameters in the
+model.}
 \item{hidden.areas}{a logical indicating whether the model includes a
   hidden area. The default is \code{FALSE}.} 
 \item{trans.rate}{provides the transition rate model. See function
-  \code{TransMatMakerGeoHiSSE}.}
+  \code{TransMatMakerfGeoHiSSE}.}
 \item{assume.cladogenetic}{assumes that cladogenetic events occur at nodes. The 
 	default is \code{TRUE}.}
 \item{condition.on.survival}{a logical indicating whether the likelihood
@@ -51,7 +49,7 @@ model. See 'Details'.}
 \item{root.p}{a vector indicating fixed root state probabilities. The
   default is \code{NULL}. Order of the areas is the same as in 'data'.
   Such that: root.p[1] = 0 (widespread area '01'); root.p[2] = 1 (endemic
-  area '0'); root.p[3] = 2 (endemic area '1').}
+  area '00'); root.p[3] = 2 (endemic area '11').}
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using
@@ -68,8 +66,8 @@ model. See 'Details'.}
   implementation.}
 \item{starting.vals}{a vector of starting values for the diversification parameters
   to be used instead of the default settings.}
-\item{speciation.upper}{sets the upper bound for the speciation parameters.}
-\item{extirpation.upper}{sets the upper bound for the extirpation parameters.}
+\item{turnover.upper}{sets the upper bound for the speciation parameters.}
+\item{extinct.frac.upper}{sets the upper bound for the extirpation parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
 \item{restart.obj}{an object that contains everything to restart an optimization.}
 \item{ode.eps}{sets the tolerance for the integration at the end of a
@@ -79,33 +77,21 @@ model. See 'Details'.}
   produce stable solutions for both easy and very difficult optimization problems.}
 }
 \details{
-This function sets up and executes the GeoHiSSE model. The model closely
-follows \code{diversitree}, although here we employ modified
-optimization procedures. As for data file format, \code{GeoHiSSE}
-expects a two column matrix or data frame, with the first column
-containing the species names and the second containing the are
-information. The area information need to be in the format of three
-numbers: 0 for area '01', 1 for area '0', and 2 for '1'. Please note that 
-the code for the areas here differ from the
-\code{make.geosse} function of package \code{diversitree}.
-The order of the data file and the names in the
-\dQuote{phylo} object need not be in the same order; \code{hisse} deals
-with this internally. Also, the character information MUST be 0,
-1, or 2, otherwise, the function will return an error message.
+This function sets up and executes a more complex and potentially faster version of the GeoHiSSE model. One of the main differences here is that the model allows up to 10 hidden categories, and implements a more efficient means of carrying out the branch calculation. Specifically, we break up the tree into carry out all descendent branch calculations simultaneously, combine the probabilities based on their shared ancestry, then repeat for the next set of descendent . In testing, we've found that as the number of taxa increases, the calculation becomes much more efficient. In future versions, we will likely allow for multicore processing of these calculations to further improve speed. Also, note this function will eventually completely replace the version of \code{GeoSSE} that is currently available.
+
+The other main difference is that, like \code{HiSSE}, we employ a modified optimization procedure. In other words, rather than optimizing birth and death separately, \code{fGeoHisse} optimizes orthogonal transformations of these variables: we let tau = birth+death define "net turnover", and we let eps = death/birth define the \dQuote{extinction fraction}. This reparameterization alleviates problems associated with overfitting when birth and death are highly correlated, but both matter in explaining the diversity pattern. 
 
 To setup a model, users input vectors containing values to indicate how
 many free parameters are to be estimated for each of the variables in
-the model. This is done using the \code{speciation} and
-\code{extirpation} parameters. One needs to specify a value for each of
+the model. This is done using the \code{turnover} and
+\code{extinct.frac} parameters. One needs to specify a value for each of
 the parameters of the model, when two parameters show the same value,
 then the parameters are set to be linked during the estimation of the
-model. For example, a GeoHiSSE model with 1 hidden area and all free
-parameters has \code{speciation = 1:6}. The same model with
+model. For example, a fGeoHiSSE model with 1 hidden area and all free
+parameters has \code{turnover = 1:6}. The same model with
 speciation rates constrained to be the same for all hidden areas has
-\code{speciation = c(1,2,3,1,2,3)}. This same format applies to
-\code{extirpation}. Please note that GeoHiSSE currently works with up to
-4 hidden areas. The most complex model would be \code{speciation = 1:15}
-and \code{extirpation = 1:10}.
+\code{turnover = c(1,2,3,1,2,3)}. This same format applies to
+\code{extinct.frac}.
 
 Once the model is specified, the parameters can be estimated using the
 subplex routine (default), or use a two-step process (i.e., sann=TRUE)
@@ -114,7 +100,7 @@ later refined using the subplex routine.
 
 The \dQuote{trans.rate} input is the transition model and has an
 entirely different setup than speciation and extirpation rates.
-See \code{TransMatMakerGeoHiSSE} function for more details. 
+See \code{TransMatMakerfGeoHiSSE} function for more details. 
 
 For user-specified \dQuote{root.p}, you should specify the probability
 for each area. If you are doing a hidden model, there will be six areas:
@@ -152,17 +138,15 @@ subtending them.}
 \item{$ode.eps}{The ode.eps value used for the estimation.}
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models 
-of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
+Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, https://doi.org/10.1111/evo.13602
 
-FitzJohn R.G., Maddison W.P., and Otto S.P. 2009. Estimating trait-dependent speciation 
-and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
+Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 
-Maddison W.P., Midford P.E., and Otto S.P. 2007. Estimating a binary characters effect on 
-speciation and extinction. Syst. Biol. 56:701-710.
+FitzJohn R.G., W.P. Maddison, and S.P. Otto. 2009. Estimating trait-dependent speciation and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
 
-Nee S., May R.M., and Harvey P.H. 1994. The reconstructed evolutionary process. Philos. 
-Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.
+Maddison W.P., P.E. Midford, and S.P. Otto. 2007. Estimating a binary characters effect on speciation and extinction. Syst. Biol. 56:701-710.
+
+Nee S., R.M. May, and P.H. Harvey. 1994. The reconstructed evolutionary process. Philos. Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.
 }
 
 \author{Jeremy M. Beaulieu}

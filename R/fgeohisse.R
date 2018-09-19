@@ -18,7 +18,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1,2), hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL,speciation.upper=1000, extirpation.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0){
+fGeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,2), hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, turnover.upper=1000, extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -58,22 +58,22 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         stop("states need to be one of 0, 1, or 2. See help.")
     }
     
-    ## Check if 'hidden.areas' parameter is congruent with the speciation vector:
-    if( length(speciation) > 3 & !hidden.areas ){
-        stop("Speciation has more than 3 elements but 'hidden.areas' was set to FALSE. Please set 'hidden.areas' to TRUE if the model include more than one rate class.")
+    ## Check if 'hidden.areas' parameter is congruent with the turnover vector:
+    if( length(turnover) > 3 & !hidden.areas ){
+        stop("Turnover has more than 3 elements but 'hidden.areas' was set to FALSE. Please set 'hidden.areas' to TRUE if the model include more than one rate class.")
     }
-    if( length(speciation) == 3 & hidden.areas ){
-        stop("Speciation has only 3 elements but 'hidden.areas' was set to TRUE. Please set 'hidden.areas' to FALSE if the model does not include hidden rate classes.")
+    if( length(turnover) == 3 & hidden.areas ){
+        stop("Turnover has only 3 elements but 'hidden.areas' was set to TRUE. Please set 'hidden.areas' to FALSE if the model does not include hidden rate classes.")
     }
     
     pars <- numeric(380)
     
     if(dim(trans.rate)[2]==3){
         rate.cats <- 1
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         trans.tmp <- c(trans.rate["(00)", "(11)"], trans.rate["(00)", "(01)"], trans.rate["(11)", "(00)"], trans.rate["(11)", "(01)"],  trans.rate["(01)", "(00)"],  trans.rate["(01)", "(11)"])
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         category.rates.unique <- 0
@@ -83,10 +83,10 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
     
     if(dim(trans.rate)[2]==6){
         rate.cats <- 2
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)",  "(11A)", "(11A)",  "(01A)", "(01A)", "(00B)", "(00B)",  "(11B)", "(11B)",  "(01B)", "(01B)")
         cols <- c("(11A)", "(01A)", "(00A)", "(01A)", "(00A)",  "(11A)",  "(11B)", "(01B)", "(00B)", "(01B)", "(00B)",  "(11B)")
@@ -102,16 +102,16 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         category.rate.shiftB <- c(category.rate.shift[4], rep(0,8), category.rate.shift[5], rep(0,8), category.rate.shift[6], rep(0,8))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB)
+        pars.tmp <- c(turnover[1:3], extinct.frac.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, turnover[4:6], extinct.frac.tmp[3:4], trans.tmp[7:12], category.rate.shiftB)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==9){
         rate.cats <- 3
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)",  "(11A)", "(11A)",  "(01A)", "(01A)", "(00B)", "(00B)",  "(11B)", "(11B)",  "(01B)", "(01B)", "(00C)", "(00C)",  "(11C)", "(11C)",  "(01C)", "(01C)")
         cols <- c("(11A)", "(01A)", "(00A)", "(01A)", "(00A)",  "(11A)",  "(11B)", "(01B)", "(00B)", "(01B)", "(00B)",  "(11B)",  "(11C)", "(01C)", "(00C)", "(01C)", "(00C)",  "(11C)")
@@ -128,16 +128,16 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         category.rate.shiftC <- c(category.rate.shift[13:14], rep(0,7), category.rate.shift[15:16], rep(0,7), category.rate.shift[17:18], rep(0,7))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC)
+        pars.tmp <- c(turnover[1:3], extinct.frac.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, turnover[4:6], extinct.frac.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, turnover[7:9], extinct.frac.tmp[5:6], trans.tmp[13:18], category.rate.shiftC)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==12){
         rate.cats <- 4
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)",  "(11A)", "(11A)",  "(01A)", "(01A)", "(00B)", "(00B)",  "(11B)", "(11B)",  "(01B)", "(01B)", "(00C)", "(00C)",  "(11C)", "(11C)",  "(01C)", "(01C)", "(00D)", "(00D)",  "(11D)", "(11D)",  "(01D)", "(01D)")
         cols <- c("(11A)", "(01A)", "(00A)", "(01A)", "(00A)",  "(11A)",  "(11B)", "(01B)", "(00B)", "(01B)", "(00B)",  "(11B)",  "(11C)", "(01C)", "(00C)", "(01C)", "(00C)",  "(11C)",  "(11D)", "(01D)", "(00D)", "(01D)", "(00D)",  "(11D)")
@@ -155,16 +155,16 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         category.rate.shiftD <- c(category.rate.shift[28:30], rep(0,6), category.rate.shift[31:33], rep(0,6), category.rate.shift[34:36], rep(0,6))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD)
+        pars.tmp <- c(turnover[1:3], extinct.frac.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, turnover[4:6], extinct.frac.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, turnover[7:9], extinct.frac.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, turnover[10:12], extinct.frac.tmp[7:8], trans.tmp[19:24], category.rate.shiftD)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==15){
         rate.cats <- 5
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)",  "(11A)", "(11A)",  "(01A)", "(01A)", "(00B)", "(00B)",  "(11B)", "(11B)",  "(01B)", "(01B)", "(00C)", "(00C)",  "(11C)", "(11C)",  "(01C)", "(01C)", "(00D)", "(00D)",  "(11D)", "(11D)",  "(01D)", "(01D)", "(00E)", "(00E)",  "(11E)", "(11E)",  "(01E)", "(01E)")
         cols <- c("(11A)", "(01A)", "(00A)", "(01A)", "(00A)",  "(11A)",  "(11B)", "(01B)", "(00B)", "(01B)", "(00B)",  "(11B)",  "(11C)", "(01C)", "(00C)", "(01C)", "(00C)",  "(11C)",  "(11D)", "(01D)", "(00D)", "(01D)", "(00D)",  "(11D)",  "(11E)", "(01E)", "(00E)", "(01E)", "(00E)",  "(11E)")
@@ -183,16 +183,16 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         category.rate.shiftE <- c(category.rate.shift[49:52], rep(0,5), category.rate.shift[53:56], rep(0,5), category.rate.shift[57:60], rep(0,5))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE)
+        pars.tmp <- c(turnover[1:3], extinct.frac.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, turnover[4:6], extinct.frac.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, turnover[7:9], extinct.frac.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, turnover[10:12], extinct.frac.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, turnover[13:15], extinct.frac.tmp[9:10], trans.tmp[25:30], category.rate.shiftE)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==18){
         rate.cats <- 6
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)",  "(11A)", "(11A)",  "(01A)", "(01A)", "(00B)", "(00B)",  "(11B)", "(11B)",  "(01B)", "(01B)", "(00C)", "(00C)",  "(11C)", "(11C)",  "(01C)", "(01C)", "(00D)", "(00D)",  "(11D)", "(11D)",  "(01D)", "(01D)", "(00E)", "(00E)",  "(11E)", "(11E)",  "(01E)", "(01E)", "(00F)", "(00F)",  "(11F)", "(11F)",  "(01F)", "(01F)")
         cols <- c("(11A)", "(01A)", "(00A)", "(01A)", "(00A)",  "(11A)",  "(11B)", "(01B)", "(00B)", "(01B)", "(00B)",  "(11B)",  "(11C)", "(01C)", "(00C)", "(01C)", "(00C)",  "(11C)",  "(11D)", "(01D)", "(00D)", "(01D)", "(00D)",  "(11D)",  "(11E)", "(01E)", "(00E)", "(01E)", "(00E)",  "(11E)",  "(11F)", "(01F)", "(00F)", "(01F)", "(00F)",  "(11F)")
@@ -212,17 +212,17 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         category.rate.shiftF <- c(category.rate.shift[76:80], rep(0,4), category.rate.shift[81:85], rep(0,4), category.rate.shift[86:90], rep(0,4))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE, category.rate.shiftF)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, speciation[16:18], extirpation.tmp[11:12], trans.tmp[31:36], category.rate.shiftF)
+        pars.tmp <- c(turnover[1:3], extinct.frac.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, turnover[4:6], extinct.frac.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, turnover[7:9], extinct.frac.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, turnover[10:12], extinct.frac.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, turnover[13:15], extinct.frac.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, turnover[16:18], extinct.frac.tmp[11:12], trans.tmp[31:36], category.rate.shiftF)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     
     if(dim(trans.rate)[2]==21){
         rate.cats <- 7
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)",  "(11A)", "(11A)",  "(01A)", "(01A)", "(00B)", "(00B)",  "(11B)", "(11B)",  "(01B)", "(01B)", "(00C)", "(00C)",  "(11C)", "(11C)",  "(01C)", "(01C)", "(00D)", "(00D)",  "(11D)", "(11D)",  "(01D)", "(01D)", "(00E)", "(00E)",  "(11E)", "(11E)",  "(01E)", "(01E)", "(00F)", "(00F)",  "(11F)", "(11F)",  "(01F)", "(01F)", "(00G)", "(00G)",  "(11G)", "(11G)",  "(01G)", "(01G)")
         cols <- c("(11A)", "(01A)", "(00A)", "(01A)", "(00A)",  "(11A)",  "(11B)", "(01B)", "(00B)", "(01B)", "(00B)",  "(11B)",  "(11C)", "(01C)", "(00C)", "(01C)", "(00C)",  "(11C)",  "(11D)", "(01D)", "(00D)", "(01D)", "(00D)",  "(11D)",  "(11E)", "(01E)", "(00E)", "(01E)", "(00E)",  "(11E)",  "(11F)", "(01F)", "(00F)", "(01F)", "(00F)",  "(11F)",  "(11G)", "(01G)", "(00G)", "(01G)", "(00G)",  "(11G)")
@@ -243,17 +243,17 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         category.rate.shiftG <- c(category.rate.shift[109:114], rep(0,3), category.rate.shift[115:120], rep(0,3), category.rate.shift[121:126], rep(0,3))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE, category.rate.shiftF, category.rate.shiftG)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, speciation[16:18], extirpation.tmp[11:12], trans.tmp[31:36], category.rate.shiftF, speciation[19:21], extirpation.tmp[13:14], trans.tmp[37:42], category.rate.shiftG)
+        pars.tmp <- c(turnover[1:3], extinct.frac.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, turnover[4:6], extinct.frac.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, turnover[7:9], extinct.frac.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, turnover[10:12], extinct.frac.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, turnover[13:15], extinct.frac.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, turnover[16:18], extinct.frac.tmp[11:12], trans.tmp[31:36], category.rate.shiftF, turnover[19:21], extinct.frac.tmp[13:14], trans.tmp[37:42], category.rate.shiftG)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     
     if(dim(trans.rate)[2]==24){
         rate.cats <- 8
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)",  "(11A)", "(11A)",  "(01A)", "(01A)", "(00B)", "(00B)",  "(11B)", "(11B)",  "(01B)", "(01B)", "(00C)", "(00C)",  "(11C)", "(11C)",  "(01C)", "(01C)", "(00D)", "(00D)",  "(11D)", "(11D)",  "(01D)", "(01D)", "(00E)", "(00E)",  "(11E)", "(11E)",  "(01E)", "(01E)", "(00F)", "(00F)",  "(11F)", "(11F)",  "(01F)", "(01F)", "(00G)", "(00G)",  "(11G)", "(11G)",  "(01G)", "(01G)", "(00H)", "(00H)",  "(11H)", "(11H)",  "(01H)", "(01H)")
         cols <- c("(11A)", "(01A)", "(00A)", "(01A)", "(00A)",  "(11A)",  "(11B)", "(01B)", "(00B)", "(01B)", "(00B)",  "(11B)",  "(11C)", "(01C)", "(00C)", "(01C)", "(00C)",  "(11C)",  "(11D)", "(01D)", "(00D)", "(01D)", "(00D)",  "(11D)",  "(11E)", "(01E)", "(00E)", "(01E)", "(00E)",  "(11E)",  "(11F)", "(01F)", "(00F)", "(01F)", "(00F)",  "(11F)",  "(11G)", "(01G)", "(00G)", "(01G)", "(00G)",  "(11G)",  "(11H)", "(01H)", "(00H)", "(01H)", "(00H)",  "(11H)")
@@ -275,17 +275,17 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         category.rate.shiftH <- c(category.rate.shift[148:154], rep(0,2), category.rate.shift[155:161], rep(0,2), category.rate.shift[162:168], rep(0,2))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE, category.rate.shiftF, category.rate.shiftG, category.rate.shiftH)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, speciation[16:18], extirpation.tmp[11:12], trans.tmp[31:36], category.rate.shiftF, speciation[19:21], extirpation.tmp[13:14], trans.tmp[37:42], category.rate.shiftG, speciation[22:24], extirpation.tmp[15:16], trans.tmp[43:48], category.rate.shiftH)
+        pars.tmp <- c(turnover[1:3], extinct.frac.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, turnover[4:6], extinct.frac.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, turnover[7:9], extinct.frac.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, turnover[10:12], extinct.frac.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, turnover[13:15], extinct.frac.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, turnover[16:18], extinct.frac.tmp[11:12], trans.tmp[31:36], category.rate.shiftF, turnover[19:21], extinct.frac.tmp[13:14], trans.tmp[37:42], category.rate.shiftG, turnover[22:24], extinct.frac.tmp[15:16], trans.tmp[43:48], category.rate.shiftH)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     
     if(dim(trans.rate)[2]==27){
         rate.cats <- 9
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)",  "(11A)", "(11A)",  "(01A)", "(01A)", "(00B)", "(00B)",  "(11B)", "(11B)",  "(01B)", "(01B)", "(00C)", "(00C)",  "(11C)", "(11C)",  "(01C)", "(01C)", "(00D)", "(00D)",  "(11D)", "(11D)",  "(01D)", "(01D)", "(00E)", "(00E)",  "(11E)", "(11E)",  "(01E)", "(01E)", "(00F)", "(00F)",  "(11F)", "(11F)",  "(01F)", "(01F)", "(00G)", "(00G)",  "(11G)", "(11G)",  "(01G)", "(01G)", "(00H)", "(00H)",  "(11H)", "(11H)",  "(01H)", "(01H)", "(00I)", "(00I)",  "(11I)", "(11I)",  "(01I)", "(01I)")
         cols <- c("(11A)", "(01A)", "(00A)", "(01A)", "(00A)",  "(11A)",  "(11B)", "(01B)", "(00B)", "(01B)", "(00B)",  "(11B)",  "(11C)", "(01C)", "(00C)", "(01C)", "(00C)",  "(11C)",  "(11D)", "(01D)", "(00D)", "(01D)", "(00D)",  "(11D)",  "(11E)", "(01E)", "(00E)", "(01E)", "(00E)",  "(11E)",  "(11F)", "(01F)", "(00F)", "(01F)", "(00F)",  "(11F)",  "(11G)", "(01G)", "(00G)", "(01G)", "(00G)",  "(11G)",  "(11H)", "(01H)", "(00H)", "(01H)", "(00H)",  "(11H)",  "(11I)", "(01I)", "(00I)", "(01I)", "(00I)",  "(11I)")
@@ -308,16 +308,16 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         category.rate.shiftI <- c(category.rate.shift[193:200], rep(0,1), category.rate.shift[201:208], rep(0,1), category.rate.shift[209:216], rep(0,1))
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE, category.rate.shiftF, category.rate.shiftG, category.rate.shiftH, category.rate.shiftI)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, speciation[16:18], extirpation.tmp[11:12], trans.tmp[31:36], category.rate.shiftF, speciation[19:21], extirpation.tmp[13:14], trans.tmp[37:42], category.rate.shiftG, speciation[22:24], extirpation.tmp[15:16], trans.tmp[43:48], category.rate.shiftH, speciation[25:27], extirpation.tmp[17:18], trans.tmp[49:54], category.rate.shiftI)
+        pars.tmp <- c(turnover[1:3], extinct.frac.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, turnover[4:6], extinct.frac.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, turnover[7:9], extinct.frac.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, turnover[10:12], extinct.frac.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, turnover[13:15], extinct.frac.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, turnover[16:18], extinct.frac.tmp[11:12], trans.tmp[31:36], category.rate.shiftF, turnover[19:21], extinct.frac.tmp[13:14], trans.tmp[37:42], category.rate.shiftG, turnover[22:24], extinct.frac.tmp[15:16], trans.tmp[43:48], category.rate.shiftH, turnover[25:27], extinct.frac.tmp[17:18], trans.tmp[49:54], category.rate.shiftI)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
     if(dim(trans.rate)[2]==30){
         rate.cats <- 10
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] = (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
+        pars.tmp <- turnover
+        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
         rows <- c("(00A)", "(00A)",  "(11A)", "(11A)",  "(01A)", "(01A)", "(00B)", "(00B)",  "(11B)", "(11B)",  "(01B)", "(01B)", "(00C)", "(00C)",  "(11C)", "(11C)",  "(01C)", "(01C)", "(00D)", "(00D)",  "(11D)", "(11D)",  "(01D)", "(01D)", "(00E)", "(00E)",  "(11E)", "(11E)",  "(01E)", "(01E)", "(00F)", "(00F)",  "(11F)", "(11F)",  "(01F)", "(01F)", "(00G)", "(00G)",  "(11G)", "(11G)",  "(01G)", "(01G)", "(00H)", "(00H)",  "(11H)", "(11H)",  "(01H)", "(01H)", "(00I)", "(00I)",  "(11I)", "(11I)",  "(01I)", "(01I)", "(00J)", "(00J)",  "(11J)", "(11J)",  "(01J)", "(01J)")
         cols <- c("(11A)", "(01A)", "(00A)", "(01A)", "(00A)",  "(11A)",  "(11B)", "(01B)", "(00B)", "(01B)", "(00B)",  "(11B)",  "(11C)", "(01C)", "(00C)", "(01C)", "(00C)",  "(11C)",  "(11D)", "(01D)", "(00D)", "(01D)", "(00D)",  "(11D)",  "(11E)", "(01E)", "(00E)", "(01E)", "(00E)",  "(11E)",  "(11F)", "(01F)", "(00F)", "(01F)", "(00F)",  "(11F)",  "(11G)", "(01G)", "(00G)", "(01G)", "(00G)",  "(11G)",  "(11H)", "(01H)", "(00H)", "(01H)", "(00H)",  "(11H)",  "(11I)", "(01I)", "(00I)", "(01I)", "(00I)",  "(11I)",  "(11J)", "(01J)", "(00J)", "(01J)", "(00J)", "(11J)")
@@ -341,7 +341,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         category.rate.shiftJ <- category.rate.shift[244:270]
         category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE, category.rate.shiftF, category.rate.shiftG, category.rate.shiftH, category.rate.shiftI, category.rate.shiftJ)
         category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, speciation[16:18], extirpation.tmp[11:12], trans.tmp[31:36], category.rate.shiftF, speciation[19:21], extirpation.tmp[13:14], trans.tmp[37:42], category.rate.shiftG, speciation[22:24], extirpation.tmp[15:16], trans.tmp[43:48], category.rate.shiftH, speciation[25:27], extirpation.tmp[17:18], trans.tmp[49:54], category.rate.shiftI, speciation[28:30], extirpation.tmp[19:20], trans.tmp[55:60], category.rate.shiftJ)
+        pars.tmp <- c(turnover[1:3], extinct.frac.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, turnover[4:6], extinct.frac.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, turnover[7:9], extinct.frac.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, turnover[10:12], extinct.frac.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, turnover[13:15], extinct.frac.tmp[9:10], trans.tmp[25:30], category.rate.shiftE, turnover[16:18], extinct.frac.tmp[11:12], trans.tmp[31:36], category.rate.shiftF, turnover[19:21], extinct.frac.tmp[13:14], trans.tmp[37:42], category.rate.shiftG, turnover[22:24], extinct.frac.tmp[15:16], trans.tmp[43:48], category.rate.shiftH, turnover[25:27], extinct.frac.tmp[17:18], trans.tmp[49:54], category.rate.shiftI, turnover[28:30], extinct.frac.tmp[19:20], trans.tmp[55:60], category.rate.shiftJ)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
 
@@ -371,7 +371,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
     }
     
     if(is.null(restart.obj)){
-        if(sum(extirpation)==0){
+        if(sum(extinct.frac)==0){
             init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
         }else{
             #init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
@@ -388,7 +388,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
             #def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[7:8]),3), rep(log(0.01), 27)), rate.cats)
         }
         if(bounded.search == TRUE){
-            #upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
+            #upper.full <- rep(c(rep(log(turnover.upper),3), rep(log(extinct.frac.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
             upper.full <- rep(c(rep(log(10000),3), rep(log(3),2), rep(log(trans.upper), 2*3), rep(log(10), 27)), rate.cats)
         }else{
             upper.full <- rep(21,length(def.set.pars))
@@ -444,7 +444,7 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(
         loglik = -out$objective
     }
     
-    names(solution) <- c("s00A","s11A","s01A","x00A","x11A","d00A_11A","d00A_01A","d11A_00A","d11A_01A","d01A_00A","d01A_11A","d00A_00B","d00A_00C","d00A_00D","d00A_00E","d00A_00F","d00A_00G","d00A_00H","d00A_00I","d00A_00J","d11A_11B","d11A_11C","d11A_11D","d11A_11E","d11A_11F","d11A_11G","d11A_11H","d11A_11I","d11A_11J","d01A_01B","d01A_01C","d01A_01D","d01A_01E","d01A_01F","d01A_01G","d01A_01H","d01A_01I","d01A_01J","s00B","s11B","s01B","x00B","x11B","d00B_11B","d00B_01B","d11B_00B","d11B_01B","d01B_00B","d01B_11B","d00B_00A","d00B_00C","d00B_00D","d00B_00E","d00B_00F","d00B_00G","d00B_00H","d00B_00I","d00B_00J","d11B_11A","d11B_11C","d11B_11D","d11B_11E","d11B_11F","d11B_11G","d11B_11H","d11B_11I","d11B_11J","d01B_01A","d01B_01C","d01B_01D","d01B_01E","d01B_01F","d01B_01G","d01B_01H","d01B_01I","d01B_01J","s00C","s11C","s01C","x00C","x11C","d00C_11C","d00C_01C","d11C_00C","d11C_01C","d01C_00C","d01C_11C","d00C_00A","d00C_00B","d00C_00D","d00C_00E","d00C_00F","d00C_00G","d00C_00H","d00C_00I","d00C_00J","d11C_11A","d11C_11B","d11C_11D","d11C_11E","d11C_11F","d11C_11G","d11C_11H","d11C_11I","d11C_11J","d01C_01A","d01C_01B","d01C_01D","d01C_01E","d01C_01F","d01C_01G","d01C_01H","d01C_01I","d01C_01J","s00D","s11D","s01D","x00D","x11D","d00D_11D","d00D_01D","d11D_00D","d11D_01D","d01D_00D","d01D_11D","d00D_00A","d00D_00B","d00D_00C","d00D_00E","d00D_00F","d00D_00G","d00D_00H","d00D_00I","d00D_00J","d11D_11A","d11D_11B","d11D_11C","d11D_11E","d11D_11F","d11D_11G","d11D_11H","d11D_11I","d11D_11J","d01D_01A","d01D_01B","d01D_01C","d01D_01E","d01D_01F","d01D_01G","d01D_01H","d01D_01I","d01D_01J","s00E","s11E","s01E","x00E","x11E","d00E_11E","d00E_01E","d11E_00E","d11E_01E","d01E_00E","d01E_11E","d00E_00A","d00E_00B","d00E_00C","d00E_00D","d00E_00F","d00E_00G","d00E_00H","d00E_00I","d00E_00J","d11E_11A","d11E_11B","d11E_11C","d11E_11D","d11E_11F","d11E_11G","d11E_11H","d11E_11I","d11E_11J","d01E_01A","d01E_01B","d01E_01C","d01E_01D","d01E_01F","d01E_01G","d01E_01H","d01E_01I","d01E_01J","s00F","s11F","s01F","x00F","x11F","d00F_11F","d00F_01F","d11F_00F","d11F_01F","d01F_00F","d01F_11F","d00F_00A","d00F_00B","d00F_00C","d00F_00D","d00F_00E","d00F_00G","d00F_00H","d00F_00I","d00F_00J","d11F_11A","d11F_11B","d11F_11C","d11F_11D","d11F_11E","d11F_11G","d11F_11H","d11F_11I","d11F_11J","d01F_01A","d01F_01B","d01F_01C","d01F_01D","d01F_01E","d01F_01G","d01F_01H","d01F_01I","d01F_01J","s00G","s11G","s01G","x00G","x11G","d00G_11G","d00G_01G","d11G_00G","d11G_01G","d01G_00G","d01G_11G","d00G_00A","d00G_00B","d00G_00C","d00G_00D","d00G_00E","d00G_00F","d00G_00H","d00G_00I","d00G_00J","d11G_11A","d11G_11B","d11G_11C","d11G_11D","d11G_11E","d11G_11F","d11G_11H","d11G_11I","d11G_11J","d01G_01A","d01G_01B","d01G_01C","d01G_01D","d01G_01E","d01G_01F","d01G_01H","d01G_01I","d01G_01J","s00H","s11H","s01H","x00H","x11H","d00H_11H","d00H_01H","d11H_00H","d11H_01H","d01H_00H","d01H_11H","d00H_00A","d00H_00B","d00H_00C","d00H_00D","d00H_00E","d00H_00F","d00H_00G","d00H_00I","d00H_00J","d11H_11A","d11H_11B","d11H_11C","d11H_11D","d11H_11E","d11H_11F","d11H_11G","d11H_11I","d11H_11J","d01H_01A","d01H_01B","d01H_01C","d01H_01D","d01H_01E","d01H_01F","d01H_01G","d01H_01I","d01H_01J","s00I","s11I","s01I","x00I","x11I","d00I_11I","d00I_01I","d11I_00I","d11I_01I","d01I_00I","d01I_11I","d00I_00A","d00I_00B","d00I_00C","d00I_00D","d00I_00E","d00I_00F","d00I_00G","d00I_00H","d00I_00J","d11I_11A","d11I_11B","d11I_11C","d11I_11D","d11I_11E","d11I_11F","d11I_11G","d11I_11H","d11I_11J","d01I_01A","d01I_01B","d01I_01C","d01I_01D","d01I_01E","d01I_01F","d01I_01G","d01I_01H","d01I_01J","s00J","s11J","s01J","x00J","x11J","d00J_11J","d00J_01J","d11J_00J","d11J_01J","d01J_00J","d01J_11J","d00J_00A","d00J_00B","d00J_00C","d00J_00D","d00J_00E","d00J_00F","d00J_00G","d00J_00H","d00J_00I","d11J_11A","d11J_11B","d11J_11C","d11J_11D","d11J_11E","d11J_11F","d11J_11G","d11J_11H","d11J_11I","d01J_01A","d01J_01B","d01J_01C","d01J_01D","d01J_01E","d01J_01F","d01J_01G","d01J_01H","d01J_01I")
+    names(solution) <- c("tau00A","tau11A","tau01A","ef00A","ef11A","d00A_11A","d00A_01A","d11A_00A","d11A_01A","d01A_00A","d01A_11A","d00A_00B","d00A_00C","d00A_00D","d00A_00E","d00A_00F","d00A_00G","d00A_00H","d00A_00I","d00A_00J","d11A_11B","d11A_11C","d11A_11D","d11A_11E","d11A_11F","d11A_11G","d11A_11H","d11A_11I","d11A_11J","d01A_01B","d01A_01C","d01A_01D","d01A_01E","d01A_01F","d01A_01G","d01A_01H","d01A_01I","d01A_01J","tau00B","tau11B","tau01B","ef00B","ef11B","d00B_11B","d00B_01B","d11B_00B","d11B_01B","d01B_00B","d01B_11B","d00B_00A","d00B_00C","d00B_00D","d00B_00E","d00B_00F","d00B_00G","d00B_00H","d00B_00I","d00B_00J","d11B_11A","d11B_11C","d11B_11D","d11B_11E","d11B_11F","d11B_11G","d11B_11H","d11B_11I","d11B_11J","d01B_01A","d01B_01C","d01B_01D","d01B_01E","d01B_01F","d01B_01G","d01B_01H","d01B_01I","d01B_01J","tau00C","tau11C","tau01C","ef00C","ef11C","d00C_11C","d00C_01C","d11C_00C","d11C_01C","d01C_00C","d01C_11C","d00C_00A","d00C_00B","d00C_00D","d00C_00E","d00C_00F","d00C_00G","d00C_00H","d00C_00I","d00C_00J","d11C_11A","d11C_11B","d11C_11D","d11C_11E","d11C_11F","d11C_11G","d11C_11H","d11C_11I","d11C_11J","d01C_01A","d01C_01B","d01C_01D","d01C_01E","d01C_01F","d01C_01G","d01C_01H","d01C_01I","d01C_01J","tau00D","tau11D","tau01D","ef00D","ef11D","d00D_11D","d00D_01D","d11D_00D","d11D_01D","d01D_00D","d01D_11D","d00D_00A","d00D_00B","d00D_00C","d00D_00E","d00D_00F","d00D_00G","d00D_00H","d00D_00I","d00D_00J","d11D_11A","d11D_11B","d11D_11C","d11D_11E","d11D_11F","d11D_11G","d11D_11H","d11D_11I","d11D_11J","d01D_01A","d01D_01B","d01D_01C","d01D_01E","d01D_01F","d01D_01G","d01D_01H","d01D_01I","d01D_01J","tau00E","tau11E","tau01E","ef00E","ef11E","d00E_11E","d00E_01E","d11E_00E","d11E_01E","d01E_00E","d01E_11E","d00E_00A","d00E_00B","d00E_00C","d00E_00D","d00E_00F","d00E_00G","d00E_00H","d00E_00I","d00E_00J","d11E_11A","d11E_11B","d11E_11C","d11E_11D","d11E_11F","d11E_11G","d11E_11H","d11E_11I","d11E_11J","d01E_01A","d01E_01B","d01E_01C","d01E_01D","d01E_01F","d01E_01G","d01E_01H","d01E_01I","d01E_01J","tau00F","tau11F","tau01F","ef00F","ef11F","d00F_11F","d00F_01F","d11F_00F","d11F_01F","d01F_00F","d01F_11F","d00F_00A","d00F_00B","d00F_00C","d00F_00D","d00F_00E","d00F_00G","d00F_00H","d00F_00I","d00F_00J","d11F_11A","d11F_11B","d11F_11C","d11F_11D","d11F_11E","d11F_11G","d11F_11H","d11F_11I","d11F_11J","d01F_01A","d01F_01B","d01F_01C","d01F_01D","d01F_01E","d01F_01G","d01F_01H","d01F_01I","d01F_01J","tau00G","tau11G","tau01G","ef00G","ef11G","d00G_11G","d00G_01G","d11G_00G","d11G_01G","d01G_00G","d01G_11G","d00G_00A","d00G_00B","d00G_00C","d00G_00D","d00G_00E","d00G_00F","d00G_00H","d00G_00I","d00G_00J","d11G_11A","d11G_11B","d11G_11C","d11G_11D","d11G_11E","d11G_11F","d11G_11H","d11G_11I","d11G_11J","d01G_01A","d01G_01B","d01G_01C","d01G_01D","d01G_01E","d01G_01F","d01G_01H","d01G_01I","d01G_01J","tau00H","tau11H","tau01H","ef00H","ef11H","d00H_11H","d00H_01H","d11H_00H","d11H_01H","d01H_00H","d01H_11H","d00H_00A","d00H_00B","d00H_00C","d00H_00D","d00H_00E","d00H_00F","d00H_00G","d00H_00I","d00H_00J","d11H_11A","d11H_11B","d11H_11C","d11H_11D","d11H_11E","d11H_11F","d11H_11G","d11H_11I","d11H_11J","d01H_01A","d01H_01B","d01H_01C","d01H_01D","d01H_01E","d01H_01F","d01H_01G","d01H_01I","d01H_01J","tau00I","tau11I","tau01I","ef00I","ef11I","d00I_11I","d00I_01I","d11I_00I","d11I_01I","d01I_00I","d01I_11I","d00I_00A","d00I_00B","d00I_00C","d00I_00D","d00I_00E","d00I_00F","d00I_00G","d00I_00H","d00I_00J","d11I_11A","d11I_11B","d11I_11C","d11I_11D","d11I_11E","d11I_11F","d11I_11G","d11I_11H","d11I_11J","d01I_01A","d01I_01B","d01I_01C","d01I_01D","d01I_01E","d01I_01F","d01I_01G","d01I_01H","d01I_01J","tau00J","tau11J","tau01J","ef00J","ef11J","d00J_11J","d00J_01J","d11J_00J","d11J_01J","d01J_00J","d01J_11J","d00J_00A","d00J_00B","d00J_00C","d00J_00D","d00J_00E","d00J_00F","d00J_00G","d00J_00H","d00J_00I","d11J_11A","d11J_11B","d11J_11C","d11J_11D","d11J_11E","d11J_11F","d11J_11G","d11J_11H","d11J_11I","d01J_01A","d01J_01B","d01J_01C","d01J_01D","d01J_01E","d01J_01F","d01J_01G","d01J_01H","d01J_01I")
 
     cat("Finished. Summarizing results...", "\n")
     
@@ -947,7 +947,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11A_00A = model.vec[8]
     obj$d11A_01A = model.vec[9]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[10]==0){
         #obj$d01A_00A = model.vec[5]
         obj$d01A_00A = obj$x11A
@@ -1010,7 +1010,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11B_00B = model.vec[46]
     obj$d11B_01B = model.vec[47]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[48]==0){
         #obj$d01B_00B = model.vec[43]
         obj$d01B_00B = obj$x11B
@@ -1073,7 +1073,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11C_00C = model.vec[84]
     obj$d11C_01C = model.vec[85]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[86]==0){
         #obj$d01C_00C = model.vec[81]
         obj$d01C_00C = obj$x11C
@@ -1136,7 +1136,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11D_00D = model.vec[122]
     obj$d11D_01D = model.vec[123]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[124]==0){
         #obj$d01D_00D = model.vec[119]
         obj$d01D_00D = obj$x11D
@@ -1199,7 +1199,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11E_00E = model.vec[160]
     obj$d11E_01E = model.vec[161]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[162]==0){
         #obj$d01E_00E = model.vec[157]
         obj$d01E_00E = obj$x11E
@@ -1262,7 +1262,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11F_00F = model.vec[198]
     obj$d11F_01F = model.vec[199]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[200]==0){
         #obj$d01F_00F = model.vec[195]
         obj$d01F_00F = obj$x11F
@@ -1325,7 +1325,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11G_00G = model.vec[236]
     obj$d11G_01G = model.vec[237]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[238]==0){
         #obj$d01G_00G = model.vec[233]
         obj$d01G_00G = obj$x11G
@@ -1388,7 +1388,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11H_00H = model.vec[274]
     obj$d11H_01H = model.vec[275]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[276]==0){
         #obj$d01H_00H = model.vec[271]
         obj$d01H_00H = obj$x11H
@@ -1451,7 +1451,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11I_00I = model.vec[312]
     obj$d11I_01I = model.vec[313]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[314]==0){
         #obj$d01I_00I = model.vec[309]
         obj$d01I_00I = obj$x11I
@@ -1514,7 +1514,7 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     obj$d11J_00J = model.vec[350]
     obj$d11J_01J = model.vec[351]
     
-    #This sets the extirpation if necessary
+    #This sets the extinct.frac if necessary
     if(model.vec[352]==0){
         #obj$d01J_00J = model.vec[347]
         obj$d01J_00J = obj$x11J

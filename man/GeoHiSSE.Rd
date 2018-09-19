@@ -151,17 +151,15 @@ subtending them.}
 \item{$ode.eps}{The ode.eps value used for the estimation.}
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models 
-of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
+Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, https://doi.org/10.1111/evo.13602
 
-FitzJohn R.G., Maddison W.P., and Otto S.P. 2009. Estimating trait-dependent speciation 
-and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
+Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 
-Maddison W.P., Midford P.E., and Otto S.P. 2007. Estimating a binary characters effect on 
-speciation and extinction. Syst. Biol. 56:701-710.
+FitzJohn R.G., W.P. Maddison, and S.P. Otto. 2009. Estimating trait-dependent speciation and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
 
-Nee S., May R.M., and Harvey P.H. 1994. The reconstructed evolutionary process. Philos. 
-Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.
+Maddison W.P., P.E. Midford, and S.P. Otto. 2007. Estimating a binary characters effect on speciation and extinction. Syst. Biol. 56:701-710.
+
+Nee S., R.M. May, and P.H. Harvey. 1994. The reconstructed evolutionary process. Philos. Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.
 }
 
 \author{Jeremy M. Beaulieu}
