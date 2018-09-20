@@ -729,7 +729,7 @@ FocalNodeProbGeo <- function(cache, dat.tab, generations){
 }
 
 
-#Have to calculate root prob separately because it is no a descendant in our table. Could add it, but I worry about the NA that is required.
+#Have to calculate root prob separately because it is not a descendant in our table. Could add it, but I worry about the NA that is required.
 GetRootProbGeo <- function(cache, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     FocalNode = NULL
