@@ -19,9 +19,9 @@ trans.upper=100, ode.eps=0)
   area codes. Values for the areas need to be 0, 1, or 2, where 0 is the 
   widespread area '01', 1 is endemic area '0' and 2 is endemic area '1'. See 'Details'.}
 \item{f}{vector of length 3 with the estimated proportion of extant
-  species in areas 0 (or '01'), 1 (or '0'), and 2 (or '1') that are included
-  in the phylogeny. A value of c(0.25, 0.25, 0.5) means that 25 percent
-  of species in areas '01' and '0' and 50 percent of species in area '1' are
+  species in state 1 (area '0'), state 2 (area '1'), and state 0 (widespread area '01') 
+  that are included in the phylogeny. A value of c(0.25, 0.25, 0.5) means that 25 percent
+  of species in areas '0' and '1' and 50 percent of species in area '01' are
   included in the phylogeny. By default all species are assumed to be
   sampled.}
 \item{speciation}{a numeric vector of length equal to 3+(number of
@@ -49,9 +49,9 @@ model. See 'Details'.}
   the procedure described by FitzJohn et al. 2009, \dQuote{madfitz},
   assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The
-  default is \code{NULL}. Order of the areas is the same as in 'data'.
-  Such that: root.p[1] = 0 (widespread area '01'); root.p[2] = 1 (endemic
-  area '0'); root.p[3] = 2 (endemic area '1').}
+  default is \code{NULL}. Order of the areas in the vector need to follow:
+  root.p[1] = 1 (endemic area '0'); root.p[2] = 2 (endemic
+  area '1'); root.p[3] = 0 (widespread area '01').}
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using

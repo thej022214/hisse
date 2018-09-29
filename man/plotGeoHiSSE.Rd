@@ -15,7 +15,8 @@ legend.bg="cornsilk3",...)
 \item{rate.param}{indicates the type of rates to plot. Options include: \dQuote{turnover}, \dQuote{net.div}, \dQuote{speciation},  \dQuote{extinction},  \dQuote{extinction.fraction}.}
 \item{do.observed.only}{a logical indicating whether just the states should be plotted; for now, only TRUE works.}
 \item{rate.colors}{user specified colors to be used for coloring rates.}
-\item{state.colors}{user specified colors to be used for coloring states.} 
+\item{state.colors}{user specified colors to be used for coloring states. A vector with the color for state 1 
+  (endemic area '0'), state 2 (endemic area '1') and state 0 (widespread area '01'). Always in this order!}
 \item{edge.width.rate}{the width of the rate lines.} 
 \item{edge.width.state}{the width of the state lines, which should be set so that it is narrower than the edge width for rates.}
 \item{type}{a character string specifying the type of phylogeny to be drawn. Options are "fan" (default) and "phylogram". See
