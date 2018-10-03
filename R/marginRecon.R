@@ -306,10 +306,11 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
-        if(hidden.areas ==TRUE & length(root.p)==3){
+        if(hidden.areas == TRUE & length(root.p) == 3){
+            ## What if length(root.p) is 4 or 5? This code will easily break or allow wrong entries.
             root.p <- rep(root.p, 3)
             root.p <- root.p / sum(root.p)
-            warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
+            warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance among all hidden states.")
         }
     }
     
