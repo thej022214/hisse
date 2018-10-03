@@ -7,19 +7,19 @@
 
 TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps=FALSE, separate.extirpation=FALSE){
     if(hidden.areas == 0){
-        trans.mat <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+        trans.mat <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
     }else{
         if(hidden.areas == 1){
             if(make.null == TRUE){
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat2, na.rm=TRUE)
                 sub.mat3 <- matrix(NA, 3, 3)
                 diag(sub.mat3) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1,sub.mat3), cbind(sub.mat3,sub.mat2))
             }else{
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat2, na.rm=TRUE)
                 sub.mat3 <- matrix(NA, 3, 3)
                 diag(sub.mat3) <- max.par + 1
@@ -30,15 +30,15 @@ TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jump
 
         if(hidden.areas == 2){
             if(make.null == TRUE){
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
                 sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1))
             }else{
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat3 <- TransMatGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat3 <- TransMatfGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat4 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat3, na.rm=TRUE)
                 diag(sub.mat4) <- max.par + 1
@@ -49,16 +49,16 @@ TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jump
 
         if(hidden.areas == 3){
             if(make.null == TRUE){
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
                 sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1))
             }else{
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat3 <- TransMatGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat4 <- TransMatGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat3 <- TransMatfGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat4 <- TransMatfGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat5 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat4, na.rm=TRUE)
                 diag(sub.mat5) <- max.par + 1
@@ -69,17 +69,17 @@ TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jump
         
         if(hidden.areas == 4){
             if(make.null == TRUE){
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
                 sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1))
             }else{
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat3 <- TransMatGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat4 <- TransMatGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat5 <- TransMatGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat3 <- TransMatfGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat4 <- TransMatfGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat5 <- TransMatfGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat6 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat5, na.rm=TRUE)
                 diag(sub.mat6) <- max.par + 1
@@ -90,18 +90,18 @@ TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jump
         
         if(hidden.areas == 5){
             if(make.null == TRUE){
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
                 sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1))
             }else{
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat3 <- TransMatGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat4 <- TransMatGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat5 <- TransMatGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat6 <- TransMatGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat3 <- TransMatfGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat4 <- TransMatfGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat5 <- TransMatfGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat6 <- TransMatfGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat7 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat6, na.rm=TRUE)
                 diag(sub.mat7) <- max.par + 1
@@ -112,19 +112,19 @@ TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jump
         
         if(hidden.areas == 6){
             if(make.null == TRUE){
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
                 sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1))
             }else{
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat3 <- TransMatGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat4 <- TransMatGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat5 <- TransMatGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat6 <- TransMatGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat7 <- TransMatGeoSSEsingle(cat.number=7, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat3 <- TransMatfGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat4 <- TransMatfGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat5 <- TransMatfGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat6 <- TransMatfGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat7 <- TransMatfGeoSSEsingle(cat.number=7, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat8 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat7, na.rm=TRUE)
                 diag(sub.mat8) <- max.par + 1
@@ -135,20 +135,20 @@ TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jump
         
         if(hidden.areas == 7){
             if(make.null == TRUE){
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
                 sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1))
             }else{
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat3 <- TransMatGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat4 <- TransMatGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat5 <- TransMatGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat6 <- TransMatGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat7 <- TransMatGeoSSEsingle(cat.number=7, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat8 <- TransMatGeoSSEsingle(cat.number=8, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat3 <- TransMatfGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat4 <- TransMatfGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat5 <- TransMatfGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat6 <- TransMatfGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat7 <- TransMatfGeoSSEsingle(cat.number=7, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat8 <- TransMatfGeoSSEsingle(cat.number=8, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat9 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat8, na.rm=TRUE)
                 diag(sub.mat9) <- max.par + 1
@@ -159,21 +159,21 @@ TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jump
 
         if(hidden.areas == 8){
             if(make.null == TRUE){
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
                 sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1))
             }else{
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat3 <- TransMatGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat4 <- TransMatGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat5 <- TransMatGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat6 <- TransMatGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat7 <- TransMatGeoSSEsingle(cat.number=7, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat8 <- TransMatGeoSSEsingle(cat.number=8, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat9 <- TransMatGeoSSEsingle(cat.number=9, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat3 <- TransMatfGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat4 <- TransMatfGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat5 <- TransMatfGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat6 <- TransMatfGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat7 <- TransMatfGeoSSEsingle(cat.number=7, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat8 <- TransMatfGeoSSEsingle(cat.number=8, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat9 <- TransMatfGeoSSEsingle(cat.number=9, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat10 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat9, na.rm=TRUE)
                 diag(sub.mat10) <- max.par + 1
@@ -184,22 +184,22 @@ TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jump
         
         if(hidden.areas == 9){
             if(make.null == TRUE){
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
                 sub.mat2 <- matrix(NA, 3, 3)
                 diag(sub.mat2) <- max.par + 1
                 trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1))
             }else{
-                sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat2 <- TransMatGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat3 <- TransMatGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat4 <- TransMatGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat5 <- TransMatGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat6 <- TransMatGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat7 <- TransMatGeoSSEsingle(cat.number=7, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat8 <- TransMatGeoSSEsingle(cat.number=8, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat9 <- TransMatGeoSSEsingle(cat.number=9, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
-                sub.mat10 <- TransMatGeoSSEsingle(cat.number=10, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat1 <- TransMatfGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat2 <- TransMatfGeoSSEsingle(cat.number=2, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat3 <- TransMatfGeoSSEsingle(cat.number=3, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat4 <- TransMatfGeoSSEsingle(cat.number=4, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat5 <- TransMatfGeoSSEsingle(cat.number=5, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat6 <- TransMatfGeoSSEsingle(cat.number=6, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat7 <- TransMatfGeoSSEsingle(cat.number=7, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat8 <- TransMatfGeoSSEsingle(cat.number=8, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat9 <- TransMatfGeoSSEsingle(cat.number=9, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
+                sub.mat10 <- TransMatfGeoSSEsingle(cat.number=10, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat11 <- matrix(NA, 3, 3)
                 max.par <- max(sub.mat10, na.rm=TRUE)
                 diag(sub.mat11) <- max.par + 1
@@ -218,7 +218,7 @@ TransMatMakerfGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jump
 ######################################################################################################################################
 ######################################################################################################################################
 
-TransMatGeoSSEsingle <- function(cat.number=1, include.jumps=FALSE, separate.extirpation=FALSE){
+TransMatfGeoSSEsingle <- function(cat.number=1, include.jumps=FALSE, separate.extirpation=FALSE){
     if(cat.number == 1){
         rate.mat <- matrix(0, 3, 3)
         diag(rate.mat) <- NA
