@@ -397,29 +397,6 @@ DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.t
 ######################################################################################################################################
 ######################################################################################################################################
 
-FindGenerations <- function(phy){
-    generation <- list()
-    known <- 1:Ntip(phy)
-    unknown <- phy$edge[,1]
-    needed <- phy$edge[,2]
-    root <- min(unknown)
-    i <- 1
-    repeat{
-        knowable <- unknown[needed %in% known]
-        knowable <- knowable[duplicated(knowable)]
-        generation[[i]] <-  knowable
-        
-        known <- c(known, knowable)
-        needed <- needed[!unknown %in% knowable]
-        unknown <- unknown[!unknown %in% knowable]
-        i <- i + 1
-        if (any(root == knowable)) break
-    }
-    res <- generation
-    return(res)
-}
-
-
 OrganizeData <- function(data, phy, f, hidden.states){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
