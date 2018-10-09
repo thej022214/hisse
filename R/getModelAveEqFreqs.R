@@ -6,6 +6,9 @@
 ######################################################################################################################################
 
 GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE, rate.type="turnover"){
+    if( missing(max.time) ){
+        stop("argument 'max.time' is missing, with no default")
+    }
     
     if(model.type == "hisse"){
         res <- c()
@@ -136,7 +139,10 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
     if(model.type=="geohisse"){
         res <- c()
         geohisse.results <- x
-        if(class(geohisse.results)!="list") { #we have to make a list so we can run this generally
+        ## This test will break because class can be a vector.
+        ## if(class(geohisse.results)!="list")
+        if( inherits(x=geohisse.results, what="geohisse.fit") ) {
+            ## we have to make a list so we can run this generally
             tmp.list <- list()
             tmp.list[[1]] <- geohisse.results
             geohisse.results <- tmp.list
@@ -155,9 +161,10 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                 data.new <- data.frame(geohisse.results[[model.index]]$data[,2], geohisse.results[[model.index]]$data[,2], row.names=geohisse.results[[model.index]]$data[,1])
                 data.new <- data.new[geohisse.results[[model.index]]$phy$tip.label,]
                 cache = ParametersToPassMuSSE(geohisse.results[[model.index]]$phy, data.new[,1], model.vec=geohisse.results[[model.index]]$solution, f=geohisse.results[[model.index]]$f, hidden.states=TRUE)
-                if(geohisse.results[[model.index]]$root.type=="madfitz"){
-                    get.starting.probs <- DownPassMusse(phy=geohisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=geohisse.results[[model.index]]$condition.on.survival, root.type=geohisse.results[[model.index]]$root.type, root.p=geohisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
-                }
+                if( !geohisse.results[[model.index]]$root.type %in% c("madfitz","user","equal") ){
+                    stop("Option for root.type is not implemented. Check help for GeoHiSSE.")
+                }                
+                get.starting.probs <- DownPassMusse(phy=geohisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=geohisse.results[[model.index]]$condition.on.survival, root.type=geohisse.results[[model.index]]$root.type, root.p=geohisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 out <- lsoda(c(state0A=get.starting.probs[1],state1A=get.starting.probs[2],state01A=get.starting.probs[3], state0B=get.starting.probs[4],state1B=get.starting.probs[5],state01B=get.starting.probs[6], state0C=get.starting.probs[7],state1C=get.starting.probs[8],state01C=get.starting.probs[9], state0D=get.starting.probs[10],state1D=get.starting.probs[11],state01D=get.starting.probs[12], state0E=get.starting.probs[13],state1E=get.starting.probs[14],state01E=get.starting.probs[15]), times=c(0, max.time), func=EqFreqsMuSSE, parms=NULL, cache=cache, rtol=1e-8, atol=1e-8)[-1,-1]
             }
             if(get.rates == TRUE){

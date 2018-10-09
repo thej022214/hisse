@@ -11,7 +11,8 @@ rate.type="turnover")
 .fit} object, or a list of such objects. 
 A list of model can only include models of one type.}
 \item{max.time}{a numeric value that indicates the duration of time
-when calculating equilibrium frequencies.}
+when calculating equilibrium frequencies. 
+(Not the maximum time that the function is allowed to run!)}
 \item{model.type}{indicates which set of models to calculate equilibrium frequencies for. Options are "hisse" or "geohisse"}
 \item{get.rates}{indicates whether you want model-averaged rates based on equilibrium. Default is FALSE, which means just the equilibrium frequencies are returned.}
 \item{rate.type}{if get.rates=TRUE, this specifies which type of rates to be returned. Default is "turnover", but options include "net.div" and "speciation".}
