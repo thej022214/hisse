@@ -408,6 +408,7 @@ plot=TRUE,anc.states=NULL,...){
             plot.contMapHisse(xx, fsize=fsize, ftype=ftype, lwd=lwd, outline=outline
                             , type=type, mar=mar, direction=direction, offset=offset
                             , hold=hold, swap.underscore=TRUE, plot.tiplabels=TRUE)
+    }
 	invisible(xx)
 }
 
