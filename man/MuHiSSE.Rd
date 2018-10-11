@@ -83,10 +83,9 @@ As for data file format, \code{MuHiSSE} expects a two column matrix or data fram
 the first column containing the species names and the second containing the binary 
 character information. Note that the order of the data file and the names in the 
 \dQuote{phylo} object need not be in the same order; \code{hisse} deals with this 
-internally. Also, the character information MUST be binary (i.e., states are codes as 0 
-and 1), otherwise, the function will misbehave. However, if the state for a species is 
-unknown, a user can specify this with 2, and the state will be considered maximally 
-ambiguous.
+internally. Also, the character information must be coded as 0 and 1, otherwise, the
+function will misbehave. However, if the state for a species is unknown, a user can 
+specify this with a 2, and the state will be considered maximally ambiguous.
 
 As with \code{HiSSE}, we employ a modified optimization procedure. In other words, rather
 than optimizing birth and death separately, \code{fGeoHisse} optimizes orthogonal 
