@@ -18,24 +18,23 @@ ode.eps=0)
   information. First column has the species names and second column has
   state codes. Values for the areas need to be 0, 1, or 2, where 0 is the 
   widespread area '01', 1 is endemic area '0' and 2 is endemic area '1'. See 'Details'.}
-\item{f}{vector of length 3 with the estimated proportion of extant
-  species in areas 0 (or '01'), 1 (or '0'), and 2 (or '1') that are included
-  in the phylogeny. A value of c(0.25, 0.25, 0.5) means that 25 percent
-  of species in areas '01' and '0' and 50 percent of species in area '1' are
-  included in the phylogeny. By default all species are assumed to be
-  sampled.}
+\item{f}{vector of length 4 with the estimated proportion of extant
+  species in 00, 01, 10, and 11 that are included in the phylogeny. A value of 
+  c(0.50, 0.25, 0.125, 0.125) means that 50 percent of species in combination '00', 25 
+  percent in '01' and 12.5 percent in '10' and '11'. By default all species are assumed 
+  to be sampled.}
 \item{turnover}{a numeric vector of length equal to 4+(number of
   \code{hidden.states} * 4). A MuSSE model has 4 speciation parameters:
   lambda00, lambda01, lambda10, and lambda11. A MuHiSSE model with 
-  one hidden states has 8 speciation parameters: lambda0A, s1A, s01A, s0B, s1B, s01B. And so on. The length of the numeric
-vector needs to match the number of speciation parameters in the
-model. See 'Details'.}
+  one hidden states has 8 speciation parameters: lambda0A, s1A, s01A, s0B, s1B, s01B. 
+  And so on. The length of the numeric vector needs to match the number of speciation 
+  parameters in the model. See 'Details'.}
 \item{eps}{a numeric vector of length equal to4+(number of
   \code{hidden.states} * 4). A MuSSE model has 4 extinction parameters:
-  mu00, mu01, mu10, and mu11. A MuHiSSE model with one hidden area has 8 extinction
-parameters: mu00A, mu01A, mu10A, mu11A, mu00B, mu01B, mu10B, and mu11B. And so on. The length of the numeric
-vector needs to match the number of extinction parameters in the
-model. See 'Details'.}
+  mu00, mu01, mu10, and mu11. A MuHiSSE model with one hidden area has 8 extinction 
+  parameters: mu00A, mu01A, mu10A, mu11A, mu00B, mu01B, mu10B, and mu11B. And so on. The 
+  length of the numeric vector needs to match the number of extinction parameters in the 
+  model. See 'Details'.}
 \item{hidden.states}{a logical indicating whether the model includes a
   hidden states. The default is \code{FALSE}.} 
 \item{trans.rate}{provides the transition rate model. See function
@@ -63,7 +62,7 @@ model. See 'Details'.}
 \item{turnover.upper}{sets the upper bound for the turnover parameters.}
 \item{eps.upper}{sets the upper bound for the eps parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
-\item{restart.obj}{an object that contains everything to restart an optimization.}
+\item{restart.obj}{an object of class  that contains everything to restart an optimization.}
 \item{ode.eps}{sets the tolerance for the integration at the end of a
   branch. Essentially if the sum of compD is less than this tolerance,
   then it assumes the results are unstable and discards them. The
@@ -71,18 +70,53 @@ model. See 'Details'.}
   produce stable solutions for both easy and very difficult optimization problems.}
 }
 \details{
-MORE HERE.
+This function sets up and executes a multiple state HiSSE model. The model allows up to 8
+hidden categories (hidden states A-H), and implements a more efficient means of carrying 
+out the branch calculation. Specifically, we break up the tree into carry out all 
+descendent branch calculations simultaneously, combine the probabilities based on their 
+shared ancestry, then repeat for the next set of descendents. In testing, we've found that 
+as the number of taxa increases, the calculation becomes much more efficient. In future 
+versions, we will likely allow for multicore processing of these calculations to further 
+improve speed. 
 
-The \dQuote{trans.rate} input is the transition model and has an
-entirely different setup than speciation and extinction rates.
-See \code{TransMatMakerMuHiSSE} function for more details. 
+As for data file format, \code{MuHiSSE} expects a two column matrix or data frame, with 
+the first column containing the species names and the second containing the binary 
+character information. Note that the order of the data file and the names in the 
+\dQuote{phylo} object need not be in the same order; \code{hisse} deals with this 
+internally. Also, the character information MUST be binary (i.e., states are codes as 0 
+and 1), otherwise, the function will misbehave. However, if the state for a species is 
+unknown, a user can specify this with 2, and the state will be considered maximally 
+ambiguous.
+
+As with \code{HiSSE}, we employ a modified optimization procedure. In other words, rather
+than optimizing birth and death separately, \code{fGeoHisse} optimizes orthogonal 
+transformations of these variables: we let tau = birth+death define "net turnover", and 
+we let eps = death/birth define the \dQuote{extinction fraction}. This reparameterization 
+alleviates problems associated with overfitting when birth and death are highly 
+correlated, but both matter in explaining the diversity pattern. 
+
+To setup a model, users input vectors containing values to indicate how
+many free parameters are to be estimated for each of the variables in
+the model. This is done using the \code{turnover} and
+\code{extinct.frac} parameters. One needs to specify a value for each of
+the parameters of the model, when two parameters show the same value,
+then the parameters are set to be linked during the estimation of the
+model. For example, a fGeoHiSSE model with 1 hidden area and all free
+parameters has \code{turnover = 1:6}. The same model with
+speciation rates constrained to be the same for all hidden areas has
+\code{turnover = c(1,2,3,1,2,3)}. This same format applies to
+\code{extinct.frac}.
+
+The \dQuote{trans.rate} input is the transition model and has an entirely different setup 
+than speciation and extinction rates. See \code{TransMatMakerMuHiSSE} function for more 
+details. 
 
 For user-specified \dQuote{root.p}, you should specify the probability
-for each area. If you are doing a hidden model, there will be six areas:
-0A, 1A, 2A, 0B, 1B, 2B. So if you wanted to say the root had to be in
-area 0 (widespread distribution), you would specify \dQuote{root.p =
-  c(0.5, 0, 0, 0.5, 0, 0)}. In other words, the root has a 50\% chance
-to be in one of the areas 0A or 0B.
+for each state combination. If you are doing a hidden model, there will be eight state 
+combinations: 00A, 01A, 10A, 11A, 00B, 01B, 10B, 11B. So if you wanted to say the root 
+had to be in state 00, and since you do not know the hidden state, you would specify 
+\dQuote{root.p = c(0.5, 0, 0, 0, 0.5, 0, 0, 0)}. In other words, the root has a 50\% 
+chance to be in one of the areas 00A or 00B.
 }
 \value{
 \code{MuHiSSE} returns an object of class \code{muhisse.fit}. This is a list with 
@@ -101,7 +135,6 @@ model.}
 subtending them.}
 \item{$root.type}{indicates the user-specified root prior assumption.}
 \item{$root.p}{indicates whether the user-specified fixed root probabilities.}
-\item{$timeslice}{indicates whether the user-specified timeslice that split the tree.}
 \item{$phy}{user-supplied tree}
 \item{$data}{user-supplied dataset}
 \item{$trans.matrix}{the user-supplied transition matrix}
@@ -113,6 +146,10 @@ subtending them.}
 \item{$ode.eps}{The ode.eps value used for the estimation.}
 }
 \references{
+Nakov, T., Beaulieu, J.M., and Alverson, A.J. 2018. Freshwater diatoms diversify faster 
+than marine in both planktonic and benthic habitats. bioRxiv, 
+doi: https://doi.org/10.1101/406165.
+
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models 
 of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 
