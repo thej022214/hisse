@@ -69,7 +69,7 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 	#rate.tree$cols[] <- adjustcolor(rate.tree$cols[], alpha.f=0.3)
 	plot.contMapHisse(x=rate.tree, outline=FALSE, lwd=edge.width.rate
                         , type=type, fsize=fsize, swap.underscore=swap.underscore
-                        , plot.tiplabels=show.tip.label)
+                        , show.tiplabels=show.tip.label)
 	par(fig=c(0,1, 0, 1), new=TRUE)
 	#state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
 
@@ -83,7 +83,7 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 	state.tree$cols[]<- state.colors
         plot.contMapHisse(x=state.tree, outline=FALSE, lwd=edge.width.rate
                         , type=type, fsize=fsize, swap.underscore=swap.underscore
-                        , plot.tiplabels=show.tip.label)
+                        , show.tiplabels=show.tip.label)
 
 	if(legend!="none") {
 		par(fig=legend.position, new=TRUE)
@@ -246,13 +246,13 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
     rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
 
-    rate.tree <- contMapGivenAnc(tree= tree.to.plotA, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
+    rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
     ## change colors
     rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
     rate.tree$cols[] <- rate.colors
     ## rate.tree$cols[] <- adjustcolor(rate.tree$cols[], alpha.f=0.3)
     plot.contMapHisse(rate.tree, outline=FALSE, lwd=edge.width.rate, type=type, fsize=fsize
-                     , swap.underscore=swap.underscore, plot.tiplabels=plot.tiplabels)
+                     , swap.underscore=swap.underscore, show.tiplabels=show.tip.label)
     par(fig=c(0,1, 0, 1), new=TRUE)
     ## state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
 
@@ -264,11 +264,11 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     state.lims <- range(c(states.tips.tmp, states.internal.tmp))
     state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
     state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
-    state.tree <- contMapGivenAnc(tree=tree.to.plotB, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims, ...)
+    state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims, ...)
     state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
     state.tree$cols[]<- state.colors
     plot.contMapHisse(state.tree, outline=FALSE, lwd=edge.width.state, legend=FALSE, type=type
-                    , fsize=fsize, swap.underscore=swap.underscore, plot.tiplabels=plot.tiplabels)
+                    , fsize=fsize, swap.underscore=swap.underscore, show.tiplabels=show.tip.label)
     ## ####################
 
     ## Need to make the legend now:
@@ -407,7 +407,7 @@ plot=TRUE,anc.states=NULL,...){
 	if(plot){
             plot.contMapHisse(xx, fsize=fsize, ftype=ftype, lwd=lwd, outline=outline
                             , type=type, mar=mar, direction=direction, offset=offset
-                            , hold=hold, swap.underscore=TRUE, plot.tiplabels=TRUE)
+                            , hold=hold, swap.underscore=TRUE, show.tiplabels=TRUE)
     }
 	invisible(xx)
 }

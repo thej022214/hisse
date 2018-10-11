@@ -3,7 +3,7 @@
 ## These have been adapted to this package.
 ## For general use, besides internal usage in package "hisse", please use and cite "phytools".
 
-plot.contMapHisse <- function(x, fsize=1, ftype=NULL, outline=TRUE, lwd=4, type="phylogram", mar=rep(0.3,4), direction="rightwards", offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=TRUE, plot.tiplabels=TRUE){
+plot.contMapHisse <- function(x, fsize=1, outline=TRUE, lwd=4, type="phylogram", mar=rep(0.3,4), direction="rightwards", offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=TRUE, show.tiplabels=TRUE){
     
     ## This will plot the cont map for a HiSSE model.
     lims <- x$lims
@@ -17,12 +17,6 @@ plot.contMapHisse <- function(x, fsize=1, ftype=NULL, outline=TRUE, lwd=4, type=
     }
     if(length(fsize)==1){
         fsize <- rep(fsize,2)
-    }
-    if(is.null(ftype)){
-        ftype <- c("i","reg")
-    }
-    if(length(ftype)==1){
-        ftype <- c(ftype,"reg")
     }
     if(length(lwd)==1){
         lwd <- rep(lwd,2)
@@ -43,17 +37,17 @@ plot.contMapHisse <- function(x, fsize=1, ftype=NULL, outline=TRUE, lwd=4, type=
         }
 
         ## Make the plot.
-        plotSimmapHiSSE(tree, cols, pts=FALSE, lwd=lwd[1], fsize=fsize[1], mar=mar, ftype=ftype[1], add=outline,
+        plotSimmapHiSSE(tree, cols, pts=FALSE, lwd=lwd[1], fsize=fsize[1], mar=mar, add=outline,
                         xlim=xlim, ylim=ylim, direction=direction, offset=offset, hold=FALSE
-                      , swap.underscore=swap.underscore, plot.tiplabels=plot.tiplabels)
+                      , swap.underscore=swap.underscore, show.tiplabels=show.tiplabels)
         
     } else if(type=="fan"){
         invisible(
             capture.output(
                 plotSimmapHiSSE(tree,cols,lwd=lwd[1],
-                                mar=mar,fsize=fsize[1],add=outline,ftype=ftype[1],
+                                mar=mar,fsize=fsize[1],add=outline,
                                 type="fan",xlim=xlim,ylim=ylim,hold=FALSE,
-                                swap.underscore=swap.underscore, plot.tiplabels=plot.tiplabels)
+                                swap.underscore=swap.underscore, show.tiplabels=show.tiplabels)
             )
         )
     }
@@ -69,7 +63,7 @@ plotSimmapHiSSE <- function(tree,colors, fsize=1.0, lwd=2, pts=FALSE, node.numbe
                           , type="phylogram", setEnv=TRUE, part=1.0, xlim=NULL, ylim=NULL
                           , nodes="intermediate", tips=NULL, maxY=NULL, hold=TRUE
                           , lend=2, asp=NA, plot=TRUE
-                          , swap.underscore=TRUE, plot.tiplabels){
+                          , swap.underscore=TRUE, show.tiplabels){
 
     if(!inherits(tree,"phylo")) stop("tree should be object of class \"phylo\"")
     if(is.null(tree$maps)) stop("tree should contain mapped states on edges.")
@@ -81,11 +75,14 @@ plotSimmapHiSSE <- function(tree,colors, fsize=1.0, lwd=2, pts=FALSE, node.numbe
     }
     
     if(type=="phylogram"){
-        plotPhylogramHiSSE(tree,colors,fsize,ftype,lwd,pts,node.numbers,mar,add,offset,
-                           direction,setEnv,xlim,ylim,nodes,tips,lend,asp,plot, plot.tiplabels)
+        plotPhylogramHiSSE(tree = tree, colors = colors, fsize = fsize, ftype = ftype, lwd = lwd
+                         , pts = pts,node.numbers = node.numbers, mar = mar,add = add, offset = offset
+                         , direction = direction, xlim = xlim, ylim = ylim, placement = nodes
+                         , tips = tips,lend = lend, asp = asp, plot = plot,show.tiplabels = show.tiplabels)
     } else if(type=="fan"){
-        plotFanHiSSE(tree,colors,fsize,ftype,lwd,mar,add,part,setEnv,xlim,ylim,tips,
-                     maxY,lend,plot, plot.tiplabels)
+        plotFanHiSSE(tree = tree, colors =  colors, fsize = fsize, ftype = ftype, lwd = lwd, mar = mar
+                   , add = add, part = part, xlim = xlim, ylim = ylim, tips = tips
+                   , maxY = maxY, lend = lend, plot = plot, show.tiplabels = show.tiplabels)
     }
 
     if(hold){
@@ -117,8 +114,8 @@ reorderSimmapHiSSE <- function(tree, order="cladewise", index.only=FALSE, ...){
 ## The rest of the plotting functions:
 
 plotPhylogramHiSSE <- function(tree, colors, fsize, ftype, lwd, pts, node.numbers, mar, 
-                               add, offset, direction, setEnv, xlim, ylim, placement,
-                               tips, lend, asp, plot, plot.tiplabels){
+                               add, offset, direction, xlim, ylim, placement,
+                               tips, lend, asp, plot, show.tiplabels){
     ## set offset fudge (empirically determined)
     offsetFudge <- 1.37
     ## reorder
@@ -219,24 +216,15 @@ plotPhylogramHiSSE <- function(tree, colors, fsize, ftype, lwd, pts, node.number
         if(direction=="rightwards") pos<-if(par()$usr[1]>par()$usr[2]) 2 else 4
 
         ## Option to plot the tiplabels
-        if( plot.tiplabels ){
+        if( show.tiplabels ){
             for(i in 1:n) if(ftype) text(H[which(cw$edge[,2]==i),2],Y[i],cw$tip.label[i],pos=pos,
                                          offset=offset,cex=fsize,font=ftype)
         }
     }
-    if(setEnv){
-        PP<-list(type="phylogram",use.edge.length=TRUE,node.pos=1,
-                 show.tip.label=if(ftype) TRUE else FALSE,show.node.label=FALSE,
-                 font=ftype,cex=fsize,adj=0,srt=0,no.margin=FALSE,label.offset=offset,
-                 x.lim=xlim,y.lim=ylim,
-                 direction=direction,tip.color="black",Ntip=Ntip(cw),Nnode=cw$Nnode,
-                 edge=cw$edge,xx=sapply(1:(Ntip(cw)+cw$Nnode),
-                                        function(x,y,z) y[match(x,z)],y=H,z=cw$edge),yy=Y[,1])
-        assign("last_plot.phylo",PP,envir=.PlotPhyloEnv)
-    }
 }
 
-plotFanHiSSE <- function(tree,colors,fsize,ftype,lwd,mar,add,part,setEnv,xlim,ylim,tips,maxY,lend,plot,plot.tiplabels){
+plotFanHiSSE <- function(tree,colors,fsize,ftype,lwd,mar,add,part
+                        ,xlim,ylim,tips,maxY,lend,plot,show.tiplabels){
     if(!plot) cat("plot=FALSE option is not permitted for type=\"fan\". Tree will be plotted.\n")
                                         # reorder
     cw<-reorder(tree)
@@ -314,7 +302,7 @@ plotFanHiSSE <- function(tree,colors,fsize,ftype,lwd,mar,add,part,setEnv,xlim,yl
     }
                                         # plot labels
     ## Option to plot the tiplabels
-    if( plot.tiplabels ){
+    if( show.tiplabels ){
         for(i in 1:n){
             ii<-which(cw$edge[,2]==i)
             aa<-Y[ii,2]/(2*pi)*360
@@ -324,17 +312,5 @@ plotFanHiSSE <- function(tree,colors,fsize,ftype,lwd,mar,add,part,setEnv,xlim,yl
             aa<-if(aa>90&&aa<270) 180+aa else aa
             if(ftype) text(x[ii,2],y[ii,2],tt,srt=aa,adj=adj,cex=fsize,font=ftype)
         }
-    }
-    if(setEnv){
-        PP<-list(type="fan",use.edge.length=TRUE,node.pos=1,
-                 show.tip.label=if(ftype) TRUE else FALSE,show.node.label=FALSE,
-                 font=ftype,cex=fsize,adj=0,srt=0,no.margin=FALSE,label.offset=offset,
-                 x.lim=xlim,y.lim=ylim,direction="rightwards",tip.color="black",
-                 Ntip=Ntip(cw),Nnode=cw$Nnode,edge=cw$edge,
-                 xx=c(x[sapply(1:n,function(x,y) which(x==y)[1],y=cw$edge[,2]),2],x[1,1],
-                      if(m>1) x[sapply(2:m+n,function(x,y) which(x==y)[1],y=cw$edge[,2]),2] else c()),
-                 yy=c(y[sapply(1:n,function(x,y) which(x==y)[1],y=cw$edge[,2]),2],y[1,1],
-                      if(m>1) y[sapply(2:m+n,function(x,y) which(x==y)[1],y=cw$edge[,2]),2] else c()))
-        assign("last_plot.phylo",PP,envir=.PlotPhyloEnv)
     }
 }
