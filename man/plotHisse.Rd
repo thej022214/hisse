@@ -4,11 +4,13 @@
 \description{A plotting function for visualizing changes in states and rates over a phylogeny}
 \usage{
 \method{plot}{hisse.states}(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, 
-state.colors=NULL, edge.width.rate=5, edge.width.state=2, type="fan", 
-rate.range=NULL, show.tip.label=TRUE, fsize=1.0, lims.percentage.correction=0.001,
+state.colors=NULL, edge.width=5, width.factor=0.5, type="fan", 
+mar=c(0.1,0.1,0.1,0.1), outline=FALSE, outline.color="black",
+rate.range=NULL, show.tip.label=TRUE, swap.underscore=TRUE, 
+fsize=1.0, lims.percentage.correction=0.001,
 legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, 
 legend.kernel.rates="auto", legend.kernel.states="auto", 
-legend.bg="cornsilk3",...)
+legend.bg="cornsilk3")
 }       
 \arguments{
 \item{x}{a \code{hisse.states} object or a list of such objects.}
@@ -16,10 +18,11 @@ legend.bg="cornsilk3",...)
 \item{do.observed.only}{a logical indicating whether just the states should be plotted; for now, only TRUE works.}
 \item{rate.colors}{user specified colors to be used for coloring rates.}
 \item{state.colors}{user specified colors to be used for coloring states.} 
-\item{edge.width.rate}{the width of the rate lines.} 
-\item{edge.width.state}{the width of the state lines, which should be set so that it is narrower than the edge width for rates.}
-\item{type}{a character string specifying the type of phylogeny to be drawn. Options are "fan" (default) and "cladogram". See
-  \code{ape::plot.phylo} function for more options.}
+\item{edge.width}{the width of the branches of the phylogeny.} 
+\item{width.factor}{the factor multiplying the edge.width to get the
+  width of the branch for the states tree. Needs to be a numeric value
+  between 0 and 1.}
+\item{type}{a character string specifying the type of phylogeny to be drawn. Options are "fan" (default) or "phylogram".}
 \item{rate.range}{an optional two element vector. If present, specifies the range of rate values to use for plotting.}
 \item{show.tip.label}{a logical indicating whether tip names should be included.}
 \item{fsize}{sets the font size for the tip labels.}
@@ -31,7 +34,10 @@ legend.bg="cornsilk3",...)
 chooses what we think is the best option given your data, \dQuote{hist} makes a histogram, \dQuote{rectangular}, \dQuote{gaussian}, and others make a density plot. See \code{?density} for all non-\dQuote{hist} options.}
 \item{legend.kernel.states}{as above, for states.}
 \item{legend.bg}{sets the color for the legend background.}
-\item{\dots}{further arguments to be passed to \dQuote{plot} or \dQuote{plot.hisse.states}.}
+\item{mar}{sets the margins for the plot. See more information in 'help(par)'.}
+\item{outline}{whether to plot an outline on the branches of the tree. Choose the color of the outline using the parameter outline.color.}
+\item{outline.color}{the color for the outline. Defaults to "black".}
+\item{swap.underscore}{whether to substitute all "_" with " " on the labels for the tips.}
 }
 \details{
 Provides phylogeny that shows a heat map of the diversification rate parameter you specify (which could be turnover, net.div, speciation, extinction, or extinction.fraction).
@@ -48,11 +54,9 @@ moved around the overall tree plot by using \dQuote{legend.position}: this is a 
 the values are the starting and ending positions as a fraction of the overall plot. By default, the legend starts at the lower left corner and continues up 20% into 
 the rest of the plot (c(0, 0.2, 0, 0.2)): by changing values, you can make the legend larger or smaller and change its position. The heatmap code is modified slightly
 from Liam Revell's phytools package.
-
-Note that the examples trees generated in diversitree, which are detailed in other functions, will cause this function to throw an error. We are still working on why this occurs. But, these phy objects can be saved to another file, reuploaded, brought into MarginRecon, and then plotted with this function just fine. 
 }
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 }
-\author{Brian O'Meara}
+\author{Brian O'Meara and Daniel Caetano}
 \keyword{plotting}

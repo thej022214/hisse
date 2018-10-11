@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width.rate=5, edge.width.state=2, type="fan", rate.range=NULL, show.tip.label=TRUE, swap.underscore=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3", ...) {
+plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width=5, width.factor=0.5, type="fan", mar=c(0.1,0.1,0.1,0.1), outline=FALSE, outline.color="black", rate.range=NULL, show.tip.label=TRUE, swap.underscore=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3") {
 	hisse.results <- x
 	if( inherits(hisse.results, what=c("hisse.states","list")) ){
             if( inherits(hisse.results, what="hisse.states") ){
@@ -32,7 +32,6 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 
         ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
         old.par <- par(no.readonly=T)
-	par(fig=c(0,1, 0, 1), new=FALSE)
 	if(is.null(rate.colors)) {
 		rate.colors <- c("blue", "red")
 	}
@@ -62,28 +61,27 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 	rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
 	rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
 
-	rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
+	rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims)
 	#change colors
 	rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
 	rate.tree$cols[] <- rate.colors
 	#rate.tree$cols[] <- adjustcolor(rate.tree$cols[], alpha.f=0.3)
-	plot.contMapHisse(x=rate.tree, outline=FALSE, lwd=edge.width.rate
-                        , type=type, fsize=fsize, swap.underscore=swap.underscore
-                        , show.tiplabels=show.tip.label)
-	par(fig=c(0,1, 0, 1), new=TRUE)
 	#state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
 
 	state.lims <- range(c(states.tips, states.internal))
 	state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
 	state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
 
-	state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips, plot=FALSE, anc.states=states.internal, lims=state.lims, ...)
+	state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips, plot=FALSE, anc.states=states.internal, lims=state.lims)
 	#state.colors <- grey(seq(1,0,length.out=length(state.tree$cols)))
 	state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
 	state.tree$cols[]<- state.colors
-        plot.contMapHisse(x=state.tree, outline=FALSE, lwd=edge.width.rate
-                        , type=type, fsize=fsize, swap.underscore=swap.underscore
-                        , show.tiplabels=show.tip.label)
+
+        par(fig=c(0,1, 0, 1), new=FALSE)
+        plot.contMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
+                        , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
+                        , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
+                        , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
 
 	if(legend!="none") {
 		par(fig=legend.position, new=TRUE)
@@ -162,7 +160,7 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 }
 
 
-plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width.rate=5, edge.width.state=2, type="fan", rate.range=NULL, show.tip.label=TRUE, swap.underscore=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3", ...){
+plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width=5, width.factor=0.5, outline=FALSE, outline.color="grey", mar = c(0.1,0.1,0.1,0.1), type="fan", rate.range=NULL, show.tip.label=FALSE, swap.underscore=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend=TRUE, legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3"){
     hisse.results <- x
     if( inherits(hisse.results, what=c("hisse.geosse.states","list")) ){
         if( inherits(hisse.results, what="hisse.geosse.states") ){
@@ -188,7 +186,8 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
 
     ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
     old.par <- par(no.readonly=T)
-    
+
+    ## This sets the coordinates of the figure and facilitate localization.
     par(fig=c(0, 1, 0, 1), new=FALSE)
     if(is.null(rate.colors)) {
         rate.colors <- c("blue", "red")
@@ -202,39 +201,13 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     states.tips <- NA
     states.internal <- NA
     if (do.observed.only) {
+        ## states.tips is a table with 3 columns.
         states.tips <- ConvertManyToMultiState(hisse.results, "tip.mat")
         states.internal <- ConvertManyToMultiState(hisse.results, "node.mat")
     } else {
         stop("So far we can easily plot just the binary observed state; if you want to plot the hidden states, use a different function")
     }
     tree.to.plot <- hisse.results[[1]]$phy
-
-    ## ## Define function to deal with the tiplabels:
-    ## rep.rev <- function(x, y) {
-    ##     result<-paste(rep(y,x), collapse="", sep="")
-    ##     return(result)
-    ## }
-
-    ## ## Some explicit code here to help understand the trick. We will use tree A and B for different things:
-    ## if(!show.tip.label) { #this is b/c you cannot suppress plotting tip labels in phytools plotSimmap
-    ##     tree.to.plotA <- tree.to.plot
-    ##     tree.to.plotB <- tree.to.plot
-    ##     tree.to.plotA$tip.label <- sapply(sequence(length(tree.to.plotA$tip.label)), rep.rev, " ")
-    ##     tree.to.plotB$tip.label <- sapply(sequence(length(tree.to.plotB$tip.label)), rep.rev, " ")
-    ##     ## Also set the font size for both:
-    ##     fsizeA <- 0.0
-    ##     fsizeB <- 0.0
-    ## } else{
-    ##     ## If the tips states are plotted, then we need the first plot to ignore tiplabels and the second plot to use the tiplabels. This will prevent tiplabes to be duplicated.
-    ##     tree.to.plotA <- tree.to.plot
-    ##     tree.to.plotB <- tree.to.plot
-    ##     ## tree.to.plotA$tip.label <- sapply(sequence(length(tree.to.plotA$tip.label)), rep.rev, " ")
-    ##     ## Also set the font size for both:
-    ##     fsizeA <- 0.0
-    ##     fsizeB <- fsize
-    ## }
-    
-    ## rate.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToRate(hisse.object$tip.mat, rate.vector= rate.vector), plot=FALSE, anc.states=ConvertToRate(hisse.object$node.mat, rate.vector= rate.vector), ...)
     rate.lims <- range(c(rates.tips, rates.internal))
     if(!is.null(rate.range)) {
         if(min(rate.range) > min(rate.lims) | max(rate.range) < max(rate.lims)) {
@@ -250,13 +223,7 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     ## change colors
     rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
     rate.tree$cols[] <- rate.colors
-    ## rate.tree$cols[] <- adjustcolor(rate.tree$cols[], alpha.f=0.3)
-    plot.contMapHisse(rate.tree, outline=FALSE, lwd=edge.width.rate, type=type, fsize=fsize
-                     , swap.underscore=swap.underscore, show.tiplabels=show.tip.label)
-    par(fig=c(0,1, 0, 1), new=TRUE)
-    ## state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
-
-    ## ### NEW STUFF ######
+    
     states.tips.tmp <- rowSums(states.tips %*% c(0,1,2))
     names(states.tips.tmp) <- 1:length(states.tips.tmp)
     states.internal.tmp <- rowSums(states.internal %*% c(0,1,2))
@@ -267,25 +234,19 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims, ...)
     state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
     state.tree$cols[]<- state.colors
-    plot.contMapHisse(state.tree, outline=FALSE, lwd=edge.width.state, legend=FALSE, type=type
-                    , fsize=fsize, swap.underscore=swap.underscore, show.tiplabels=show.tip.label)
-    ## ####################
+
+    ## Make the plot.
+    ## This is NOT using the phytools version.
+    ## This is a special plotting function for HiSSE.
+    plot.contMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
+                    , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
+                    , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
+                    , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
 
     ## Need to make the legend now:
-    if(legend != "none") {
-        par(fig=legend.position, new=TRUE)
-        plot(x=c(-0.1, 1.1), y=c(-1.5, 1.5), xlab="", ylab="", bty="n", type="n", xaxt="n", yaxt="n")
-        rect(-0.1, -1.1, 1.1, 1.1, border=NA, col=legend.bg)
-        rates.to.plot <- c()
-        states.to.plot <- c()
-        if(legend=="all" | legend=="tips") {
-            rates.to.plot <- append(rates.to.plot, rates.tips)
-            states.to.plot <- append(states.to.plot, states.tips)
-        }
-        if(legend=="all" | legend=="internal") {
-            rates.to.plot <- append(rates.to.plot, rates.internal)
-            states.to.plot <- append(states.to.plot, states.internal)
-        }
+    ## Supporting only the plot of the rates in this version:
+    if( legend ){
+        rates.to.plot <- rates.tips
         if(legend.kernel.rates=="auto") {
             if(length(unique(rates.to.plot))<=4) {
                 legend.kernel.rates <- "hist"
@@ -293,36 +254,23 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
                 legend.kernel.rates <- "rectangular"
             }
         }
-        if(legend.kernel.states=="auto") {
-            if(length(unique(states.to.plot))<=4) {
-                legend.kernel.states <- "hist"
-            } else {
-                legend.kernel.states <- "rectangular"
-            }
-        }
-        
-        rates.density <- GetNormalizedDensityPlot(rates.to.plot, rate.lims, legend.kernel.rates)
-        states.density <- GetNormalizedDensityPlot(states.to.plot, state.lims, legend.kernel.states)
-        states.density$y <- (-1) * states.density$y ## so it gets drawn below the other one
+
+        ## Make the plot:
+        par(fig=legend.position, new=TRUE)
+        plot(x=c(-0.1, 1.1), y=c(0, 1.5), xlab="", ylab="", bty="n", type="n", xaxt="n", yaxt="n")
+        rect(-0.1, 0, 1.1, 1.1, border=NA, col=legend.bg)
         par(lend=1)
-        
+        rates.density <- GetNormalizedDensityPlot(rates.to.plot, rate.lims, legend.kernel.rates)
         segments(x0=rates.density$x, y0=rep(0, length(rates.density$y)), y1=rates.density$y
                , col=rate.colors[1+as.integer(round((length(rate.colors)-1)* rates.density$x))]
                , lwd=ifelse(legend.kernel.rates=="hist",4,1))
         text(x=0, y=1.2, labels=format(rate.lims[1], digits=2), cex=legend.cex)
         text(x=1, y=1.2, labels=format(rate.lims[2], digits=2), cex=legend.cex)
         text(x=0.5, y=1.2, labels=rate.param, cex=legend.cex)
-
-        segments(x0=states.density$x, y0=rep(0, length(states.density$y)), y1=states.density$y, col=state.colors[1+as.integer(round((length(state.colors)-1)* states.density$x))], lwd=ifelse(legend.kernel.states=="hist",4,1))
-        text(x=0, y=-1.2, labels="0", cex=legend.cex)
-        text(x=1, y=-1.2, labels="1", cex=legend.cex)
-        text(x=0.5, y=-1.2, labels="State", cex=legend.cex)
-
     }
     
     ## Return par to the previous state.
     par( old.par )
-    
     ## The tiplables for the individual trees will be strange. But this seems fine.
     return(list(rate.tree=rate.tree, state.tree=state.tree))
 }
