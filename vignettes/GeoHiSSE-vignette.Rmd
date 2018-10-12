@@ -201,7 +201,7 @@ head( model.ave.rates )
 
 Finally, we can plot the use the resulting data matrix to make a plot of the results.
 ```{r fig1, fig.height = 15, fig.width = 5}
-plot.geohisse.states(x = recon.models, rate.param = "net.div", type = "phylogram", 
-                     show.tip.label = FALSE, legend = "none")
+#plot.geohisse.states(x = recon.models, rate.param = "net.div", type = "phylogram", 
+#                     show.tip.label = FALSE, legend = "none")
 ```
 

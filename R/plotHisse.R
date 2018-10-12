@@ -219,7 +219,7 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
     rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
 
-    rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims, ...)
+    rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims)
     ## change colors
     rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
     rate.tree$cols[] <- rate.colors
@@ -231,7 +231,7 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     state.lims <- range(c(states.tips.tmp, states.internal.tmp))
     state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
     state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
-    state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims, ...)
+    state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims)
     state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
     state.tree$cols[]<- state.colors
 
