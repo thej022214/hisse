@@ -5,7 +5,8 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width=5, width.factor=0.5, type="fan", mar=c(0.1,0.1,0.1,0.1), outline=FALSE, outline.color="black", rate.range=NULL, show.tip.label=TRUE, swap.underscore=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend="tips", legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3") {
+## Setting the functions to be full S3 and congruent with RCran S3 requirements.
+plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.label = TRUE, fsize = 1.0, legend = "tips", ...) {
     hisse.results <- x
     if( inherits(hisse.results, what=c("hisse.states","list")) ){
         if( inherits(hisse.results, what="hisse.states") ){
@@ -29,6 +30,108 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
     } else {
         stop( "x needs to be an object of class 'hisse.states'." )
     }
+
+    ## Check the parameters for the functions:
+    rate.param <- match.arg(rate.param, c("turnover", "net.div", "speciation", "extinction"
+                                        , "extinction.fraction") )
+    type <- match.arg(type, c("fan", "phylogram") )
+    if( !is.logical( show.tip.label ) ) stop("show.tip.label needs TRUE or FALSE")
+    legend <- match.arg(legend, c("none", "traditional", "tips", "internal", "all") )
+    
+    ## ############################################
+    ## Block to get the parameters from the ... list.
+    ## Will also check the parameters to see if they are valid.
+    if(hasArg(do.observed.only)){
+        do.observed.only <- list(...)$do.observed.only
+        if( !is.logical( do.observed.only ) ) stop("do.observed.only needs TRUE or FALSE")
+    } else{
+        do.observed.only <- TRUE
+    }
+    if(hasArg(rate.colors)){
+        rate.colors <- list(...)$rate.colors
+    } else{
+        rate.colors <- NULL
+    }
+    if(hasArg(state.colors)){
+        state.colors <- list(...)$state.colors
+    } else{
+        state.colors <- NULL
+    }
+    if(hasArg(edge.width)){
+        edge.width <- list(...)$edge.width
+        if( !is.numeric( edge.width ) ) stop("edge.width needs a single numeric value")
+    } else{
+        edge.width <- 5
+    }
+    if(hasArg(width.factor)){
+        width.factor <- list(...)$width.factor
+        if( !is.numeric( width.factor ) ) stop("width.factor needs a single numeric value")
+    } else{
+        width.factor <- 0.5
+    }
+    if(hasArg(mar)){
+        mar <- list(...)$mar
+        if( !is.numeric( mar ) ) stop("mar needs a numeric vector")
+    } else{
+        mar <- c(0.1,0.1,0.1,0.1)
+    }
+    if(hasArg(outline)){
+        outline <- list(...)$outline
+        if( !is.logical( outline ) ) stop("outline needs TRUE or FALSE")
+    } else{
+        outline <- FALSE
+    }
+    if(hasArg(outline.color)){
+        outline.color <- list(...)$outline.color
+    } else{
+        outline.color <- "gray"
+    }
+    if(hasArg(rate.range)){
+        rate.range <- list(...)$rate.range
+    } else{
+        rate.range <- NULL
+    }
+    if(hasArg(swap.underscore)){
+        swap.underscore <- list(...)$swap.underscore
+        if( !is.logical( swap.underscore ) ) stop("swap.underscore needs TRUE or FALSE")
+    } else{
+        swap.underscore <- TRUE
+    }
+    if(hasArg(lims.percentage.correction)){
+        lims.percentage.correction <- list(...)$lims.percentage.correction
+        if( !is.numeric( lims.percentage.correction ) ) stop("lims.percentage.correction needs a numeric value")
+    } else{
+        lims.percentage.correction <- 0.001
+    }
+    if(hasArg(legend.position)){
+        legend.position <- list(...)$legend.position
+        if( !is.numeric( legend.position ) ) stop("legend.position needs a numeric vector")
+    } else{
+        legend.position <- c(0, 0.2, 0, 0.2)
+    }
+    if(hasArg(legend.cex)){
+        legend.cex <- list(...)$legend.cex
+        if( !is.numeric( legend.cex ) ) stop("legend.cex needs a numeric value")
+    } else{
+        legend.cex <- 0.4
+    }
+    if(hasArg(legend.kernel.rates)){
+        legend.kernel.rates <- list(...)$legend.kernel.rates
+    } else{
+        legend.kernel.rates <- "auto"
+    }
+    if(hasArg(legend.kernel.states)){
+        legend.kernel.states <- list(...)$legend.kernel.states
+    } else{
+        legend.kernel.states <- "auto"
+    }
+    if(hasArg(legend.bg)){
+        legend.bg <- list(...)$legend.bg
+    } else{
+        legend.bg <- "cornsilk3"
+    }
+    ## ############################################
+
     
     ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
     old.par <- par(no.readonly=T)
@@ -160,7 +263,7 @@ plot.hisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=
 }
 
 
-plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colors=NULL, state.colors=NULL, edge.width=5, width.factor=0.5, outline=FALSE, outline.color="grey", mar = c(0.1,0.1,0.1,0.1), type="fan", rate.range=NULL, show.tip.label=FALSE, swap.underscore=TRUE, fsize=1.0, lims.percentage.correction=0.001, legend=TRUE, legend.position=c(0, 0.2, 0, 0.2), legend.cex=0.4, legend.kernel.rates="auto", legend.kernel.states="auto", legend.bg="cornsilk3"){
+plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.label = TRUE, fsize = 1.0, legend = TRUE, ...){
     hisse.results <- x
     if( inherits(hisse.results, what=c("hisse.geosse.states","list")) ){
         if( inherits(hisse.results, what="hisse.geosse.states") ){
@@ -183,6 +286,103 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     } else {
         stop( "x needs to be an object of class 'hisse.geosse.states'." )
     }
+
+    ## Check the values for the parameters:
+    rate.param <- match.arg(rate.param, c("turnover", "net.div", "speciation", "extinction"
+                                        , "extinction.fraction") )
+    type <- match.arg(type, c("fan", "phylogram") )
+    if( !is.logical( show.tip.label ) ) stop("show.tip.label needs TRUE or FALSE")
+    if( !is.numeric( fsize ) ) stop("fsize needs a numeric value")
+    if( !is.logical( legend ) ) stop("legend needs TRUE or FALSE")
+    
+    ## ############################################
+    ## Block to get the parameters from the ... list.
+    ## Will also check the parameters to see if they are valid.
+    if(hasArg(do.observed.only)){
+        do.observed.only <- list(...)$do.observed.only
+        if( !is.logical( do.observed.only ) ) stop("do.observed.only needs TRUE or FALSE")
+    } else{
+        do.observed.only <- TRUE
+    }
+    if(hasArg(rate.colors)){
+        rate.colors <- list(...)$rate.colors
+    } else{
+        rate.colors <- NULL
+    }
+    if(hasArg(state.colors)){
+        state.colors <- list(...)$state.colors
+    } else{
+        state.colors <- NULL
+    }
+    if(hasArg(edge.width)){
+        edge.width <- list(...)$edge.width
+        if( !is.numeric( edge.width ) ) stop("edge.width needs a single numeric value")
+    } else{
+        edge.width <- 5
+    }
+    if(hasArg(width.factor)){
+        width.factor <- list(...)$width.factor
+        if( !is.numeric( width.factor ) ) stop("width.factor needs a single numeric value")
+    } else{
+        width.factor <- 0.5
+    }
+    if(hasArg(mar)){
+        mar <- list(...)$mar
+        if( !is.numeric( mar ) ) stop("mar needs a numeric vector")
+    } else{
+        mar <- c(0.1,0.1,0.1,0.1)
+    }
+    if(hasArg(outline)){
+        outline <- list(...)$outline
+        if( !is.logical( outline ) ) stop("outline needs TRUE or FALSE")
+    } else{
+        outline <- FALSE
+    }
+    if(hasArg(outline.color)){
+        outline.color <- list(...)$outline.color
+    } else{
+        outline.color <- "gray"
+    }
+    if(hasArg(rate.range)){
+        rate.range <- list(...)$rate.range
+    } else{
+        rate.range <- NULL
+    }
+    if(hasArg(swap.underscore)){
+        swap.underscore <- list(...)$swap.underscore
+        if( !is.logical( swap.underscore ) ) stop("swap.underscore needs TRUE or FALSE")
+    } else{
+        swap.underscore <- TRUE
+    }
+    if(hasArg(lims.percentage.correction)){
+        lims.percentage.correction <- list(...)$lims.percentage.correction
+        if( !is.numeric( lims.percentage.correction ) ) stop("lims.percentage.correction needs a numeric value")
+    } else{
+        lims.percentage.correction <- 0.001
+    }
+    if(hasArg(legend.position)){
+        legend.position <- list(...)$legend.position
+        if( !is.numeric( legend.position ) ) stop("legend.position needs a numeric vector")
+    } else{
+        legend.position <- c(0, 0.2, 0, 0.2)
+    }
+    if(hasArg(legend.cex)){
+        legend.cex <- list(...)$legend.cex
+        if( !is.numeric( legend.cex ) ) stop("legend.cex needs a numeric value")
+    } else{
+        legend.cex <- 0.4
+    }
+    if(hasArg(legend.kernel)){
+        legend.kernel <- list(...)$legend.kernel
+    } else{
+        legend.kernel <- "auto"
+    }
+    if(hasArg(legend.bg)){
+        legend.bg <- list(...)$legend.bg
+    } else{
+        legend.bg <- "cornsilk3"
+    }
+    ## ############################################
     
     ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
     old.par <- par(no.readonly=T)
@@ -247,11 +447,11 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
     ## Supporting only the plot of the rates in this version:
     if( legend ){
         rates.to.plot <- rates.tips
-        if(legend.kernel.rates=="auto") {
+        if(legend.kernel=="auto") {
             if(length(unique(rates.to.plot))<=4) {
-                legend.kernel.rates <- "hist"
+                legend.kernel <- "hist"
             } else {
-                legend.kernel.rates <- "rectangular"
+                legend.kernel <- "rectangular"
             }
         }
         
@@ -260,10 +460,10 @@ plot.geohisse.states <- function(x, rate.param, do.observed.only=TRUE, rate.colo
         plot(x=c(-0.1, 1.1), y=c(0, 1.5), xlab="", ylab="", bty="n", type="n", xaxt="n", yaxt="n")
         rect(-0.1, 0, 1.1, 1.1, border=NA, col=legend.bg)
         par(lend=1)
-        rates.density <- GetNormalizedDensityPlot(rates.to.plot, rate.lims, legend.kernel.rates)
+        rates.density <- GetNormalizedDensityPlot(rates.to.plot, rate.lims, legend.kernel)
         segments(x0=rates.density$x, y0=rep(0, length(rates.density$y)), y1=rates.density$y
         , col=rate.colors[1+as.integer(round((length(rate.colors)-1)* rates.density$x))]
-        , lwd=ifelse(legend.kernel.rates=="hist",4,1))
+        , lwd=ifelse(legend.kernel=="hist",4,1))
         text(x=0, y=1.2, labels=format(rate.lims[1], digits=2), cex=legend.cex)
         text(x=1, y=1.2, labels=format(rate.lims[2], digits=2), cex=legend.cex)
         text(x=0.5, y=1.2, labels=rate.param, cex=legend.cex)
