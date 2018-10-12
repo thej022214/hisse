@@ -4,7 +4,8 @@
 \description{Exports a likelihood function dependent on the data and a
   named vector with the parameters for the model.}
 \usage{
-makeHiSSELikelihood(phy, data, f=c(1,1), condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, ode.eps=0)
+makeHiSSELikelihood(phy, data, f=c(1,1), condition.on.survival=TRUE, root.type="madfitz", 
+root.p=NULL, ode.eps=0)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}

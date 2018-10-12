@@ -387,7 +387,7 @@ plotFanHiSSE <- function(treeA, colorsA, treeB, colorsB, fsize, ftype, lwd, lwd.
             r<-R[match(i,treeOut$edge)]
             a1<-min(Y[which(treeOut$edge==i)])
             a2<-max(Y[which(treeOut$edge==i)])
-            plotrix::draw.arc(0,0,r,a1,a2,lwd=lwd,col=outline.color)
+            draw.arc(0,0,r,a1,a2,lwd=lwd,col=outline.color)
         }
         
     }
@@ -423,7 +423,7 @@ plotFanHiSSE <- function(treeA, colorsA, treeB, colorsB, fsize, ftype, lwd, lwd.
         r<-R[match(i,treeA$edge)]
         a1<-min(Y[which(treeA$edge==i)])
         a2<-max(Y[which(treeA$edge==i)])
-        plotrix::draw.arc(0,0,r,a1,a2,lwd=lwdA,col=colorsA[names(treeA$maps[[match(i,treeA$edge[,1])]])[1]])
+        draw.arc(0,0,r,a1,a2,lwd=lwdA,col=colorsA[names(treeA$maps[[match(i,treeA$edge[,1])]])[1]])
     }
 
     ## Make the plot for the second layer:
@@ -457,7 +457,7 @@ plotFanHiSSE <- function(treeA, colorsA, treeB, colorsB, fsize, ftype, lwd, lwd.
         r<-R[match(i,treeB$edge)]
         a1<-min(Y[which(treeB$edge==i)])
         a2<-max(Y[which(treeB$edge==i)])
-        plotrix::draw.arc(0,0,r,a1,a2,lwd=lwdB,col=colorsB[names(treeB$maps[[match(i,treeB$edge[,1])]])[1]])
+        draw.arc(0,0,r,a1,a2,lwd=lwdB,col=colorsB[names(treeB$maps[[match(i,treeB$edge[,1])]])[1]])
     }
 
     ## Plot the tip labels if necessary:    
@@ -473,3 +473,9 @@ plotFanHiSSE <- function(treeA, colorsA, treeB, colorsB, fsize, ftype, lwd, lwd.
         }
     }
 }
+
+## function whichorder
+## written by Liam Revell 2011, 2013, 2015
+## Replicated here to avoid dependencies problems due to RCran policy.
+## Very simple function.
+whichorder <- function(x,y) sapply(x, function(x,y) which(x==y), y=y)

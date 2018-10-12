@@ -228,8 +228,8 @@ hisse.results.list = list()
 for(i in sequence(length(files))){
   load(files[i])
   hisse.results.list[[i]] = pp.recon
-  rm(pp.recon)
 }
+rm(pp.recon)
 ```
 
 ## References
