@@ -79,15 +79,16 @@ as the number of taxa increases, the calculation becomes much more efficient. In
 versions, we will likely allow for multicore processing of these calculations to further 
 improve speed. 
 
-As for data file format, \code{MuHiSSE} expects a two column matrix or data frame, with 
-the first column containing the species names and the second containing the binary 
-character information. Note that the order of the data file and the names in the 
-\dQuote{phylo} object need not be in the same order; \code{hisse} deals with this 
+As for data file format, \code{MuHiSSE} expects a three column matrix or data frame, with 
+the first column containing the species names and the second and third containing the 
+binary character information. Note that the order of the data file and the names in the 
+\dQuote{phylo} object need not be in the same order; \code{MuHiSSE} deals with this 
 internally. Also, the character information must be coded as 0 and 1, otherwise, the
-function will misbehave. However, if the state for a species is unknown, a user can 
-specify this with a 2, and the state will be considered maximally ambiguous.
+function will misbehave. However, if the state for a species is unknown for either 
+character, a user can specify this with a 2, and the state will be considered maximally 
+ambiguous.
 
-As with \code{HiSSE}, we employ a modified optimization procedure. In other words, rather
+As with \code{hisse}, we employ a modified optimization procedure. In other words, rather
 than optimizing birth and death separately, \code{fGeoHisse} optimizes orthogonal 
 transformations of these variables: we let tau = birth+death define "net turnover", and 
 we let eps = death/birth define the \dQuote{extinction fraction}. This reparameterization 

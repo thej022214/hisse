@@ -134,6 +134,8 @@ parameters.}
 \item{$f}{user-supplied sampling frequencies.}
 \item{$hidden.areas}{a logical indicating whether hidden areas were included in the 
 model.}
+\item{$assume.cladogenetic}{a logical indicating whether cladogenetic events were allowed
+at nodes.}
 \item{$condition.on.surivival}{a logical indicating whether the
   likelihood was conditioned on the survival of two lineages and the speciation event 
 subtending them.}
