@@ -189,7 +189,7 @@ void geohisse_derivs(int *neq, double *t, double *y, double *ydot, double *yout,
     /* The E's */
     /*  dE_0A / dt  */
     ydot[0]  = -(s0A + d0A_1A + d0A_01A + d0A_0B + d0A_0C + d0A_0D + d0A_0E + x0A) * E_0A + (d0A_1A * E_1A + d0A_01A * E_01A + d0A_0B * E_0B + d0A_0C * E_0C + d0A_0D * E_0D + d0A_0E * E_0E) + x0A + (s0A * E_0A * E_0A);
-    
+
     /*  dE_1A / dt  */
     ydot[1]  = -(s1A + d1A_0A + d1A_01A + d1A_1B + d1A_1C + d1A_1D + d1A_1E + x1A) * E_1A + (d1A_0A * E_0A + d1A_01A * E_01A + d1A_1B * E_1B + d1A_1C * E_1C + d1A_1D * E_1D + d1A_1E * E_1E) + x1A + (s1A * E_1A * E_1A);
     

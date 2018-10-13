@@ -31,7 +31,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         to.mod.ave <- type
     }    
 
-    if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states' or 'hisse.geosse.states'.")
+    if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states", "muhisse.states")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states', 'hisse.geosse.states', or 'muhisse.states'.")
 
     ## If hisse.results is a list of model reconstructions, then test if they have $aic. Return error message otherwise.
     ## There is no need for the $aic element if AIC.weigths argument is provided.
@@ -40,7 +40,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         if( is.null( AIC.weights ) ){
             empty.aic <- sapply(hisse.results, function(x) !is.null(x$aic) )
             if( sum( empty.aic ) != length(hisse.results) ) stop("All elements of the list need to have a '$aic' element.")
-            model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states")) )
+            model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states", "muhisse.states")) )
             if( as.logical( sum( model.class ) ) ) stop("x needs to be a list of model reconstruction with class 'hisse.states' or 'hisse.geosse.states' ")
         } else{
             if( !length(hisse.results) == length(AIC.weights) ){
@@ -49,7 +49,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         }
     }
 
-    if( inherits(hisse.results, what = c("hisse.states", "hisse.geosse.states")) ){ # we have to make a list so we can run this generally
+    if( inherits(hisse.results, what = c("hisse.states", "hisse.geosse.states", "muhisse.states")) ){ # we have to make a list so we can run this generally
         if( !is.null( AIC.weights ) ){
             stop( "If using a single model, then 'AIC.weights' needs to be NULL. " )
         }
@@ -84,7 +84,12 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         if(class(hisse.results[[1]])=="hisse.states"){
             states.tips <- ConvertManyToBinaryState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
         }
+     
         if(class(hisse.results[[1]])=="hisse.geosse.states"){
+            states.tips <- ConvertManyToMultiState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
+        }
+
+        if(class(hisse.results[[1]])=="muhisse.states"){
             states.tips <- ConvertManyToMultiState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
         }
 
@@ -110,9 +115,15 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         if(class(hisse.results[[1]])=="hisse.states"){
             states.internal <- ConvertManyToBinaryState(hisse.results, which.element="node.mat", AIC.weights=AIC.weights)
         }
+
         if(class(hisse.results[[1]])=="hisse.geosse.states"){
             states.internal <- ConvertManyToMultiState(hisse.results, which.element="node.mat", AIC.weights=AIC.weights)
         }
+
+        if(class(hisse.results[[1]])=="muhisse.states"){
+            states.internal <- ConvertManyToMultiState(hisse.results, which.element="node.mat", AIC.weights=AIC.weights)
+        }
+
 
         final.df.nodes <- data.frame(id=hisse.results[[1]]$node.mat[,1], state=states.internal, turnover=averaged.node.rates[[1]], net.div=averaged.node.rates[[2]], speciation=averaged.node.rates[[3]], extinct.frac=averaged.node.rates[[4]], extinction=averaged.node.rates[[5]])
         ## Check if the function need to return only the reconstruction for the nodes:

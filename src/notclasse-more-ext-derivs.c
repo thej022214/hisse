@@ -98,7 +98,6 @@ void notclasse_more_derivs(int *neq, double *t, double *y, double *ydot, double 
     d1B_01B = params_hinoclass[33],
     d01B_0B = params_hinoclass[34],
     d01B_1B = params_hinoclass[35],
-    
     d0B_0A = params_hinoclass[36],
     d0B_0C = params_hinoclass[37],
     d0B_0D = params_hinoclass[38],
@@ -124,7 +123,6 @@ void notclasse_more_derivs(int *neq, double *t, double *y, double *ydot, double 
     d1C_01C = params_hinoclass[57],
     d01C_0C = params_hinoclass[58],
     d01C_1C = params_hinoclass[59],
-    
     d0C_0A = params_hinoclass[60],
     d0C_0B = params_hinoclass[61],
     d0C_0D = params_hinoclass[62],
@@ -150,7 +148,6 @@ void notclasse_more_derivs(int *neq, double *t, double *y, double *ydot, double 
     d1D_01D = params_hinoclass[81],
     d01D_0D = params_hinoclass[82],
     d01D_1D = params_hinoclass[83],
-    
     d0D_0A = params_hinoclass[84],
     d0D_0B = params_hinoclass[85],
     d0D_0C = params_hinoclass[86],
@@ -176,7 +173,6 @@ void notclasse_more_derivs(int *neq, double *t, double *y, double *ydot, double 
     d1E_01E = params_hinoclass[105],
     d01E_0E = params_hinoclass[106],
     d01E_1E = params_hinoclass[107],
-    
     d0E_0A = params_hinoclass[108],
     d0E_0B = params_hinoclass[109],
     d0E_0C = params_hinoclass[110],

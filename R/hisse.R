@@ -17,6 +17,10 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 		}
 	}
 	
+    if(!root.type == "madfitz" & !root.type == "equal" & !root.type == "user"){
+        stop("Check that you specified a proper root.type option. Options are 'madfitz', 'equal', or 'user'.", call.=FALSE)
+    }
+
 	if(is.null(trans.rate)){
 		stop("Rate matrix needed. See TransMatMaker() to create one.")
 	}

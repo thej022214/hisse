@@ -23,7 +23,7 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
         lower <- hisse.obj$lower.bounds
         upper <- hisse.obj$upper.bounds
 
-        #Bad Jeremy! Hard-coded column headers...
+                                        #Bad Jeremy! Hard-coded column headers...
         if(output.type == "turnover"){
             interval.names <- c("lnLik", "turn.0A", "turn.0B", "turn.0C", "turn.0D", "turn.1A", "turn.1B", "turn.1C", "turn.1D", "eps.0A", "eps.0B", "eps.0C", "eps.0D", "eps.1A", "eps.1B", "eps.1C", "eps.1D", "q0B0A", "q0C0A", "q0D0A", "q1A0A", "q0A0B", "q0C0B", "q0D0B", "q1B0B", "q0A0C", "q0B0C", "q0D0C", "q1C0C", "q0A0D", "q0B0D", "q0C0D", "q1D0D", "q0A1A", "q1B1A", "q1C1A", "q1D1A", "q0B1B", "q1A1B", "q1C1B", "q1D1B", "q0C1C", "q1A1C", "q1B1C", "q1D1C", "q0D1D", "q1A1D", "q1B1D", "q1C1D")
         }
@@ -131,7 +131,7 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
         lower <- hisse.obj$lower.bounds
         upper <- hisse.obj$upper.bounds
 
-        #Bad Jeremy! Hard-coded column headers...
+                                        #Bad Jeremy! Hard-coded column headers...
         if(output.type == "turnover"){
             interval.names <- c("lnLik", "turn.0A", "turn.1A", "turn.0B", "turn.1B", "eps.0A", "eps.1A", "eps.0B", "eps.1B","q1A0A","q0B0A","q1B0A","q0A1A","q0B1A","q1B1A","q0A0B","q1A0B","q1B0B","q0A1B","q1A1B","q0A1B","turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
         }
@@ -188,19 +188,22 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
         }else{
             ci.interval = apply(interval.results.in, 2, quantile)
             colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
-            obj = NULL
-            obj$ci <- ci.interval[,1:21]
-            obj$points.within.region = interval.results.in[,1:21]
-            obj$all.points = interval.results.final[,1:21]
-            class(obj) = "hisse.support"
-            return(obj)
+            if(class(interval.results.in)=="numeric"){
+                stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
+            }else{
+                obj = NULL
+                obj$ci <- ci.interval[,1:21]
+                obj$points.within.region = interval.results.in[,1:21]
+                obj$all.points = interval.results.final[,1:21]
+                class(obj) = "hisse.support"
+                return(obj)
+            }
         }
     }
 }
 
-
 AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=2, n.points=5000, verbose=TRUE, phy, data, index.par, f, hidden.states, condition.on.survival, root.type, root.p, scale.int, hisse.null.four=FALSE, min.number.points=10) {
-    #Wrangle the data so that we can make use of DownPass easily:
+                                        #Wrangle the data so that we can make use of DownPass easily:
     actual.params = which(index.par < max(index.par))
     model.vec <- numeric(length(index.par))
     model.vec[] <- c(par,0)[index.par]
@@ -222,11 +225,11 @@ AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=
         cache$eps.beta.factorA = 1 / dbeta(0.1, model.vec[31], model.vec[35])
         cache$eps.beta.factorB = 1 / dbeta(0.1, model.vec[32], model.vec[36])
         phy$node.label <- NULL
-        #############################################################
-        #Now assess the likelihood at the MLE:
+#############################################################
+                                        #Now assess the likelihood at the MLE:
         starting <- -DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     }
-    #Generate the multipliers for feeling the boundaries:
+                                        #Generate the multipliers for feeling the boundaries:
     min.multipliers <- rep(1, length(par))
     max.multipliers <- rep(1, length(par))
     results <- data.frame(data.frame(matrix(nrow=n.points+1, ncol=1+length(par))))
@@ -271,12 +274,12 @@ AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=
                     max.multipliers[j] <- max.multipliers[j] * (1+scale.int) #expand the range
                 } else {
                     if(width.ratio < 0.02 & i>100) { # we are sampling too widely
-                      min.multipliers[j] <- min.multipliers[j] * (1+scale.int)
-                      max.multipliers[j] <- max.multipliers[j] * (1-scale.int) #contract the range
+                        min.multipliers[j] <- min.multipliers[j] * (1+scale.int)
+                        max.multipliers[j] <- max.multipliers[j] * (1-scale.int) #contract the range
                     } else {
-                      min.multipliers[j] <- 1
-                      max.multipliers[j] <- 1
-                  }
+                        min.multipliers[j] <- 1
+                        max.multipliers[j] <- 1
+                    }
                 }
             }
         }
@@ -285,10 +288,10 @@ AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=
         }
     }
     while(length(which((results[,1]-min(results[,1], na.rm=TRUE))<desired.delta))<min.number.points) {
-      warning("Did not generate enough points in the region; restarting to create additional points")
-      print(paste("Now doing an additional", 2+round(n.points/4), "points to the", dim(results)[1], "ones already done because not enough points in the good enough region were sampled"))
-      new.results <- AdaptiveConfidenceIntervalSampling(par=par, lower=lower, upper=upper, desired.delta=desired.delta, n.points=2+round(n.points/4), verbose=verbose, phy=phy, data=data, index.par=index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, hisse.null.four=hisse.null.four, min.number.points=0)
-      results <- rbind(results, new.results[-1,])
+        warning("Did not generate enough points in the region; restarting to create additional points")
+        print(paste("Now doing an additional", 2+round(n.points/4), "points to the", dim(results)[1], "ones already done because not enough points in the good enough region were sampled"))
+        new.results <- AdaptiveConfidenceIntervalSampling(par=par, lower=lower, upper=upper, desired.delta=desired.delta, n.points=2+round(n.points/4), verbose=verbose, phy=phy, data=data, index.par=index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, hisse.null.four=hisse.null.four, min.number.points=0)
+        results <- rbind(results, new.results[-1,])
     }
     return(results)
 }
@@ -307,20 +310,20 @@ GenerateValues <- function(par, lower, upper, scale.int, max.tries=100, expand.p
             min.val <- min(max(lower[i], (1-scale.int)*examined.min[i]), examined.max[i]) #just in case min is greater than max
             max.val <- max(min(upper[i], (1+scale.int)*examined.max[i]), examined.min[i])
             if(isTRUE(all.equal(min.val, max.val))) {
-              min.val <- min.val * (1-scale.int)
-              max.val <- max.val * (1+scale.int)
+                min.val <- min.val * (1-scale.int)
+                max.val <- max.val * (1+scale.int)
             }
             new.vals[i] <- runif(1, min.val, max.val)
             if(rbinom(1,1,.1)==1) { #ten percent of the time, try something else
-              new.vals[i] <- max.val+100
-              ntries <- 0
-              while(new.vals[i]>max.val & ntries < 10) {
-                new.vals[i] <- min.val + rexp(1, 1/((max.val-min.val)/2))
-                ntries <- ntries + 1
-              }
-              if(new.vals[i] > max.val) {
-                new.vals[i] <- runif(1, min.val, max.val) #we give up
-              }
+                new.vals[i] <- max.val+100
+                ntries <- 0
+                while(new.vals[i]>max.val & ntries < 10) {
+                    new.vals[i] <- min.val + rexp(1, 1/((max.val-min.val)/2))
+                    ntries <- ntries + 1
+                }
+                if(new.vals[i] > max.val) {
+                    new.vals[i] <- runif(1, min.val, max.val) #we give up
+                }
             }
             if(new.vals[i]<lower[i]) {
                 pass=FALSE

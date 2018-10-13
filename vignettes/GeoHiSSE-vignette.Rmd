@@ -156,6 +156,7 @@ Now we can model average the results. Note that this step will reflect the Akaik
 For this we need first to perform a marginal reconstruction for each of the models in the set. This will reconstruct the hidden states at the nodes of the phylogeny. Then we can use this information to compute the model average for the rates.
 
 These can take a while to run. We will load the results of previous analyses. Uncomment the code below to perform the reconstructions.
+
 ```{r, eval=FALSE}
 recon.mod1 <- MarginReconGeoSSE(phy = mod1$phy, data = mod1$data, f = mod1$f,
                                  pars = mod1$solution, hidden.areas = mod1$hidden.areas,

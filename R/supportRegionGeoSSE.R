@@ -130,7 +130,8 @@ AdaptiveConfidenceIntervalSamplingGeoHiSSE <- function(par, lower, upper, desire
     return(results)
 }
 
-
+## Strangely this function is not present in the development branch, only in the master branch.
+## DANIEL: I can see that this function is used once in this file, so I will keep it here.
 GenerateValuesGeo <- function(par, lower, upper, scale.int, max.tries=100, expand.prob=0, examined.max, examined.min) {
     pass=FALSE
     tries=0
@@ -160,7 +161,6 @@ GenerateValuesGeo <- function(par, lower, upper, scale.int, max.tries=100, expan
     }
     return(new.vals)
 }
-
 
 print.geohisse.support <- function(x,...){
 
