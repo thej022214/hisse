@@ -4,8 +4,10 @@ author: "Jeremy M. Beaulieu"
 output:
   pdf_document:
     fig_caption: yes
-vignette: |
-  %\VignetteEngine{knitr::rmarkdown} %\VignetteIndexEntry{Running hisse} \usepackage[utf8]{inputenc}
+vignette: >
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteIndexEntry{Running hisse}
+   \usepackage[utf8]{inputenc}
 ---
 
 ## Getting started
