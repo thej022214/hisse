@@ -1,7 +1,6 @@
 ---
 title: "Type I errors, Model rejection, & HiSSE vs. FiSSE"
 author: "Jeremy M. Beaulieu & Brian C. O'Meara"
-date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
   pdf_document:
     fig_caption: yes
