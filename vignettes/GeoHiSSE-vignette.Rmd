@@ -1,7 +1,6 @@
 ---
 title: "Running GeoHiSSE"
-author: "Caetano, D.S., O'Meara, B.C., and Beaulieu J.M."
-date: "`r format(Sys.time(), '%B %d, %Y')`"
+author: "Daniel Caetano and Jeremy M. Beaulieu"
 output: 
   pdf_document:
     fig_caption: yes
