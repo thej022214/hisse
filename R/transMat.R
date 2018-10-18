@@ -44,7 +44,7 @@ ParDrop <- function(rate.mat.index=NULL, drop.par=NULL){
 	drop.par <- unique(drop.par) # in case parameters listed more than once in drop vector
 	drop.par <- drop.par[order(drop.par)]
 	max <- max(rate.mat.index,na.rm=TRUE)
-	for(drop.which in 2:length(drop.par)){
+	for(drop.which in 1:length(drop.par)){
 		drop.locs <- which(rate.mat.index == drop.par[drop.which],arr.ind=TRUE)
 		rate.mat.index[drop.locs] <- NA
 	}
