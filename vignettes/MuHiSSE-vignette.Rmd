@@ -6,7 +6,7 @@ output:
     fig_caption: yes
 vignette: >
    %\VignetteEngine{knitr::rmarkdown}
-   %\VignetteIndexEntry{Running GeoHiSSE}
+   %\VignetteIndexEntry{Running MuHiSSE}
    \usepackage[utf8]{inputenc}
 ---
 
