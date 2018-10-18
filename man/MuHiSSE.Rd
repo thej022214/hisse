@@ -13,11 +13,12 @@ ode.eps=0)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
-    with internal nodes labeled denoting the ancestral selective regimes.}
-\item{data}{a matrix (or dataframe) with two columns containing species
-  information. First column has the species names and second column has
-  state codes. Values for the areas need to be 0, 1, or 2, where 0 is the 
-  widespread area '01', 1 is endemic area '0' and 2 is endemic area '1'. See 'Details'.}
+  with internal nodes labeled denoting the ancestral selective regimes.}
+\item{data}{a matrix (or dataframe) with three columns. The first column 
+  containing the species names and the second and third containing the binary 
+  character information. Character "0" is on column 2 and chracter "1" is on 
+  column 3. A value of 0 means character absent and a value of 1 character 
+  present. The input of data follows a Pagel model. See 'Details'.}
 \item{f}{vector of length 4 with the estimated proportion of extant
   species in 00, 01, 10, and 11 that are included in the phylogeny. A value of 
   c(0.50, 0.25, 0.125, 0.125) means that 50 percent of species in combination '00', 25 
