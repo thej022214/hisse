@@ -7,7 +7,7 @@
 show.tip.label = TRUE, fsize = 1.0, legend = TRUE, ...)
 }       
 \arguments{
-\item{x}{a \code{hisse.states} object or a list of such objects.}
+\item{x}{a \code{muhisse.states} object or a list of such objects.}
 \item{rate.param}{indicates the type of rates to plot. Options include: \dQuote{turnover}, \dQuote{net.div}, \dQuote{speciation},  \dQuote{extinction},  \dQuote{extinction.fraction}.}
 \item{type}{a character string specifying the type of phylogeny to be drawn. Options are "fan" (default) or "phylogram".}
 \item{show.tip.label}{a logical indicating whether tip names should be included. Default is TRUE}

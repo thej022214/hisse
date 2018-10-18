@@ -41,7 +41,7 @@ See help for \dQuote{GeoHiSSE} for more on other parameters for this function.
 
 }
 \value{
-\code{MarginRecon} returns an object of class \code{hisse.states}. This is a list with elements:
+\code{MarginRecon} returns an object of class \code{geohisse.states}. This is a list with elements:
 \item{$node.mat}{the marginal probabilities calculated for each node. They are ordered based on the elements in the edge matrix in \dQuote{phylo} format.}
 \item{$tip.mat}{the marginal probabilities calculated for each tip. They are ordered based on the order of tip labels in the tree.}
 \item{$rate.mat}{a matrix that details the rates for each state combination. This is used by the plotting function.}

@@ -17,11 +17,11 @@ extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0)
 \item{data}{a matrix (or dataframe) with two columns containing species
   information. First column has the species names and second column has
   area codes. Values for the areas need to be 0, 1, or 2, where 0 is the 
-  widespread area '01', 1 is endemic area '0' and 2 is endemic area '1'. See 'Details'.}
+  widespread area '01', 1 is endemic area '00' and 2 is endemic area '11'. See 'Details'.}
 \item{f}{vector of length 3 with the estimated proportion of extant
-  species in state 1 (area '0'), state 2 (area '1'), and state 0 (widespread area '01') 
+  species in state 1 (area '00'), state 2 (area '1'), and state 0 (widespread area '01') 
   that are included in the phylogeny. A value of c(0.25, 0.25, 0.5) means that 25 percent
-  of species in areas '0' and '1' and 50 percent of species in area '01' are
+  of species in areas '00' and '11' and 50 percent of species in area '01' are
   included in the phylogeny. By default all species are assumed to be
   sampled.}
 \item{turnover}{a numeric vector of length equal to 3+(number of

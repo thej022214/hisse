@@ -25,7 +25,7 @@ it uses that; if you give it a list of them, it will
 model-average the results.
 }
 \references{
-Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. In prep.
+Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, https://doi.org/10.1111/evo.13602
 }
 \author{Jeremy M. Beaulieu}
 \keyword{plotting}

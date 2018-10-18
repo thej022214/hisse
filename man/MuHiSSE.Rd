@@ -32,7 +32,7 @@ ode.eps=0)
   parameters in the model. See 'Details'.}
 \item{eps}{a numeric vector of length equal to4+(number of
   \code{hidden.states} * 4). A MuSSE model has 4 extinction parameters:
-  mu00, mu01, mu10, and mu11. A MuHiSSE model with one hidden area has 8 extinction 
+  mu00, mu01, mu10, and mu11. A MuHiSSE model with one hidden state has 8 extinction 
   parameters: mu00A, mu01A, mu10A, mu11A, mu00B, mu01B, mu10B, and mu11B. And so on. The 
   length of the numeric vector needs to match the number of extinction parameters in the 
   model. See 'Details'.}
@@ -93,7 +93,7 @@ ambiguous for all relevant character combinations. For example, if character 1 i
 and a probability of for 01.
 
 As with \code{hisse}, we employ a modified optimization procedure. In other words, rather
-than optimizing birth and death separately, \code{fGeoHisse} optimizes orthogonal 
+than optimizing birth and death separately, \code{MuHisse} optimizes orthogonal 
 transformations of these variables: we let tau = birth+death define "net turnover", and 
 we let eps = death/birth define the \dQuote{extinction fraction}. This reparameterization 
 alleviates problems associated with overfitting when birth and death are highly 
@@ -105,10 +105,10 @@ the model. This is done using the \code{turnover} and
 \code{extinct.frac} parameters. One needs to specify a value for each of
 the parameters of the model, when two parameters show the same value,
 then the parameters are set to be linked during the estimation of the
-model. For example, a fGeoHiSSE model with 1 hidden area and all free
-parameters has \code{turnover = 1:6}. The same model with
-speciation rates constrained to be the same for all hidden areas has
-\code{turnover = c(1,2,3,1,2,3)}. This same format applies to
+model. For example, a MuHiSSE model with 1 hidden state and all free
+parameters has \code{turnover = 1:8}. The same model with
+turnover rates constrained to be the same for all hidden states has
+\code{turnover = c(1,2,3,4,1,2,3,4)}. This same format applies to
 \code{extinct.frac}.
 
 The \dQuote{trans.rate} input is the transition model and has an entirely different setup 
@@ -120,7 +120,7 @@ for each state combination. If you are doing a hidden model, there will be eight
 combinations: 00A, 01A, 10A, 11A, 00B, 01B, 10B, 11B. So if you wanted to say the root 
 had to be in state 00, and since you do not know the hidden state, you would specify 
 \dQuote{root.p = c(0.5, 0, 0, 0, 0.5, 0, 0, 0)}. In other words, the root has a 50\% 
-chance to be in one of the areas 00A or 00B.
+chance to be in one of the states to be 00A or 00B.
 }
 \value{
 \code{MuHiSSE} returns an object of class \code{muhisse.fit}. This is a list with 
@@ -132,7 +132,7 @@ elements:
 parameters.}
 \item{$index.par}{an index matrix of the parameters being estimated.}
 \item{$f}{user-supplied sampling frequencies.}
-\item{$hidden.areas}{a logical indicating whether hidden areas were included in the 
+\item{$hidden.states}{a logical indicating whether hidden states were included in the 
 model.}
 \item{$condition.on.surivival}{a logical indicating whether the
   likelihood was conditioned on the survival of two lineages and the speciation event 
@@ -150,10 +150,6 @@ subtending them.}
 \item{$ode.eps}{The ode.eps value used for the estimation.}
 }
 \references{
-Nakov, T., Beaulieu, J.M., and Alverson, A.J. 2018. Freshwater diatoms diversify faster 
-than marine in both planktonic and benthic habitats. bioRxiv, 
-doi: https://doi.org/10.1101/406165.
-
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models 
 of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 
@@ -162,6 +158,10 @@ and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-
 
 Maddison W.P., Midford P.E., and Otto S.P. 2007. Estimating a binary characters effect on 
 speciation and extinction. Syst. Biol. 56:701-710.
+
+Nakov, T., Beaulieu, J.M., and Alverson, A.J. 2018. Freshwater diatoms diversify faster 
+than marine in both planktonic and benthic habitats. bioRxiv, 
+doi: https://doi.org/10.1101/406165.
 
 Nee S., May R.M., and Harvey P.H. 1994. The reconstructed evolutionary process. Philos. 
 Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.
