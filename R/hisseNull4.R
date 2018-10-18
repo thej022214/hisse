@@ -125,6 +125,8 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
         loglik = -out$objective
 	}
 	
+    names(solution) <- c("turn.0A", "turn.0B", "turn.0C", "turn.0D", "turn.1A", "turn.1B", "turn.1C", "turn.1D", "eps.0A", "eps.0B", "eps.0C", "eps.0D", "eps.1A", "eps.1B", "eps.1C", "eps.1D", "q0B0A", "q0C0A", "q0D0A", "q1A0A", "q0A0B", "q0C0B", "q0D0B", "q1B0B", "q0A0C", "q0B0C", "q0D0C", "q1C0C", "q0A0D", "q0B0D", "q0C0D", "q1D0D", "q0A1A", "q1B1A", "q1C1A", "q1D1A", "q0B1B", "q1A1B", "q1C1B", "q1D1B", "q0C1C", "q1A1C", "q1B1C", "q1D1C", "q0D1D", "q1A1D", "q1B1D", "q1C1D")
+    
 	cat("Finished. Summarizing results...", "\n")
 	
 	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, output.type=output.type, trans.type=trans.type, trans.mat=trans.mat, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)

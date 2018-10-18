@@ -199,8 +199,9 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	solution.tmp = solution[21:56]
 	solution.tmp[solution.tmp==0] = 1
 	solution[21:56] = solution.tmp
-	
-	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
+    names(solution) = c("turn.0A", "turn.1A", "turn.0B", "turn.1B", "eps.0A", "eps.1A", "eps.0B", "eps.1B","q1A0A","q0B0A","q1B0A","q0A1A","q0B1A","q1B1A","q0A0B","q1A0B","q1B0B","q0A1B","q1A1B","q0A1B","turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
+    
+ 	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
 	class(obj) = "hisse.fit"		
 	
 	return(obj)		
@@ -653,7 +654,7 @@ print.hisse.fit <- function(x,...){
 		param.est1 <- data.frame(param.est1, row.names=c("rate1", "alpha1", "beta1", "timeslice.factor1"))
 	}
 	
-	names(param.est0) <- names(param.est1) <- c("turnover", "extinction")	
+	names(param.est0) <- names(param.est1) <- c("turnover", "ext.frac")
 	
 	param.est.sp.0 <- param.est0[1,1] / (1 + param.est0[1,2])
 	param.est.mu.0 <- (param.est0[1,1] * param.est0[1,2]) / (1 + param.est0[1,2])
@@ -663,7 +664,7 @@ print.hisse.fit <- function(x,...){
 	if(x$output.type == "net.div"){
 		param.est0[1,1] <- param.est.sp.0 - param.est.mu.0
 		param.est1[1,1] <- param.est.sp.1 - param.est.mu.1
-		names(param.est0) <- names(param.est1) <- c("net.div", "extinction")	
+		names(param.est0) <- names(param.est1) <- c("net.div", "ext.frac")
 	}
 	
 	if(x$output.type == "raw"){
@@ -686,7 +687,7 @@ print.hisse.fit <- function(x,...){
 		param.estB[,1] <- x$solution[c(4,24,28,49)]
 		param.estB[,2] <- x$solution[c(8,32,36,44)]
 		param.estB <- data.frame(param.estB, row.names=c("rate1B", "alpha1B", "beta1B", "timeslice.factor1B"))
-		names(param.estA) <- names(param.estB) <- c("turnover", "extinction")	
+		names(param.estA) <- names(param.estB) <- c("turnover", "ext.frac")
 		
 		param.est.sp.A <- param.estA[1,1] / (1 + param.estA[1,2])
 		param.est.mu.A <- (param.estA[1,1] * param.estA[1,2]) / (1 + param.estA[1,2])
@@ -696,7 +697,7 @@ print.hisse.fit <- function(x,...){
 		if(x$output.type == "net.div"){
 			param.estA[1,1] <- param.est.sp.A - param.est.mu.A
 			param.estB[1,1] <- param.est.sp.B - param.est.mu.B
-			names(param.estA) <- names(param.estB) <- c("net.div", "extinction")	
+			names(param.estA) <- names(param.estB) <- c("net.div", "ext.frac")
 		}
 
 		if(x$output.type == "raw"){
