@@ -30,7 +30,7 @@ TransMatMaker <- function(hidden.states=FALSE){
 ######################################################################################################################################
 ######################################################################################################################################
 
-ParDrop <- function(rate.mat.index=NULL, drop.par=NULL, hidden.present=TRUE){
+ParDrop <- function(rate.mat.index=NULL, drop.par=NULL){
 	if(is.null(rate.mat.index)){
 		stop("Rate matrix needed.  See TransMatMaker() to create one.\n", call.=FALSE)
 	}
