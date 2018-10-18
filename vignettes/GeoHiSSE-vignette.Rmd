@@ -25,8 +25,8 @@ install_github(repo = "thej022214/hisse", ref = "master")
 
 Before getting started, be sure to load the `hisse` and `diversitree` packages:
 ```{r, eval=TRUE}
-library(hisse)
-library(diversitree)
+suppressWarnings(library(hisse))
+suppressWarnings(library(diversitree))
 ```
 
 ## Simulating a range-independent process
@@ -211,7 +211,28 @@ plot.geohisse.states(x = recon.models, rate.param = "net.div", type = "fan",
 ## A brief note about fGeoHiSSE
 
 
-$turnover_i = $
+Turnover is calculated as, 
+
+$$\tau_{00i} = s_{00i} + x_{00i}$$
+$$\tau_{11i} = s_{11i} + s_{11i}$$
+$$\tau_{01i} = s_{00i} + s_{11i} + s_{01i}$$
+
+For extinction fraction, 
+
+$$\epsilon_{00i} = x_{00i} /  s_{00i}$$
+$$\epsilon_{11i} = x_{11i} /  s_{11i}$$
+$$\epsilon_{01i} = 0$$
+
+It is straightforward to convert back to speciation and extinction:
+
+$$s_{00i} = \tau_{00i} / (1 + \epsilon_{00i})$$
+$$s_{11i} = \tau_{11i} / (1 + \epsilon_{11i})$$
+$$s_{01i} = \tau_{01i} - s_{00i} - s_{11i}$$
+
+$$x_{00i} = (\tau_{00i}*\epsilon_{00i}) / (1 + \epsilon_{00i})$$
+$$x_{11i} = (\tau_{11i}*\epsilon_{11i}) / (1 + \epsilon_{11i})$$
+
+
 
 
 
