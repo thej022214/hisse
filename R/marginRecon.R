@@ -505,7 +505,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconMuSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
+MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
