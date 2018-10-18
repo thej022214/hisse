@@ -416,6 +416,9 @@ test_that("MuHiSSE_test2", {
     q13 ~ 0, q21 ~ q12, q23 ~ q12, q31 ~ 0.03, q32 ~ q12)
     diversitree.constrained = lik.base(c(.1, .03, .05))
 
+    states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
+    states <- states[phy$tip.label,]
+    states[states[,1]==3,] = 4
     states.trans <- states
     for(i in 1:Ntip(phy)){
         if(states[i,1] == 1){
@@ -440,8 +443,7 @@ test_that("MuHiSSE_test2", {
     bad.likelihood=exp(-500), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,0), hidden.states=TRUE)
-    muhisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache,
-    root.type="madfitz", condition.on.survival=TRUE)
+    muhisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, root.type="madfitz", condition.on.survival=TRUE)
     comparison <- identical(round(muhisse.constrained,4), round(diversitree.constrained,4))
     expect_true(comparison)
 })
