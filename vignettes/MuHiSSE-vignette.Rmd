@@ -20,8 +20,8 @@ The set of models included range from (1) the "trivial null" model that assume n
 
 Below I will demonstrate how to set up various models, and how the likelihoods compare against those `diversitree` whenever possible. In the end, I will also show how a three-state model can be set up from MuHiSSE and compare the likelihoods against the three-state MuSSE implemented in GeoHiSSE. However, before getting started, be sure to load the `hisse` and `diversitree` packages:
 ```{r, eval=TRUE}
-library(hisse)
-library(diversitree)
+suppressWarnings(library(hisse))
+suppressWarnings(library(diversitree))
 ```
 
 ## Simulating a practice data set
@@ -216,7 +216,6 @@ As of June 2017, I have implemented a three-state MuSSE model as part of the mod
 First, let's simulate a three-state model:
 
 ```{r, eval=TRUE}
-library(diversitree)
 pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
 .03, .045, .06, # mu 1, 2, 3
 .05, 0,         # q12, q13
