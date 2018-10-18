@@ -475,6 +475,218 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
     return(list(rate.tree=rate.tree, state.tree=state.tree))
 }
 
+plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.label = TRUE, fsize = 1.0, legend = TRUE, ...){
+    hisse.results <- x
+    if( inherits(hisse.results, what=c("muhisse.states","list")) ){
+        if( inherits(hisse.results, what="muhisse.states") ){
+            ## we have to make a list so we can run this generally
+            if(is.null(hisse.results$aic)){
+                ## If a user forgot to include the aic, then we add a random value in for them
+                hisse.results$aic = 42
+            }
+            tmp.list <- list()
+            tmp.list[[1]] <- hisse.results
+            hisse.results <- tmp.list
+        } else { ## Then it is a list.
+            ## If x is a list we need to check if all elements have the $aic to make the model average.
+            any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="muhisse.states") ) )
+            if( any.other.class ) stop("All elements of the list 'x' need to be of class 'muhisse.states'.")
+            any.missing <- any( sapply(hisse.results, function(x) is.null(x$aic) ) )
+            if( any.missing ) stop( "If x is a list, then each reconstruction need to have $aic information in order to make the model average." )
+            
+        }
+    } else {
+        stop( "x needs to be an object of class 'muhisse.states'." )
+    }
+
+    ## Check the values for the parameters:
+    rate.param <- match.arg(rate.param, c("turnover", "net.div", "speciation", "extinction"
+                                        , "extinction.fraction") )
+    type <- match.arg(type, c("fan", "phylogram") )
+    if( !is.logical( show.tip.label ) ) stop("show.tip.label needs TRUE or FALSE")
+    if( !is.numeric( fsize ) ) stop("fsize needs a numeric value")
+    if( !is.logical( legend ) ) stop("legend needs TRUE or FALSE")
+    
+    ## ############################################
+    ## Block to get the parameters from the ... list.
+    ## Will also check the parameters to see if they are valid.
+    if(hasArg(do.observed.only)){
+        do.observed.only <- list(...)$do.observed.only
+        if( !is.logical( do.observed.only ) ) stop("do.observed.only needs TRUE or FALSE")
+    } else{
+        do.observed.only <- TRUE
+    }
+    if(hasArg(rate.colors)){
+        rate.colors <- list(...)$rate.colors
+    } else{
+        rate.colors <- NULL
+    }
+    if(hasArg(state.colors)){
+        state.colors <- list(...)$state.colors
+    } else{
+        state.colors <- NULL
+    }
+    if(hasArg(edge.width)){
+        edge.width <- list(...)$edge.width
+        if( !is.numeric( edge.width ) ) stop("edge.width needs a single numeric value")
+    } else{
+        edge.width <- 5
+    }
+    if(hasArg(width.factor)){
+        width.factor <- list(...)$width.factor
+        if( !is.numeric( width.factor ) ) stop("width.factor needs a single numeric value")
+    } else{
+        width.factor <- 0.5
+    }
+    if(hasArg(mar)){
+        mar <- list(...)$mar
+        if( !is.numeric( mar ) ) stop("mar needs a numeric vector")
+    } else{
+        mar <- c(0.1,0.1,0.1,0.1)
+    }
+    if(hasArg(outline)){
+        outline <- list(...)$outline
+        if( !is.logical( outline ) ) stop("outline needs TRUE or FALSE")
+    } else{
+        outline <- FALSE
+    }
+    if(hasArg(outline.color)){
+        outline.color <- list(...)$outline.color
+    } else{
+        outline.color <- "gray"
+    }
+    if(hasArg(rate.range)){
+        rate.range <- list(...)$rate.range
+    } else{
+        rate.range <- NULL
+    }
+    if(hasArg(swap.underscore)){
+        swap.underscore <- list(...)$swap.underscore
+        if( !is.logical( swap.underscore ) ) stop("swap.underscore needs TRUE or FALSE")
+    } else{
+        swap.underscore <- TRUE
+    }
+    if(hasArg(lims.percentage.correction)){
+        lims.percentage.correction <- list(...)$lims.percentage.correction
+        if( !is.numeric( lims.percentage.correction ) ) stop("lims.percentage.correction needs a numeric value")
+    } else{
+        lims.percentage.correction <- 0.001
+    }
+    if(hasArg(legend.position)){
+        legend.position <- list(...)$legend.position
+        if( !is.numeric( legend.position ) ) stop("legend.position needs a numeric vector")
+    } else{
+        legend.position <- c(0, 0.2, 0, 0.2)
+    }
+    if(hasArg(legend.cex)){
+        legend.cex <- list(...)$legend.cex
+        if( !is.numeric( legend.cex ) ) stop("legend.cex needs a numeric value")
+    } else{
+        legend.cex <- 0.4
+    }
+    if(hasArg(legend.kernel)){
+        legend.kernel <- list(...)$legend.kernel
+    } else{
+        legend.kernel <- "auto"
+    }
+    if(hasArg(legend.bg)){
+        legend.bg <- list(...)$legend.bg
+    } else{
+        legend.bg <- "cornsilk3"
+    }
+    ## ############################################
+    
+    ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
+    old.par <- par(no.readonly=T)
+    
+    ## This sets the coordinates of the figure and facilitate localization.
+    par(fig=c(0, 1, 0, 1), new=FALSE)
+    if(is.null(rate.colors)) {
+        rate.colors <- c("blue", "red")
+    }
+    if(is.null(state.colors)) {
+        state.colors <- c("white", "black", "yellow", "green")
+        print("Using default colors: white (state 00), black (state 01), yellow (state 10), and green (state 11).")
+    }
+    rates.tips <- ConvertManyToRate(hisse.results, rate.param, "tip.mat")
+    rates.internal <- ConvertManyToRate(hisse.results, rate.param, "node.mat")
+    states.tips <- NA
+    states.internal <- NA
+    if (do.observed.only) {
+        ## states.tips is a table with 3 columns.
+        states.tips <- ConvertManyToMultiState(hisse.results, "tip.mat")
+        states.internal <- ConvertManyToMultiState(hisse.results, "node.mat")
+    } else {
+        stop("So far we can easily plot just the binary observed state; if you want to plot the hidden states, use a different function")
+    }
+    tree.to.plot <- hisse.results[[1]]$phy
+    rate.lims <- range(c(rates.tips, rates.internal))
+    if(!is.null(rate.range)) {
+        if(min(rate.range) > min(rate.lims) | max(rate.range) < max(rate.lims)) {
+            warning(paste("Did not override rate.lims: the specified rate.range (", rate.range[1], ", ", rate.range[2], ") did not contain all the values for the observed rates (", rate.lims[1], ", ", rate.lims[2], ")"))
+        } else {
+            rate.lims <- rate.range
+        }
+    }
+    rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
+    rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
+    
+    rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims)
+    ## change colors
+    rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
+    rate.tree$cols[] <- rate.colors
+    
+    states.tips.tmp <- rowSums(states.tips %*% c(1,2,3,4))
+    names(states.tips.tmp) <- 1:length(states.tips.tmp)
+    states.internal.tmp <- rowSums(states.internal %*% c(1,2,3,4))
+    names(states.internal.tmp) <- (length(states.tips.tmp)+1):(length(states.internal.tmp)+length(states.tips.tmp))
+    state.lims <- range(c(states.tips.tmp, states.internal.tmp))
+    state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
+    state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
+    state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims)
+    state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
+    state.tree$cols[]<- state.colors
+    
+    ## Make the plot.
+    ## This is NOT using the phytools version.
+    ## This is a special plotting function for HiSSE.
+    plot.contMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
+    , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
+    , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
+    , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
+    
+    ## Need to make the legend now:
+    ## Supporting only the plot of the rates in this version:
+    if( legend ){
+        rates.to.plot <- rates.tips
+        if(legend.kernel=="auto") {
+            if(length(unique(rates.to.plot))<=4) {
+                legend.kernel <- "hist"
+            } else {
+                legend.kernel <- "rectangular"
+            }
+        }
+        
+        ## Make the plot:
+        par(fig=legend.position, new=TRUE)
+        plot(x=c(-0.1, 1.1), y=c(0, 1.5), xlab="", ylab="", bty="n", type="n", xaxt="n", yaxt="n")
+        rect(-0.1, 0, 1.1, 1.1, border=NA, col=legend.bg)
+        par(lend=1)
+        rates.density <- GetNormalizedDensityPlot(rates.to.plot, rate.lims, legend.kernel)
+        segments(x0=rates.density$x, y0=rep(0, length(rates.density$y)), y1=rates.density$y
+        , col=rate.colors[1+as.integer(round((length(rate.colors)-1)* rates.density$x))]
+        , lwd=ifelse(legend.kernel=="hist",4,1))
+        text(x=0, y=1.2, labels=format(rate.lims[1], digits=2), cex=legend.cex)
+        text(x=1, y=1.2, labels=format(rate.lims[2], digits=2), cex=legend.cex)
+        text(x=0.5, y=1.2, labels=rate.param, cex=legend.cex)
+    }
+    
+    ## Return par to the previous state.
+    par( old.par )
+    ## The tiplables for the individual trees will be strange. But this seems fine.
+    return(list(rate.tree=rate.tree, state.tree=state.tree))
+}
+
 GetNormalizedDensityPlot <- function(x, limits, kernel, min.breaks=100) {
     x.density <- c()
     
