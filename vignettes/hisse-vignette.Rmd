@@ -16,11 +16,11 @@ This tutorial gives some basic information on how to set up and execute a model 
 
 Before getting started, be sure to load the hisse package:
 ```{r, eval=TRUE}
-library(hisse)
+suppressWarnings(library(hisse))
 ```
 And also be sure to load diversitree. We can simulate data using the multistate (MuSSE) model that can be used to create a binary character that has a relation to a "hidden" state:
 ```{r, eval=TRUE}
-library(diversitree)
+suppressWarnings(library(diversitree))
 set.seed(4)
 # Essentially we are setting up a model that models the evolution of two binary characters
 # Thus, we are assuming the following state combinations 1=00, 2=10, 3=01, 4=11:

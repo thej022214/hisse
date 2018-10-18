@@ -117,7 +117,7 @@ See \code{TransMatMakerGeoHiSSE} function for more details.
 
 For user-specified \dQuote{root.p}, you should specify the probability
 for each area. If you are doing a hidden model, there will be six areas:
-0A, 1A, 2A, 0B, 1B, 2B. So if you wanted to say the root had to be in
+0A, 1A, 01A, 0B, 1B, 01B. So if you wanted to say the root had to be in
 area 0 (widespread distribution), you would specify \dQuote{root.p =
   c(0.5, 0, 0, 0.5, 0, 0)}. In other words, the root has a 50\% chance
 to be in one of the areas 0A or 0B.
@@ -158,6 +158,8 @@ Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. 2018. Hidden state models improv
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 
 FitzJohn R.G., W.P. Maddison, and S.P. Otto. 2009. Estimating trait-dependent speciation and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
+
+Goldberg, E. E., L. T. Lancaster, and R. H. Ree. 2011. Phylogenetic Inference of Reciprocal Effects between Geographic Range Evolution and Diversification. Syst. Biol. 60:451-465.
 
 Maddison W.P., P.E. Midford, and S.P. Otto. 2007. Estimating a binary characters effect on speciation and extinction. Syst. Biol. 56:701-710.
 

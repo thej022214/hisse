@@ -8,8 +8,8 @@ bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000)) )
 }       
 \arguments{
 \item{x}{a \code{hisse.states} object, a \code{hisse.states.geosse}
-  object, or a list of such objects. A list of model can only include
-  models of one type.}
+  object, a \code{muhisse.states} or a list of such objects. A 
+  list of model can only include models of one type.}
 \item{AIC.weights}{a numeric vector with length equal to the number of
   models in the list 'x'. This is the AICw for each of the models to be
   averaged. If 'AIC.weights==NULL' (the default value) then function

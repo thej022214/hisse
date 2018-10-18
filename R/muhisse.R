@@ -30,6 +30,10 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }
     }
     
+    if(any(f == 0)){
+        f[which(f==0)] <- 1
+    }
+    
     if(!root.type == "madfitz" & !root.type == "equal" & !root.type == "user"){
         stop("Check that you specified a proper root.type option. Options are 'madfitz', 'equal', or 'user'.", call.=FALSE)
     }
@@ -272,6 +276,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     if(length(f) == 4){
         freqs <- table(apply(data.new, 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "01" = 2, "10" = 3, "11" = 4, "02"=1, "20"=3, "21"=2, "12"=4, "22"=4)))
         if(length(freqs == 4)){
+            freqs[which(!c(1:4) %in% names(freqs))] <- 0
             samp.freq.tree <- Ntip(phy) / sum(freqs / f)
         }else{
             samp.freq.tree <- Ntip(phy) / sum(freqs / f)
