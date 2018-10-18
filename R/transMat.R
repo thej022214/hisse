@@ -30,7 +30,7 @@ TransMatMaker <- function(hidden.states=FALSE){
 ######################################################################################################################################
 ######################################################################################################################################
 
-ParDrop <- function(rate.mat.index=NULL, drop.par=NULL){
+ParDrop <- function(rate.mat.index=NULL, drop.par=NULL, hidden.present=TRUE){
 	if(is.null(rate.mat.index)){
 		stop("Rate matrix needed.  See TransMatMaker() to create one.\n", call.=FALSE)
 	}
@@ -44,14 +44,17 @@ ParDrop <- function(rate.mat.index=NULL, drop.par=NULL){
 	drop.par <- unique(drop.par) # in case parameters listed more than once in drop vector
 	drop.par <- drop.par[order(drop.par)]
 	max <- max(rate.mat.index,na.rm=TRUE)
-	for(drop.which in 1:length(drop.par)){
+	for(drop.which in 2:length(drop.par)){
 		drop.locs <- which(rate.mat.index == drop.par[drop.which],arr.ind=TRUE)
 		rate.mat.index[drop.locs] <- NA
 	}
     rate.mat.index[rate.mat.index==0] = NA
 	max <- max - length(drop.par)
 	exclude <- which(is.na(rate.mat.index))
-	rate.mat.index[-exclude] <- 1:max
+    gg <- cbind(sort(unique(rate.mat.index[-exclude])), 1:length(unique(rate.mat.index[-exclude])))
+    for(table.index in 1:length(unique(rate.mat.index[-exclude]))){
+        rate.mat.index[which(rate.mat.index==gg[table.index,1])] <- gg[table.index,2]
+    }
 	rate.mat.index[is.na(rate.mat.index)] = 0
 	diag(rate.mat.index) = NA
 	return(rate.mat.index)
