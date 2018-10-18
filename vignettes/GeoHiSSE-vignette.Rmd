@@ -208,3 +208,10 @@ plot.geohisse.states(x = recon.models, rate.param = "net.div", type = "fan",
                      show.tip.label = FALSE, legend = FALSE)
 ```
 
+## A brief note about fGeoHiSSE
+
+
+$turnover_i = $
+
+
+

@@ -78,7 +78,8 @@ descendent branch calculations simultaneously, combine the probabilities based o
 shared ancestry, then repeat for the next set of descendents. In testing, we've found that 
 as the number of taxa increases, the calculation becomes much more efficient. In future 
 versions, we will likely allow for multicore processing of these calculations to further 
-improve speed. 
+improve speed. We also note that there is vignette tha describes more details for running
+this particular function.
 
 As for data file format, \code{MuHiSSE} expects a three column matrix or data frame, with 
 the first column containing the species names and the second and third containing the 
@@ -87,7 +88,9 @@ binary character information. Note that the order of the data file and the names
 internally. Also, the character information must be coded as 0 and 1, otherwise, the
 function will misbehave. However, if the state for a species is unknown for either 
 character, a user can specify this with a 2, and the state will be considered maximally 
-ambiguous.
+ambiguous for all relevant character combinations. For example, if character 1 is in state
+0, but character 2 is provided a 2, then the program provides a probability of 1 for 00 
+and a probability of for 01.
 
 As with \code{hisse}, we employ a modified optimization procedure. In other words, rather
 than optimizing birth and death separately, \code{fGeoHisse} optimizes orthogonal 
