@@ -173,7 +173,6 @@ recon.mod4 <- MarginReconGeoSSE(phy = mod4$phy, data = mod4$data, f = mod4$f,
                                  pars = mod4$solution, hidden.areas = mod4$hidden.areas,
                                  root.type = mod4$root.type, root.p = mod4$root.p,
                                  aic = mod4$AIC, n.cores = 4)
-
 ```
 
 ```{r, eval=TRUE}
@@ -210,7 +209,7 @@ plot.geohisse.states(x = recon.models, rate.param = "net.div", type = "fan",
 
 ## A brief note about the new fGeoHiSSE functions
 
-As of version 1.8.7, we now provide a new set of functions that execute more complex and potentially faster version of the GeoHiSSE model described by Caetano et al. (2018). One of the main differences here is that the model allows up to 10 hidden categories, and implements a more efficient means of carrying out branch calculations. Specifically, we break up the tree into sets of branches whose branch calculations are independent of one another. We then carry out all descendent branch calculations simultaneously, combine the probabilities based on their shared ancestry, then repeat for the next set of descendent branches. In testing, we've found that as the number of taxa increases, the calculation becomes much more efficient. For instance, with 100,000 tips, a single tree traversal with the canonical GeoSSE model took 10 minutes, whereas in fGeoHiSSE the same traversal took about 30 seconds. In future versions, we will allow for multicore processing of these calculations to further improve speed. Also, note this function will eventually completely replace the version of `GeoHiSSE` that is currently available.
+As of version 1.8.7, we now provide a new set of functions that execute more complex and potentially faster version of the GeoHiSSE model described by Caetano et al. (2018). One of the main differences here is that the model allows up to 10 hidden categories, and implements a more efficient means of carrying out branch calculations. Specifically, we break up the tree into sets of branches whose branch calculations are independent of one another. We then carry out all descendent branch calculations simultaneously, combine the probabilities based on their shared ancestry, then repeat for the next set of descendent branches. In testing, we've found that as the number of taxa increases, the calculation becomes much more efficient. For instance, with 100,000 tips, a single tree traversal with the canonical GeoSSE model in the original code took 10 minutes, whereas in `fGeoHiSSE` the same traversal took about 30 seconds. In future versions, we will allow for multicore processing of these calculations to further improve speed. Also, note this function will eventually completely replace the version of `GeoHiSSE` that is currently available.
 
 There are a couple major differences with this version of `GeoHiSSE` that user should understand. First, while this version allows for cladogenetic events to be turned off (i.e., `assume.cladogenetic=FALSE`), it does not revert to a three-state MuSSE model as it does in `GeoHiSSE`. Instead, no lineage speciation and extinction are allowed in the widespread state, only transitions out of it. If a three-state MuSSE model is needed, we direct users to read the vignette on how to generate a three-state model in MuHiSSE. Second, `fGeoHiSSE` requires the use of `TransMatMakerfGeoSSE()` for generating the transition rates. 
 
@@ -236,8 +235,7 @@ $$s_{01i} = \tau_{01i} - s_{00i} - s_{11i}$$
 $$x_{00i} = (\tau_{00i}*\epsilon_{00i}) / (1 + \epsilon_{00i})$$
 $$x_{11i} = (\tau_{11i}*\epsilon_{11i}) / (1 + \epsilon_{11i})$$
 
-Also, note that output from `fGeoHiSSE`, there are functions available to obtain model averages (i.e., `GetModelAveRates()`), generate estimates of the uncertainty in the parameter estimates (i.e., `SupportRegionGeoSSE()`), calculate the marginal probabilities for states at nodes (i.e., `MarginReconfGeoSSE()`), and plotting the rate variation on the tree (i.e., `plot.geohisse.states()`). Users are encouraged to read other vignettes and help pages provided for more information. For more conceptual discussions of these functions and ideas, readers are also encouraged to read Caetano et al. (2018). 
-
+Also, note that the output from `fGeoHiSSE` can be used and processed using available functions. For example, the output can automatically be used to obtain model averages (i.e., `GetModelAveRates()`), generate estimates of the uncertainty in the parameter estimates (i.e., `SupportRegionGeoSSE()`), calculate the marginal probabilities for states at nodes (i.e., `MarginReconfGeoSSE()`), and plotting the rate variation on the tree (i.e., `plot.geohisse.states()`). Users are encouraged to read other vignettes and help pages provided for more information. For more conceptual discussions of these functions and ideas, readers are also encouraged to read Caetano et al. (2018). 
 
 ## References
 
