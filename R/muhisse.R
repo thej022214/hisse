@@ -710,7 +710,7 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
     if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
         return(log(cache$bad.likelihood)^13)
     }else{
-        if(root.type == "madfitz"){
+        if(root.type == "madfitz" | root.type == "herr_als"){
             root.p = compD.root/sum(compD.root)
             root.p[which(is.na(root.p))] = 0
         }
@@ -723,18 +723,35 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
         }
         if(condition.on.survival == TRUE){
             if(cache$hidden.states == FALSE){
-                lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A)
-                compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
-                #Corrects for possibility that you have 0/0:
-                compD.root[which(is.na(compD.root))] = 0
+                if(root.type == "madfitz"){
+                    lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A)
+                    compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
+                }else{
+                    lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A)
+                    compD.root <- (compD.root * root.p) / (lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root)) + sum(log(comp))
+                }
             }else{
-                lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H)
-                compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
-                #Corrects for possibility that you have 0/0:
-                compD.root[which(is.na(compD.root))] = 0
+                if(root.type == "madfitz"){
+                    lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H)
+                    compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
+                }else{
+                    lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H)
+                    compD.root <- (compD.root * root.p) / (lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root)) + sum(log(comp))
+                }
             }
         }
-        loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
         if(!is.finite(loglik)){
             return(log(cache$bad.likelihood)^7)
         }
