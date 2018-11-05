@@ -711,7 +711,7 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
         return(log(cache$bad.likelihood)^13)
     }else{
         if(root.type == "madfitz" | root.type == "herr_als"){
-            if(is.null(root.p){
+            if(is.null(root.p)){
                 root.p = compD.root/sum(compD.root)
                 root.p[which(is.na(root.p))] = 0
             }
