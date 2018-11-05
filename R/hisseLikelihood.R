@@ -5,7 +5,6 @@
 
 makeHiSSELikelihood <- function(phy, data, f=c(1,1), condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, ode.eps=0){
     if(!is.null(root.p)) {
-        root.type="user"
         root.p <- root.p / sum(root.p)	
         if(length(root.p) == 2){
             root.p <- rep(root.p, 2)
@@ -14,8 +13,8 @@ makeHiSSELikelihood <- function(phy, data, f=c(1,1), condition.on.survival=TRUE,
         }
     }
     
-    if(!root.type == "madfitz" & !root.type == "equal" & !root.type == "user"){
-        stop("Check that you specified a proper root.type option. Options are 'madfitz', 'equal', or 'user'.", call.=FALSE)
+    if(!root.type == "madfitz" & "herr_als"){
+        stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
 
     ## Erase the node labels in the phylogeny.

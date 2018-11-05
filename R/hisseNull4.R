@@ -271,13 +271,6 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
                 root.p[which(is.na(root.p))] = 0
             }
 		}
-		if(root.type == "equal"){
-			root.p = c(rep(1/length(which(compD[root.node,] > 0)), length(compD[root.node,])))
-			root.p[which(!compD[root.node,] > 0)] = 0
-		}
-		if(root.type == "user"){
-			root.p = root.p
-		}
 		if(condition.on.survival == TRUE){
             if(root.type == "madfitz"){
                 compD[root.node,] <- compD[root.node,] / sum(root.p * c(lambda0A[[1]], lambda0B[[1]], lambda0C[[1]], lambda0D[[1]], lambda1A[[1]], lambda1B[[1]], lambda1C[[1]], lambda1D[[1]]) * (1 - compE[root.node,])^2)

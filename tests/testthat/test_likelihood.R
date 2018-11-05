@@ -23,7 +23,7 @@ test_that("BiSSE_HiSSE_test",{
 	cache$eps.beta.factorA = 1 / dbeta(0.1, 1, 1)
 	cache$turnover.beta.factorB = 1 / dbeta(0.1, 1, 1)
 	cache$eps.beta.factorB = 1 / dbeta(0.1, 1, 1)
-    hisse.full <- hisse:::DownPass(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE)
+    hisse.full <- hisse:::DownPass(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
 	comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
 	expect_true(comparison)
 })
@@ -64,7 +64,7 @@ test_that("MuSSE_HiSSE_test1", {
 	cache$eps.beta.factorA = 1 / dbeta(0.1, 1, 1)
 	cache$turnover.beta.factorB = 1 / dbeta(0.1, 1, 1)
 	cache$eps.beta.factorB = 1 / dbeta(0.1, 1, 1)
-    hisse.constrained <- hisse:::DownPass(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE)
+    hisse.constrained <- hisse:::DownPass(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
 	comparison <- identical(round(hisse.constrained,4), round(diversitree.constrained,4))
 	expect_true(comparison)
 })
@@ -101,7 +101,7 @@ test_that("MuSSE_HiSSE_test2", {
 	cache$eps.beta.factorA = 1 / dbeta(0.1, 1, 1)
 	cache$turnover.beta.factorB = 1 / dbeta(0.1, 1, 1)
 	cache$eps.beta.factorB = 1 / dbeta(0.1, 1, 1)
-    hisse.full <- hisse:::DownPass(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE)
+    hisse.full <- hisse:::DownPass(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
 	comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
 	expect_true(comparison)
 })
@@ -123,7 +123,7 @@ test_that("HiSSE_Null_Four_test", {
 	model.vec = pars.hisse.null
 	phy$node.label = NULL
     cache <- hisse:::ParametersToPassNull(phy, states[,1], model.vec, f=c(1,1))
-    hisse.full <- hisse:::DownPassNull(phy, cache, root.type="madfitz", condition.on.survival=TRUE)
+    hisse.full <- hisse:::DownPassNull(phy, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
 	comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
 	expect_true(comparison)
 })
@@ -305,7 +305,7 @@ test_that("MuSSE_test1", {
     model.vec[1:12] = pars.hisse
     phy$node.label = NULL
     cache <- hisse:::ParametersToPassMuSSE(phy, states[,1], model.vec, f=c(1,1,1), hidden.states="TEST1")
-    hisse.constrained <- hisse:::DownPassMusse(phy, cache, hidden.states=FALSE, root.type="madfitz", condition.on.survival=TRUE)
+    hisse.constrained <- hisse:::DownPassMusse(phy, cache, hidden.states=FALSE, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(hisse.constrained,4), round(diversitree.constrained,4))
     expect_true(comparison)
 })
@@ -337,7 +337,7 @@ test_that("MuSSE_test2", {
     model.vec[25:36] = pars.hisse
     phy$node.label = NULL
     cache <- hisse:::ParametersToPassMuSSE(phy, states[,1], model.vec, f=c(1,1,1), hidden.states="TEST2")
-    hisse.constrained <- hisse:::DownPassMusse(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE)
+    hisse.constrained <- hisse:::DownPassMusse(phy, cache, hidden.states=TRUE, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(hisse.constrained,4), round(diversitree.constrained,4))
     expect_true(comparison)
 })
@@ -392,7 +392,7 @@ test_that("MuHiSSE_test1", {
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,1), hidden.states=TRUE)
     hisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache,
-    root.type="madfitz", condition.on.survival=TRUE)
+    root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(hisse.constrained,4), round(diversitree.free,4))
     expect_true(comparison)
 })
@@ -443,7 +443,7 @@ test_that("MuHiSSE_test2", {
     bad.likelihood=exp(-500), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,0), hidden.states=TRUE)
-    muhisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, root.type="madfitz", condition.on.survival=TRUE)
+    muhisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(muhisse.constrained,4), round(diversitree.constrained,4))
     expect_true(comparison)
 })

@@ -47,7 +47,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                 cache$eps.beta.factorA = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[31], hisse.results[[model.index]]$solution[35])
                 cache$eps.beta.factorB = 1 / dbeta(0.1, hisse.results[[model.index]]$solution[32], hisse.results[[model.index]]$solution[36])
 
-                if(hisse.results[[model.index]]$root.type=="madfitz"){
+                if(hisse.results[[model.index]]$root.type=="madfitz" | hisse.results[[model.index]]$root.type=="herr_als"){
                     get.starting.probs <- DownPass(phy=hisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE, ode.eps=0)$compD.root
                 }else{
                     get.starting.probs <- hisse.results[[model.index]]$root.p
@@ -105,7 +105,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                 cache$death1C <- transformed.pars[15]
                 cache$death1D <- transformed.pars[16]
 
-                if(hisse.results[[model.index]]$root.type=="madfitz"){
+                if(hisse.results[[model.index]]$root.type=="madfitz" | hisse.results[[model.index]]$root.type=="herr_als"){
                     get.starting.probs <- DownPassNull(phy=hisse.results[[model.index]]$phy, cache=cache, condition.on.survival=hisse.results[[model.index]]$condition.on.survival, root.type=hisse.results[[model.index]]$root.type, root.p=hisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }else{
                     get.starting.probs <- hisse.results[[model.index]]$root.p
@@ -172,10 +172,10 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                 data.new <- data.frame(geohisse.results[[model.index]]$data[,2], geohisse.results[[model.index]]$data[,2], row.names=geohisse.results[[model.index]]$data[,1])
                 data.new <- data.new[geohisse.results[[model.index]]$phy$tip.label,]
                 cache = ParametersToPassGeoHiSSE(geohisse.results[[model.index]]$phy, data.new[,1], model.vec=geohisse.results[[model.index]]$solution, f=geohisse.results[[model.index]]$f, hidden.states=TRUE)
-                if( !geohisse.results[[model.index]]$root.type %in% c("madfitz","user","equal") ){
+                if( !geohisse.results[[model.index]]$root.type %in% c("madfitz","herr_als","user","equal") ){
                     stop("Option for root.type is not implemented. Check help for GeoHiSSE.")
                 }
-                if(geohisse.results[[model.index]]$root.type=="madfitz"){
+                if(geohisse.results[[model.index]]$root.type=="madfitz" | geohisse.results[[model.index]]$root.type=="herr_als"){
                     get.starting.probs <- DownPassGeoHisse(phy=geohisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=geohisse.results[[model.index]]$condition.on.survival, root.type=geohisse.results[[model.index]]$root.type, root.p=geohisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }else{
                     get.starting.probs <- geohisse.results[[model.index]]$root.p
@@ -185,10 +185,10 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
                 data.new <- data.frame(geohisse.results[[model.index]]$data[,2], geohisse.results[[model.index]]$data[,2], row.names=geohisse.results[[model.index]]$data[,1])
                 data.new <- data.new[geohisse.results[[model.index]]$phy$tip.label,]
                 cache = ParametersToPassMuSSE(geohisse.results[[model.index]]$phy, data.new[,1], model.vec=geohisse.results[[model.index]]$solution, f=geohisse.results[[model.index]]$f, hidden.states=TRUE)
-                if( !geohisse.results[[model.index]]$root.type %in% c("madfitz","user","equal") ){
+                if( !geohisse.results[[model.index]]$root.type %in% c("madfitz","herr_als","user","equal") ) ){
                     stop("Option for root.type is not implemented. Check help for GeoHiSSE.")
                 }
-                if(geohisse.results[[model.index]]$root.type=="madfitz"){
+                if(geohisse.results[[model.index]]$root.type=="madfitz" | geohisse.results[[model.index]]$root.type=="herr_als"){
                     get.starting.probs <- DownPassMusse(phy=geohisse.results[[model.index]]$phy, cache=cache, hidden.states=TRUE, condition.on.survival=geohisse.results[[model.index]]$condition.on.survival, root.type=geohisse.results[[model.index]]$root.type, root.p=geohisse.results[[model.index]]$root.p, get.phi=TRUE)$compD.root
                 }else{
                     get.starting.probs <- geohisse.results[[model.index]]$root.p
@@ -323,3 +323,30 @@ EqFreqsMuSSE <- function(t, y, parms, cache){
     
     return(list(c(dN0AdT,dN1AdT,dN01AdT, dN0BdT,dN1BdT,dN01BdT, dN0CdT,dN1CdT,dN01CdT, dN0DdT,dN1DdT,dN01DdT, dN0EdT,dN1EdT,dN01EdT)))
 }
+
+
+
+
+EqFreqsMuHiSSE <- function(t, y, parms, cache){
+    
+    #cat A:
+    dN00AdT <- cache$lambda00A * y[1] - cache$mu00A * y[1] - obj$q00A_01A * y[1] - obj$q00A_10A * y[1] - obj$q00A_11A * y[1] + obj$q01A_00A * y[2] + obj$q10A_00A * y[3] + obj$q11A_00A * y[4] - obj$q00A_00B * y[1] - obj$q00A_00C * y[1] - obj$q00A_00D * y[1] - obj$q00A_00E * y[1] - obj$q00A_00F * y[1] - obj$q00A_00G * y[1] - obj$q00A_00H * y[1] + obj$q00B_00A * y[5] + obj$q00C_00A * y[9] + obj$q00D_00A * y[13] + obj$q00E_00A * y[17] + obj$q00F_00A * y[21] + obj$q00G_00A * y[25] + obj$q00H_00A * y[29]
+    dN01AdT <- cache$lambda01A * y[2] - cache$mu01A * y[2] - obj$q01A_00A * y[2] - obj$q01A_10A * y[2] - obj$q01A_11A * y[2] + obj$q00A_01A * y[1] + obj$q10A_01A * y[3] + obj$q11A_01A * y[4] - obj$q01A_01B * y[2] - obj$q01A_01C * y[2] - obj$q01A_01D * y[2] - obj$q01A_01E * y[2] - obj$q01A_01F * y[2] - obj$q01A_01G * y[2] - obj$q01A_01H * y[2] + obj$q01B_01A * y[6] + obj$q01C_01A * y[10] + obj$q01D_01A * y[14] + obj$q01E_01A * y[18] + obj$q01F_01A * y[22] + obj$q01G_01A * y[26] + obj$q01H_01A * y[30]
+    dN10AdT <- cache$lambda10A * y[3] - cache$mu10A * y[3] - obj$q10A_00A * y[3] - obj$q10A_01A * y[3] - obj$q10A_11A * y[3] + obj$q00A_10A * y[1] + obj$q01A_10A * y[2] + obj$q11A_10A * y[4] - obj$q10A_10B * y[3] - obj$q10A_10C * y[3] - obj$q10A_10D * y[3] - obj$q10A_10E * y[3] - obj$q10A_10F * y[3] - obj$q10A_10G * y[3] - obj$q10A_10H * y[3] + obj$q10B_10A * y[7] + obj$q10C_10A * y[11] + obj$q10D_10A * y[15] + obj$q10E_10A * y[19] + obj$q10F_10A * y[23] + obj$q10G_10A * y[27] + obj$q10H_10A * y[31]
+    dN11AdT <- cache$lambda11A * y[4] - cache$mu11A * y[4] - obj$q11A_00A * y[4] - obj$q11A_01A * y[4] - obj$q11A_10A * y[4] + obj$q00A_11A * y[1] + obj$q01A_11A * y[2] + obj$q10A_11A * y[3] - obj$q11A_11B * y[4] - obj$q11A_11C * y[4] - obj$q11A_11D * y[4] - obj$q11A_11E * y[4] - obj$q11A_11F * y[4] - obj$q11A_11G * y[4] - obj$q11A_11H * y[4] + obj$q11B_11A * y[8] + obj$q11C_11A * y[12] + obj$q11D_11A * y[16] + obj$q11E_11A * y[20] + obj$q11F_11A * y[24] + obj$q11G_11A * y[28] + obj$q11H_11A * y[32]
+
+    #cat B:
+    dN00BdT <- cache$lambda00B * y[5] - cache$mu00B * y[5] - obj$q00B_01B * y[5] - obj$q00B_10B * y[5] - obj$q00B_11B * y[5] + obj$q01B_00B * y[6] + obj$q10B_00B * y[7] + obj$q11B_00B * y[8] - obj$q00B_00A * y[5] - obj$q00B_00C * y[5] - obj$q00B_00D * y[5] - obj$q00B_00E * y[5] - obj$q00B_00F * y[5] - obj$q00B_00G * y[5] - obj$q00B_00H * y[5] + obj$q00A_00B * y[1] + obj$q00C_00B * y[9] + obj$q00D_00B * y[13] + obj$q00E_00B * y[17] + obj$q00F_00B * y[21] + obj$q00G_00B * y[25] + obj$q00H_00B * y[29]
+    dN01BdT <- cache$lambda01B * y[6] - cache$mu01B * y[6] - obj$q01B_00B * y[6] - obj$q01B_10B * y[6] - obj$q01B_11B * y[6] + obj$q00B_01B * y[5] + obj$q10B_01B * y[7] + obj$q11B_01B * y[8] - obj$q01B_01A * y[6] - obj$q01B_01C * y[6] - obj$q01B_01D * y[6] - obj$q01B_01E * y[6] - obj$q01B_01F * y[6] - obj$q01B_01G * y[6] - obj$q01B_01H * y[6] + obj$q01A_01B * y[2] + obj$q01C_01B * y[10] + obj$q01D_01B * y[14] + obj$q01E_01B * y[18] + obj$q01F_01B * y[22] + obj$q01G_01B * y[26] + obj$q01H_01B * y[30]
+    dN10BdT <- cache$lambda10B * y[7] - cache$mu10B * y[7] - obj$q10B_00B * y[7] - obj$q10B_01B * y[7] - obj$q10B_11B * y[7] + obj$q00B_10B * y[5] + obj$q01B_10B * y[6] + obj$q11B_10B * y[8] - obj$q10B_10A * y[7] - obj$q10B_10C * y[7] - obj$q10B_10D * y[7] - obj$q10B_10E * y[7] - obj$q10B_10F * y[7] - obj$q10B_10G * y[7] - obj$q10B_10H * y[7] + obj$q10A_10B * y[3] + obj$q10C_10B * y[11] + obj$q10D_10B * y[15] + obj$q10E_10B * y[19] + obj$q10F_10B * y[23] + obj$q10G_10B * y[27] + obj$q10H_10B * y[31]
+    dN11BdT <- cache$lambda11B * y[8] - cache$mu11B * y[8] - obj$q11B_00B * y[8] - obj$q11B_01B * y[8] - obj$q11B_10B * y[8] + obj$q00B_11B * y[5] + obj$q01B_11B * y[6] + obj$q10B_11B * y[7] - obj$q11B_11A * y[8] - obj$q11B_11C * y[8] - obj$q11B_11D * y[8] - obj$q11B_11E * y[8] - obj$q11B_11F * y[8] - obj$q11B_11G * y[8] - obj$q11B_11H * y[8] + obj$q11A_11B * y[4] + obj$q11C_11B * y[12] + obj$q11D_11B * y[16] + obj$q11E_11B * y[20] + obj$q11F_11B * y[24] + obj$q11G_11B * y[28] + obj$q11H_11B * y[32]
+
+
+
+    return(list(c(dN00AdT,dN01AdT,dN10AdT,dN11AdT)))
+}
+
+
+
+
+

@@ -21,7 +21,6 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
     if(!is.null(root.p)) {
-        root.type="user"
         root.p <- root.p / sum(root.p)
         if(hidden.states ==TRUE & length(root.p)==4){
             root.p <- rep(root.p, 4)
@@ -34,8 +33,8 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         f[which(f==0)] <- 1
     }
     
-    if(!root.type == "madfitz" & !root.type == "equal" & !root.type == "user"){
-        stop("Check that you specified a proper root.type option. Options are 'madfitz', 'equal', or 'user'.", call.=FALSE)
+    if(!root.type == "madfitz" & "herr_als"){
+        stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
     
     if(is.null(trans.rate)){
@@ -715,13 +714,6 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                 root.p = compD.root/sum(compD.root)
                 root.p[which(is.na(root.p))] = 0
             }
-        }
-        if(root.type == "equal"){
-            root.p = c(rep(1/length(which(compD.root > 0)), length(compD.root)))
-            root.p[which(!compD.root > 0)] = 0
-        }
-        if(root.type == "user"){
-            root.p = root.p
         }
         if(condition.on.survival == TRUE){
             if(cache$hidden.states == FALSE){

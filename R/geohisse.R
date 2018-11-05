@@ -11,7 +11,6 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
     if(!is.null(root.p)) {
-        root.type <- "user"
         ## The vector of the root.p need to be as long as the speciation vector.
         if( length( root.p ) != length( speciation ) ){
             if( length( root.p ) == 3 ){
@@ -28,8 +27,8 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         }        
     }
     
-    if(!root.type == "madfitz" & !root.type == "equal" & !root.type == "user"){
-        stop("Check that you specified a proper root.type option. Options are 'madfitz', 'equal', or 'user'.", call.=FALSE)
+    if(!root.type == "madfitz" & "herr_als"){
+        stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
 
     if(is.null(trans.rate)){
@@ -500,7 +499,7 @@ DownPassGeoHisse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
     }else{
         compD <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
         compE <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
-        if(root.type=="user"){
+        if(!is.null(root.p)){
             root.p.new <- numeric(15)
             root.p.new[1:length(root.p)] <- root.p
             root.p <- root.p.new
@@ -680,13 +679,6 @@ DownPassGeoHisse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
                 root.p[which(is.na(root.p))] = 0
             }
         }
-        if(root.type == "equal"){
-            root.p = c(rep(1/length(which(compD[root.node,] > 0)), length(compD[root.node,])))
-            root.p[which(!compD[root.node,] > 0)] = 0
-        }
-        if(root.type == "user"){
-            root.p = root.p
-        }
         if(condition.on.survival == TRUE){
             if(hidden.states == FALSE){
                 if(root.type == "madfitz"){
@@ -751,7 +743,7 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
     }else{
         compD <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
         compE <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
-        if(root.type=="user"){
+        if(!is.null(root.p)){
             root.p.new <- numeric(15)
             root.p.new[1:length(root.p)] <- root.p
             root.p <- root.p.new
@@ -932,13 +924,6 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
                 root.p = compD[root.node,]/sum(compD[root.node,])
                 root.p[which(is.na(root.p))] = 0
             }
-        }
-        if(root.type == "equal"){
-            root.p = c(rep(1/length(which(compD[root.node,] > 0)), length(compD[root.node,])))
-            root.p[which(!compD[root.node,] > 0)] = 0
-        }
-        if(root.type == "user"){
-            root.p = root.p
         }
         if(condition.on.survival == TRUE){
             if(hidden.states == FALSE){

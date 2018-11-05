@@ -8,7 +8,6 @@
 hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
 
     if(!is.null(root.p)) {
-		root.type="user"
 		root.p <- root.p / sum(root.p)
 		if(hidden.states ==TRUE & length(root.p)==2){
 			root.p <- rep(root.p, 2)
@@ -17,8 +16,8 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 		}
 	}
 
-    if(!root.type == "madfitz" & !root.type == "equal" & !root.type == "user"){
-        stop("Check that you specified a proper root.type option. Options are 'madfitz', 'equal', or 'user'.", call.=FALSE)
+    if(!root.type == "madfitz" & "herr_als"){
+        stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
 
 	if(is.null(trans.rate)){
@@ -444,13 +443,6 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
                     root.p[which(is.na(root.p))] = 0
                 }
 			}
-		}
-		if(root.type == "equal"){
-			root.p = c(rep(1/length(which(compD[root.node,] > 0)), length(compD[root.node,])))
-			root.p[which(!compD[root.node,] > 0)] = 0
-		}
-		if(root.type == "user"){
-			root.p = root.p
 		}
 		if(condition.on.survival == TRUE){
 			if(hidden.states == FALSE){
