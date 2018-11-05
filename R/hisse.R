@@ -435,9 +435,9 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 	}else{
 		if(root.type == "madfitz"){
 			if(hidden.states == FALSE){
-				root.p = c(compD[root.node,1]/sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]))
+				root.p = c(compD[root.node,1] / sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]))
 			}else{
-				root.p = c(compD[root.node,1]/sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]), compD[root.node,3]/sum(compD[root.node,]), compD[root.node,4]/sum(compD[root.node,]))
+				root.p = c(compD[root.node,1] / sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]), compD[root.node,3]/sum(compD[root.node,]), compD[root.node,4]/sum(compD[root.node,]))
 				root.p[which(is.na(root.p))] = 0
 			}
 		}
@@ -450,7 +450,8 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 		}
 		if(condition.on.survival == TRUE){
 			if(hidden.states == FALSE){
-				compD[root.node,] <- (compD[root.node,] * root.p) / c(lambda0[[1]], lambda1[[1]]) * ((1 - compE[root.node,])^2)
+                print(compD[root.node,])
+				compD[root.node,] <- compD[root.node,] / sum(root.p * c(lambda0[[1]], lambda1[[1]]) * (1 - compE[root.node,])^2)
 				#Corrects for possibility that you have 0/0:
 				compD[root.node,which(is.na(compD[root.node,]))] = 0
 			}else{
@@ -459,7 +460,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				compD[root.node,which(is.na(compD[root.node,]))] = 0
 			}
 		}
-		loglik <- log(sum(compD[root.node,])) + sum(logcomp)
+		loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
 	}
 	if(get.phi==TRUE){
 		obj = NULL
