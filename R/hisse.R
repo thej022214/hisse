@@ -435,10 +435,14 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 	}else{
 		if(root.type == "madfitz" | root.type == "herr_als"){
 			if(hidden.states == FALSE){
-				root.p = c(compD[root.node,1] / sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]))
+                if(is.null(root.p)){
+                    root.p = c(compD[root.node,1] / sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]))
+                }
 			}else{
-				root.p = c(compD[root.node,1] / sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]), compD[root.node,3]/sum(compD[root.node,]), compD[root.node,4]/sum(compD[root.node,]))
-				root.p[which(is.na(root.p))] = 0
+                if(is.null(root.p)){
+                    root.p = c(compD[root.node,1] / sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]), compD[root.node,3]/sum(compD[root.node,]), compD[root.node,4]/sum(compD[root.node,]))
+                    root.p[which(is.na(root.p))] = 0
+                }
 			}
 		}
 		if(root.type == "equal"){

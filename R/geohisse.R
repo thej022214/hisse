@@ -928,8 +928,10 @@ DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, c
         return(bad.likelihood)
     }else{
         if(root.type == "madfitz" | root.type == "herr_als"){
-            root.p = compD[root.node,]/sum(compD[root.node,])
-            root.p[which(is.na(root.p))] = 0
+            if(is.null(root.p)){
+                root.p = compD[root.node,]/sum(compD[root.node,])
+                root.p[which(is.na(root.p))] = 0
+            }
         }
         if(root.type == "equal"){
             root.p = c(rep(1/length(which(compD[root.node,] > 0)), length(compD[root.node,])))

@@ -266,8 +266,10 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 		return(bad.likelihood)
 	}else{
 		if(root.type == "madfitz" | root.type == "herr_als"){
-			root.p = c(compD[root.node,1]/sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]), compD[root.node,3]/sum(compD[root.node,]), compD[root.node,4]/sum(compD[root.node,]), compD[root.node,5]/sum(compD[root.node,]), compD[root.node,6]/sum(compD[root.node,]), compD[root.node,7]/sum(compD[root.node,]), compD[root.node,8]/sum(compD[root.node,]))
-			root.p[which(is.na(root.p))] = 0 
+            if(is.null(root.p)){
+                root.p = c(compD[root.node,1]/sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]), compD[root.node,3]/sum(compD[root.node,]), compD[root.node,4]/sum(compD[root.node,]), compD[root.node,5]/sum(compD[root.node,]), compD[root.node,6]/sum(compD[root.node,]), compD[root.node,7]/sum(compD[root.node,]), compD[root.node,8]/sum(compD[root.node,]))
+                root.p[which(is.na(root.p))] = 0
+            }
 		}
 		if(root.type == "equal"){
 			root.p = c(rep(1/length(which(compD[root.node,] > 0)), length(compD[root.node,])))
