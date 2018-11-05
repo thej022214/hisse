@@ -450,7 +450,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 		}
 		if(condition.on.survival == TRUE){
 			if(hidden.states == FALSE){
-				compD[root.node,] <- compD[root.node,] / c(lambda0[[1]], lambda1[[1]]) * ((1 - compE[root.node,])^2)
+				compD[root.node,] <- (compD[root.node,] * root.p) / c(lambda0[[1]], lambda1[[1]]) * ((1 - compE[root.node,])^2)
 				#Corrects for possibility that you have 0/0:
 				compD[root.node,which(is.na(compD[root.node,]))] = 0
 			}else{
@@ -459,7 +459,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 				compD[root.node,which(is.na(compD[root.node,]))] = 0
 			}
 		}
-		loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
+		loglik <- log(sum(compD[root.node,])) + sum(logcomp)
 	}
 	if(get.phi==TRUE){
 		obj = NULL
