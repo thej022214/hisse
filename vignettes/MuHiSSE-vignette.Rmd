@@ -114,7 +114,7 @@ comparison <- identical(round(hisse.constrained,4), round(diversitree.free,4))
 print(comparison)
 ```
 
-Again, the likelihoods are identical and the implementation is correct.
+Again, the likelihoods are identical and the implementation is correct. Note that the likelihood can also be calculated using the root likelihood summary procedure described by Herrera-Alsina et al. (2018). This is specified by doing `root.type="herr_als"`. Note, however, that in our testing the likelihood differences are subtle, and in simulation the parameter estimates are nearly indistinguishable from the original root summary implementation of FitzJohn et al. (2009).
 
 ## Setting up a MuSSE model using MuHiSSE
 
@@ -360,7 +360,7 @@ trans.rate.mod <- ParDrop(trans.rate, c(4,6,7,8,12,14,15,16))
 
 ## Other considerations
 
-Like with `hisse` and `GeoHiSSE`, there are functions available to obtain model averages (i.e., `GetModelAveRates()`), generate estimates of the uncertainty in the parameter estimates (i.e., `SupportRegionMuHiSSE()`), calculate the marginal probabilities for states at nodes (i.e., `MarginReconMuHiSSE()`), and plotting the rate variation on the tree (i.e., `plot.muhisse.states()`). Users are encouraged to read other vignettes and help pages provided for more information. For more conceptual discussions of these functions and ideas, readers are also encouraged to read Caetano et al. (2018). 
+Like with `hisse` and `GeoHiSSE`, there are functions available to obtain model averages (i.e., `GetModelAveRates()`), generate estimates of the uncertainty in the parameter estimates (i.e., `SupportRegionMuHiSSE()`), calculate the marginal probabilities for states at nodes (i.e., `MarginReconMuHiSSE()`), plotting the rate variation on the tree (i.e., `plot.muhisse.states()`), and model-averaging the rates based on the equilibrium frequencies (i.e., `GetModelAveEqFreqs()`). Users are encouraged to read other vignettes and help pages provided for more information. For more conceptual discussions of these functions and ideas, readers are also encouraged to read Caetano et al. (2018). 
 
 One additional item that is worth mentioning. I would recommend users try multiple random starting points when optimizing any given model with `MuHiSSE`. In Nakov et al. (2018), we found that the default starting values often did not return the highest log likelihood. To alleviate this issue, we performed $\ge$ 50 maximum likelihood optimizations for each model, each initiated from a distinct starting point. All functions with `hisse` are provided with `starting.vals` option for these purposes. In the case of Nakov et al. (2018), we wrote our own custom function, which I have provided below using a MuCID3 model. Note that the following function was designed for multicore use:
 
@@ -392,6 +392,8 @@ StartingValueTry <- function(phy, data, f, trans.rate){
 ## References
 
 Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, https://doi.org/10.1111/evo.13602
+
+FitzJohn R., W.P. Maddison, and S.P. Otto. 2009. Estimating trait-dependent speciation and extinction rates from incompletely resolved phylogenies, Systematic Biology, 58: 595-611.
 
 FitzJohn R.G. 2012. Diversitree: comparative phylogenetic analyses of diversification in R. Methods in Ecology and Evolution 3:1084-1092.
 
