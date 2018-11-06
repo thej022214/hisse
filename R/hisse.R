@@ -16,7 +16,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 		}
 	}
 
-    if(!root.type == "madfitz" & "herr_als"){
+    if(!root.type == "madfitz" & !root.type == "herr_als"){
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
 
