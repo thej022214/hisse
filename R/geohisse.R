@@ -713,7 +713,7 @@ DownPassGeoHisse <- function(phy, cache, hidden.states, bad.likelihood=-10000000
     }
     if(get.phi==TRUE){
         obj = NULL
-        obj$compD.root = compD[root.node,] + sum(logcomp)
+        obj$compD.root = compD.root/sum(compD.root)
         obj$compE = compE
         obj$root.p = root.p
         return(obj)
