@@ -262,7 +262,7 @@ GetModelAveEqFreqs <- function(x, max.time, model.type="hisse", get.rates=FALSE,
             nb.tip <- Ntip(muhisse.results[[model.index]]$phy)
             nb.node <- muhisse.results[[model.index]]$phy$Nnode
             ##########################
-            cache = ParametersToPassMuHiSSE(model.vec=muhisse.results[[model.index]]$solution, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
+            cache = ParametersToPassMuHiSSE(model.vec=muhisse.results[[model.index]]$solution, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=muhisse.results[[model.index]]$ode.eps)
             if( !muhisse.results[[model.index]]$root.type %in% c("madfitz","herr_als","user","equal") ){
                 stop("Option for root.type is not implemented. Check help for MuHiSSE.")
             }
