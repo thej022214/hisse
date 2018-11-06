@@ -1,7 +1,7 @@
 \name{Model averaged equilibrium frequencies}
 \alias{GetModelAveEqFreqs}
 \title{Model average equlibrium frequencies}
-\description{Calculates the expected equilibrium frequencies under various hidden state SSE models from a single model or a set of models and returns model averaged frequencies.}
+\description{Calculates the expected equilibrium frequencies under various hidden SSE models from a single model or a set of models and returns model averaged frequencies.}
 \usage{
 GetModelAveEqFreqs(x, max.time, model.type="hisse", get.rates=FALSE, 
 rate.type="turnover", get.all.states=FALSE)
@@ -19,10 +19,9 @@ when calculating equilibrium frequencies.
 \item{get.all.states}{indicates that you would like the equilibrium frequencies to be output for all observed and hidden state combinations. Note that under this option, the frequencies cannot be averaged across models.} 
 }
 \details{
-Provides a data frame model-averaged equilibrium frequencies across
-a set of models. If you give a single geohisse.fit object,
-it uses that; if you give it a list of them, it will
-model-average the results.
+Provides a data frame model-averaged equilibrium frequencies across a set of models. If, for example, you give it a single geohisse.fit object, it uses that; if you give it a list of them, it will model-average the results. The purpose of this approach is dealing with mixed signals among hidden states with respect to the observed states. We discuss this in detail in Caetano et al (2018).
+
+Note, that this function does not work for model fits obtained from fGeoHiSSE. This will provided in the next version.  
 }
 \references{
 Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, https://doi.org/10.1111/evo.13602
