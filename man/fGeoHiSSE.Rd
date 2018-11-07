@@ -43,9 +43,7 @@ model.}
 \item{condition.on.survival}{a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
   speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
-\item{root.type}{indicates whether root prior assumption should based
-  the procedure described by FitzJohn et al. 2009, \dQuote{madfitz},
-  assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
+\item{root.type}{indicates whether root summarization follow the procedure described by FitzJohn et al. 2009, \dQuote{madfitz} or Herrera-Alsina et al. 2018, \dQuote{herr_als}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The
   default is \code{NULL}. Order of the areas in the vector need to follow:
   root.p[1] = 1 (endemic area '0'); root.p[2] = 2 (endemic
@@ -108,6 +106,24 @@ for each area. If you are doing a hidden model, there will be six areas:
 area 0 (widespread distribution), you would specify \dQuote{root.p =
   c(0.5, 0, 0, 0.5, 0, 0)}. In other words, the root has a 50\% chance
 to be in one of the areas 0A or 0B.
+
+For the \dQuote{root.type} option, we are currently maintaining the previous default of 
+\dQuote{madfitz}. However, it was recently pointed out by Herrera-Alsina et al. (2018)
+that at the root, the individual likelihoods for each possible state should be conditioned
+prior to averaging the individual likelihoods across states. This can be set doing 
+\dQuote{herr_als}. It is unclear to us which is exactly correct, but it does seem that 
+both \dQuote{madfitz} and \dQuote{herr_als} behave exactly as they should in the case of 
+character-independent diversification (i.e., reduces to likelihood of tree + likelihood of
+trait model). We've also tested the behavior and the likelihood differences are very 
+subtle and the parameter estimates in simulation are nearly indistinguishable from the
+\dQuote{madfitz} conditioning scheme. We provide both options and encourage users to try 
+both and let us know conditions in which the result vary dramatically under the two root
+implementations. We suspect they do not. 
+
+Also, note, that in the case of \dQuote{root.type=user} and \dQuote{root.type=equal} are
+no longer explicit \dQuote{root.type} options. Instead, either \dQuote{madfitz} or 
+\dQuote{herr_als} are specified and the \dQuote{root.p} can be set to allow for custom
+root options.  
 }
 \value{
 \code{GeoHiSSE} returns an object of class \code{geohisse.fit}. This is a list with 

@@ -23,7 +23,7 @@ ode.eps=0)
 \item{eps.beta}{a vector of length 4, indicating the free parameters associated with time-varying extinction fractions (see Details).}
 \item{timeslice}{a user-supplied time to split the tree.}
 \item{condition.on.survival}{a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
-\item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
+\item{root.type}{indicates whether root summarization follow the procedure described by FitzJohn et al. 2009, \dQuote{madfitz} or Herrera-Alsina et al. 2018, \dQuote{herr_als}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
 \item{output.type}{indicates whether the rates should be printed onscreen as the optimized variables, \dQuote{turnover}, transformed to reflect net diversification, \dQuote{net.div}, or transformed to reflect \eqn{\lambda}{lambda} and \eqn{\mu}{mu}, \dQuote{raw}.}
 \item{sann}{a logical indicating whether a two-step optimization procedure is to be used. The first includes a simulate annealing approach, with the second involving a refinement using \code{subplex}. The default is \code{FALSE}.}
@@ -44,6 +44,24 @@ To setup a model, users input vectors containing values to indicate how many fre
 The \dQuote{trans.rate} input is the transition model and has an entirely different setup than turnover and extinction rates. See \code{TransMatMaker} function for more details. 
 
 For user-specified \dQuote{root.p}, you should specify the probability for each state. If you are doing a hidden model, there will be four states: 0A, 1A, 0B, 1B. So if you wanted to say the root had to be state 0, you would specify \dQuote{root.p = c(0.5, 0, 0.5, 0)}.
+
+For the \dQuote{root.type} option, we are currently maintaining the previous default of 
+\dQuote{madfitz}. However, it was recently pointed out by Herrera-Alsina et al. (2018)
+that at the root, the individual likelihoods for each possible state should be conditioned
+prior to averaging the individual likelihoods across states. This can be set doing 
+\dQuote{herr_als}. It is unclear to us which is exactly correct, but it does seem that 
+both \dQuote{madfitz} and \dQuote{herr_als} behave exactly as they should in the case of 
+character-independent diversification (i.e., reduces to likelihood of tree + likelihood of
+trait model). We've also tested the behavior and the likelihood differences are very 
+subtle and the parameter estimates in simulation are nearly indistinguishable from the
+\dQuote{madfitz} conditioning scheme. We provide both options and encourage users to try 
+both and let us know conditions in which the result vary dramatically under the two root
+implementations. We suspect they do not. 
+
+Also, note, that in the case of \dQuote{root.type=user} and \dQuote{root.type=equal} are
+no longer explicit \dQuote{root.type} options. Instead, either \dQuote{madfitz} or 
+\dQuote{herr_als} are specified and the \dQuote{root.p} can be set to allow for custom
+root options.  
 
 Finally, the options \dQuote{.beta} and \dQuote{timeslice} are included, but neither have been tested -- needless to say, use at your own risk (but really, though, you should probably forget that these options exist for the time being). The \dQuote{.beta} provides a means for testing for time-varying rates, whereas \dQuote{timeslice} splits the tree to allow the process to vary before and after some user defined time period. These options will be further developed in due course.
 }
@@ -91,6 +109,8 @@ eps.anc=c(1,2,0,3), trans.rate=trans.rates.hisse)
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 
 FitzJohn R.G., Maddison W.P., and Otto S.P. 2009. Estimating trait-dependent speciation and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
+
+Herrera-Alsina L., van Els P., and Etienne R.S. 2018. Detecting the dependence of diversification on multiples traits from phylogenetic trees and trait data. Systematic Biology In press.
 
 Maddison W.P., Midford P.E., and Otto S.P. 2007. Estimating a binary characters effect on speciation and extinction. Syst. Biol. 56:701-710.
 

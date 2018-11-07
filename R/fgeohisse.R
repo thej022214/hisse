@@ -24,7 +24,6 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
     if(!is.null(root.p)) {
-        root.type="user"
         root.p <- root.p / sum(root.p)
         if(hidden.areas ==TRUE & length(root.p)==2){
             root.p <- rep(root.p, 2)
@@ -33,8 +32,8 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1
         }
     }
     
-    if(!root.type == "madfitz" & !root.type == "equal" & !root.type == "user"){
-        stop("Check that you specified a proper root.type option. Options are 'madfitz', 'equal', or 'user'.", call.=FALSE)
+    if(!root.type == "madfitz" & !root.type == "herr_als"){
+        stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
     
     if(is.null(trans.rate)){
@@ -833,39 +832,59 @@ DownPassGeoHissefast <- function(dat.tab, gen, cache, condition.on.survival, roo
     if (is.na(sum(log(compD.root))) || is.na(log(sum(1 - compE.root)))){
         return(log(cache$bad.likelihood)^13)
     }else{
-        if(root.type == "madfitz"){
-            root.p = compD.root/sum(compD.root)
-            root.p[which(is.na(root.p))] = 0
-        }
-        if(root.type == "equal"){
-            root.p = c(rep(1/length(which(compD.root > 0)), length(compD.root)))
-            root.p[which(!compD.root > 0)] = 0
-        }
-        if(root.type == "user"){
-            root.p = root.p
+        if(root.type == "madfitz" | root.type == "herr_als"){
+            if(is.null(root.p)){
+                root.p = compD.root/sum(compD.root)
+                root.p[which(is.na(root.p))] = 0
+            }
         }
         if(condition.on.survival == TRUE){
             if(cache$hidden.states == FALSE){
-                if(cache$assume.cladogenetic == TRUE){
-                    lambda <- c(cache$s00A, cache$s11A, sum(c(cache$s00A, cache$s11A, cache$s01A)))
+                if(root.type == "madfitz"){
+                    if(cache$assume.cladogenetic == TRUE){
+                        lambda <- c(cache$s00A, cache$s11A, sum(c(cache$s00A, cache$s11A, cache$s01A)))
+                    }else{
+                        lambda <- c(cache$s00A, cache$s11A, cache$s01A)
+                    }
+                    compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
                 }else{
-                    lambda <- c(cache$s00A, cache$s11A, cache$s01A)
+                    if(cache$assume.cladogenetic == TRUE){
+                        lambda <- c(cache$s00A, cache$s11A, sum(c(cache$s00A, cache$s11A, cache$s01A)))
+                    }else{
+                        lambda <- c(cache$s00A, cache$s11A, cache$s01A)
+                    }
+                    compD.root <- compD.root / (lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root)) + sum(log(comp))
                 }
-                compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
-                #Corrects for possibility that you have 0/0:
-                compD.root[which(is.na(compD.root))] = 0
             }else{
-                if(cache$assume.cladogenetic == TRUE) {
-                    lambda <- c(cache$s00A, cache$s11A, sum(c(cache$s00A, cache$s11A, cache$s01A)), cache$s00B, cache$s11B, sum(c(cache$s00B, cache$s11B, cache$s01B)), cache$s00C, cache$s11C, sum(c(cache$s00C, cache$s11C, cache$s01C)), cache$s00D, cache$s11D, sum(c(cache$s00D, cache$s11D, cache$s01D)), cache$s00E, cache$s11E, sum(c(cache$s00E, cache$s11E, cache$s01E)), cache$s00F, cache$s11F, sum(c(cache$s00F, cache$s11F, cache$s01F)), cache$s00G, cache$s11G, sum(c(cache$s00G, cache$s11G, cache$s01G)), cache$s00H, cache$s11H, sum(c(cache$s00H, cache$s11H, cache$s01H)), cache$s00I, cache$s11I, sum(c(cache$s00I, cache$s11I, cache$s01I)), cache$s00J, cache$s11J, sum(c(cache$s00J, cache$s11J, cache$s01J)))
+                if(root.type == "madfitz"){
+                    if(cache$assume.cladogenetic == TRUE) {
+                        lambda <- c(cache$s00A, cache$s11A, sum(c(cache$s00A, cache$s11A, cache$s01A)), cache$s00B, cache$s11B, sum(c(cache$s00B, cache$s11B, cache$s01B)), cache$s00C, cache$s11C, sum(c(cache$s00C, cache$s11C, cache$s01C)), cache$s00D, cache$s11D, sum(c(cache$s00D, cache$s11D, cache$s01D)), cache$s00E, cache$s11E, sum(c(cache$s00E, cache$s11E, cache$s01E)), cache$s00F, cache$s11F, sum(c(cache$s00F, cache$s11F, cache$s01F)), cache$s00G, cache$s11G, sum(c(cache$s00G, cache$s11G, cache$s01G)), cache$s00H, cache$s11H, sum(c(cache$s00H, cache$s11H, cache$s01H)), cache$s00I, cache$s11I, sum(c(cache$s00I, cache$s11I, cache$s01I)), cache$s00J, cache$s11J, sum(c(cache$s00J, cache$s11J, cache$s01J)))
+                    }else{
+                        lambda <- c(cache$s00A, cache$s11A, cache$s01A, cache$s00B, cache$s11B, cache$s01B, cache$s00C, cache$s11C, cache$s01C, cache$s00D, cache$s11D, cache$s01D, cache$s00E, cache$s11E, cache$s01E, cache$s00F, cache$s11F, cache$s01F, cache$s00G, cache$s11G, cache$s01G, cache$s00H, cache$s11H, cache$s01H, cache$s00I, cache$s11I, cache$s01I, cache$s00J, cache$s11J, cache$s01J)
+                    }
+                    compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
                 }else{
-                    lambda <- c(cache$s00A, cache$s11A, cache$s01A, cache$s00B, cache$s11B, cache$s01B, cache$s00C, cache$s11C, cache$s01C, cache$s00D, cache$s11D, cache$s01D, cache$s00E, cache$s11E, cache$s01E, cache$s00F, cache$s11F, cache$s01F, cache$s00G, cache$s11G, cache$s01G, cache$s00H, cache$s11H, cache$s01H, cache$s00I, cache$s11I, cache$s01I, cache$s00J, cache$s11J, cache$s01J)
+                    if(cache$assume.cladogenetic == TRUE) {
+                        lambda <- c(cache$s00A, cache$s11A, sum(c(cache$s00A, cache$s11A, cache$s01A)), cache$s00B, cache$s11B, sum(c(cache$s00B, cache$s11B, cache$s01B)), cache$s00C, cache$s11C, sum(c(cache$s00C, cache$s11C, cache$s01C)), cache$s00D, cache$s11D, sum(c(cache$s00D, cache$s11D, cache$s01D)), cache$s00E, cache$s11E, sum(c(cache$s00E, cache$s11E, cache$s01E)), cache$s00F, cache$s11F, sum(c(cache$s00F, cache$s11F, cache$s01F)), cache$s00G, cache$s11G, sum(c(cache$s00G, cache$s11G, cache$s01G)), cache$s00H, cache$s11H, sum(c(cache$s00H, cache$s11H, cache$s01H)), cache$s00I, cache$s11I, sum(c(cache$s00I, cache$s11I, cache$s01I)), cache$s00J, cache$s11J, sum(c(cache$s00J, cache$s11J, cache$s01J)))
+                    }else{
+                        lambda <- c(cache$s00A, cache$s11A, cache$s01A, cache$s00B, cache$s11B, cache$s01B, cache$s00C, cache$s11C, cache$s01C, cache$s00D, cache$s11D, cache$s01D, cache$s00E, cache$s11E, cache$s01E, cache$s00F, cache$s11F, cache$s01F, cache$s00G, cache$s11G, cache$s01G, cache$s00H, cache$s11H, cache$s01H, cache$s00I, cache$s11I, cache$s01I, cache$s00J, cache$s11J, cache$s01J)
+                    }
+                    compD.root <- (compD.root.node * root.p) / (lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root)) + sum(log(comp))
                 }
-                compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
-                #Corrects for possibility that you have 0/0:
-                compD.root[which(is.na(compD.root))] = 0
             }
         }
-        loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
         if(!is.finite(loglik)){
             return(log(cache$bad.likelihood)^7)
         }

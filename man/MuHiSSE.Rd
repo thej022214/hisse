@@ -43,9 +43,7 @@ ode.eps=0)
 \item{condition.on.survival}{a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
   speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
-\item{root.type}{indicates whether root prior assumption should based
-  the procedure described by FitzJohn et al. 2009, \dQuote{madfitz},
-  assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
+\item{root.type}{indicates whether root summarization follow the procedure described by FitzJohn et al. 2009, \dQuote{madfitz} or Herrera-Alsina et al. 2018, \dQuote{herr_als}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The
   default is \code{NULL}.}
 \item{sann}{a logical indicating whether a two-step optimization
@@ -121,6 +119,24 @@ combinations: 00A, 01A, 10A, 11A, 00B, 01B, 10B, 11B. So if you wanted to say th
 had to be in state 00, and since you do not know the hidden state, you would specify 
 \dQuote{root.p = c(0.5, 0, 0, 0, 0.5, 0, 0, 0)}. In other words, the root has a 50\% 
 chance to be in one of the states to be 00A or 00B.
+
+For the \dQuote{root.type} option, we are currently maintaining the previous default of 
+\dQuote{madfitz}. However, it was recently pointed out by Herrera-Alsina et al. (2018)
+that at the root, the individual likelihoods for each possible state should be conditioned
+prior to averaging the individual likelihoods across states. This can be set doing 
+\dQuote{herr_als}. It is unclear to us which is exactly correct, but it does seem that 
+both \dQuote{madfitz} and \dQuote{herr_als} behave exactly as they should in the case of 
+character-independent diversification (i.e., reduces to likelihood of tree + likelihood of
+trait model). We've also tested the behavior and the likelihood differences are very 
+subtle and the parameter estimates in simulation are nearly indistinguishable from the
+\dQuote{madfitz} conditioning scheme. We provide both options and encourage users to try 
+both and let us know conditions in which the result vary dramatically under the two root
+implementations. We suspect they do not. 
+
+Also, note, that in the case of \dQuote{root.type=user} and \dQuote{root.type=equal} are
+no longer explicit \dQuote{root.type} options. Instead, either \dQuote{madfitz} or 
+\dQuote{herr_als} are specified and the \dQuote{root.p} can be set to allow for custom
+root options.  
 }
 \value{
 \code{MuHiSSE} returns an object of class \code{muhisse.fit}. This is a list with 
@@ -155,6 +171,10 @@ of trait-dependent speciation and extinction. Syst. Biol. 65:583-601.
 
 FitzJohn R.G., Maddison W.P., and Otto S.P. 2009. Estimating trait-dependent speciation 
 and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
+
+Herrera-Alsina L., van Els P., and Etienne R.S. 2018. Detecting the dependence of 
+diversification on multiples traits from phylogenetic trees and trait data. Systematic 
+Biology In press.
 
 Maddison W.P., Midford P.E., and Otto S.P. 2007. Estimating a binary characters effect on 
 speciation and extinction. Syst. Biol. 56:701-710.
