@@ -878,7 +878,7 @@ DownPassGeoHissefast <- function(dat.tab, gen, cache, condition.on.survival, roo
                     }else{
                         lambda <- c(cache$s00A, cache$s11A, cache$s01A, cache$s00B, cache$s11B, cache$s01B, cache$s00C, cache$s11C, cache$s01C, cache$s00D, cache$s11D, cache$s01D, cache$s00E, cache$s11E, cache$s01E, cache$s00F, cache$s11F, cache$s01F, cache$s00G, cache$s11G, cache$s01G, cache$s00H, cache$s11H, cache$s01H, cache$s00I, cache$s11I, cache$s01I, cache$s00J, cache$s11J, cache$s01J)
                     }
-                    compD.root <- (compD.root.node * root.p) / (lambda * (1 - compE.root)^2)
+                    compD.root <- (compD.root * root.p) / (lambda * (1 - compE.root)^2)
                     #Corrects for possibility that you have 0/0:
                     compD.root[which(is.na(compD.root))] = 0
                     loglik <- log(sum(compD.root)) + sum(log(comp))
