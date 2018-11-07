@@ -273,7 +273,7 @@ test_that("GeoHiSSE_test4", {
     
 #    cache <- hisse:::ParametersToPassGeoHiSSE(sim.data, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
 #    geohisse.full <- hisse:::DownPassGeoHisse(phy=sim.data, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000
-                                    , condition.on.survival=TRUE, root.type="madfitz", root.p=c(1/3,1/3,1/3))
+#                                   , condition.on.survival=TRUE, root.type="madfitz", root.p=c(1/3,1/3,1/3))
 #    comparison <- identical(round(geohisse.full,4), round(classe.full,4))
 #    expect_true(comparison)
 #})
