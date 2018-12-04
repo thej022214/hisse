@@ -23,7 +23,7 @@ makeHiSSELikelihood <- function(phy, data, f=c(1,1), condition.on.survival=TRUE,
     ## Create the 'pars' vector for a full model:
     ## This will always have the same length and order of parameters:
     ## Only the first 20 entries will matter for the user.
-    pars.full <- c(1:20, rep(21, times = 36))
+    pars.full <- c(1:20, rep(1, times = 36))
 
     ## The names for the 20 first parameters in the model.
     ## These are to be returned to the user.
