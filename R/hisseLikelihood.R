@@ -136,12 +136,17 @@ makeHiSSELikelihood <- function(phy, data, hidden.states = TRUE, null4 = FALSE, 
         colnames(trans.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")
 
         ## Create the vector with the name of the parameters:
-        names.pars <- c("turnover", "eps", paste0("q.", 1:32) )
+        div.vec <- c("turnover.A", "turnover.B", "turnover.C", "turnover.D",
+                     "eps.A", "eps.B", "eps.C", "eps.D")
+        names.pars <- c(div.vec, paste0("q.", 1:32) )
         initial.pars <- setNames( rep(0.0, times = length(names.pars) ), names.pars )
 
         loglik <- function(p){
             ## Prepare the parameter vector
-            model.vec <- c(rep(p[1],8), rep(p[2], 8), p[3:34])
+            ## Need to set the diversification parameters for 0 and 1.
+            model.vec <- c(p[1], p[1], p[2], p[2], p[3], p[3], p[4], p[4],
+                           p[5], p[5], p[6], p[6], p[7], p[7], p[8], p[8],
+                           p[9:length(p)])
             cache <- ParametersToPassNull(phy=phy, data=data.new[,1], model.vec, f=f)
             logl <- DownPassNull(phy=phy, cache=cache, root.type=root.type
                                , condition.on.survival=condition.on.survival
