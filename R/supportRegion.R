@@ -23,6 +23,25 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
         lower <- hisse.obj$lower.bounds
         upper <- hisse.obj$upper.bounds
 
+        params_and_bounds <- data.frame(lower=lower, par=par, upper=upper)
+        while(any(c(par<lower, par>upper))) {
+            if(any(par<lower)) {
+                print("Problem with bounds")
+                print(params_and_bounds)
+                print(paste("At least one of your parameters is lower than your lower bound: parameter(s)", paste(which(par<lower), collapse=', ')))
+                print("We're resetting the bounds automatically")
+                lower <- lower*0.1
+            }
+            if(any(par>upper)) {
+                print("Problem with bounds")
+                print(params_and_bounds)
+                print(paste("At least one of your parameters is higher than your upper bound: parameter(s)", paste(which(par>upper), collapse=', ')))
+                print("We're resetting the bounds automatically")
+                upper <- upper*10
+            }
+        }
+
+
         #Bad Jeremy! Hard-coded column headers...
         if(output.type == "turnover"){
             interval.names <- c("lnLik", "turn.0A", "turn.0B", "turn.0C", "turn.0D", "turn.1A", "turn.1B", "turn.1C", "turn.1D", "eps.0A", "eps.0B", "eps.0C", "eps.0D", "eps.1A", "eps.1B", "eps.1C", "eps.1D", "q0B0A", "q0C0A", "q0D0A", "q1A0A", "q0A0B", "q0C0B", "q0D0B", "q1B0B", "q0A0C", "q0B0C", "q0D0C", "q1C0C", "q0A0D", "q0B0D", "q0C0D", "q1D0D", "q0A1A", "q1B1A", "q1C1A", "q1D1A", "q0B1B", "q1A1B", "q1C1B", "q1D1B", "q0C1C", "q1A1C", "q1B1C", "q1D1C", "q0D1D", "q1A1D", "q1B1D", "q1C1D")
