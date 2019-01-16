@@ -67,17 +67,16 @@ void geosse_3_areas_derivs(int *neq, double *t, double *y, double *ydot, double 
     dA_AC = params_geosse_3_areas[16],  /* dispersal from A to AC     */
     dB_AB = params_geosse_3_areas[17],  /* dispersal from B to AB     */
     dB_BC = params_geosse_3_areas[18],  /* dispersal from B to BC     */        
-    dC_BC = params_geosse_3_areas[19],  /* dispersal from C to BC     */
-    dC_AC = params_geosse_3_areas[20],  /* dispersal from C to AC     */
+    dC_AC = params_geosse_3_areas[19],  /* dispersal from C to AC     */
+    dC_BC = params_geosse_3_areas[20],  /* dispersal from C to BC     */
 
     // These are the local extinction or extirpation parameters.
     dAB_A = params_geosse_3_areas[21],   /* true extirpation rate  */
     dAC_A = params_geosse_3_areas[22],   /* true extirpation rate  */
     dAB_B = params_geosse_3_areas[23],   /* true extirpation rate  */
     dBC_B = params_geosse_3_areas[24],   /* true extirpation rate  */
-    dBC_C = params_geosse_3_areas[25],   /* true extirpation rate  */
-    dAC_C = params_geosse_3_areas[26];   /* true extirpation rate  */
-
+    dAC_C = params_geosse_3_areas[25],   /* true extirpation rate  */
+    dBC_C = params_geosse_3_areas[26];   /* true extirpation rate  */
   // The extinction ODEs
   
   /*  dE_A / dt  */
