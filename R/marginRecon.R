@@ -914,6 +914,184 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
 
 ######################################################################################################################################
 ######################################################################################################################################
+### ANCESTRAL STATE RECONSTRUCTION for fast MiSSE -- calculates marginal probabilities for our set of MiSSE models
+######################################################################################################################################
+######################################################################################################################################
+
+
+MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
+    
+    if( !is.null(phy$node.label) ) phy$node.label <- NULL
+    
+    if(!is.null(root.p)) {
+        root.type="user"
+        root.p <- root.p / sum(root.p)
+        if(hidden.states ==TRUE & length(root.p)==2){
+            root.p <- rep(root.p, 2)
+            root.p <- root.p / sum(root.p)
+            warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for each of the specified hidden states")
+        }
+    }
+    
+    model.vec = pars
+    
+    # Some new prerequisites #
+    gen <- FindGenerations(phy)
+    dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+    nb.tip <- Ntip(phy)
+    nb.node <- phy$Nnode
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
+    ##########################
+    
+    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    
+    nstates = 26
+    nstates.to.eval <- hidden.states
+    nstates.not.eval <- 26 - nstates.to.eval
+    nodes <- unique(phy$edge[,1])
+    
+    if(is.null(n.cores)){
+        marginal.probs <- matrix(0, nb.node+nb.tip, nstates)
+        for (i in seq(from = 1, length.out = nb.node)) {
+            focal <- nodes[i]
+            marginal.probs.tmp <- c()
+            for (j in 1:nstates.to.eval){
+                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+            }
+            marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
+            best.probs = max(marginal.probs.tmp)
+            marginal.probs.rescaled = marginal.probs.tmp - best.probs
+            marginal.probs[focal,] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+            if (verbose && i%%100==0) {
+                cat(paste(i, "of", nb.node, "nodes done"), "\n")
+            }
+        }
+        if(hidden.states > 1){
+            for (i in seq(from = 1, length.out = nb.tip)) {
+                setkey(dat.tab, DesNode)
+                marginal.probs.tmp <- numeric(2)
+                nstates = which(!dat.tab[i,7:32] == 0)
+                cache$states.keep <- as.data.frame(dat.tab[i,7:32])
+                for (j in nstates){
+                    cache$to.change <- cache$states.keep
+                    tmp.state <- 1 * c(cache$to.change[1,j])
+                    cache$to.change[1,] <- 0
+                    cache$to.change[1,j] <- tmp.state
+                    for (k in 1:dim(cache$to.change)[2]){
+                        dat.tab[i, paste("compD", k, sep="_") := cache$to.change[,k]]
+                    }
+                    marginal.probs.tmp[j] <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                }
+                for (k in 1:dim(cache$to.change)[2]){
+                    dat.tab[i, paste("compD", k, sep="_") := cache$states.keep[,k]]
+                }
+                best.probs = max(marginal.probs.tmp[nstates])
+                marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
+                marginal.probs[i,nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+                if (verbose && i%%100==0) {
+                    cat(paste(i, "of", nb.tip, "tips done"), "\n")
+                }
+            }
+        }
+        obj <- NULL
+        
+        #if(!hidden.states == TRUE){
+        #    setkey(dat.tab, DesNode)
+        #    tmp.stuff <- as.data.frame(dat.tab[1:nb.tip,])
+        #    for(j in 1:4){
+        #        marginal.probs[1:nb.tip,j] <- tmp.stuff[,j+6]
+        #    }
+        #}
+        
+        marginal.probs <- cbind(1:(nb.node+nb.tip), marginal.probs)
+        obj$node.mat = marginal.probs[-(1:nb.tip),]
+        obj$tip.mat = marginal.probs[1:nb.tip,]
+        rates.mat <- matrix(0, 2, 26)
+        index.vector <- 1:52
+        rates.mat[1,] <- model.vec[index.vector %% 2 == 1]
+        rates.mat[2,] <- model.vec[index.vector %% 2 == 0]
+        rownames(rates.mat) <- c("turnover", "extinction.fraction")
+        colnames(rates.mat) <- c(c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)"))
+        rates.mat <- ParameterTransformMiSSE(rates.mat)
+        colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)"))
+        obj$rates.mat = rates.mat
+        phy$node.label = apply(marginal.probs[,-1], 1, which.max)[-(1:nb.tip)]
+        obj$phy = phy
+    }else{
+        NodeEval <- function(node){
+            focal <- node
+            marginal.probs.tmp <- c()
+            for (j in 1:nstates.to.eval){
+                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+            }
+            marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
+            best.probs = max(marginal.probs.tmp)
+            marginal.probs.rescaled = marginal.probs.tmp - best.probs
+            marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+            return(c(node, marginal.probs))
+        }
+        node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
+        
+        if(hidden.states>1){
+            TipEval <- function(tip){
+                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+                setkey(dat.tab, DesNode)
+                marginal.probs.tmp <- numeric(2)
+                nstates = which(!dat.tab[tip,7:32] == 0)
+                nstates = nstates[1:hidden.states]
+                cache$states.keep <- as.data.frame(dat.tab[tip,7:32])
+                for (j in nstates){
+                    cache$to.change <- cache$states.keep
+                    tmp.state <- 1 * c(cache$to.change[1,j])
+                    cache$to.change[1,] <- 0
+                    cache$to.change[1,j] <- tmp.state
+                    for (k in 1:dim(cache$to.change)[2]){
+                        dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
+                    }
+                    marginal.probs.tmp[j] <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+                }
+                for (k in 1:dim(cache$to.change)[2]){
+                    dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
+                }
+                best.probs = max(marginal.probs.tmp[nstates])
+                marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
+                marginal.probs <- numeric(26)
+                marginal.probs[nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+                return(c(tip, marginal.probs))
+            }
+            tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
+        }
+        obj <- NULL
+        
+        obj$node.mat <- matrix(unlist(node.marginals), ncol = 26+1, byrow = TRUE)
+        obj$tip.mat = matrix(unlist(tip.marginals), ncol = 26+1, byrow = TRUE)
+        rates.mat <- matrix(0, 2, 26)
+        index.vector <- 1:52
+        rates.mat[1,] <- model.vec[index.vector %% 2 == 1][-27]
+        rates.mat[2,] <- model.vec[index.vector %% 2 == 0]
+        rownames(rates.mat) <- c("turnover", "extinction.fraction")
+        colnames(rates.mat) <- c(c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)"))
+        rates.mat <- ParameterTransformMiSSE(rates.mat)
+        colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)"))
+        rates.mat <- ParameterTransformMiSSE(rates.mat)
+        obj$rates.mat = rates.mat
+        phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
+        obj$phy = phy
+    }
+    
+    if(!is.null(aic)){
+        obj$aic = aic
+    }
+    
+    class(obj) = "misse.states"
+    return(obj)
+}
+
+
+
+######################################################################################################################################
+######################################################################################################################################
 ### UTILITY FUNCTIONS
 ######################################################################################################################################
 ######################################################################################################################################
@@ -1059,6 +1237,18 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
 }
 
 
+ParameterTransformMiSSE <- function(x){
+    rates.mat <- matrix(0, 3, 26)
+    rownames(rates.mat) <- c("net.div", "speciation", "extinction")
+    colnames(rates.mat) <- c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)")
+    rates.mat[1,] <- (x[1,] / (1 + x[2,])) - ((x[1,] * x[2,]) / (1 + x[2,]))
+    rates.mat[2,] <- x[1,] / (1 + x[2,])
+    rates.mat[3,] <- (x[1,] * x[2,]) / (1 + x[2,])
+    rates.mat[3,is.na(rates.mat[3,])] = 0
+    rates.mat <- rbind(x, rates.mat)
+    return(rates.mat)
+}
+
 
 ParameterTransform <- function(x, y){
     speciation <- x / (1+y)
@@ -1077,6 +1267,10 @@ print.hisse.geosse.states <- function(x,...){
 }
 
 print.muhisse.states <- function(x,...){
+    print(x$phy)
+}
+
+print.misse.states <- function(x,...){
     print(x$phy)
 }
 
