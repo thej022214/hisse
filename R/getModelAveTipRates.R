@@ -130,7 +130,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         }
 
         if(class(hisse.results[[1]])=="misse.states"){
-            states.tips <- rep(0, dim(hisse.results[[1]][["node.mat"]])[1])
+            states.internal <- rep(0, dim(hisse.results[[1]][["node.mat"]])[1])
         }
 
         final.df.nodes <- data.frame(id=hisse.results[[1]]$node.mat[,1], state=states.internal, turnover=averaged.node.rates[[1]], net.div=averaged.node.rates[[2]], speciation=averaged.node.rates[[3]], extinct.frac=averaged.node.rates[[4]], extinction=averaged.node.rates[[5]])
