@@ -52,12 +52,11 @@ ode.eps=0)
 One thing pointed out in the original HiSSE paper (Beaulieu & O'Meara, 2016) is
 that the trait-independent hisse model is basically a model for traits and a separate
 model for shifts in diversification parameters, much like BAMM (though without priors,
-discontinuous inheritance of extinction probability, or other mathematical foibles
--- though hisse could always have its own issues). The hidden states can drive
-different diversification processes, and the traits just evolve in a regular trait
-model. At that point, there is no harm in just dropping the trait (or analyzing
-separately) and just focusing on diversification driven by unknown factors.
-That is what this function does. It sets up and executes a completely trait-free
+discontinuous inheritance of extinction probability, or other mathematical foibles). 
+The hidden states can drive different diversification processes, and the traits just 
+evolve in a regular trait model. At that point, there is no harm in just dropping the 
+trait (or analyzing separately) and just focusing on diversification driven by unknown 
+factors. That is what this function does. It sets up and executes a completely trait-free
 version of a HiSSE model.
 
 Thus, all that is required is a tree. The model allows up to 26 possible hidden states in
@@ -66,7 +65,7 @@ transition rate, q, A "shift" in diversification denotes a lineage tracking some
 unobserved, hidden state. An interesting byproduct of this assumption is that distantly
 related clades can actually share the same discrete set of diversification parameters.
 
-Note that "hidden state" is shorthand. We do not mean that there is a single, discrete
+Note that "hidden state" is a shorthand. We do not mean that there is a single, discrete
 character that is solely driving diversification differences. There is some heritable
 "thing" that affects rates: but this could be a combination of body size, oxygen
 concentration, trophic level, and how many other species are competing in an area.
