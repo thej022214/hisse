@@ -850,17 +850,17 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
     #rate.tree$cols[] <- adjustcolor(rate.tree$cols[], alpha.f=0.3)
     #state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
     
-    state.lims <- range(c(states.tips, states.internal))
-    state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
-    state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
+    #state.lims <- range(c(states.tips, states.internal))
+    #state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
+    #state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
     
-    state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips, plot=FALSE, anc.states=states.internal, lims=state.lims)
+    #state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips, plot=FALSE, anc.states=states.internal, lims=state.lims)
     #state.colors <- grey(seq(1,0,length.out=length(state.tree$cols)))
-    state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
-    state.tree$cols[]<- state.colors
+    #state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
+    #state.tree$cols[]<- state.colors
     
     par(fig=c(0,1, 0, 1), new=FALSE)
-    plot.contMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
+    plot.contMapHisse(A=rate.tree, B=rate.tree, lwd.factor=width.factor, fsize=fsize,
     , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
     , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
     , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
