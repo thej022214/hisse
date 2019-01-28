@@ -938,7 +938,7 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
     
     ## Return par to the previous state.
     par( old.par )
-    return(list(rate.tree=rate.tree, state.tree=state.tree))
+    return(list(rate.tree=rate.tree))
 }
 
 
