@@ -827,10 +827,8 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
     states.tips <- NA
     states.internal <- NA
     if (do.observed.only) {
-        states.tips <- ConvertManyToBinaryState(hisse.results, "tip.mat")
-        states.internal <- ConvertManyToBinaryState(hisse.results, "node.mat")
-    } else {
-        stop("So far we can easily plot just the binary observed state; if you want to plot the hidden states, use a different function")
+        states.tips <- rep(0, dim(hisse.results[[1]][["tip.mat"]])[1])
+        states.internal <- rep(0, dim(hisse.results[[1]][["node.mat"]])[1])
     }
     tree.to.plot <- hisse.results[[1]]$phy
     #	rate.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToRate(hisse.object$tip.mat, rate.vector= rate.vector), plot=FALSE, anc.states=ConvertToRate(hisse.object$node.mat, rate.vector= rate.vector), ...)
