@@ -31,7 +31,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         to.mod.ave <- type
     }    
 
-    if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states", "muhisse.states", "misse.state")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states', 'hisse.geosse.states', 'muhisse.states', or 'misse.states'.")
+    if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states", "muhisse.states", "misse.states")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states', 'hisse.geosse.states', 'muhisse.states', or 'misse.states'.")
 
     ## If hisse.results is a list of model reconstructions, then test if they have $aic. Return error message otherwise.
     ## There is no need for the $aic element if AIC.weigths argument is provided.
