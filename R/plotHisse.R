@@ -896,8 +896,8 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         }
         
         rates.density <- GetNormalizedDensityPlot(rates.to.plot, rate.lims, legend.kernel.rates)
-        states.density <- GetNormalizedDensityPlot(states.to.plot, state.lims, legend.kernel.states)
-        states.density$y <- (-1) * states.density$y #so it gets drawn below the other one
+        #states.density <- GetNormalizedDensityPlot(states.to.plot, state.lims, legend.kernel.states)
+        #states.density$y <- (-1) * states.density$y #so it gets drawn below the other one
         # rates.density <- c()
         # states.density <- c()
         # if (legend.kernel=="hist") {
