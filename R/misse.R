@@ -280,7 +280,7 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
             paste("unknown error. ode() istate value: ", as.character(istate))
             )
             
-            warning(print(paste("divinitree.R: Integration of descendent index", desIndex, ": ode solver returned state = ",  istate, " : ", error.text)))
+            warning(print(paste("misse.R: Integration of descendent index", desIndex, ": ode solver returned state = ",  istate, " : ", error.text)))
             
             if(ode.solver.attempt < num.ode.method){
                 warning.message <- paste("\tTrying ode method ", ode.method.vec[ode.solver.attempt+1])
@@ -319,7 +319,7 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
                     prob.subtree.cal[neg.vector.pos] <- 0
                     
                 }else{
-                    warning.message <- paste(warning.message, "divinitree.R: minimum value ", min.vector.val, " <  ", neg.pr.threshold, " the neg.pr.threshold.")
+                    warning.message <- paste(warning.message, "misse.R: minimum value ", min.vector.val, " <  ", neg.pr.threshold, " the neg.pr.threshold.")
                     
                     if(ode.solver.attempt < num.ode.method){
                         warning.message <- paste(warning.message, " Trying ode method ", ode.method.vec[ode.solver.attempt+1])
