@@ -274,9 +274,12 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     #This is used to scale starting values to account for sampling:
     if(length(f) == 4){
         freqs <- table(apply(data.new, 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "01" = 2, "10" = 3, "11" = 4, "02"=1, "20"=3, "21"=2, "12"=4, "22"=4)))
+        print(freqs)
         if(length(freqs == 4)){
             freqs[which(!c(1:4) %in% names(freqs))] <- 0
+            print(freqs)
             samp.freq.tree <- Ntip(phy) / sum(freqs / f)
+            print(samp.freq.tree)
         }else{
             samp.freq.tree <- Ntip(phy) / sum(freqs / f)
         }
@@ -288,7 +291,6 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
             stop("The vector of sampling frequencies does not match the number of tips in the tree.")
         }
     }
-    print(samp.freq.tree)
     if(is.null(restart.obj)){
         if(sum(eps)==0){
             init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=TRUE)
