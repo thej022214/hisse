@@ -280,7 +280,7 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
             paste("unknown error. ode() istate value: ", as.character(istate))
             )
             
-            warning(print(paste("misse.R: Integration of descendent index", desIndex, ": ode solver returned state = ",  istate, " : ", error.text)))
+            warning(print(paste("misse.R: Integration of descendent returned state = ",  istate, " : ", error.text)))
             
             if(ode.solver.attempt < num.ode.method){
                 warning.message <- paste("\tTrying ode method ", ode.method.vec[ode.solver.attempt+1])
