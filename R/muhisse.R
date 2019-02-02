@@ -302,6 +302,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         
         if(is.null(starting.vals)){
             def.set.pars <- rep(c(log(init.pars[1:4]+init.pars[5:8]), log(init.pars[5:8]/init.pars[1:4]), log(init.pars[9:20]), rep(log(.01), 28)), rate.cats)
+            print(def.set.pars)
         }else{
             def.set.pars <- rep(c(log(starting.vals[1:4]), log(starting.vals[5:8]), log(starting.vals[9:20]), rep(log(0.01), 28)), rate.cats)
         }
