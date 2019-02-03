@@ -288,7 +288,8 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
             }else{
                 warning.message <- paste(warning.message, "No additional ode methods available. Returning bad.likelihood: ", cache$bad.likelihood)
                 warning(warning.message)
-                return(cache$bad.likelihood)
+                prob.subtree.cal[27:52] <- cache$bad.likelihood
+                return(prob.subtree.cal)
             }
             #return(bad.likelihood)
         }else{
@@ -317,7 +318,6 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
                     warning.message <- paste(warning.message, "\nMinimum value ", min.vector.val, " >  ", neg.pr.threshold, " the neg.pr.threshold.\nSetting all negative values to 0.")
                     warning(warning.message)
                     prob.subtree.cal[neg.vector.pos] <- 0
-                    
                 }else{
                     warning.message <- paste(warning.message, "misse.R: minimum value ", min.vector.val, " <  ", neg.pr.threshold, " the neg.pr.threshold.")
                     
@@ -328,7 +328,8 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
                     }else{
                         warning.message <- paste(warning.message, "No additional ode methods available. Returning bad.likelihood: ", cache$bad.likelihood)
                         warning(warning.message)
-                        return(cache$bad.likelihood)
+                        prob.subtree.cal[27:52] <- cache$bad.likelihood
+                        return(prob.subtree.cal)
                     }
                 }
             }else{
