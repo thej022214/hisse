@@ -258,7 +258,9 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
         ode.solver.attempt <- ode.solver.attempt+1
         ode.method <-  ode.method.vec[ode.solver.attempt]
         #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dll = "misse-ext-derivs", rtol=1e-8, atol=1e-8)
+        
         prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
         
         ## CHECK TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
         ## $istate should be = 0 [documentation in doc/deSolve.Rnw indicates
@@ -279,7 +281,6 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
             "-6"="error weight became zero",
             paste("unknown error. ode() istate value: ", as.character(istate))
             )
-            
             warning(print(paste("misse.R: Integration of descendent returned state = ",  istate, " : ", error.text)))
             
             if(ode.solver.attempt < num.ode.method){
@@ -296,7 +297,7 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
             ##no integration issues,
             ## object consists of pr values at start and end time
             ## extract final state variable, dropping time entry
-            prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+            #prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
             
             ## test for negative entries
             ## if encountered and less than neg.pr.threshold
