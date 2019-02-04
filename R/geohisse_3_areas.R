@@ -1,17 +1,20 @@
 
-######################################################################################################################################
-######################################################################################################################################
-### GeoHiSSE -- Expanded set of GeoSSE models for examining diversification in relation to geographic range evolution
-### This function allows for 3 endemic ranges on the model contrasted with the 2 hidden areas of the original model.
-######################################################################################################################################
-######################################################################################################################################
+## ##############################################################################################################
+## GeoHiSSE -- Expanded set of GeoSSE models for examining diversification in relation to geographic range evolution
+## This function allows for 3 endemic ranges on the model contrasted with the 2 hidden areas of the original model.
+## ##############################################################################################################
+
+## Implementation remark:
+## Here we are using functions to call different types of models. To reduce unnecessary opperations inside the likelihood evaluation this code make primary checks for the size of the model and restrict the ODE's only to the potential scenarios under a particular number of hidden states.
+## This reduces the number of ODE numerical integrations per branch and can significatly improve time to fit the model.
 
 GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6), extirpation=c(1,2,3), hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, trans.upper=100, ode.eps=0){
 
-    ## This function will have most of the same functionality of GeoHiSSE, but some things will need to change.
-    ## Will need to expand the transition matrix. Will need to change the coding scheme to input data.
-    ## The data input will be in the form of a presence and absence table. Matrix or data.frame, 3 columns and data with 0 for absence and 1 for presence.
-    ## We can easily adopt the "TransMatMakerGeoHiSSE" to make larger matrices just with one more parameter.
+    ## This is the higher-level function. Here we will get the data, perform tests and pass to more specific functions.
+
+    ## ########################################################
+    ## Data testing and parameter format block
+    ## ########################################################
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -61,7 +64,7 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
     if(hidden.areas == TRUE & length(speciation) < 12){
         stop("You chose a hidden state but this is not reflected in the speciation vector.")
     }
-    if(hidden.areas == TRUE & length(extinction) < 6){
+    if(hidden.areas == TRUE & length(extirpation) < 6){
         stop("You chose a hidden state but this is not reflected in the extinction vector.")
     }
     if(hidden.areas == TRUE & dim(trans.rate)[1] < 6){
@@ -70,7 +73,7 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
     if(hidden.areas == FALSE & length(speciation) > 6){
         stop("You chose no hidden state but this is not reflected in the speciation vector.")
     }
-    if(hidden.areas == FALSE & length(extinction) > 3){
+    if(hidden.areas == FALSE & length(extirpation) > 3){
         stop("You chose no hidden state but this is not reflected in the extinction vector.")
     }
     if(hidden.areas == FALSE & dim(trans.rate)[1] > 6){
@@ -97,1215 +100,58 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
     check.area.presence <- rowSums(data)
     if( any( check.area.presence > 2 ) ){
         stop("Widespread areas can only be comprised of two endemic areas. Species occurring on all three areas are not allowed at the moment.")
-    }    
-
-    pars <- numeric(115) ## Need to update the number of parameters in the analyses. How many do we have now?
-    
-    if(dim(trans.rate)[2]==6){
-        rate.cats <- 1
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] <- (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        ## Here we need a vector with the transition indexes from the 'trans.rate' parameter in the same order as the vector we call in the C code.
-        trans.tmp <- c(trans.rate["(1)", "(2)"], trans.rate["(2)", "(1)"], trans.rate["(2)", "(3)"]
-                     , trans.rate["(3)", "(2)"], trans.rate["(1)", "(3)"], trans.rate["(3)", "(1)"]
-                     , trans.rate["(1)", "(12)"], trans.rate["(1)", "(13)"], trans.rate["(2)", "(12)"]
-                     , trans.rate["(2)", "(23)"], trans.rate["(3)", "(13)"], trans.rate["(3)", "(23)"]
-                     , trans.rate["(12)", "(1)"], trans.rate["(13)", "(1)"], trans.rate["(12)", "(2)"]
-                     , trans.rate["(23)", "(2)"], trans.rate["(13)", "(3)"], trans.rate["(23)", "(3)"])
-        ## trans.tmp <- c(trans.rate["(0)", "(1)"], trans.rate["(0)", "(01)"], trans.rate["(1)", "(0)"]
-        ##              , trans.rate["(1)", "(01)"],  trans.rate["(01)", "(0)"],  trans.rate["(01)", "(1)"])
-        trans.tmp[which(trans.tmp > 0)] <- (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        category.rates.unique <- 0
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        pars[1:27] <- pars.tmp ## This model has 27 parameters
     }
 
-    ## Still need to work on hidden states for the function:
-    if(dim(trans.rate)[2]==6){
-        rate.cats <- 2
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] <- (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        for.late.adjust <- max(pars.tmp)
-        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)")
-        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)")
-        trans.tmp <- trans.rate[cbind(rows,cols)]
-        trans.tmp[which(trans.tmp > 0)] <- (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        rows <- c(rep("(0A)", 1), rep("(1A)", 1), rep("(01A)", 1), rep("(0B)", 1), rep("(1B)", 1), rep("(01B)", 1))
-        cols <- c("(0B)", "(1B)", "(01B)", "(0A)", "(1A)", "(01A)")
-        category.tmp <- trans.rate[cbind(rows,cols)]
-        category.rate.shift <- category.tmp + for.late.adjust
-        category.rate.shift[is.na(category.rate.shift)] <- 0
-        category.rate.shiftA <- c(category.rate.shift[1], rep(0,3), category.rate.shift[2], rep(0,3), category.rate.shift[3], rep(0,3))
-        category.rate.shiftB <- c(category.rate.shift[4], rep(0,3), category.rate.shift[5], rep(0,3), category.rate.shift[6], rep(0,3))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB)
-        pars[1:length(pars.tmp)] <- pars.tmp
-    }
+    ## ########################################################
+    ## Transform the data from matrix to vector format.
+    ## ########################################################
     
-    if(dim(trans.rate)[2]==9){
-        rate.cats <- 3
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] <- (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        for.late.adjust <- max(pars.tmp)
-        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)")
-        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)")
-        trans.tmp <- trans.rate[cbind(rows,cols)]
-        trans.tmp[which(trans.tmp > 0)] <- (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        rows <- c(rep("(0A)", 2), rep("(1A)", 2), rep("(01A)", 2), rep("(0B)", 2), rep("(1B)", 2), rep("(01B)", 2), rep("(0C)", 2), rep("(1C)", 2), rep("(01C)", 2))
-        cols <- c("(0B)", "(0C)", "(1B)", "(1C)", "(01B)", "(01C)", "(0A)", "(0C)", "(1A)", "(1C)", "(01A)", "(01C)", "(0A)", "(0B)", "(1A)", "(1B)", "(01A)", "(01B)")
-        category.tmp <- trans.rate[cbind(rows,cols)]
-        category.rate.shift <- category.tmp + for.late.adjust
-        category.rate.shift[is.na(category.rate.shift)] <- 0
-        category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,2), category.rate.shift[3:4], rep(0,2), category.rate.shift[5:6], rep(0,2))
-        category.rate.shiftB <- c(category.rate.shift[7:8], rep(0,2), category.rate.shift[9:10], rep(0,2), category.rate.shift[11:12], rep(0,2))
-        category.rate.shiftC <- c(category.rate.shift[13:14], rep(0,2), category.rate.shift[15:16], rep(0,2), category.rate.shift[17:18], rep(0,2))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC)
-        pars[1:length(pars.tmp)] <- pars.tmp
-    }
+    data.code <- apply(data, 1, function(x) paste0(x, collapse=""))
+    ## The order of the states here, from 1 to 6, need to match the order used in the C code and the rest of
+    ##     the pipeline. Note that this order is different from the order of the states at the transition matrix for
+    ##     argument of the function.
+    states.new <- sapply(data.code, function(x) switch(x, "100"=1, "010"=2, "001"=3, "110"=4, "011"=5, "101"=6) )
+    ## data.new <- data.frame(unname(states.new), unname(states.new), row.names=names(states.new))
+    ## data.new <- data.new[phy$tip.label,]
     
-    if(dim(trans.rate)[2]==12){
-        rate.cats <- 4
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] <- (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        for.late.adjust <- max(pars.tmp)
-        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)")
-        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)")
-        trans.tmp <- trans.rate[cbind(rows,cols)]
-        trans.tmp[which(trans.tmp > 0)] <- (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        rows <- c(rep("(0A)", 3), rep("(1A)", 3), rep("(01A)", 3), rep("(0B)", 3), rep("(1B)", 3), rep("(01B)", 3), rep("(0C)", 3), rep("(1C)", 3), rep("(01C)", 3), rep("(0D)", 3), rep("(1D)", 3), rep("(01D)", 3))
-        cols <- c("(0B)", "(0C)", "(0D)", "(1B)", "(1C)", "(1D)", "(01B)", "(01C)", "(01D)", "(0A)", "(0C)", "(0D)", "(1A)", "(1C)", "(1D)", "(01A)", "(01C)", "(01D)", "(0A)", "(0B)", "(0D)", "(1A)", "(1B)", "(1D)", "(01A)", "(01B)", "(01D)", "(0A)", "(0B)", "(0C)", "(1A)", "(1B)", "(1C)", "(01A)", "(01B)", "(01C)")
-        category.tmp <- trans.rate[cbind(rows,cols)]
-        category.rate.shift <- category.tmp + for.late.adjust
-        category.rate.shift[is.na(category.rate.shift)] <- 0
-        category.rate.shiftA <- c(category.rate.shift[1:3], rep(0,1), category.rate.shift[4:6], rep(0,1), category.rate.shift[7:9], rep(0,1))
-        category.rate.shiftB <- c(category.rate.shift[10:12], rep(0,1), category.rate.shift[13:15], rep(0,1), category.rate.shift[16:18], rep(0,1))
-        category.rate.shiftC <- c(category.rate.shift[19:21], rep(0,1), category.rate.shift[22:24], rep(0,1), category.rate.shift[25:27], rep(0,1))
-        category.rate.shiftD <- c(category.rate.shift[28:30], rep(0,1), category.rate.shift[31:33], rep(0,1), category.rate.shift[34:36], rep(0,1))
-        category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD)
-        category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD)
-        pars[1:length(pars.tmp)] <- pars.tmp
-    }
-    
-    if(dim(trans.rate)[2]==15){
-        rate.cats <- 5
-        pars.tmp <- speciation
-        extirpation.tmp <- extirpation
-        extirpation.tmp[which(extirpation.tmp > 0)] <- (extirpation.tmp[which( extirpation.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, extirpation.tmp)
-        for.late.adjust <- max(pars.tmp)
-        rows <- c("(0A)", "(0A)",  "(1A)", "(1A)",  "(01A)", "(01A)", "(0B)", "(0B)",  "(1B)", "(1B)",  "(01B)", "(01B)", "(0C)", "(0C)",  "(1C)", "(1C)",  "(01C)", "(01C)", "(0D)", "(0D)",  "(1D)", "(1D)",  "(01D)", "(01D)", "(0E)", "(0E)",  "(1E)", "(1E)",  "(01E)", "(01E)")
-        cols <- c("(1A)", "(01A)", "(0A)", "(01A)", "(0A)",  "(1A)",  "(1B)", "(01B)", "(0B)", "(01B)", "(0B)",  "(1B)",  "(1C)", "(01C)", "(0C)", "(01C)", "(0C)",  "(1C)",  "(1D)", "(01D)", "(0D)", "(01D)", "(0D)",  "(1D)",  "(1E)", "(01E)", "(0E)", "(01E)", "(0E)",  "(1E)")
-        trans.tmp <- trans.rate[cbind(rows,cols)]
-        trans.tmp[which(trans.tmp > 0)] <- (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
-        pars.tmp <- c(pars.tmp, trans.tmp)
-        rows <- c(rep("(0A)", 4), rep("(1A)", 4), rep("(01A)", 4), rep("(0B)", 4), rep("(1B)", 4), rep("(01B)", 4), rep("(0C)", 4), rep("(1C)", 4), rep("(01C)", 4), rep("(0D)", 4), rep("(1D)", 4), rep("(01D)", 4), rep("(0E)", 4), rep("(1E)", 4), rep("(01E)", 4))
-        cols <- c("(0B)", "(0C)", "(0D)", "(0E)", "(1B)", "(1C)", "(1D)", "(1E)", "(01B)", "(01C)", "(01D)", "(01E)", "(0A)", "(0C)", "(0D)", "(0E)", "(1A)", "(1C)", "(1D)", "(1E)", "(01A)", "(01C)", "(01D)", "(01E)", "(0A)", "(0B)", "(0D)", "(0E)", "(1A)", "(1B)", "(1D)", "(1E)", "(01A)", "(01B)", "(01D)", "(01E)", "(0A)", "(0B)", "(0C)", "(0E)", "(1A)", "(1B)", "(1C)", "(1E)", "(01A)", "(01B)", "(01C)", "(01E)", "(0A)", "(0B)", "(0C)", "(0D)", "(1A)", "(1B)", "(1C)", "(1D)", "(01A)", "(01B)", "(01C)", "(01D)")
-        category.tmp <- trans.rate[cbind(rows,cols)]
-        category.rate.shift <- category.tmp + for.late.adjust
-        category.rate.shift[is.na(category.rate.shift)] <- 0
-        category.rate.shiftA <- category.rate.shift[1:12]
-        category.rate.shiftB <- category.rate.shift[13:24]
-        category.rate.shiftC <- category.rate.shift[25:36]
-        category.rate.shiftD <- category.rate.shift[37:48]
-        category.rate.shiftE <- category.rate.shift[49:60]
-        category.rates.all <- c(category.rate.shiftA, category.rate.shiftB, category.rate.shiftC, category.rate.shiftD, category.rate.shiftE)
-        category.rates.unique <- length(unique(category.rates.all[category.rates.all>0]))
-        pars.tmp <- c(speciation[1:3], extirpation.tmp[1:2], trans.tmp[1:6], category.rate.shiftA, speciation[4:6], extirpation.tmp[3:4], trans.tmp[7:12], category.rate.shiftB, speciation[7:9], extirpation.tmp[5:6], trans.tmp[13:18], category.rate.shiftC, speciation[10:12], extirpation.tmp[7:8], trans.tmp[19:24], category.rate.shiftD, speciation[13:15], extirpation.tmp[9:10], trans.tmp[25:30], category.rate.shiftE)
-        pars[1:length(pars.tmp)] <- pars.tmp
-    }
-    
-    np <- max(pars)
-    ## On the big vector of max pars for the models, all empty parameters is set to np+1
-    pars[pars==0] <- np+1
-    
-    cat("Initializing...", "\n")
+    ## ########################################################
+    ## Block to filter models and call more specific functions.
+    ## ########################################################
 
-    ## Need to figure it out how the format for the data is used on the function.
-    ## Because I will need to make some kind of transformation on the format.
-    data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
-    data.new <- data.new[phy$tip.label,]
-    
-    ## This is used to scale starting values to account for sampling:
-    if( length(f) != 6 ){
-        stop("Length of vector need to be 6.")
-    }    
-    if(length(f) == 6){
-        freqs <- table(data.new[,1])
-        if(length(freqs == 2)){
-            samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
-        }else{
-            samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f[as.numeric(names(freqs))+1])
-        }
-    }else{
-        if(length(f) == Ntip(phy)){
-            stop("This is functionality has been temporarily removed.")
-            ## samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f[as.numeric(names(freqs))+1]))
-        }else{
-            stop("The vector of sampling frequencies does not match the number of tips in the tree.")
-        }
-    }
-    
-    if(sum(extirpation)==0){
-        init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
-    }else{
-        init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
-    }
-    names(init.pars) <- NULL
-    
-    if(is.null(starting.vals)){
-        def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]),3), rep(log(.01), 12)), rate.cats)
-    }else{
-        def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[6:7]),3), rep(log(0.01), 12)), rate.cats)
-    }
-    if(bounded.search == TRUE){
-        upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2*3), rep(log(10), 12)), rate.cats)
-    }else{
-        upper.full <- rep(21,length(def.set.pars))
-    }
-    
-    np.sequence <- 1:np
-    ip <- numeric(np)
-    upper <- numeric(np)
-    for(i in np.sequence){
-        ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
-        upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
-    }
-    lower <- rep(-20, length(ip))
-
-    if(sann == FALSE){
-        if(bounded.search == TRUE){
-            cat("Finished. Beginning bounded subplex routine...", "\n")
-            opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out <- nloptr(x0=ip, eval_f=DevOptimizeGeoHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
-            solution <- numeric(length(pars))
-            solution[] <- c(exp(out$solution), 0)[pars]
-            loglik <- -out$objective
-        }else{
-            cat("Finished. Beginning subplex routine...", "\n")
-            out <- subplex(ip, fn=DevOptimizeGeoHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
-            solution <- numeric(length(pars))
-            solution[] <- c(exp(out$par), 0)[pars]
-            loglik <- -out$value
-        }
-    }else{
-        cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann <- GenSA(ip, fn=DevOptimizeGeoHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
-        cat("Finished. Refining using subplex routine...", "\n")
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeGeoHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
-        solution <- numeric(length(pars))
-        solution[] <- c(exp(out$solution), 0)[pars]
-        
-        loglik <- -out$objective
-    }
-    
-    if(assume.cladogenetic == TRUE){
-        names(solution) <- c("s0A", "s1A", "s01A", "x0A", "x1A", "d0A_1A ", "d0A_01A", "d1A_0A", "d1A_01A", "d01A_0A", "d01A_1A", "d0A_0B", "d0A_0C", "d0A_0D", "d0A_0E", "d1A_1B", "d1A_1C", "d1A_1D", "d1A_1E", "d01A_01B", "d01A_01C", "d01A_01D", "d01A_01E", "s0B", "s1B", "s01B", "x0B", "x1B", "d0B_1B ", "d0B_01B", "d1B_0B", "d1B_01B", "d01B_0B", "d01B_1B", "d0B_0A", "d0B_0C", "d0B_0D", "d0B_0E", "d1B_1A", "d1B_1C", "d1B_1D", "d1B_1E", "d01B_01A", "d01B_01C", "d01B_01D", "d01B_01E", "s0C", "s1C", "s01C", "x0C", "x1C", "d0C_1C ", "d0C_01C", "d1C_0C", "d1C_01C", "d01C_0C", "d01C_1C", "d0C_0A", "d0C_0B", "d0C_0D", "d0C_0E", "d1C_1A", "d1C_1B", "d1C_1D", "d1C_1E", "d01C_01A", "d01C_01B", "d01C_01D", "d01C_01E", "s0D", "s1D", "s01D", "x0D", "x1D", "d0D_1D ", "d0D_01D", "d1D_0D", "d1D_01D", "d01D_0D", "d01D_1D", "d0D_0A", "d0D_0B", "d0D_0C", "d0D_0E", "d1D_1A", "d1D_1B", "d1D_1C", "d1D_1E", "d01D_01A", "d01D_01B", "d01D_01C", "d01D_01E", "s0E", "s1E", "s01E", "x0E", "x1E", "d0E_1E ", "d0E_01E", "d1E_0E", "d1E_01E", "d01E_0E", "d01E_1E", "d0E_0A", "d0E_0B", "d0E_0C", "d0E_0D", "d1E_1A", "d1E_1B", "d1E_1C", "d1E_1D", "d01E_01A", "d01E_01B", "d01E_01C", "d01E_01D")
-    }else{
-        names(solution) <- c("s0A", "s1A", "s01A", "x0A", "x1A", "x01A", "d0A_1A ", "d0A_01A", "d1A_0A", "d1A_01A", "d01A_0A", "d01A_1A", "d0A_0B", "d0A_0C", "d0A_0D", "d0A_0E", "d1A_1B", "d1A_1C", "d1A_1D", "d1A_1E", "d01A_01B", "d01A_01C", "d01A_01D", "d01A_01E", "s0B", "s1B", "s01B", "x0B", "x1B", "x01B", "d0B_1B ", "d0B_01B", "d1B_0B", "d1B_01B", "d01B_0B", "d01B_1B", "d0B_0A", "d0B_0C", "d0B_0D", "d0B_0E", "d1B_1A", "d1B_1C", "d1B_1D", "d1B_1E", "d01B_01A", "d01B_01C", "d01B_01D", "d01B_01E", "s0C", "s1C", "s01C", "x0C", "x1C", "x01C", "d0C_1C ", "d0C_01C", "d1C_0C", "d1C_01C", "d01C_0C", "d01C_1C", "d0C_0A", "d0C_0B", "d0C_0D", "d0C_0E", "d1C_1A", "d1C_1B", "d1C_1D", "d1C_1E", "d01C_01A", "d01C_01B", "d01C_01D", "d01C_01E", "s0D", "s1D", "s01D", "x0D", "x1D", "x01D", "d0D_1D ", "d0D_01D", "d1D_0D", "d1D_01D", "d01D_0D", "d01D_1D", "d0D_0A", "d0D_0B", "d0D_0C", "d0D_0E", "d1D_1A", "d1D_1B", "d1D_1C", "d1D_1E", "d01D_01A", "d01D_01B", "d01D_01C", "d01D_01E", "s0E", "s1E", "s01E", "x0E", "x1E", "x01E", "d0E_1E ", "d0E_01E", "d1E_0E", "d1E_01E", "d01E_0E", "d01E_1E", "d0E_0A", "d0E_0B", "d0E_0C", "d0E_0D", "d1E_1A", "d1E_1B", "d1E_1C", "d1E_1D", "d01E_01A", "d01E_01B", "d01E_01C", "d01E_01D")
-    }
-    cat("Finished. Summarizing results...", "\n")
-    
-    obj <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.areas=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
-    class(obj) <- append(class(obj), "geohisse.fit")
-    return(obj)
-}
-
-######################################################################################################################################
-######################################################################################################################################
-### The function used to optimize parameters:
-######################################################################################################################################
-######################################################################################################################################
-
-
-DevOptimizeGeoHiSSE <- function(p, pars, phy, data, f, hidden.states, assume.cladogenetic, condition.on.survival, root.type, root.p, np, ode.eps) {
-    ## Generates the final vector with the appropriate parameter estimates in the right place:
-    p.new <- exp(p)
-    ## print(p.new)
-    model.vec <- numeric(length(pars))
-    model.vec[] <- c(p.new, 0)[pars]
-    if(assume.cladogenetic == TRUE){
-        cache <- ParametersToPassGeoHiSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
-        logl <- DownPassGeoHisse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
-    }else{
-        cache <- ParametersToPassMuSSE(phy=phy, data=data, f=f, model.vec=model.vec, hidden.states=hidden.states)
-        logl <- DownPassMusse(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
-    }
-    return(-logl)
-}
-
-
-## Taken from the GeoSSE code modified to account for sampling -- credit goes to Emma Goldberg:
-starting.point.geosse <- function(tree, eps=0.5, samp.freq.tree) {
-    if (eps == 0) {
-        s <- (log(Ntip(tree)) - log(2)) / max(branching.times(tree))
-        s <- s/samp.freq.tree
-        x <- 0
-        d <- s/10
-    } else {
-        n <- Ntip(tree)
-        r <- ( log( (n/2) * (1 - eps*eps) + 2*eps + (1 - eps)/2 *
-                    sqrt( n * (n*eps*eps - 8*eps + 2*n*eps + n))) - log(2)
-        ) / max(branching.times(tree))
-        s <- r / (1 - eps)
-        x <- s * eps
-        s <- s/samp.freq.tree
-        x <- x - ((s * samp.freq.tree) * (1 - 1/samp.freq.tree))
-        d <- x
-    }
-    p <- c(s, s, s, x, x, d, d)
-    names(p) <- c("sA",  "sB",  "sAB", "xA" , "xB"  ,"dA"  ,"dB")
-    p
-}
-
-
-
-######################################################################################################################################
-######################################################################################################################################
-### The GeoHiSSE down pass that carries out the integration and returns the likelihood:
-######################################################################################################################################
-######################################################################################################################################
-
-DownPassGeoHisse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.eps=0) {
-    ## Some preliminaries:
-    nb.tip <- length(phy$tip.label)
-    nb.node <- phy$Nnode
-    phy <- reorder(phy, "pruningwise")
-    anc <- unique(phy$edge[,1])
-    TIPS <- 1:nb.tip
-    
-    if(hidden.states == FALSE){
-        compD <- matrix(0, nrow=nb.tip + nb.node, ncol=3)
-        compE <- matrix(0, nrow=nb.tip + nb.node, ncol=3)
-    }else{
-        compD <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
-        compE <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
-        if(!is.null(root.p)){
-            root.p.new <- numeric(15)
-            root.p.new[1:length(root.p)] <- root.p
-            root.p <- root.p.new
-        }
-    }
-    ## Initializes the tip sampling and sets internal nodes to be zero:
-    ncols <- dim(compD)[2]
-    if(length(cache$f) == 3){
-        for(i in 1:(nb.tip)){
-            compD[i,] <- cache$f * cache$states[i,]
-            compE[i,] <- rep((1-cache$f), ncols/3)
-        }
-    }else{
-        for(i in 1:(nb.tip)){
-            compD[i,] <- cache$f[i] * cache$states[i,]
-            compE[i,] <- rep((1-cache$f[i]), ncols/3)
-        }
-    }
-    logcomp <- c()
-    ## Start the postorder traversal indexing lists by node number:
-    for (i in seq(from = 1, length.out = nb.node)) {
-        ## A vector of all the internal nodes:
-        focal <- anc[i]
-        desRows <- which(phy$edge[,1]==focal)
-        desNodes <- phy$edge[desRows,2]
-        ## Note: when the tree has been reordered branching.times are no longer valid. Fortunately, we extract this information in the initial cache setup. Also focal is the rootward node, whereas desNodes represent a vector of all descendant nodes:
-        cache$rootward.age <- cache$split.times[which(names(cache$split.times)==focal)]
-        
-        v <- c()
-        phi <- c()
-        for (desIndex in sequence(length(desRows))){
-            cache$focal.edge.length <- phy$edge.length[desRows[desIndex]]
-            cache$tipward.age <- cache$rootward.age - cache$focal.edge.length
-            ## Strange rounding errors. A tip age should be zero. This ensures that:
-            if(cache$tipward.age < .Machine$double.eps^0.5){
-                cache$tipward.age <- 0
-            }
-            cache$node.D <- compD[desNodes[desIndex],]
-            cache$node.E <- compE[desNodes[desIndex],]
-            ## Call to lsoda that utilizes C code. Requires a lot of inputs. Note that for now we hardcode the NUMELEMENTS arguments. The reason for this is because with lsoda we can only pass a vector of parameters.
-            if(hidden.states == FALSE){
-                pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$d0A_1A, cache$d0A_01A, cache$d1A_0A, cache$d1A_01A, cache$d01A_0A, cache$d01A_1A)
-                NUMELEMENTS <- 11 ## needed for passing in vector to C
-                padded.pars <- rep(0, NUMELEMENTS)
-                pars <- c(unlist(pars))
-                stopifnot(length(padded.pars)<=NUMELEMENTS)
-                padded.pars[sequence(length(pars))]<-pars
-                yini <-c(E_0=cache$node.E[1], E_1=cache$node.E[2], E_01=cache$node.E[3], D_N0=cache$node.D[1], D_N1=cache$node.D[2], D_N2=cache$node.D[3])
-                times <- c(cache$tipward.age, cache$rootward.age)
-                
-                runSilent <- function() {
-                    options(warn = -1)
-                    on.exit(options(warn = 0))
-                    capture.output(res <- lsoda(yini, times, func = "classe_geosse_equivalent_derivs", padded.pars, initfunc="initmod_geosse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                    ## capture.output(res <- lsoda(yini, times, func = "classe_geosse_equivalent_derivs", padded.pars, initfunc="initmod_geosse", dll = "canonical_geosse-ext-derivs", rtol=1e-8, atol=1e-8))
-                    res
-                }
-                prob.subtree.cal.full <- runSilent()
-            }else{
-                pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$d0A_1A, cache$d0A_01A, cache$d1A_0A, cache$d1A_01A, cache$d01A_0A, cache$d01A_1A, cache$d0A_0B, cache$d0A_0C, cache$d0A_0D, cache$d0A_0E, cache$d1A_1B, cache$d1A_1C, cache$d1A_1D, cache$d1A_1E, cache$d01A_01B, cache$d01A_01C, cache$d01A_01D, cache$d01A_01E, cache$s0B, cache$s1B, cache$s01B, cache$x0B, cache$x1B, cache$d0B_1B , cache$d0B_01B, cache$d1B_0B, cache$d1B_01B, cache$d01B_0B, cache$d01B_1B, cache$d0B_0A, cache$d0B_0C, cache$d0B_0D, cache$d0B_0E, cache$d1B_1A, cache$d1B_1C, cache$d1B_1D, cache$d1B_1E, cache$d01B_01A, cache$d01B_01C, cache$d01B_01D, cache$d01B_01E, cache$s0C, cache$s1C, cache$s01C, cache$x0C, cache$x1C, cache$d0C_1C , cache$d0C_01C, cache$d1C_0C, cache$d1C_01C, cache$d01C_0C, cache$d01C_1C, cache$d0C_0A, cache$d0C_0B, cache$d0C_0D, cache$d0C_0E, cache$d1C_1A, cache$d1C_1B, cache$d1C_1D, cache$d1C_1E, cache$d01C_01A, cache$d01C_01B, cache$d01C_01D, cache$d01C_01E, cache$s0D, cache$s1D, cache$s01D, cache$x0D, cache$x1D, cache$d0D_1D , cache$d0D_01D, cache$d1D_0D, cache$d1D_01D, cache$d01D_0D, cache$d01D_1D, cache$d0D_0A, cache$d0D_0B, cache$d0D_0C, cache$d0D_0E, cache$d1D_1A, cache$d1D_1B, cache$d1D_1C, cache$d1D_1E, cache$d01D_01A, cache$d01D_01B, cache$d01D_01C, cache$d01D_01E, cache$s0E, cache$s1E, cache$s01E, cache$x0E, cache$x1E, cache$d0E_1E , cache$d0E_01E, cache$d1E_0E, cache$d1E_01E, cache$d01E_0E, cache$d01E_1E, cache$d0E_0A, cache$d0E_0B, cache$d0E_0C, cache$d0E_0D, cache$d1E_1A, cache$d1E_1B, cache$d1E_1C, cache$d1E_1D, cache$d01E_01A, cache$d01E_01B, cache$d01E_01C, cache$d01E_01D)
-                NUMELEMENTS <- 115 ## needed for passing in vector to C
-                padded.pars <- rep(0, NUMELEMENTS)
-                pars <- c(unlist(pars))
-                stopifnot(length(padded.pars)<=NUMELEMENTS)
-                padded.pars[sequence(length(pars))]<-pars
-                yini <- c(E_0A=cache$node.E[1], E_1A=cache$node.E[2], E_01A=cache$node.E[3], E_0B=cache$node.E[4], E_1B=cache$node.E[5], E_01B=cache$node.E[6], E_0C=cache$node.E[7], E_1C=cache$node.E[8], E_01C=cache$node.E[9], E_0D=cache$node.E[10], E_1D=cache$node.E[11], E_01D=cache$node.E[12], E_0E=cache$node.E[13], E_1E=cache$node.E[14], E_01E=cache$node.E[15], D_N0A=cache$node.D[1], D_N1A=cache$node.D[2], D_N01A=cache$node.D[3], D_N0B=cache$node.D[4], D_N1B=cache$node.D[5], D_N01B=cache$node.D[6], D_N0C=cache$node.D[7], D_N1C=cache$node.D[8], D_N01C=cache$node.D[9], D_N0D=cache$node.D[10], D_N1D=cache$node.D[11], D_N01D=cache$node.D[12], D_N0E=cache$node.D[13], D_N1E=cache$node.D[14], D_N01E=cache$node.D[15])
-                times=c(cache$tipward.age, cache$rootward.age)
-                
-                runSilent <- function() {
-                    options(warn = -1)
-                    on.exit(options(warn = 0))
-                    capture.output(res <- lsoda(yini, times, func = "geohisse_derivs", padded.pars, initfunc="initmod_geohisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                    ## capture.output(res <- lsoda(yini, times, func = "geohisse_derivs", padded.pars, initfunc="initmod_geohisse", dll = "geohisse-ext-derivs", rtol=1e-8, atol=1e-8))
-                    res
-                }
-                prob.subtree.cal.full <- runSilent()
-            }
-            
-            ## ###### THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
-            if(attributes(prob.subtree.cal.full)$istate[1] < 0){
-                return(bad.likelihood)
-            }else{
-                prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-            }
-            ## ############################################################################
-            
-            if(hidden.states == FALSE){
-                if(is.nan(prob.subtree.cal[3]) | is.nan(prob.subtree.cal[4]) | is.nan(prob.subtree.cal[5])){
-                    return(bad.likelihood)
-                }
-                ## This is default and cannot change, but if we get a negative probability, discard the results:
-                if(prob.subtree.cal[4]<0 | prob.subtree.cal[5]<0 | prob.subtree.cal[6]<0){
-                    return(bad.likelihood)
-                }
-                ## This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-                if(sum(prob.subtree.cal[4:6]) < ode.eps){
-                    return(bad.likelihood)
-                }
-                
-                ## Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
-                phi <- c(phi, prob.subtree.cal[1:3])
-                v <- rbind(v, prob.subtree.cal[4:6])
-            }else{
-                if(any(is.nan(prob.subtree.cal[16:30]))){
-                    return(bad.likelihood)
-                }
-                                        #This is default and cannot change, but if we get a negative probability, discard the results:
-                if(any(prob.subtree.cal[16:30] < 0)){
-                    return(bad.likelihood)
-                }
-                ## This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-                if(sum(prob.subtree.cal[16:30]) < ode.eps){
-                    return(bad.likelihood)
-                }
-                
-                ## Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
-                phi <- c(phi, prob.subtree.cal[1:15])
-                v <- rbind(v, prob.subtree.cal[16:30])
-            }
-        }
-        if(hidden.states == TRUE){
-            compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
-            compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
-            compD[focal,3] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0A + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1A + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01A
-            v <- v[,-c(1:3)]
-            compD[focal,4] <- v[1,1] * v[2,1] * cache$s0B
-            compD[focal,5] <- v[1,2] * v[2,2] * cache$s1B
-            compD[focal,6] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0B + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1B + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01B
-            v <- v[,-c(1:3)]
-            compD[focal,7] <- v[1,1] * v[2,1] * cache$s0C
-            compD[focal,8] <- v[1,2] * v[2,2] * cache$s1C
-            compD[focal,9] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0C + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1C + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01C
-            v <- v[,-c(1:3)]
-            compD[focal,10] <- v[1,1] * v[2,1] * cache$s0D
-            compD[focal,11] <- v[1,2] * v[2,2] * cache$s1D
-            compD[focal,12] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0D + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1D + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01D
-            v <- v[,-c(1:3)]
-            compD[focal,13] <- v[1,1] * v[2,1] * cache$s0E
-            compD[focal,14] <- v[1,2] * v[2,2] * cache$s1E
-            compD[focal,15] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0E + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1E + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01E
-            compE[focal,] <- phi[1:15]
-            if(!is.null(node)){
-                fixer <- numeric(15)
-                fixer[state] <- 1
-                if(node == focal){
-                    compD[focal,] <- compD[focal,] * fixer
-                }
-                ## compE[focal,] <- compE[focal,] * fixer
-            }
-        }else{
-            compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
-            compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
-            compD[focal,3] <- 0.5 * (v[1,3] * v[2,1] + v[1,1] * v[2,3]) * cache$s0A + 0.5 * (v[1,3] * v[2,2] + v[1,2] * v[2,3]) * cache$s1A + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * cache$s01A
-            compE[focal,] <- phi[1:3]
-            if(!is.null(node)){
-                if(node == focal){
-                    fixer = c(0,0,0)
-                    fixer[state] = 1
-                    compD[focal,] <- compD[focal,] * fixer
-                }
-            }
-        }
-        ## #########################
-        ## Logcompensation bit for dealing with underflow issues. Need to give a necessary shoutout to Rich FitzJohn -- we follow his diversitree approach. VERIFIED that it works properly:
-        tmp <- sum(compD[focal,])
-        compD[focal,] <- compD[focal,] / tmp
-        logcomp <- c(logcomp, log(tmp))
-        
-    }
-    root.node <- nb.tip + 1L
-    if (is.na(sum(log(compD[root.node,]))) || is.na(log(sum(1-compE[root.node,])))){
-        return(bad.likelihood)
-    }else{
-        if(root.type == "madfitz" | root.type == "herr_als"){
-            if(is.null(root.p)){
-                root.p = compD[root.node,]/sum(compD[root.node,])
-                root.p[which(is.na(root.p))] <- 0
-            }
-        }
-        if(condition.on.survival == TRUE){
-            if(hidden.states == FALSE){
-                if(root.type == "madfitz"){
-                    lambda <- c(cache$s0A, cache$s1A, sum(c(cache$s0A, cache$s1A, cache$s01A)))
-                    compD[root.node,] <- compD[root.node,] / sum(root.p * lambda * (1 - compE[root.node,])^2)
-                    ## Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] <- 0
-                    loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
-                }else{
-                    lambda <- c(cache$s0A, cache$s1A, sum(c(cache$s0A, cache$s1A, cache$s01A)))
-                    compD[root.node,] <- (compD[root.node,] * root.p) / (lambda * (1 - compE[root.node,])^2)
-                    ## Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] <- 0
-                    loglik <- log(sum(compD[root.node,])) + sum(logcomp)
-                }
-            }else{
-                if(root.type == "madfitz"){
-                    lambda <- c(cache$s0A, cache$s1A, sum(c(cache$s0A, cache$s1A, cache$s01A)), cache$s0B, cache$s1B, sum(c(cache$s0B, cache$s1B, cache$s01B)), cache$s0C, cache$s1C, sum(c(cache$s0C, cache$s1C, cache$s01C)), cache$s0D, cache$s1D, sum(c(cache$s0D, cache$s1D, cache$s01D)), cache$s0E, cache$s1E, sum(c(cache$s0E, cache$s1E, cache$s01E)))
-                    compD[root.node,] <- compD[root.node,] / sum(root.p * lambda * (1 - compE[root.node,])^2)
-                    ## Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] <- 0
-                    loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
-                }else{
-                    lambda <- c(cache$s0A, cache$s1A, sum(c(cache$s0A, cache$s1A, cache$s01A)), cache$s0B, cache$s1B, sum(c(cache$s0B, cache$s1B, cache$s01B)), cache$s0C, cache$s1C, sum(c(cache$s0C, cache$s1C, cache$s01C)), cache$s0D, cache$s1D, sum(c(cache$s0D, cache$s1D, cache$s01D)), cache$s0E, cache$s1E, sum(c(cache$s0E, cache$s1E, cache$s01E)))
-                    compD[root.node,] <- (compD[root.node,] * root.p) / (lambda * (1 - compE[root.node,])^2)
-                    ## Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] <- 0
-                    loglik <- log(sum(compD[root.node,])) + sum(logcomp)
-                }
-            }
-        }
-    }
-    if(get.phi==TRUE){
-        obj <- NULL
-        obj$compD.root <- compD[root.node,]/sum(compD[root.node,])
-        obj$compE <- compE
-        obj$root.p <- root.p
+    if( hidden.areas == FALSE & assume.cladogenetic == TRUE ){
+        ## Complete the pipeline and return the answer:
+        ## Function will return a list with all model estimates.
+        fit.out <- geohisse_3_one_rate(phy=phy, data=states.new, f=f, speciation=speciation, extirpation=extirpation
+                                     , trans.rate=trans.rate, condition.on.survival=condition.on.survival
+                                     , root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its
+                                     , bounded.search=bounded.search, max.tol=max.tol
+                                     , mag.san.start=mag.san.start, starting.vals=starting.vals
+                                     , speciation.upper=speciation.upper, extirpation.upper=extirpation.upper
+                                     , trans.upper=trans.upper, ode.eps=ode.eps)
+        obj <- list(loglik = fit.out$loglik, AIC = fit.out$AIC, AICc = fit.out$AICc, solution= fit.out$solution
+                  , index.par= fit.out$index.par, f=fit.out$f, hidden.areas=FALSE
+                  , assume.cladogenetic=TRUE, condition.on.survival=condition.on.survival
+                  , root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate
+                  , max.tol=max.tol, starting.vals=fit.out$starting.vals, upper.bounds=fit.out$upper.bounds
+                  , lower.bounds=fit.out$lower.bounds, ode.eps=ode.eps, n.hidden.rates=1)
+        class(obj) <- append(class(obj), "geohisse_plus.fit")
         return(obj)
-    }else{
-        return(loglik)
     }
+
 }
 
+## ##############################################################################################################
+## Print function for the output class:
+## ##############################################################################################################
 
-######################################################################################################################################
-######################################################################################################################################
-### The MuSSE type down pass that carries out the integration and returns the likelihood:
-######################################################################################################################################
-######################################################################################################################################
-
-DownPassMusse <- function(phy, cache, hidden.states, bad.likelihood=-10000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.eps=0) {
-    ## Some preliminaries:
-    nb.tip <- length(phy$tip.label)
-    nb.node <- phy$Nnode
-    phy <- reorder(phy, "pruningwise")
-    anc <- unique(phy$edge[,1])
-    TIPS <- 1:nb.tip
-    
-    if(hidden.states == FALSE){
-        compD <- matrix(0, nrow=nb.tip + nb.node, ncol=3)
-        compE <- matrix(0, nrow=nb.tip + nb.node, ncol=3)
-    }else{
-        compD <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
-        compE <- matrix(0, nrow=nb.tip + nb.node, ncol=15)
-        if(!is.null(root.p)){
-            root.p.new <- numeric(15)
-            root.p.new[1:length(root.p)] <- root.p
-            root.p <- root.p.new
-        }
-    }
-    ## Initializes the tip sampling and sets internal nodes to be zero:
-    ncols <- dim(compD)[2]
-    if(length(cache$f) == 3){
-        for(i in 1:(nb.tip)){
-            compD[i,] <- cache$f * cache$states[i,]
-            compE[i,] <- rep((1-cache$f), ncols/3)
-        }
-    }else{
-        for(i in 1:(nb.tip)){
-            compD[i,] <- cache$f[i] * cache$states[i,]
-            compE[i,] <- rep((1-cache$f[i]), ncols/3)
-        }
-    }
-    logcomp <- c()
-    ## Start the postorder traversal indexing lists by node number:
-    for (i in seq(from = 1, length.out = nb.node)) {
-        ## A vector of all the internal nodes:
-        focal <- anc[i]
-        desRows <- which(phy$edge[,1]==focal)
-        desNodes <- phy$edge[desRows,2]
-        ## Note: when the tree has been reordered branching.times are no longer valid. Fortunately, we extract this information in the initial cache setup. Also focal is the rootward node, whereas desNodes represent a vector of all descendant nodes:
-        cache$rootward.age <- cache$split.times[which(names(cache$split.times)==focal)]
-        
-        v <- c()
-        phi <- c()
-        for (desIndex in sequence(length(desRows))){
-            cache$focal.edge.length <- phy$edge.length[desRows[desIndex]]
-            cache$tipward.age <- cache$rootward.age - cache$focal.edge.length
-            ## Strange rounding errors. A tip age should be zero. This ensures that:
-            if(cache$tipward.age < .Machine$double.eps^0.5){
-                cache$tipward.age <- 0
-            }
-            cache$node.D <- compD[desNodes[desIndex],]
-            cache$node.E <- compE[desNodes[desIndex],]
-            ## Call to lsoda that utilizes C code. Requires a lot of inputs. Note that for now we hardcode the NUMELEMENTS arguments. The reason for this is because with lsoda we can only pass a vector of parameters.
-            if(hidden.states == FALSE){
-                pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$x01A, cache$d0A_1A, cache$d0A_01A, cache$d1A_0A, cache$d1A_01A, cache$d01A_0A, cache$d01A_1A)
-                NUMELEMENTS <- 12 ## needed for passing in vector to C
-                padded.pars <- rep(0, NUMELEMENTS)
-                pars <- c(unlist(pars))
-                stopifnot(length(padded.pars)<=NUMELEMENTS)
-                padded.pars[sequence(length(pars))]<-pars
-                yini <-c(E_0=cache$node.E[1], E_1=cache$node.E[2], E_01=cache$node.E[3], D_N0=cache$node.D[1], D_N1=cache$node.D[2], D_N2=cache$node.D[3])
-                times <- c(cache$tipward.age, cache$rootward.age)
-                
-                ## runSilent <- function() {
-                ## options(warn = -1)
-                ## on.exit(options(warn = 0))
-                ## capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                ## capture.output(res <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_musse", dll = "notclasse-ext-derivs", rtol=1e-8, atol=1e-8))
-                ## res
-                ## }
-                ## prob.subtree.cal.full <- runSilent()
-                prob.subtree.cal.full <- lsoda(yini, times, func = "notclasse_derivs", padded.pars, initfunc="initmod_noclass", dllname = "hisse", rtol=1e-8, atol=1e-8)
-            }else{
-                pars <- list(cache$s0A, cache$s1A, cache$s01A, cache$x0A, cache$x1A, cache$x01A, cache$d0A_1A, cache$d0A_01A, cache$d1A_0A, cache$d1A_01A, cache$d01A_0A, cache$d01A_1A, cache$d0A_0B, cache$d0A_0C, cache$d0A_0D, cache$d0A_0E, cache$d1A_1B, cache$d1A_1C, cache$d1A_1D, cache$d1A_1E, cache$d01A_01B, cache$d01A_01C, cache$d01A_01D, cache$d01A_01E, cache$s0B, cache$s1B, cache$s01B, cache$x0B, cache$x1B, cache$x01B, cache$d0B_1B , cache$d0B_01B, cache$d1B_0B, cache$d1B_01B, cache$d01B_0B, cache$d01B_1B, cache$d0B_0A, cache$d0B_0C, cache$d0B_0D, cache$d0B_0E, cache$d1B_1A, cache$d1B_1C, cache$d1B_1D, cache$d1B_1E, cache$d01B_01A, cache$d01B_01C, cache$d01B_01D, cache$d01B_01E, cache$s0C, cache$s1C, cache$s01C, cache$x0C, cache$x1C, cache$x01C, cache$d0C_1C , cache$d0C_01C, cache$d1C_0C, cache$d1C_01C, cache$d01C_0C, cache$d01C_1C, cache$d0C_0A, cache$d0C_0B, cache$d0C_0D, cache$d0C_0E, cache$d1C_1A, cache$d1C_1B, cache$d1C_1D, cache$d1C_1E, cache$d01C_01A, cache$d01C_01B, cache$d01C_01D, cache$d01C_01E, cache$s0D, cache$s1D, cache$s01D, cache$x0D, cache$x1D, cache$x01D, cache$d0D_1D , cache$d0D_01D, cache$d1D_0D, cache$d1D_01D, cache$d01D_0D, cache$d01D_1D, cache$d0D_0A, cache$d0D_0B, cache$d0D_0C, cache$d0D_0E, cache$d1D_1A, cache$d1D_1B, cache$d1D_1C, cache$d1D_1E, cache$d01D_01A, cache$d01D_01B, cache$d01D_01C, cache$d01D_01E, cache$s0E, cache$s1E, cache$s01E, cache$x0E, cache$x1E, cache$x01E, cache$d0E_1E, cache$d0E_01E, cache$d1E_0E, cache$d1E_01E, cache$d01E_0E, cache$d01E_1E, cache$d0E_0A, cache$d0E_0B, cache$d0E_0C, cache$d0E_0D, cache$d1E_1A, cache$d1E_1B, cache$d1E_1C, cache$d1E_1D, cache$d01E_01A, cache$d01E_01B, cache$d01E_01C, cache$d01E_01D)
-                NUMELEMENTS <- 120 ## needed for passing in vector to C
-                padded.pars <- rep(0, NUMELEMENTS)
-                pars <- c(unlist(pars))
-                stopifnot(length(padded.pars)<=NUMELEMENTS)
-                padded.pars[sequence(length(pars))]<-pars
-                yini <- c(E_0A=cache$node.E[1], E_1A=cache$node.E[2], E_01A=cache$node.E[3], E_0B=cache$node.E[4], E_1B=cache$node.E[5], E_01B=cache$node.E[6], E_0C=cache$node.E[7], E_1C=cache$node.E[8], E_01C=cache$node.E[9], E_0D=cache$node.E[10], E_1D=cache$node.E[11], E_01D=cache$node.E[12], E_0E=cache$node.E[13], E_1E=cache$node.E[14], E_01E=cache$node.E[15], D_N0A=cache$node.D[1], D_N1A=cache$node.D[2], D_N01A=cache$node.D[3], D_N0B=cache$node.D[4], D_N1B=cache$node.D[5], D_N01B=cache$node.D[6], D_N0C=cache$node.D[7], D_N1C=cache$node.D[8], D_N01C=cache$node.D[9], D_N0D=cache$node.D[10], D_N1D=cache$node.D[11], D_N01D=cache$node.D[12], D_N0E=cache$node.D[13], D_N1E=cache$node.D[14], D_N01E=cache$node.D[15])
-                times <- c(cache$tipward.age, cache$rootward.age)
-                ## runSilent <- function() {
-                ##     options(warn = -1)
-                ##     on.exit(options(warn = 0))
-                ##     capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                ## capture.output(res <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_mussem", dll = "notclasse-more-ext-derivs", rtol=1e-8, atol=1e-8))
-                ##     res
-                ## }
-                ## prob.subtree.cal.full <- runSilent()
-                prob.subtree.cal.full <- lsoda(yini, times, func = "notclasse_more_derivs", padded.pars, initfunc="initmod_hinoclass", dllname = "hisse", rtol=1e-8, atol=1e-8)
-            }
-            
-            ## ###### THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
-            if(attributes(prob.subtree.cal.full)$istate[1] < 0){
-                return(bad.likelihood)
-            }else{
-                prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-            }
-            ## ############################################################################
-            
-            if(hidden.states == FALSE){
-                if(is.nan(prob.subtree.cal[3]) | is.nan(prob.subtree.cal[4]) | is.nan(prob.subtree.cal[5])){
-                    return(bad.likelihood)
-                }
-                ## This is default and cannot change, but if we get a negative probability, discard the results:
-                if(prob.subtree.cal[4]<0 | prob.subtree.cal[5]<0 | prob.subtree.cal[6]<0){
-                    return(bad.likelihood)
-                }
-                ## This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-                if(sum(prob.subtree.cal[4:6]) < ode.eps){
-                    return(bad.likelihood)
-                }
-                
-                ## Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
-                phi <- c(phi, prob.subtree.cal[1:3])
-                v <- rbind(v, prob.subtree.cal[4:6])
-            }else{
-                if(any(is.nan(prob.subtree.cal[16:30]))){
-                    return(bad.likelihood)
-                }
-                ## This is default and cannot change, but if we get a negative probability, discard the results:
-                if(any(prob.subtree.cal[16:30] < 0)){
-                    return(bad.likelihood)
-                }
-                ## This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-                if(sum(prob.subtree.cal[10:18]) < ode.eps){
-                    return(bad.likelihood)
-                }
-                
-                ## Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
-                phi <- c(phi, prob.subtree.cal[1:15])
-                v <- rbind(v, prob.subtree.cal[16:30])
-            }
-        }
-        ## Allows for a 3-state MuSSE type model. Important for cases where you have a random tree and a random trait.
-        if(hidden.states == TRUE){
-            compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
-            compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
-            compD[focal,3] <- v[1,3] * v[2,3] * cache$s01A
-            v <- v[,-c(1:3)]
-            compD[focal,4] <- v[1,1] * v[2,1] * cache$s0B
-            compD[focal,5] <- v[1,2] * v[2,2] * cache$s1B
-            compD[focal,6] <- v[1,3] * v[2,3] * cache$s01B
-            v <- v[,-c(1:3)]
-            compD[focal,7] <- v[1,1] * v[2,1] * cache$s0C
-            compD[focal,8] <- v[1,2] * v[2,2] * cache$s1C
-            compD[focal,9] <- v[1,3] * v[2,3] * cache$s01C
-            v <- v[,-c(1:3)]
-            compD[focal,10] <- v[1,1] * v[2,1] * cache$s0D
-            compD[focal,11] <- v[1,2] * v[2,2] * cache$s1D
-            compD[focal,12] <- v[1,3] * v[2,3] * cache$s01D
-            v <- v[,-c(1:3)]
-            compD[focal,13] <- v[1,1] * v[2,1] * cache$s0E
-            compD[focal,14] <- v[1,2] * v[2,2] * cache$s1E
-            compD[focal,15] <- v[1,3] * v[2,3] * cache$s01E
-            compE[focal,] <- phi[1:15]
-            if(!is.null(node)){
-                fixer <- numeric(15)
-                fixer[state] <- 1
-                if(node == focal){
-                    compD[focal,] <- compD[focal,] * fixer
-                }
-                ## compE[focal,] <- compE[focal,] * fixer
-            }
-        }else{
-            compD[focal,1] <- v[1,1] * v[2,1] * cache$s0A
-            compD[focal,2] <- v[1,2] * v[2,2] * cache$s1A
-            compD[focal,3] <- v[1,3] * v[2,3] * cache$s01A
-            compE[focal,] <- phi[1:3]
-            if(!is.null(node)){
-                if(node == focal){
-                    fixer <- c(0,0,0)
-                    fixer[state] <- 1
-                    compD[focal,] <- compD[focal,] * fixer
-                }
-            }
-        }
-        ## #########################
-        ## Logcompensation bit for dealing with underflow issues. Need to give a necessary shoutout to Rich FitzJohn -- we follow his diversitree approach. VERIFIED that it works properly:
-        tmp <- sum(compD[focal,])
-        compD[focal,] <- compD[focal,] / tmp
-        logcomp <- c(logcomp, log(tmp))
-        
-    }
-    root.node <- nb.tip + 1L
-    if (is.na(sum(log(compD[root.node,]))) || is.na(log(sum(1-compE[root.node,])))){
-        return(bad.likelihood)
-    }else{
-        if(root.type == "madfitz" | root.type == "herr_als"){
-            if(is.null(root.p)){
-                root.p <- compD[root.node,]/sum(compD[root.node,])
-                root.p[which(is.na(root.p))] <- 0
-            }
-        }
-        if(condition.on.survival == TRUE){
-            if(hidden.states == FALSE){
-                if(root.type == "madfitz"){
-                    lambda <- c(cache$s0A, cache$s1A, cache$s01A)
-                    compD[root.node,] <- compD[root.node,] / sum(root.p * lambda * (1 - compE[root.node,])^2)
-                    ## Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] <- 0
-                    loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
-                }else{
-                    lambda <- c(cache$s0A, cache$s1A, cache$s01A)
-                    compD[root.node,] <- (compD[root.node,] * root.p) / (lambda * (1 - compE[root.node,])^2)
-                    ## Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] <- 0
-                    loglik <- log(sum(compD[root.node,])) + sum(logcomp)
-                }
-            }else{
-                if(root.type == "madfitz"){
-                    lambda <- c(cache$s0A, cache$s1A, cache$s01A, cache$s0B, cache$s1B, cache$s01B, cache$s0C, cache$s1C, cache$s01C, cache$s0D, cache$s1D, cache$s01D, cache$s0E, cache$s1E, cache$s01E)
-                    compD[root.node,] <- compD[root.node,] / sum(root.p * lambda * (1 - compE[root.node,])^2)
-                    ## Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] <- 0
-                    loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
-                }else{
-                    lambda <- c(cache$s0A, cache$s1A, cache$s01A, cache$s0B, cache$s1B, cache$s01B, cache$s0C, cache$s1C, cache$s01C, cache$s0D, cache$s1D, cache$s01D, cache$s0E, cache$s1E, cache$s01E)
-                    compD[root.node,] <- (compD[root.node,] * root.p) / (lambda * (1 - compE[root.node,])^2)
-                    ## Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] <- 0
-                    loglik <- log(sum(compD[root.node,])) + sum(logcomp)
-                }
-            }
-        }
-    }
-    if(get.phi==TRUE){
-        obj <- NULL
-        obj$compD.root <- compD[root.node,]/sum(compD[root.node,])
-        obj$compE <- compE
-        obj$root.p <- root.p
-        return(obj)
-    }else{
-        return(loglik)
-    }
-}
-
-
-## ####################################################################################################################################
-## ####################################################################################################################################
-### Cache object for storing parameters that are used throughout GeoHiSSE:
-## ####################################################################################################################################
-## ####################################################################################################################################
-
-ParametersToPassGeoHiSSE <- function(phy, data, f, model.vec, hidden.states){
-    ## Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
-    obj <- NULL
-    obj$phy <- phy
-    
-    if(hidden.states == FALSE){
-        states <- matrix(0,Ntip(phy),3)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==1){states[i,1]=1}
-            if(data[i]==2){states[i,2]=1}
-            if(data[i]==0){states[i,3]=1}
-        }
-    }
-    if(hidden.states == TRUE){
-        states <- matrix(0,Ntip(phy),15)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==1){states[i,c(1,4,7,10,13)]=1}
-            if(data[i]==2){states[i,c(2,5,8,11,14)]=1}
-            if(data[i]==0){states[i,c(3,6,9,12,15)]=1}
-        }
-    }
-    if(hidden.states == "TEST"){
-        states <- matrix(0,Ntip(phy),15)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==1){states[i,1]=1}
-            if(data[i]==2){states[i,2]=1}
-            if(data[i]==0){states[i,3]=1}
-            if(data[i]==4){states[i,4]=1}
-            if(data[i]==5){states[i,5]=1}
-            if(data[i]==3){states[i,6]=1}
-        }
-    }
-    
-    obj$states <- states
-    obj$tot_time <- max(branching.times(phy))
-    obj$f <- f
-    
-    obj$s0A <- model.vec[1]
-    obj$s1A <- model.vec[2]
-    obj$s01A <- model.vec[3]
-    obj$x0A <- model.vec[4]
-    obj$x1A <- model.vec[5]
-    obj$d0A_1A  <- model.vec[6]
-    obj$d0A_01A <- model.vec[7]
-    obj$d1A_0A <- model.vec[8]
-    obj$d1A_01A <- model.vec[9]
-    if(model.vec[10]==0){
-        obj$d01A_0A <- model.vec[5]
-    }else{
-        obj$d01A_0A <- model.vec[10]
-    }
-    if(model.vec[11]==0){
-        obj$d01A_1A <- model.vec[4]
-    }else{
-        obj$d01A_1A <- model.vec[11]
-    }
-    obj$d0A_0B <- model.vec[12]
-    obj$d0A_0C <- model.vec[13]
-    obj$d0A_0D <- model.vec[14]
-    obj$d0A_0E <- model.vec[15]
-    obj$d1A_1B <- model.vec[16]
-    obj$d1A_1C <- model.vec[17]
-    obj$d1A_1D <- model.vec[18]
-    obj$d1A_1E <- model.vec[19]
-    obj$d01A_01B <- model.vec[20]
-    obj$d01A_01C <- model.vec[21]
-    obj$d01A_01D <- model.vec[22]
-    obj$d01A_01E <- model.vec[23]
-    
-    obj$s0B <- model.vec[24]
-    obj$s1B <- model.vec[25]
-    obj$s01B <- model.vec[26]
-    obj$x0B <- model.vec[27]
-    obj$x1B <- model.vec[28]
-    obj$d0B_1B  <- model.vec[29]
-    obj$d0B_01B <- model.vec[30]
-    obj$d1B_0B <- model.vec[31]
-    obj$d1B_01B <- model.vec[32]
-    if(model.vec[33] == 0){
-        obj$d01B_0B <- model.vec[28]
-    }else{
-        obj$d01B_0B <- model.vec[33]
-    }
-    if(model.vec[34] == 0){
-        obj$d01B_1B <- model.vec[27]
-    }else{
-        obj$d01B_1B <- model.vec[34]
-    }
-    obj$d0B_0A <- model.vec[35]
-    obj$d0B_0C <- model.vec[36]
-    obj$d0B_0D <- model.vec[37]
-    obj$d0B_0E <- model.vec[38]
-    obj$d1B_1A <- model.vec[39]
-    obj$d1B_1C <- model.vec[40]
-    obj$d1B_1D <- model.vec[41]
-    obj$d1B_1E <- model.vec[42]
-    obj$d01B_01A <- model.vec[43]
-    obj$d01B_01C <- model.vec[44]
-    obj$d01B_01D <- model.vec[45]
-    obj$d01B_01E <- model.vec[46]
-    
-    obj$s0C <- model.vec[47]
-    obj$s1C <- model.vec[48]
-    obj$s01C <- model.vec[49]
-    obj$x0C <- model.vec[50]
-    obj$x1C <- model.vec[51]
-    obj$d0C_1C  <- model.vec[52]
-    obj$d0C_01C <- model.vec[53]
-    obj$d1C_0C <- model.vec[54]
-    obj$d1C_01C <- model.vec[55]
-    if(model.vec[56] == 0){
-        obj$d01C_0C <- model.vec[51]
-    }else{
-        obj$d01C_0C <- model.vec[56]
-    }
-    if(model.vec[57] == 0){
-        obj$d01C_1C <- model.vec[50]
-    }else{
-        obj$d01C_1C <- model.vec[57]
-    }
-    obj$d0C_0A <- model.vec[58]
-    obj$d0C_0B <- model.vec[59]
-    obj$d0C_0D <- model.vec[60]
-    obj$d0C_0E <- model.vec[61]
-    obj$d1C_1A <- model.vec[62]
-    obj$d1C_1B <- model.vec[63]
-    obj$d1C_1D <- model.vec[64]
-    obj$d1C_1E <- model.vec[65]
-    obj$d01C_01A <- model.vec[66]
-    obj$d01C_01B <- model.vec[67]
-    obj$d01C_01D <- model.vec[68]
-    obj$d01C_01E <- model.vec[69]
-    
-    obj$s0D <- model.vec[70]
-    obj$s1D <- model.vec[71]
-    obj$s01D <- model.vec[72]
-    obj$x0D <- model.vec[73]
-    obj$x1D <- model.vec[74]
-    obj$d0D_1D  <- model.vec[75]
-    obj$d0D_01D <- model.vec[76]
-    obj$d1D_0D <- model.vec[77]
-    obj$d1D_01D <- model.vec[78]
-    if(model.vec[79] == 0){
-        obj$d01D_0D <- model.vec[74]
-    }else{
-        obj$d01D_0D <- model.vec[79]
-    }
-    if(model.vec[80] == 0){
-        obj$d01D_1D <- model.vec[73]
-    }else{
-        obj$d01D_1D <- model.vec[80]
-    }
-    obj$d0D_0A <- model.vec[81]
-    obj$d0D_0B <- model.vec[82]
-    obj$d0D_0C <- model.vec[83]
-    obj$d0D_0E <- model.vec[84]
-    obj$d1D_1A <- model.vec[85]
-    obj$d1D_1B <- model.vec[86]
-    obj$d1D_1C <- model.vec[87]
-    obj$d1D_1E <- model.vec[88]
-    obj$d01D_01A <- model.vec[89]
-    obj$d01D_01B <- model.vec[90]
-    obj$d01D_01C <- model.vec[91]
-    obj$d01D_01E <- model.vec[92]
-    
-    obj$s0E <- model.vec[93]
-    obj$s1E <- model.vec[94]
-    obj$s01E <- model.vec[95]
-    obj$x0E <- model.vec[96]
-    obj$x1E <- model.vec[97]
-    obj$d0E_1E  <- model.vec[98]
-    obj$d0E_01E <- model.vec[99]
-    obj$d1E_0E <- model.vec[100]
-    obj$d1E_01E <- model.vec[101]
-    if(model.vec[102] == 0){
-        obj$d01E_0E <- model.vec[97]
-    }else{
-        obj$d01E_0E <- model.vec[102]
-    }
-    if(model.vec[103] == 0){
-        obj$d01E_1E <- model.vec[96]
-    }else{
-        obj$d01E_1E <- model.vec[103]
-    }
-    obj$d0E_0A <- model.vec[104]
-    obj$d0E_0B <- model.vec[105]
-    obj$d0E_0C <- model.vec[106]
-    obj$d0E_0D <- model.vec[107]
-    obj$d1E_1A <- model.vec[108]
-    obj$d1E_1B <- model.vec[109]
-    obj$d1E_1C <- model.vec[110]
-    obj$d1E_1D <- model.vec[111]
-    obj$d01E_01A <- model.vec[112]
-    obj$d01E_01B <- model.vec[113]
-    obj$d01E_01C <- model.vec[114]
-    obj$d01E_01D <- model.vec[115]
-    
-    obj$split.times <- sort(branching.times(phy), decreasing=TRUE)
-    
-    return(obj)
-}
-
-
-
-######################################################################################################################################
-######################################################################################################################################
-### Cache object for storing parameters that are used throughout MuSSE:
-######################################################################################################################################
-######################################################################################################################################
-
-ParametersToPassMuSSE <- function(phy, data, f, model.vec, hidden.states){
-    ## Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
-    obj <- NULL
-    obj$phy <- phy
-    
-    if(hidden.states == FALSE){
-        states <- matrix(0,Ntip(phy),3)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==1){states[i,1]=1}
-            if(data[i]==2){states[i,2]=1}
-            if(data[i]==0){states[i,3]=1}
-        }
-    }
-    if(hidden.states == TRUE){
-        states <- matrix(0,Ntip(phy),15)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==1){states[i,c(1,4,7,10,13)]=1}
-            if(data[i]==2){states[i,c(2,5,8,11,14)]=1}
-            if(data[i]==0){states[i,c(3,6,9,12,15)]=1}
-        }
-    }
-    if(hidden.states == "TEST1"){
-        states <- matrix(0,Ntip(phy),3)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==1){states[i,1]=1}
-            if(data[i]==2){states[i,2]=1}
-            if(data[i]==4){states[i,3]=1}
-        }
-    }
-    if(hidden.states == "TEST2"){
-        states <- matrix(0,Ntip(phy),15)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==1){states[i,4]=1}
-            if(data[i]==2){states[i,5]=1}
-            if(data[i]==4){states[i,6]=1}
-        }
-    }
-    
-    obj$states <- states
-    obj$tot_time <- max(branching.times(phy))
-    obj$f <- f
-    
-    obj$s0A <- model.vec[1]
-    obj$s1A <- model.vec[2]
-    obj$s01A <- model.vec[3]
-    obj$x0A <- model.vec[4]
-    obj$x1A <- model.vec[5]
-    obj$x01A <- model.vec[6]
-    obj$d0A_1A  <- model.vec[7]
-    obj$d0A_01A <- model.vec[8]
-    obj$d1A_0A <- model.vec[9]
-    obj$d1A_01A <- model.vec[10]
-    if(model.vec[11] == 0){
-        obj$d01A_0A <- model.vec[5]
-    }else{
-        obj$d01A_0A <- model.vec[11]
-    }
-    if(model.vec[12] == 0){
-        obj$d01A_1A <- model.vec[4]
-    }else{
-        obj$d01A_1A <- model.vec[12]
-    }
-    obj$d0A_0B <- model.vec[13]
-    obj$d0A_0C <- model.vec[14]
-    obj$d0A_0D <- model.vec[15]
-    obj$d0A_0E <- model.vec[16]
-    obj$d1A_1B <- model.vec[17]
-    obj$d1A_1C <- model.vec[18]
-    obj$d1A_1D <- model.vec[19]
-    obj$d1A_1E <- model.vec[20]
-    obj$d01A_01B <- model.vec[21]
-    obj$d01A_01C <- model.vec[22]
-    obj$d01A_01D <- model.vec[23]
-    obj$d01A_01E <- model.vec[24]
-    
-    obj$s0B <- model.vec[25]
-    obj$s1B <- model.vec[26]
-    obj$s01B <- model.vec[27]
-    obj$x0B <- model.vec[28]
-    obj$x1B <- model.vec[29]
-    obj$x01B <- model.vec[30]
-    obj$d0B_1B  <- model.vec[31]
-    obj$d0B_01B <- model.vec[32]
-    obj$d1B_0B <- model.vec[33]
-    obj$d1B_01B <- model.vec[34]
-    if(model.vec[35] == 0){
-        obj$d01B_0B <- model.vec[29]
-    }else{
-        obj$d01B_0B <- model.vec[35]
-    }
-    if(model.vec[36] == 0){
-        obj$d01B_1B <- model.vec[28]
-    }else{
-        obj$d01B_1B <- model.vec[36]
-    }
-    obj$d0B_0A <- model.vec[37]
-    obj$d0B_0C <- model.vec[38]
-    obj$d0B_0D <- model.vec[39]
-    obj$d0B_0E <- model.vec[40]
-    obj$d1B_1A <- model.vec[41]
-    obj$d1B_1C <- model.vec[42]
-    obj$d1B_1D <- model.vec[43]
-    obj$d1B_1E <- model.vec[44]
-    obj$d01B_01A <- model.vec[45]
-    obj$d01B_01C <- model.vec[46]
-    obj$d01B_01D <- model.vec[47]
-    obj$d01B_01E <- model.vec[48]
-    
-    obj$s0C <- model.vec[49]
-    obj$s1C <- model.vec[50]
-    obj$s01C <- model.vec[51]
-    obj$x0C <- model.vec[52]
-    obj$x1C <- model.vec[53]
-    obj$x01C <- model.vec[54]
-    obj$d0C_1C  <- model.vec[55]
-    obj$d0C_01C <- model.vec[56]
-    obj$d1C_0C <- model.vec[57]
-    obj$d1C_01C <- model.vec[58]
-    if(model.vec[59] == 0){
-        obj$d01C_0C <- model.vec[53]
-    }else{
-        obj$d01C_0C <- model.vec[59]
-    }
-    if(model.vec[60] == 0){
-        obj$d01C_1C <- model.vec[52]
-    }else{
-        obj$d01C_1C <- model.vec[60]
-    }
-    obj$d0C_0A <- model.vec[61]
-    obj$d0C_0B <- model.vec[62]
-    obj$d0C_0D <- model.vec[63]
-    obj$d0C_0E <- model.vec[64]
-    obj$d1C_1A <- model.vec[65]
-    obj$d1C_1B <- model.vec[66]
-    obj$d1C_1D <- model.vec[67]
-    obj$d1C_1E <- model.vec[68]
-    obj$d01C_01A <- model.vec[69]
-    obj$d01C_01B <- model.vec[70]
-    obj$d01C_01D <- model.vec[71]
-    obj$d01C_01E <- model.vec[72]
-    
-    obj$s0D <- model.vec[73]
-    obj$s1D <- model.vec[74]
-    obj$s01D <- model.vec[75]
-    obj$x0D <- model.vec[76]
-    obj$x1D <- model.vec[77]
-    obj$x01D <- model.vec[78]
-    obj$d0D_1D  <- model.vec[79]
-    obj$d0D_01D <- model.vec[80]
-    obj$d1D_0D <- model.vec[81]
-    obj$d1D_01D <- model.vec[82]
-    if(model.vec[83] == 0){
-        obj$d01D_0D <- model.vec[77]
-    }else{
-        obj$d01D_0D <- model.vec[83]
-    }
-    if(model.vec[84] == 0){
-        obj$d01D_1D <- model.vec[76]
-    }else{
-        obj$d01D_1D <- model.vec[84]
-    }
-    
-    obj$d0D_0A <- model.vec[85]
-    obj$d0D_0B <- model.vec[86]
-    obj$d0D_0C <- model.vec[87]
-    obj$d0D_0E <- model.vec[88]
-    obj$d1D_1A <- model.vec[89]
-    obj$d1D_1B <- model.vec[90]
-    obj$d1D_1C <- model.vec[91]
-    obj$d1D_1E <- model.vec[92]
-    obj$d01D_01A <- model.vec[93]
-    obj$d01D_01B <- model.vec[94]
-    obj$d01D_01C <- model.vec[95]
-    obj$d01D_01E <- model.vec[96]
-    
-    obj$s0E <- model.vec[97]
-    obj$s1E <- model.vec[98]
-    obj$s01E <- model.vec[99]
-    obj$x0E <- model.vec[100]
-    obj$x1E <- model.vec[101]
-    obj$x01E <- model.vec[102]
-    obj$d0E_1E  <- model.vec[103]
-    obj$d0E_01E <- model.vec[104]
-    obj$d1E_0E <- model.vec[105]
-    obj$d1E_01E <- model.vec[106]
-    if(model.vec[107] == 0){
-        obj$d01E_0E <- model.vec[101]
-    }else{
-        obj$d01E_0E <- model.vec[107]
-    }
-    if(model.vec[108] == 0){
-        obj$d01E_1E <- model.vec[100]
-    }else{
-        obj$d01E_1E <- model.vec[108]
-    }
-    
-    obj$d0E_0A <- model.vec[109]
-    obj$d0E_0B <- model.vec[110]
-    obj$d0E_0C <- model.vec[111]
-    obj$d0E_0D <- model.vec[112]
-    obj$d1E_1A <- model.vec[113]
-    obj$d1E_1B <- model.vec[114]
-    obj$d1E_1C <- model.vec[115]
-    obj$d1E_1D <- model.vec[116]
-    obj$d01E_01A <- model.vec[117]
-    obj$d01E_01B <- model.vec[118]
-    obj$d01E_01C <- model.vec[119]
-    obj$d01E_01D <- model.vec[120]
-    
-    obj$split.times <- sort(branching.times(phy), decreasing=TRUE)
-    
-    return(obj)
-}
-
-
-######################################################################################################################################
-######################################################################################################################################
-### Print function for our diversity class:
-######################################################################################################################################
-######################################################################################################################################
-
-print.geohisse.fit <- function(x,...){
+print.geohisse_plus.fit <- function(x,...){
     ## Function to print a "geohisse.fit" object.
-    set.zero <- max( x$index.par )
     ## Keep only the parameters estimated:
-    par.list <- x$solution[ !x$index.par == set.zero ]
+    keep.par <- x$index.par > 0
+    par.list <- x$solution[ keep.par ]
     ntips <- Ntip( x$phy )
-    nareas <- ncol( x$trans.matrix )/3
-    output <- c(x$loglik, x$AIC, x$AICc, ntips, nareas)
-    names(output) <- c("-lnL", "AIC", "AICc", "n.taxa", "n.hidden.classes")
+    output <- c(x$loglik, x$AIC, x$AICc, ntips, x$n.hidden.rates)
+    names(output) <- c("-lnL", "AIC", "AICc", "n.taxa", "n.hidden.rates")
     cat("\n")
     cat("Fit \n")
     print(output)
@@ -1316,54 +162,483 @@ print.geohisse.fit <- function(x,...){
     cat("\n")
 }
 
+## ##############################################################################################################
+## Fitting function for no hidden states:
+## ##############################################################################################################
 
-######################################################################################################################################
-######################################################################################################################################
-### Code for testing purposes:
-######################################################################################################################################
-######################################################################################################################################
+geohisse_3_one_rate <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6), extirpation=c(1,2,3), trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, trans.upper=100, ode.eps=0){
 
-## pars <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
-## names(pars) <- diversitree:::default.argnames.geosse()
+    ## Note that some parameters are not present at this function call.
+    ## We are assuming no hidden states and that the model is cladogenetic.
 
-## Simulate a tree
-## set.seed(5)
-## phy <- tree.geosse(pars, max.t=4, x0=0)
-## data <- data.frame(g_s = names(phy$tip.state), states = phy$tip.state)
-## See the data
-## statecols <- c("AB"="purple", "A"="blue", "B"="red")
+    ## Diversification parameters for the model (ext'1 means local extinction):
+    ## s1, s2, s3, ext1, ext2, ext3, (ext'1, ext'2, ext'3), s12, s13, s23
+    ## The transition parameters are set using the transition matrix.
 
-## The likelihood function
-## lik <- make.geosse(phy, phy$tip.state)
-## lik(pars)
+    ## This step works even if the 
+    extirpation.tmp <- extirpation
+    extirpation.tmp[which(extirpation.tmp > 0)] <- extirpation.tmp[which(extirpation.tmp > 0)] + max(speciation)
+    pars.tmp <- c(speciation, extirpation.tmp)
+    
+    ## Here we need a vector with the transition indexes from the 'trans.rate' parameter in the same order as the vector we call in the C code.
+    ## This matrix also informs the model about jumps between endemic regions and separated rates between extirpation and local extinction.
+    ## We can use the values of this transition matrix to guess if the model is separating local extinction from extirpation. This information will be important to set appropriate starting values and bound values.
+    trans.tmp <- c(trans.rate["(1)", "(2)"], trans.rate["(2)", "(1)"], trans.rate["(2)", "(3)"]
+                 , trans.rate["(3)", "(2)"], trans.rate["(1)", "(3)"], trans.rate["(3)", "(1)"]
+                 , trans.rate["(1)", "(12)"], trans.rate["(1)", "(13)"], trans.rate["(2)", "(12)"]
+                 , trans.rate["(2)", "(23)"], trans.rate["(3)", "(13)"], trans.rate["(3)", "(23)"]
+                 , trans.rate["(12)", "(1)"], trans.rate["(13)", "(1)"], trans.rate["(12)", "(2)"]
+                 , trans.rate["(23)", "(2)"], trans.rate["(13)", "(3)"], trans.rate["(23)", "(3)"])
 
-## states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
+    ## In this case the vector will very often have 0 positions. Should just assume some 0s.
+    trans.tmp[which(trans.tmp > 0)] <- trans.tmp[which(trans.tmp > 0)] + max(pars.tmp)
+    pars.tmp <- c(pars.tmp, trans.tmp)
+    ## Number of free parameters for the model:
+    np <- max(pars.tmp)
+    ## For this all to work we need to have all integers from 1 to np.
+    if( !all( pars.tmp[pars.tmp > 0] %in% pars.tmp ) ){
+        stop("Wrong internal set-up of parameters.")
+    }
 
-## states <- states[phy$tip.label,]
-## names(pars) <- NULL
-## model.vec <- numeric(95)
-## tests against GeoSSE
-## model.vec <- rep(c(pars[1:3], pars[4:5], pars[6:7], rep(0,12)), 5)
-## model.vec <- numeric(95)
-## model.vec[1:7] <- c(pars[1:3], pars[4:5], pars[6:7])
-## phy$node.label <- NULL
-## cache <- ParametersToPassGeoHiSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=FALSE)
-## ll.geosse <- DownPassGeoHisse(phy=phy, cache=cache, hidden.states=FALSE, bad.likelihood=-10000000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
-## cache <- ParametersToPassGeoHiSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
-## ll.geohisse <- DownPassGeoHisse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-10000000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    ## Need to fix the parameter indexes for the extirpation and local extinction.
+    ## Note that the rate of d12_1 is the same as ext2 in the original geosse model.
+    ## So if extirpation is not separated from local extinction, then we need to make this constrain.
+    ## Check if any extirpation is set to be estimated independently:
+    ## The indexation below is not relative and will break if the order of the parameters change.
 
-## tests against NULL
-## lambda_A <- pars[1]
-## lambda_B <- pars[2]
-## lambda_C <- pars[3]
-## model.vec <- c(rep(lambda_A, 3), pars[4:5], pars[6:7], rep(1,6), rep(lambda_B, 3), pars[4:5], pars[6:7], rep(lambda_C, 3), pars[1:3], pars[4:5], pars[6:7], rep(1,6))
+    ## Note that in some cases the widespread areas do not belong to the model.
+    ## We can get this info by checking if the respective speciation exists. If it is set to 0, then the extirpation associated with that same widespread area also should be 0.
+    extirpation.trans.par <- pars.tmp[22:27]
+    if( any(extirpation.trans.par > 0) ){
+        ## Set the ones to be estimated, but constrain the others.
+        ## The transitions that are zero need to be set to the correspondent extinction parameter.
+        ## Need to find a good way to scale this up when adding the hidden rates.
+        if( pars.tmp[4] > 0 ){
+            pars.tmp[ 24 ][ pars.tmp[ 24 ] == 0 ] <- pars.tmp[7]
+            pars.tmp[ 22 ][ pars.tmp[ 22 ] == 0 ] <- pars.tmp[8]
+        }
+        if( pars.tmp[6] > 0 ){        
+            pars.tmp[ 26 ][ pars.tmp[ 26 ] == 0 ] <- pars.tmp[7]
+            pars.tmp[ 23 ][ pars.tmp[ 23 ] == 0 ] <- pars.tmp[9]
+        }
+        if( pars.tmp[5] > 0 ){        
+            pars.tmp[ 27 ][ pars.tmp[ 27 ] == 0 ] <- pars.tmp[8]
+            pars.tmp[ 25 ][ pars.tmp[ 25 ] == 0 ] <- pars.tmp[9]
+        }
+    } else{
+        ## Constrain all the extirpation events to be the same as extinction. (13 to 18)
+        if( pars.tmp[4] > 0 ){
+            pars.tmp[ 24 ] <- pars.tmp[7]
+            pars.tmp[ 22 ] <- pars.tmp[8]
+        }
+        if( pars.tmp[6] > 0 ){        
+            pars.tmp[ 26 ] <- pars.tmp[7]
+            pars.tmp[ 23 ] <- pars.tmp[9]
+        }
+        if( pars.tmp[5] > 0 ){        
+            pars.tmp[ 27 ] <- pars.tmp[8]
+            pars.tmp[ 25 ] <- pars.tmp[9]
+        }
+    }
+   
+    cat("Initializing...", "\n")
 
-## phy$node.label <- NULL
+    ## Data here is a named vector with states from 1 to 6 in the same order as phy$tip.label.
+    ## Any required transformation need to be perfomed prior to this function call.
+    freqs <- table(data)
+    ## This will be equal to 1 under default values.
+    samp.freq.tree <- Ntip(phy) / sum(table(data) / f[as.numeric(names(freqs))])
 
-## cache <- ParametersToPassGeoSSE(phy, states[,1], f=c(1,1,1), model.vec, hidden.states=TRUE)
+    ## The starting point for the parameters is the same as the geosse model.
+    ## Just need to distribute the speciatiation and the extirpation parameters.
+    ## These rates are in normal space. Need to log!
+    if( sum(extirpation) == 0 ){
+        ## In the case of a Yule model.
+        init.pars.tmp <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
+    }else{
+        init.pars.tmp <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
+    }
+    ## Original code:
+    ## init.pars <- unname( c( rep(init.pars.tmp[1], times = 6), rep(init.pars.tmp[4], times = 3)
+    ##                      , rep(init.pars.tmp[6], times = 3) ) )
+    ## Need to construct the parameter vector to be passed to the likelihood function.
+    ## The map back to the total parameteter vector is simpler because the positions will match.
+    pars.lik <- rep(NA, times = np)
+    s_id <- unique(pars.tmp[1:6])[unique(pars.tmp[1:6]) > 0]
+    ext_id <- unique(pars.tmp[7:9])[unique(pars.tmp[7:9]) > 0]
+    d_id <- seq(from = max(s_id, ext_id)+1, to = length(pars.lik))
+    pars.lik[s_id] <- log( init.pars.tmp[1] )
+    pars.lik[ext_id] <- log( init.pars.tmp[4] )
+    pars.lik[d_id] <- log( init.pars.tmp[6] )
+    
+    ## If the model separates extirpation and extinction, then we need to correct the tail of these vectors.
+    ## Record the potential extirpation transition parameters:
+    if( any(extirpation.trans.par > 0) ){
+        ## The true extirpation parameters will be at the end of the likelihood vector:
+        tail.id <- np - ( sum(extirpation.trans.par > 0) + 1 )
+        pars.lik[tail.id:np] <- init.pars.tmp[4]
+    }
+    
+    ## So here we have two important vectors:
+    ## "pars.lik" used to estimate the parameters of the model
+    ## indexes in pars.tmp are the key to translate "pars.lik" into a longer vector to be passed to the C code.
+    
+    if(bounded.search == TRUE){
+        upper.pars <- rep(NA, times = length(pars.lik))
+        upper.pars[s_id] <- log(speciation.upper)
+        upper.pars[ext_id] <- log(extirpation.upper)
+        upper.pars[d_id] <- log(trans.upper)
 
-## ll <- DownPassGeosse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-10000000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+        if( any(extirpation.trans.par > 0) ){
+            ## If this is true, then "tail.id" should exist in the working space.
+            ## But better be safe than sorry!
+            tail.id <- np - ( sum(extirpation.trans.par > 0) + 1 )
+            upper.pars[tail.id:np] <- log(extirpation.upper)
+        }
+        
+    } else{
+        ## We set a really large bound to emulate no bounds. But be aware that the search cannot, of course, be done in an infinite parameter space.
+        upper.pars <- rep(21, times = np)
+    }
 
+    ## Lower bound in log space:
+    lower.pars <- rep(-20, times = np)
 
+    ## ##########################
+    ## Pre-likelihood steps (this are constants for the search):
 
+    ## Data need to be a presence and absence matrix with columns ordered from state 1 to 6.
+    states <- matrix(0, nrow = length(data), ncol = 6)
+    for( i in 1:length(data) ){
+        states[i,data[i]] <- 1
+    }
 
+    tot_time <- max(branching.times(phy))
+    split.times <- sort(branching.times(phy), decreasing=TRUE)
+
+    nb.tip <- length(phy$tip.label)
+    nb.node <- phy$Nnode
+    phy <- reorder(phy, "pruningwise")
+    anc <- unique(phy$edge[,1])
+    TIPS <- 1:nb.tip
+
+    ## The ODEs need to be integrated across the each of the branches of the tree.
+    compD <- matrix(0, nrow=nb.tip + nb.node, ncol=6)
+    compE <- matrix(0, nrow=nb.tip + nb.node, ncol=6)
+
+    ## Initializes the tip sampling and sets internal nodes to be zero:
+    ncols <- dim(compD)[2]
+    for(i in 1:(nb.tip)){
+        ## Probability to be in the observed state is 1. (With a weight given by the 'f' vector.)
+        compD[i,] <- f * states[i,]
+        ## Probability of extinction for the observed state is 0.
+        compE[i,] <- 1 - f
+    }
+
+    ## ##########################
+    
+    if(sann == FALSE){
+        if(bounded.search == TRUE){
+            cat("Starting log-likelihood value:")
+            start.lik <- opt_geohisse_3_one_rate(pars.lik, pars=pars.tmp, phy=phy
+                                               , condition.on.survival=condition.on.survival
+                                               , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                                               , split.times=split.times, nb.tip=nb.tip, nb.node=nb.node
+                                               , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+            cat( -1 * start.lik )
+            cat( "\n" )
+            cat("Finished. Beginning bounded subplex routine...", "\n")
+            opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
+            ## The evaluation function here need to be changed. We will use one for each of the models.
+            ## Need to make this function: "opt_geohisse_3_one_rate"
+            ## I think that the objects are fine and have all the needed information. Just need to adapt the downstream.
+            out <- nloptr(x0=pars.lik, eval_f=opt_geohisse_3_one_rate, ub=upper.pars, lb=lower.pars
+                        , opts=opts
+                        , pars=pars.tmp, phy=phy, condition.on.survival=condition.on.survival
+                        , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                        , split.times=split.times, nb.tip=nb.tip, nb.node=nb.node
+                        , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+            ## out <- nloptr(x0=pars.lik, eval_f=opt_geohisse_3_one_rate, ub=upper.pars, lb=lower.pars, opts=opts
+            ##             , pars=pars.tmp, phy=phy, data=data, f=f, condition.on.survival=condition.on.survival
+            ##             , root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            ## Here need to expand the pars.lik into the long format.
+            solution <- expand.pars(lik = exp(out$solution), long = pars.tmp)
+            loglik <- -out$objective
+        }else{
+            cat("Finished. Beginning subplex routine...", "\n")
+            out <- subplex(pars.lik, fn=opt_geohisse_3_one_rate, control=list(reltol=max.tol, parscale=rep(0.1, np))
+                         , pars=pars.tmp, phy=phy, condition.on.survival=condition.on.survival
+                         , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                         , split.times=split.times, nb.tip=nb.tips, nb.node=nb.node
+                         , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+            ## out <- subplex(pars.lik, fn=opt_geohisse_3_one_rate, control=list(reltol=max.tol, parscale=rep(0.1, np))
+            ##              , pars=pars.tmp, phy=phy, data=data, f=f, hidden.states=hidden.areas
+            ##              , condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p
+            ##              , np=np, ode.eps=ode.eps)
+            solution <- expand.pars(lik = exp(out$par), long = pars.tmp)
+            loglik <- -out$value
+        }
+    }else{
+        cat("Finished. Beginning simulated annealing...", "\n")
+        out.sann <- GenSA(pars.lik, fn=opt_geohisse_3_one_rate, lower=lower.pars, upper=upper.pars
+                        , control=list(max.call=sann.its)
+                        , pars=pars.tmp, phy=phy, condition.on.survival=condition.on.survival
+                        , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                        , split.times=split.times, nb.tip=nb.tips, nb.node=nb.node
+                        , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+        ## out.sann <- GenSA(pars.lik, fn=opt_geohisse_3_one_rate, lower=lower.pars, upper=upper.pars
+        ##                 , control=list(max.call=sann.its)
+        ##                 , pars=pars.tmp, phy=phy, data=data, f=f
+        ##                 , condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p
+        ##                 , np=np, ode.eps=ode.eps)
+        cat("Finished. Refining using subplex routine...", "\n")
+        out <- nloptr(x0=out.sann$par, eval_f=opt_geohisse_3_one_rate, ub=upper.pars, lb=lower.pars, opts=opts
+                    , pars=pars.tmp, phy=phy, condition.on.survival=condition.on.survival
+                    , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                    , split.times=split.times, nb.tip=nb.tips, nb.node=nb.node
+                    , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+        ## out <- nloptr(x0=out.sann$par, eval_f=opt_geohisse_3_one_rate, ub=upper.pars, lb=lower.pars, opts=opts
+        ##             , pars=pars.tmp, phy=phy, data=data, f=f, condition.on.survival=condition.on.survival
+        ##             , root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        solution <- expand.pars(lik = exp(out$solution), long = pars.tmp)
+        loglik <- -out$objective
+    }
+
+    ## A new cool thing and easy to do with the updated data input would be to return the vector with the name of the areas as informed by the user.
+    names(solution) <- c("s1", "s2", "s3", "s12", "s23", "s13", "x1", "x2", "x3", "d1_2"
+                       , "d2_1", "d2_3", "d3_2", "d1_3", "d3_1", "d1_12", "d1_13", "d2_12"
+                       , "d2_23", "d3_13", "d3_23", "d12_1", "d13_1", "d12_2", "d23_2"
+                       , "d13_3", "d23_3")
+    
+    cat("Finished. Summarizing results...", "\n")
+
+    ## This is just a partial list. The complete list will be the output of the higher level function that is calling this function to run.
+    ## obj <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1)))
+    ##           , solution=solution, index.par=pars, f=f, hidden.areas=hidden.areas
+    ##           , assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival
+    ##           , root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate
+    ##           , max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
+    ## class(obj) <- append(class(obj), "geohisse.fit")
+    ## return(obj)
+    fit.out <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1)))
+                  , solution=solution, index.par=pars.tmp, f=f, max.tol=max.tol, starting.vals=pars.lik
+                  , upper.bounds=upper.pars, lower.bounds=lower.pars, ode.eps=ode.eps)
+    return( fit.out )
+}
+
+## #################################################################################### 
+## Optimization function for one_rate model:
+## ####################################################################################
+
+opt_geohisse_3_one_rate <- function(p, pars, phy, bad.likelihood=10000000, condition.on.survival, root.type, root.p, ode.eps, split.times, nb.tip, nb.node, anc, compD, compE) {
+    
+    ## Generates the final vector with the appropriate parameter estimates in the right place:
+    p.new <- exp(p)
+    
+    ## Expand the parameter vector into the long form for the C code.
+    model.vec <- expand.pars(lik = p.new, long = pars)
+    
+    logcomp <- c() ## Keep track of the log of the compensation.
+    
+    ## Start the postorder traversal indexing lists by node number:
+    
+    ## This is the real core of the likelhood function.
+    ## Need to make sure that we have all the objects in the correct format to run these.
+
+    ## Define the run function that will be called at each iteration:
+    runSilent <- function(yini, times, model.vec){
+        ## This is silencing the integration warnings.
+        options(warn = -1)
+        on.exit(options(warn = 0))
+        capture.output( res <- lsoda(yini, times, func = "geosse_3_areas_derivs"
+                                   , model.vec, initfunc="initmod_geosse_3_areas", dllname = "hisse"
+                                   , rtol=1e-8, atol=1e-8) )
+        return( res )
+    }
+
+    ## A constant to be used by the C code.
+    NUMELEMENTS <- 27
+    
+    for (i in seq(from = 1, length.out = nb.node)) {
+        ## A vector of all the internal nodes:
+        focal <- anc[i]
+        desRows <- which(phy$edge[,1]==focal)
+        desNodes <- phy$edge[desRows,2]
+        ## Note: when the tree has been reordered branching.times are no longer valid. Fortunately, we extract this information in the initial cache setup. Also focal is the rootward node, whereas desNodes represent a vector of all descendant nodes:
+        rootward.age <- as.numeric( split.times[which(names(split.times)==focal)] )
+
+        ## Matrix objects to store the results.
+        v <- matrix(nrow = length(desRows), ncol = 6)
+        phi <- matrix(nrow = length(desRows), ncol = 6)
+        ## A counter to go through the matrix.
+        v_phy_count <- 1
+        ## BEGIN FOR LOOP over the nodes of the tree.
+        ## It would be simple and better to separate this function between the case with and without the hidden states. It will be simpler to debug and less if else clauses to check.
+        for (desIndex in sequence(length(desRows))){
+            focal.edge.length <- phy$edge.length[desRows[desIndex]]
+            tipward.age <- as.numeric( rootward.age - focal.edge.length )
+            ## Strange rounding errors. A tip age should be zero. This ensures that:
+            if(tipward.age < .Machine$double.eps^0.5){
+                tipward.age <- 0.0
+            }
+            node.D <- compD[desNodes[desIndex],]
+            node.E <- compE[desNodes[desIndex],]
+            ## Call to lsoda that utilizes C code. Requires a lot of inputs. Note that for now we hardcode the NUMELEMENTS arguments. The reason for this is because with lsoda we can only pass a vector of parameters.
+            ## Need to make sure that 'node.E' and 'node.D' have the correct quantities.
+            yini <- c(node.E, node.D)
+            ## yini <- c(E_0=cache$node.E[1], E_1=cache$node.E[2], E_01=cache$node.E[3], D_N0=cache$node.D[1], D_N1=cache$node.D[2], D_N2=cache$node.D[3])
+            ## This informs the heights of the tipward and rootward nodes of the branch, so that we can compute the length of the branch.
+            times <- c(tipward.age, rootward.age)
+
+            ## The matrix below has the probabilities for each of the states at the tipward node for each of the
+            ##     descendants of the focal node. Note that the loop above visited all the branches imediatelly
+            ##     descendants of the focal node.
+            ## We need these to compute the probability of each of the states at the focal node.
+            ## The probability of each of the states at the focal node is equal to the probability that having
+            ##     a given state at the focal node will generate tipward probabilities equal to the ones observed
+            ##     or estimated.
+            prob.subtree.cal.full <- runSilent(yini=yini, times=times, model.vec=model.vec)
+
+            ## NEED TO UPDATE THIS CHECK! NOT ADJUSTED FOR THE MODEL.
+            ## It will not break like this, but it is not checking the model correctly.
+            
+            ## ###### THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
+            if(attributes(prob.subtree.cal.full)$istate[1] < 0){
+                return(bad.likelihood)
+            }else{
+                prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+            }
+            ## ############################################################################
+
+            if( any( is.nan( prob.subtree.cal ) ) ){
+                return(bad.likelihood)
+            }
+            ## This is default and cannot change, but if we get a negative probability, discard the results:
+            ## Note that this is only testing the Ds part of the ODEs.
+            if( any( prob.subtree.cal < 0 ) ){
+                return(bad.likelihood)
+            }
+            ## This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
+            if( sum(prob.subtree.cal[7:12]) < ode.eps ){
+                return(bad.likelihood)
+            }
+            
+            ## Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
+            ## Here phi is a vector with the results of the integration so far in the E's.
+            ## Then 'v' is the D's part.
+            phi[v_phy_count,] <- prob.subtree.cal[1:6]
+            v[v_phy_count,] <- prob.subtree.cal[7:12]
+            v_phy_count <- v_phy_count + 1
+        }
+
+        ## The integration above was made from the tipward node to the rootward node.
+        ## We computed a probability that the rootward node will be in each of the states for each of the branches.
+        ## Of course, the rootward node is a single entity. So we need to combine the probabilities.
+        ## Each column of v gives the probability for that state at the rootward node.
+        ## An speciation happened at that node to form the observed descendants. This is an observed speciation
+        ##     event, so its probability (just like the observed states) is equal to 1.
+        ## The events track the infinitesimal moment just after the observed speciation event (i.e., no transitions
+        ##     are possible after speciation, because we are tracking a single event.
+        
+        ## In the case of the endemic states at the nodes it is simple. Only one thing can happen:
+        compD[focal,1] <- v[1,1] * v[2,1] * model.vec[1]
+        compD[focal,2] <- v[1,2] * v[2,2] * model.vec[2]
+        compD[focal,3] <- v[1,3] * v[2,3] * model.vec[3]
+
+        ## When the state at the node is widespread then there are more than one thing possible.
+        ## Here we need to enumerate all possible speciation types given that the state at the node was widespread.
+        ## state 12
+        compD[focal,4] <- 0.5 * (v[1,4] * v[2,1] + v[1,1] * v[2,4]) * model.vec[1] + 0.5 * (v[1,4] * v[2,2] + v[1,2] * v[2,4]) * model.vec[2] + 0.5 * (v[1,1] * v[2,2] + v[1,2] * v[2,1]) * model.vec[4]
+        ## state 23
+        compD[focal,5] <- 0.5 * (v[1,5] * v[2,2] + v[1,2] * v[2,5]) * model.vec[2] + 0.5 * (v[1,5] * v[2,3] + v[1,3] * v[2,5]) * model.vec[3] + 0.5 * (v[1,2] * v[2,3] + v[1,3] * v[2,2]) * model.vec[5]
+        ## state 13
+        compD[focal,6] <- 0.5 * (v[1,6] * v[2,1] + v[1,1] * v[2,6]) * model.vec[1] + 0.5 * (v[1,6] * v[2,3] + v[1,3] * v[2,6]) * model.vec[3] + 0.5 * (v[1,1] * v[2,3] + v[1,3] * v[2,1]) * model.vec[6]
+        
+        ## This is the probability of extinction at the node associated with each of the states.
+        compE[focal,] <- phi[1,]
+
+        ## This bit of code is used to fix a state at a node of the tree.
+        ## Note that we essentially set the probability of that state at that node to 1 and 0 to everything else.
+        ## When implementing this, make sure to set to the known vector BEFORE computing the probabilities!
+        ## if(!is.null(node)){
+        ##     if(node == focal){
+        ##         fixer <- rep(0, times = 6)
+        ##         fixer[state] <- 1
+        ##         compD[focal,] <- compD[focal,] * fixer
+        ##     }
+        ## }
+        
+        ## #########################
+        ## Logcompensation bit for dealing with underflow issues.
+
+        ## Having a real problem here.
+        ## The 'tmp' value is something negative.
+        ## It is underflow problem. Probabilities cannot be negative. The values for the probabilities are too small.
+        tmp <- sum(compD[focal,])
+        compD[focal,] <- compD[focal,] / tmp
+        ## Keep track of elements for the log compensation:
+        logcomp <- c(logcomp, log(tmp))
+        
+    } ## FINISH FOR LOOP over the nodes of the tree.
+    ## Compute quantities for the root node.
+    
+    root.node <- nb.tip + 1L
+    if ( is.na(sum(log(compD[root.node,]))) || is.na(log(sum(1 - compE[root.node,]))) ){
+        return(bad.likelihood)
+    }else{
+        if(root.type == "madfitz" | root.type == "herr_als"){
+            if(is.null(root.p)){
+                root.p <- compD[root.node,] / sum(compD[root.node,])
+                ## Strange here. Why to accept NA as a possible value at the root?
+                root.p[ which(is.na(root.p)) ] <- 0
+            }
+        }
+        if(condition.on.survival == TRUE){
+            if(root.type == "madfitz"){
+                ## Here the endemic speciation rates contribute to multiple widespread areas, but this is happening to the classe model too. Should not be the issue.
+                lambda <- c(model.vec[1:3], sum(model.vec[c(1,2,4)]), sum(model.vec[c(2,3,5)])
+                          , sum(model.vec[c(1,3,6)]) )
+                compD[root.node,] <- compD[root.node,] / sum(root.p * lambda * (1 - compE[root.node,])^2)
+                ## Corrects for possibility that you have 0/0:
+                compD[root.node,which(is.na(compD[root.node,]))] <- 0
+                loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
+            }else{
+                lambda <- c(model.vec[1:3], sum(model.vec[c(1,2,4)]), sum(model.vec[c(2,3,5)])
+                          , sum(model.vec[c(1,3,6)]) )
+                compD[root.node,] <- (compD[root.node,] * root.p) / (lambda * (1 - compE[root.node,])^2)
+                ## Corrects for possibility that you have 0/0:
+                compD[root.node,which(is.na(compD[root.node,]))] <- 0
+                loglik <- log(sum(compD[root.node,])) + sum(logcomp)
+            }
+        }
+    }
+    
+    ## There is a option to return another quantity. Looks a debug feature.
+    ## if(get.phi == TRUE){
+    ##     obj <- NULL
+    ##     obj$compD.root <- compD[root.node,]/sum(compD[root.node,])
+    ##     obj$compE <- compE
+    ##     obj$root.p <- root.p
+    ##     return(obj)
+    ## }else{
+    ##     return(loglik)
+    ## }
+
+    ## IMPORTANT: Note that in the original hisse implementation this is NOT the output directly to nloptr. hisse outputs this lik to another function that does -1 * lik and then pass it to nloptr! Here we are droppping this extra layer and outputing directly to nloptr.
+    return( -1 * loglik )
+}
+
+## #################################################################################### 
+## Some helping functions:
+## ####################################################################################
+
+expand.pars <- function(lik, long){
+    ## Function to expand the model likelihood pars to the long format with all the parameters of the model.
+    out <- rep(0, times = length(long) )
+    fit.id <- which(long > 0)
+    for( i in 1:length(fit.id)){
+        ## The 'long' vectors has integers that are indexes.
+        out[ fit.id[i] ] <- lik[ long[ fit.id[i] ] ]
+    }
+    return( out )
+}
