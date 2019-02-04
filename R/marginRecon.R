@@ -1033,7 +1033,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         
-        if(hidden.states>1){
+        if(hidden.states>0){
             TipEval <- function(tip){
                 dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
                 setkey(dat.tab, DesNode)

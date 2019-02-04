@@ -1,13 +1,13 @@
-\name{plot.muhisse.states}
-\alias{plot.muhisse.states}
-\title{Plotting function muhisse.states objects}
+\name{plot.misse.states}
+\alias{plot.misse.states}
+\title{Plotting function geohisse.states objects}
 \description{A plotting function for visualizing changes in states and rates over a phylogeny}
 \usage{
-\method{plot}{muhisse.states}(x, rate.param = "net.div", type = "fan",
-show.tip.label = TRUE, fsize = 1.0, legend = TRUE, ...)
+\method{plot}{misse.states}(x, rate.param = "net.div", type = "fan",
+show.tip.label = TRUE, fsize = 1.0, legend = "tips", ...)
 }       
 \arguments{
-\item{x}{a \code{muhisse.states} object or a list of such objects.}
+\item{x}{a \code{misse.states} object or a list of such objects.}
 \item{rate.param}{indicates the type of rates to plot. Options include: \dQuote{turnover}, \dQuote{net.div}, \dQuote{speciation},  \dQuote{extinction},  \dQuote{extinction.fraction}.}
 \item{type}{a character string specifying the type of phylogeny to be drawn. Options are "fan" (default) or "phylogram".}
 \item{show.tip.label}{a logical indicating whether tip names should be included. Default is TRUE}

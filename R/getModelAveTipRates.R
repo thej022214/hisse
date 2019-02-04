@@ -31,7 +31,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         to.mod.ave <- type
     }    
 
-    if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states", "muhisse.states")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states', 'hisse.geosse.states', or 'muhisse.states'.")
+    if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states", "muhisse.states", "misse.states")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states', 'hisse.geosse.states', 'muhisse.states', or 'misse.states'.")
 
     ## If hisse.results is a list of model reconstructions, then test if they have $aic. Return error message otherwise.
     ## There is no need for the $aic element if AIC.weigths argument is provided.
@@ -49,7 +49,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         }
     }
 
-    if( inherits(hisse.results, what = c("hisse.states", "hisse.geosse.states", "muhisse.states")) ){ # we have to make a list so we can run this generally
+    if( inherits(hisse.results, what = c("hisse.states", "hisse.geosse.states", "muhisse.states", "misse.states")) ){ # we have to make a list so we can run this generally
         if( !is.null( AIC.weights ) ){
             stop( "If using a single model, then 'AIC.weights' needs to be NULL. " )
         }
@@ -93,6 +93,11 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
             states.tips <- ConvertManyToMultiState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
         }
 
+        if(class(hisse.results[[1]])=="misse.states"){
+            states.tips <- rep(0, dim(hisse.results[[1]][["tip.mat"]])[1])
+        }
+
+
         ## Note that the columns of 'averaged.tip.rates' need to be in the correct order here. They should be.
         final.df.tips <- data.frame(taxon=hisse.results[[1]]$phy$tip.label, state=states.tips, turnover=averaged.tip.rates[[1]], net.div=averaged.tip.rates[[2]], speciation=averaged.tip.rates[[3]], extinct.frac=averaged.tip.rates[[4]], extinction=averaged.tip.rates[[5]])
         ## Check if the function need to return only the reconstruction for the tips.
@@ -124,6 +129,9 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
             states.internal <- ConvertManyToMultiState(hisse.results, which.element="node.mat", AIC.weights=AIC.weights)
         }
 
+        if(class(hisse.results[[1]])=="misse.states"){
+            states.internal <- rep(0, dim(hisse.results[[1]][["node.mat"]])[1])
+        }
 
         final.df.nodes <- data.frame(id=hisse.results[[1]]$node.mat[,1], state=states.internal, turnover=averaged.node.rates[[1]], net.div=averaged.node.rates[[2]], speciation=averaged.node.rates[[3]], extinct.frac=averaged.node.rates[[4]], extinction=averaged.node.rates[[5]])
         ## Check if the function need to return only the reconstruction for the nodes:
