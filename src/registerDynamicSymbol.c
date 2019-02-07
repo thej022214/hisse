@@ -13,6 +13,7 @@ extern void initmod_geohisse();
 extern void initmod_noclass();
 extern void initmod_hinoclass();
 extern void initmod_geosse_3_areas();
+extern void initmod_geosse_3_areas_two_rates();
 
 /* Introduced with new version with new models */
 extern void initmod_musse();
@@ -28,6 +29,7 @@ extern void maddison_DE_hisse(void *, void *, void *, void *, void *, void *);
 extern void maddison_DE_hisse_null(void *, void *, void *, void *, void *, void *);
 extern void classe_geosse_equivalent_derivs(void *, void *, void *, void *, void *, void *);
 extern void geosse_3_areas_derivs(void *, void *, void *, void *, void *, void *);
+extern void geosse_3_areas_two_rates_derivs(void *, void *, void *, void *, void *, void *);
 extern void geohisse_derivs(void *, void *, void *, void *, void *, void *);
 extern void notclasse_derivs(void *, void *, void *, void *, void *, void *);
 extern void notclasse_more_derivs(void *, void *, void *, void *, void *, void *);
@@ -49,6 +51,7 @@ static const R_CMethodDef CEntries[] = {
     {"initmod_hisse_null",              (DL_FUNC) &initmod_hisse_null,              0},
     {"initmod_geosse",		            (DL_FUNC) &initmod_geosse,                  0},
     {"initmod_geosse_3_areas",		    (DL_FUNC) &initmod_geosse_3_areas,          0},
+    {"initmod_geosse_3_areas_two_rates", (DL_FUNC) &initmod_geosse_3_areas_two_rates, 0},
     {"initmod_geohisse",		        (DL_FUNC) &initmod_geohisse,                0},
     {"initmod_noclass",		            (DL_FUNC) &initmod_noclass,                 0},
     {"initmod_hinoclass",		        (DL_FUNC) &initmod_hinoclass,               0},
@@ -64,6 +67,7 @@ static const R_CMethodDef CEntries[] = {
     {"maddison_DE_hisse_null",          (DL_FUNC) &maddison_DE_hisse_null,          6},
     {"classe_geosse_equivalent_derivs", (DL_FUNC) &classe_geosse_equivalent_derivs, 6},
     {"geosse_3_areas_derivs",           (DL_FUNC) &geosse_3_areas_derivs,           6},
+    {"geosse_3_areas_two_rates_derivs", (DL_FUNC) &geosse_3_areas_two_rates_derivs, 6},
     {"geohisse_derivs",                 (DL_FUNC) &geohisse_derivs,                 6},
     {"notclasse_derivs",                (DL_FUNC) &notclasse_derivs,                6},
     {"notclasse_more_derivs",           (DL_FUNC) &notclasse_more_derivs,           6},
