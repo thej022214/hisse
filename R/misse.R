@@ -43,7 +43,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     eps.tmp[1:length(eps)] <- eps
     eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
     pars.tmp <- c(pars.tmp, eps.tmp)
-    if(length(turnover) > 1){
+    if(rate.cats > 1){
         trans.tmp <- 1
         trans.tmp <- trans.tmp + max(pars.tmp)
     }
