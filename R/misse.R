@@ -34,12 +34,10 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
 
-    if(warn==TRUE){
-        ntips <- Ntip(phy)
-        param.count <- sum(c(unique(turnover), unique(eps), 1))
-        if(param.count > (ntips/20)){
-            warning("You might not have enough data to fit this model well", call.=FALSE, immediate.=TRUE)
-        }
+    ntips <- Ntip(phy)
+    param.count <- sum(c(unique(turnover), unique(eps), 1))
+    if(param.count > (ntips/20)){
+        warning("You might not have enough data to fit this model well", call.=FALSE, immediate.=TRUE)
     }
 
     pars <- numeric(53)

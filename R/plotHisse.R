@@ -742,13 +742,13 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         edge.width <- list(...)$edge.width
         if( !is.numeric( edge.width ) ) stop("edge.width needs a single numeric value")
     } else{
-        edge.width <- 5
+        edge.width <- 1
     }
     if(hasArg(width.factor)){
         width.factor <- list(...)$width.factor
         if( !is.numeric( width.factor ) ) stop("width.factor needs a single numeric value")
     } else{
-        width.factor <- 0.5
+        width.factor <- 0
     }
     if(hasArg(mar)){
         mar <- list(...)$mar
