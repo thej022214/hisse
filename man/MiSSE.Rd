@@ -61,7 +61,7 @@ version of a HiSSE model.
 
 Thus, all that is required is a tree. The model allows up to 26 possible hidden states in
 diversification (denoted by A-Z). Transitions among hidden states are governed by a global
-transition rate, q, A "shift" in diversification denotes a lineage tracking some
+transition rate, q. A "shift" in diversification denotes a lineage tracking some
 unobserved, hidden state. An interesting byproduct of this assumption is that distantly
 related clades can actually share the same discrete set of diversification parameters.
 
