@@ -67,6 +67,9 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
         if( length( root.p ) < 6 ){
             stop("length of root.p vector need to be at least 6.")
         }
+        if( length(speciation) %% 6 != 0 ){
+            stop("the root.p vector need to be a multiple of 6.")
+        }
         if( length( root.p ) > length( speciation ) ){
             stop("length of root.p vector cannot exceed length of speciation vector. Check parameters!")
         }
@@ -90,7 +93,8 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
     }
 
     if(is.null(trans.rate)){
-        stop("Rate matrix needed. See TransMatMakerGeoHiSSE_Plus() to create one.")
+        ## We will use the same function to create the transition matrix, but with a separated option.
+        stop("Rate matrix needed. See TransMatMakerGeoHiSSE() to create one.")
     }
     
     if(assume.cladogenetic == FALSE){
@@ -112,7 +116,7 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
     }
     check.area.presence <- rowSums(data)
     if( any( check.area.presence > 2 ) ){
-        stop("Widespread areas can only be comprised of two endemic areas. Species occurring on all three areas are not allowed at the moment.")
+        stop("Widespread areas can only be comprised of two endemic areas. Species occurring on all three areas are not allowed at the moment. Please contact the authors to ask about extensions.")
     }
 
     ## ########################################################
@@ -120,10 +124,13 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
     ## ########################################################
     
     data.code <- apply(data, 1, function(x) paste0(x, collapse=""))
+    
     ## The order of the states here, from 1 to 6, need to match the order used in the C code and the rest of
     ##     the pipeline. Note that this order is different from the order of the states at the transition matrix for
     ##     argument of the function.
+    
     states.new <- sapply(data.code, function(x) switch(x, "100"=1, "010"=2, "001"=3, "110"=4, "011"=5, "101"=6) )
+    
     ## data.new <- data.frame(unname(states.new), unname(states.new), row.names=names(states.new))
     ## data.new <- data.new[phy$tip.label,]
     
@@ -168,7 +175,31 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
                   , assume.cladogenetic=TRUE, condition.on.survival=condition.on.survival
                   , root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate
                   , max.tol=max.tol, starting.vals=fit.out$starting.vals, upper.bounds=fit.out$upper.bounds
-                  , lower.bounds=fit.out$lower.bounds, ode.eps=ode.eps, n.hidden.rates=1)
+                  , lower.bounds=fit.out$lower.bounds, ode.eps=ode.eps, n.hidden.rates=2)
+        class(obj) <- append(class(obj), "geohisse_plus.fit")
+        return(obj)
+    }
+
+    if( hidden.areas == TRUE & assume.cladogenetic == TRUE & trans.dim > 12 ){
+        ## This will be the fit of the model with a general number of hidden states from 3 to 12.
+        ## Need to check if the model is not trying to fit more hidden rates than possible here.
+        if( trans.dim > 6*12 | length(speciation) > 6*12 | length(extirpation) > 3*12 ){
+            stop("The maximum of hidden rates is 12!")
+        }
+        n.hidden.rates <- length(speciation) / 6
+        fit.out <- geohisse_3_multi_rate(phy=phy, data=states.new, f=f, speciation=speciation, extirpation=extirpation
+                                     , trans.rate=trans.rate, condition.on.survival=condition.on.survival
+                                     , root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its
+                                     , bounded.search=bounded.search, max.tol=max.tol
+                                     , mag.san.start=mag.san.start, starting.vals=starting.vals
+                                     , speciation.upper=speciation.upper, extirpation.upper=extirpation.upper
+                                     , trans.upper=trans.upper, ode.eps=ode.eps)
+        obj <- list(loglik = fit.out$loglik, AIC = fit.out$AIC, AICc = fit.out$AICc, solution= fit.out$solution
+                  , index.par= fit.out$index.par, f=fit.out$f, hidden.areas=FALSE
+                  , assume.cladogenetic=TRUE, condition.on.survival=condition.on.survival
+                  , root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate
+                  , max.tol=max.tol, starting.vals=fit.out$starting.vals, upper.bounds=fit.out$upper.bounds
+                  , lower.bounds=fit.out$lower.bounds, ode.eps=ode.eps, n.hidden.rates=n.hidden.rates)
         class(obj) <- append(class(obj), "geohisse_plus.fit")
         return(obj)
     }
@@ -598,9 +629,11 @@ geohisse_3_two_rate <- function(phy, data, f, speciation, extirpation, trans.rat
         states[i,data[i]] <- 1
     }
     ## We then just need to "duplicate" the matrix for each hidden rate.
+    states.tmp <- states
+    f.tmp <- f
     for( i in 1:((ncol(trans.rate)/6)-1) ){
-        states <- cbind(states, states)
-        f <- c(f, f)
+        states <- cbind(states, states.tmp)
+        f <- c(f, f.tmp)
     }
 
     tot_time <- max(branching.times(phy))
@@ -697,6 +730,247 @@ geohisse_3_two_rate <- function(phy, data, f, speciation, extirpation, trans.rat
                          ## The last elements are easier to just write down... :(
                        , c("d1A_1B", "d2A_2B", "d3A_3B", "d1B_1A", "d2B_2A", "d3B_3A", "d12A_12B", "d23A_23B", "d13A_13B"
                          , "d12B_12A", "d23B_23A", "d13B_13A") )
+    
+    cat("Finished. Summarizing results...", "\n")
+
+    fit.out <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1)))
+                  , solution=solution, index.par=pars.tmp, f=f, max.tol=max.tol, starting.vals=pars.lik
+                  , upper.bounds=upper.pars, lower.bounds=lower.pars, ode.eps=ode.eps)
+    return( fit.out )
+}
+
+## #################################################################
+## The general function that should fit any number of hidden rates to the model.
+## #################################################################
+
+geohisse_3_multi_rate <- function(phy, data, f, speciation, extirpation, trans.rate, condition.on.survival, root.type, root.p, sann, sann.its, bounded.search, max.tol, mag.san.start, starting.vals, speciation.upper, extirpation.upper, trans.upper, ode.eps){
+
+    ## Another way to do this is to inflate all the parameter vector.
+    ## We can add 0's to indicate the parameters that are not in use in this case.
+    ## In this case we have vector with the full model. This follows the strategy used by Jeremy in GeoHiSSE.
+    extirpation.full <- rep(0, times = 3*12)
+    speciation.full <- rep(0, times = 6*12)
+    extirpation.full[1:length(extirpation)] <- extirpation
+    speciation.full[1:length(speciation)] <- speciation
+    
+    extirpation.tmp <- extirpation.full
+    extirpation.tmp[which(extirpation.tmp > 0)] <- extirpation.tmp[which(extirpation.tmp > 0)] + max(speciation)
+    pars.tmp <- c(speciation.full, extirpation.tmp)
+
+    ## First increase the indexes of the trans.rate matrix:
+    trans.rate.copy <- trans.rate
+    dim.trans.rate <- dim( trans.rate )
+    trans.rate <- matrix(data = 0, nrow = 6*12, ncol = 6*12)
+    trans.rate[1:dim.trans.rate[1], 1:dim.trans.rate[2]] <- trans.rate.copy
+    trans.rate[trans.rate > 0 & !is.na(trans.rate)] <- trans.rate[trans.rate > 0 & !is.na(trans.rate)] + max( pars.tmp )
+
+    ## Before getting the parameters from trans.rate we need to check if local extirpation is 0.
+    ## If it is, then set it to the respective extirpation parameter. Otherwise, leave it be.
+    ## Note that, because trans.rate has the maximum size, this code will work with any number of hidden rates.
+    for( i in seq(from = 0, by = 6, length.out = 12) ){
+        trans.rate[4+i,1+i] <- ifelse(trans.rate[4+i,1+i] == 0, yes = extirpation.tmp[2+(i/2)], no = trans.rate[4+i,1+i])
+        trans.rate[4+i,2+i] <- ifelse(trans.rate[4+i,2+i] == 0, yes = extirpation.tmp[1+(i/2)], no = trans.rate[4+i,2+i])
+        trans.rate[5+i,1+i] <- ifelse(trans.rate[5+i,1+i] == 0, yes = extirpation.tmp[3+(i/2)], no = trans.rate[5+i,1+i])
+        trans.rate[5+i,3+i] <- ifelse(trans.rate[5+i,3+i] == 0, yes = extirpation.tmp[1+(i/2)], no = trans.rate[5+i,3+i])
+        trans.rate[6+i,2+i] <- ifelse(trans.rate[6+i,2+i] == 0, yes = extirpation.tmp[3+(i/2)], no = trans.rate[6+i,2+i])
+        trans.rate[6+i,3+i] <- ifelse(trans.rate[6+i,3+i] == 0, yes = extirpation.tmp[2+(i/2)], no = trans.rate[6+i,3+i])
+    }
+
+    ## Here we are going to use the same system of multipliers above to get the indexes in the correct order.
+    trans.tmp <- vector(mode="numeric")
+    for( i in seq(from = 0, by = 6, length.out = 12) ){
+        get.sub.mat <- c(trans.rate[1+i,2+i], trans.rate[2+i,1+i], trans.rate[2+i,3+i]
+                     , trans.rate[3+i,2+i], trans.rate[1+i,3+i], trans.rate[3+i,1+i]
+                     , trans.rate[1+i,4+i], trans.rate[1+i,5+i], trans.rate[2+i,4+i]
+                     , trans.rate[2+i,6+i], trans.rate[3+i,5+i], trans.rate[3+i,6+i]
+                     , trans.rate[4+i,1+i], trans.rate[5+i,1+i], trans.rate[4+i,2+i]
+                     , trans.rate[6+i,2+i], trans.rate[5+i,3+i], trans.rate[6+i,3+i])
+        trans.tmp <- c(trans.tmp, get.sub.mat)
+    }
+
+    ## Record the indexes for the extirpation parameters:
+    sep_ext_tmp <- vector(mode="numeric")
+    for( i in seq(from = 0, by = 6, length.out = 12) ){
+        get.sub.mat <- c(trans.rate[4+i,1+i], trans.rate[5+i,1+i], trans.rate[4+i,2+i]
+                       , trans.rate[6+i,2+i], trans.rate[5+i,3+i], trans.rate[6+i,3+i])
+        sep_ext_tmp <- c(sep_ext_tmp, get.sub.mat)
+    }
+
+    pars.tmp <- c(pars.tmp, trans.tmp)
+    
+    ## Now we just have the rate of transition between the layers.
+    ## Here we will assume a global rate of transition between the layers.
+    n.hidden.rates <- length(speciation) / 6
+    trans.hidden.par <- rep(0.0, times = 12)
+    trans.hidden.par[1:n.hidden.rates] <- trans.rate[1,7] ## One of the hidden layer transitions.
+    pars.tmp <- c(pars.tmp, trans.hidden.par) ## This is the last parameter on the vector.
+
+    ## Number of free parameters for the model:
+    np <- max(pars.tmp)
+    ## For this all to work we need to have all integers from 1 to np.
+    if( !all( 1:np %in% pars.tmp ) ){
+        stop("Wrong internal set-up of parameters.")
+    }
+   
+    cat("Initializing...", "\n")
+
+    ## Data here is a named vector with states from 1 to 6 in the same order as phy$tip.label.
+    ## Any required transformation need to be perfomed prior to this function call.
+    freqs <- table(data)
+    ## This will be equal to 1 under default values.
+    samp.freq.tree <- Ntip(phy) / sum(table(data) / f[as.numeric(names(freqs))])
+
+    ## The starting point for the parameters is the same as the geosse model.
+    ## Just need to distribute the speciatiation and the extirpation parameters.
+    ## These rates are in normal space. Need to log!
+    if( sum(extirpation) == 0 ){
+        ## In the case of a Yule model.
+        init.pars.tmp <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
+    }else{
+        init.pars.tmp <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
+    }
+
+    pars.lik <- rep(NA, times = np)
+    s_id <- unique(pars.tmp[1:72])[unique(pars.tmp[1:72]) > 0]
+    ext_id <- unique(pars.tmp[73:108])[unique(pars.tmp[73:108]) > 0]
+    d_id <- seq(from = max(s_id, ext_id)+1, to = length(pars.lik))
+    pars.lik[s_id] <- log( init.pars.tmp[1] )
+    pars.lik[ext_id] <- log( init.pars.tmp[4] )
+    pars.lik[d_id] <- log( init.pars.tmp[6] )
+    
+    if(bounded.search == TRUE){
+        upper.pars <- rep(NA, times = length(pars.lik))
+        upper.pars[s_id] <- log(speciation.upper)
+        upper.pars[ext_id] <- log(extirpation.upper)
+        upper.pars[d_id] <- log(trans.upper)
+
+        if( !all( sep_ext_tmp %in% pars.tmp[73:108] ) ){
+            ## Then, some parameters are exclusive to extirpation.
+            ## Find the parameters id and search on the vector.
+            ext_sep_pars <- sep_ext_tmp[ !sep_ext_tmp %in% pars.tmp[73:108] ]
+            set_ext <- unique( pars.tmp[ pars.tmp > 0 ] ) %in% ext_sep_pars ## These are the par values we need to change.
+            upper.pars[set_ext] <- log(extirpation.upper)
+        }
+        
+    } else{
+        ## We set a really large bound to emulate no bounds. But be aware that the search cannot, of course, be done in an infinite parameter space.
+        upper.pars <- rep(21, times = np)
+    }
+
+    ## Lower bound in log space:
+    lower.pars <- rep(-20, times = np)
+
+    ## ##########################
+    ## Pre-likelihood steps (this are constants for the search):
+
+    ## Data need to be a presence and absence matrix with columns ordered from state 1 to 6.
+    ## With hidden states, then we need a larger matrix. The observed state is present for all hidden layers.
+    
+    states <- matrix(0, nrow = length(data), ncol = 6)
+    for( i in 1:length(data) ){
+        states[i,data[i]] <- 1
+    }
+    ## We then just need to "duplicate" the matrix for each hidden rate.
+    states.tmp <- states
+    f.tmp <- f
+    for( i in 1:((ncol(trans.rate)/6)-1) ){
+        states <- cbind(states, states.tmp)
+        f <- c(f, f.tmp)
+    }
+
+    tot_time <- max(branching.times(phy))
+    split.times <- sort(branching.times(phy), decreasing=TRUE)
+
+    nb.tip <- length(phy$tip.label)
+    nb.node <- phy$Nnode
+    phy <- reorder(phy, "pruningwise")
+    anc <- unique(phy$edge[,1])
+    TIPS <- 1:nb.tip
+
+    ## The ODEs need to be integrated across the each of the branches of the tree.
+    compD <- matrix(0, nrow=nb.tip + nb.node, ncol=ncol(states) )
+    compE <- matrix(0, nrow=nb.tip + nb.node, ncol=ncol(states) )
+
+    ## Initializes the tip sampling and sets internal nodes to be zero:
+    ncols <- dim(compD)[2]
+    for(i in 1:(nb.tip)){
+        ## Probability to be in the observed state is 1. (With a weight given by the 'f' vector.)
+        compD[i,] <- f * states[i,]
+        ## Probability of extinction for the observed state is 0.
+        compE[i,] <- 1 - f
+    }
+
+    ## ##########################
+    
+    if(sann == FALSE){
+        if(bounded.search == TRUE){
+            cat("Starting log-likelihood value:")
+            start.lik <- opt_geohisse_3_multi_rate(pars.lik, pars=pars.tmp, phy=phy
+                                                 , condition.on.survival=condition.on.survival
+                                                 , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                                                 , split.times=split.times, nb.tip=nb.tip, nb.node=nb.node
+                                                 , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+            cat( -1 * start.lik )
+            cat( "\n" )
+            cat("Finished. Beginning bounded subplex routine...", "\n")
+            opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
+            ## The evaluation function here need to be changed. We will use one for each of the models.
+            ## Need to make this function: "opt_geohisse_3_one_rate"
+            ## I think that the objects are fine and have all the needed information. Just need to adapt the downstream.
+            out <- nloptr(x0=pars.lik, eval_f=opt_geohisse_3_multi_rate, ub=upper.pars, lb=lower.pars
+                        , opts=opts
+                        , pars=pars.tmp, phy=phy, condition.on.survival=condition.on.survival
+                        , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                        , split.times=split.times, nb.tip=nb.tip, nb.node=nb.node
+                        , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+            ## Here need to expand the pars.lik into the long format.
+            solution <- expand.pars(lik = exp(out$solution), long = pars.tmp)
+            loglik <- -out$objective
+        }else{
+            cat("Finished. Beginning subplex routine...", "\n")
+            out <- subplex(pars.lik, fn=opt_geohisse_3_multi_rate, control=list(reltol=max.tol, parscale=rep(0.1, np))
+                         , pars=pars.tmp, phy=phy, condition.on.survival=condition.on.survival
+                         , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                         , split.times=split.times, nb.tip=nb.tips, nb.node=nb.node
+                         , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+            solution <- expand.pars(lik = exp(out$par), long = pars.tmp)
+            loglik <- -out$value
+        }
+    }else{
+        cat("Finished. Beginning simulated annealing...", "\n")
+        out.sann <- GenSA(pars.lik, fn=opt_geohisse_3_multi_rate, lower=lower.pars, upper=upper.pars
+                        , control=list(max.call=sann.its)
+                        , pars=pars.tmp, phy=phy, condition.on.survival=condition.on.survival
+                        , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                        , split.times=split.times, nb.tip=nb.tips, nb.node=nb.node
+                        , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+        cat("Finished. Refining using subplex routine...", "\n")
+        out <- nloptr(x0=out.sann$par, eval_f=opt_geohisse_3_multi_rate, ub=upper.pars, lb=lower.pars, opts=opts
+                    , pars=pars.tmp, phy=phy, condition.on.survival=condition.on.survival
+                    , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                    , split.times=split.times, nb.tip=nb.tips, nb.node=nb.node
+                    , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+        ## out <- nloptr(x0=out.sann$par, eval_f=opt_geohisse_3_one_rate, ub=upper.pars, lb=lower.pars, opts=opts
+        ##             , pars=pars.tmp, phy=phy, data=data, f=f, condition.on.survival=condition.on.survival
+        ##             , root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        solution <- expand.pars(lik = exp(out$solution), long = pars.tmp)
+        loglik <- -out$objective
+    }
+
+    ## Need to make this vector general so it works with more hidden rates:
+    hidden.rates <- ncol( trans.rate ) / 6
+    
+    add_letters <- function(x, n){
+        return( paste0(x, rep(LETTERS[1:n], each = length(x)) ) )
+    }
+
+    names(solution) <- c( add_letters(x = c("s1", "s2", "s3", "s12", "s23", "s13"), n = hidden.rates)
+                       , add_letters(x = c("x1", "x2", "x3"), n = hidden.rates)
+                       , add_letters(x = c("d1_2", "d2_1", "d2_3", "d3_2", "d1_3", "d3_1", "d1_12", "d1_13"
+                                         , "d2_12", "d2_23", "d3_13", "d3_23", "d12_1", "d13_1", "d12_2"
+                                         , "d23_2", "d13_3", "d23_3"), n = hidden.rates)
+                         ## The last elements are transitions to each of the 12 hidden layers.
+                       , paste0("dn_", LETTERS[1:12]) )
     
     cat("Finished. Summarizing results...", "\n")
 
@@ -1001,7 +1275,7 @@ opt_geohisse_3_two_rate <- function(p, pars, phy, bad.likelihood=10000000, condi
                 return(bad.likelihood)
             }
             ## This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-            if( sum(prob.subtree.cal[7:12]) < ode.eps ){
+            if( sum(prob.subtree.cal[13:24]) < ode.eps ){
                 return(bad.likelihood)
             }
             
@@ -1088,6 +1362,196 @@ opt_geohisse_3_two_rate <- function(p, pars, phy, bad.likelihood=10000000, condi
             }else{
                 lambda <- c(model.vec[1:3], sum(model.vec[c(1,2,4)]), sum(model.vec[c(2,3,5)]), sum(model.vec[c(1,3,6)])
                           , model.vec[7:9], sum(model.vec[c(7,8,10)]), sum(model.vec[c(8,9,11)]), sum(model.vec[c(7,8,12)]) )
+                compD[root.node,] <- (compD[root.node,] * root.p) / (lambda * (1 - compE[root.node,])^2)
+                ## Corrects for possibility that you have 0/0:
+                compD[root.node,which(is.na(compD[root.node,]))] <- 0
+                loglik <- log(sum(compD[root.node,])) + sum(logcomp)
+            }
+        }
+    }
+
+    return( -1 * loglik )
+}
+
+## #################################################################################### 
+## Optimization function for multi_rate model:
+## This will deal with hidden states from 2 up to 12.
+## ####################################################################################
+
+opt_geohisse_3_multi_rate <- function(p, pars, phy, bad.likelihood=10000000, condition.on.survival, root.type, root.p, ode.eps, split.times, nb.tip, nb.node, anc, compD, compE) {
+    
+    ## Generates the final vector with the appropriate parameter estimates in the right place:
+    p.new <- exp(p)
+    
+    ## Expand the parameter vector into the long form for the C code.
+    model.vec <- expand.pars(lik = p.new, long = pars)
+    
+    logcomp <- c() ## Keep track of the log of the compensation.
+    
+    ## Start the postorder traversal indexing lists by node number:
+    
+    ## This is the real core of the likelhood function.
+    ## Need to make sure that we have all the objects in the correct format to run these.
+
+    ## Define the run function that will be called at each iteration:
+    runSilent <- function(yini, times, model.vec){
+        ## This is silencing the integration warnings.
+        options(warn = -1)
+        on.exit(options(warn = 0))
+        capture.output( res <- lsoda(yini, times, func = "geosse_3_areas_multi_rates_derivs"
+                                   , model.vec, initfunc="initmod_geosse_3_areas_multi_rates", dllname = "hisse"
+                                   , rtol=1e-8, atol=1e-8) )
+        return( res )
+    }
+
+    ## A constant to be used by the C code.
+    NUMELEMENTS <- 336
+    
+    for (i in seq(from = 1, length.out = nb.node)) {
+        ## A vector of all the internal nodes:
+        focal <- anc[i]
+        desRows <- which(phy$edge[,1]==focal)
+        desNodes <- phy$edge[desRows,2]
+        ## Note: when the tree has been reordered branching.times are no longer valid. Fortunately, we extract this information in the initial cache setup. Also focal is the rootward node, whereas desNodes represent a vector of all descendant nodes:
+        rootward.age <- as.numeric( split.times[which(names(split.times)==focal)] )
+
+        ## Matrix objects to store the results.
+        v <- matrix(nrow = length(desRows), ncol = ncol(compD) )
+        phi <- matrix(nrow = length(desRows), ncol = ncol(compD) )
+        ## A counter to go through the matrix.
+        v_phy_count <- 1
+        ## BEGIN FOR LOOP over the nodes of the tree.
+        ## It would be simple and better to separate this function between the case with and without the hidden states. It will be simpler to debug and less if else clauses to check.
+        for (desIndex in sequence(length(desRows))){
+            focal.edge.length <- phy$edge.length[desRows[desIndex]]
+            tipward.age <- as.numeric( rootward.age - focal.edge.length )
+            ## Strange rounding errors. A tip age should be zero. This ensures that:
+            if(tipward.age < .Machine$double.eps^0.5){
+                tipward.age <- 0.0
+            }
+            node.D <- compD[desNodes[desIndex],]
+            node.E <- compE[desNodes[desIndex],]
+            ## Call to lsoda that utilizes C code. Requires a lot of inputs. Note that for now we hardcode the NUMELEMENTS arguments. The reason for this is because with lsoda we can only pass a vector of parameters.
+            ## Need to make sure that 'node.E' and 'node.D' have the correct quantities.
+            yini <- c(node.E, node.D)
+            ## yini <- c(E_0=cache$node.E[1], E_1=cache$node.E[2], E_01=cache$node.E[3], D_N0=cache$node.D[1], D_N1=cache$node.D[2], D_N2=cache$node.D[3])
+            ## This informs the heights of the tipward and rootward nodes of the branch, so that we can compute the length of the branch.
+            times <- c(tipward.age, rootward.age)
+
+            ## The matrix below has the probabilities for each of the states at the tipward node for each of the
+            ##     descendants of the focal node. Note that the loop above visited all the branches imediatelly
+            ##     descendants of the focal node.
+            ## We need these to compute the probability of each of the states at the focal node.
+            ## The probability of each of the states at the focal node is equal to the probability that having
+            ##     a given state at the focal node will generate tipward probabilities equal to the ones observed
+            ##     or estimated.
+            prob.subtree.cal.full <- runSilent(yini=yini, times=times, model.vec=model.vec)
+
+            ## NEED TO UPDATE THIS CHECK! NOT ADJUSTED FOR THE MODEL.
+            ## It will not break like this, but it is not checking the model correctly.
+            
+            ## ###### THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
+            if(attributes(prob.subtree.cal.full)$istate[1] < 0){
+                return(bad.likelihood)
+            }else{
+                prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+            }
+            ## ############################################################################
+
+            if( any( is.nan( prob.subtree.cal ) ) ){
+                return(bad.likelihood)
+            }
+            ## This is default and cannot change, but if we get a negative probability, discard the results:
+            ## Note that this is only testing the Ds part of the ODEs.
+            if( any( prob.subtree.cal < 0 ) ){
+                return(bad.likelihood)
+            }
+            ## This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
+            if( sum(prob.subtree.cal[73:144]) < ode.eps ){
+                return(bad.likelihood)
+            }
+            
+            ## Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
+            ## Here phi is a vector with the results of the integration so far in the E's.
+            ## Then 'v' is the D's part.
+            phi[v_phy_count,] <- prob.subtree.cal[1:72]
+            v[v_phy_count,] <- prob.subtree.cal[73:144]
+            v_phy_count <- v_phy_count + 1
+        }
+
+        ## The integration above was made from the tipward node to the rootward node.
+        ## We computed a probability that the rootward node will be in each of the states for each of the branches.
+        ## Of course, the rootward node is a single entity. So we need to combine the probabilities.
+        ## Each column of v gives the probability for that state at the rootward node.
+        ## An speciation happened at that node to form the observed descendants. This is an observed speciation
+        ##     event, so its probability (just like the observed states) is equal to 1.
+        ## The events track the infinitesimal moment just after the observed speciation event (i.e., no transitions
+        ##     are possible after speciation, because we are tracking a single event.
+
+        ## Get the integration for each of the states in the model.
+        for( i in 0:11 ){
+            compD[focal,1+(i*6)] <- v[1,1+(i*6)] * v[2,1+(i*6)] * model.vec[1+(i*6)]
+            compD[focal,2+(i*6)] <- v[1,2+(i*6)] * v[2,2+(i*6)] * model.vec[2+(i*6)]
+            compD[focal,3+(i*6)] <- v[1,3+(i*6)] * v[2,3+(i*6)] * model.vec[3+(i*6)]
+
+            compD[focal,4+(i*6)] <- 0.5 * (v[1,4+(i*6)] * v[2,1+(i*6)] + v[1,1+(i*6)] * v[2,4+(i*6)]) * model.vec[1+(i*6)]
+            + 0.5 * (v[1,4+(i*6)] * v[2,2+(i*6)] + v[1,2+(i*6)] * v[2,4+(i*6)]) * model.vec[2+(i*6)]
+            + 0.5 * (v[1,1+(i*6)] * v[2,2+(i*6)] + v[1,2+(i*6)] * v[2,1+(i*6)]) * model.vec[4+(i*6)]
+            compD[focal,5+(i*6)] <- 0.5 * (v[1,5+(i*6)] * v[2,2+(i*6)] + v[1,2+(i*6)] * v[2,5+(i*6)]) * model.vec[2+(i*6)]
+            + 0.5 * (v[1,5+(i*6)] * v[2,3+(i*6)] + v[1,3+(i*6)] * v[2,5+(i*6)]) * model.vec[3+(i*6)]
+            + 0.5 * (v[1,2+(i*6)] * v[2,3+(i*6)] + v[1,3+(i*6)] * v[2,2+(i*6)]) * model.vec[5+(i*6)]
+            compD[focal,6+(i*6)] <- 0.5 * (v[1,6+(i*6)] * v[2,1+(i*6)] + v[1,1+(i*6)] * v[2,6+(i*6)]) * model.vec[1+(i*6)]
+            + 0.5 * (v[1,6+(i*6)] * v[2,3+(i*6)] + v[1,3+(i*6)] * v[2,6+(i*6)]) * model.vec[3+(i*6)]
+            + 0.5 * (v[1,1+(i*6)] * v[2,3+(i*6)] + v[1,3+(i*6)] * v[2,1+(i*6)]) * model.vec[6+(i*6)]
+        }
+        ## This is the probability of extinction at the node associated with each of the states.
+        compE[focal,] <- phi[1,]
+       
+        ## #########################
+        ## Logcompensation bit for dealing with underflow issues.
+
+        ## Having a real problem here.
+        ## The 'tmp' value is something negative.
+        ## It is underflow problem. Probabilities cannot be negative. The values for the probabilities are too small.
+        tmp <- sum(compD[focal,])
+        compD[focal,] <- compD[focal,] / tmp
+        ## Keep track of elements for the log compensation:
+        logcomp <- c(logcomp, log(tmp))
+        
+    } ## FINISH FOR LOOP over the nodes of the tree.
+    ## Compute quantities for the root node.
+    
+    root.node <- nb.tip + 1L
+    if ( is.na(sum(log(compD[root.node,]))) || is.na(log(sum(1 - compE[root.node,]))) ){
+        return(bad.likelihood)
+    }else{
+        if(root.type == "madfitz" | root.type == "herr_als"){
+            if(is.null(root.p)){
+                root.p <- compD[root.node,] / sum(compD[root.node,])
+                ## Strange here. Why to accept NA as a possible value at the root?
+                root.p[ which(is.na(root.p)) ] <- 0
+            }
+        }
+        if(condition.on.survival == TRUE){
+            if(root.type == "madfitz"){
+                ## Here the endemic speciation rates contribute to multiple widespread areas, but this is happening to the classe model too. Should not be the issue.
+                ## For hidden rates this needs to be in the same order of the compD matrix.
+                lambda <- vector(mode = "numeric")
+                for( i in 0:11 ){
+                    lambda <- c(lambda, model.vec[1:3+(i*6)], sum(model.vec[c(1,2,4)+(i*6)])
+                              , sum(model.vec[c(2,3,5)+(i*6)]), sum(model.vec[c(1,3,6)+(i*6)]) )
+                }
+                
+                compD[root.node,] <- compD[root.node,] / sum(root.p * lambda * (1 - compE[root.node,])^2)
+                ## Corrects for possibility that you have 0/0:
+                compD[root.node,which(is.na(compD[root.node,]))] <- 0
+                loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
+            }else{
+                lambda <- vector(mode = "numeric")
+                for( i in 0:11 ){
+                    lambda <- c(lambda, model.vec[1:3+(i*6)], sum(model.vec[c(1,2,4)+(i*6)])
+                              , sum(model.vec[c(2,3,5)+(i*6)]), sum(model.vec[c(1,3,6)+(i*6)]) )
+                }
                 compD[root.node,] <- (compD[root.node,] * root.p) / (lambda * (1 - compE[root.node,])^2)
                 ## Corrects for possibility that you have 0/0:
                 compD[root.node,which(is.na(compD[root.node,]))] <- 0
