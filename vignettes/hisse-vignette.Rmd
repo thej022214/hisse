@@ -133,17 +133,14 @@ eps.anc = c(1,1,2,2)
 ```
 In other words, we are specifying that both 0A and 1A have one set of diversification rates, and 0B and 1B have another. That's it. This is the "null-two" model. 
 
-In regards to the transition rates, there are three ways in which they can be set up. The first is to assume the usual 8 transitions in the full hisse model (or 12 if dual transitions are allowed -- for this tutorial we remove dual transitions):
+In regards to the transition rates, there are various ways in which they can be set up. We could also assume all rates are equal:
 ```{r, eval=TRUE}
 trans.rates = TransMatMaker(hidden.states=TRUE)
 trans.rates.nodual = ParDrop(trans.rates, c(3,5,8,10))
-```
-We could also assume all rates are equal:
-```{r, eval=TRUE}
 trans.rates.nodual.allequal = ParEqual(trans.rates.nodual, c(1,2,1,3,1,4,1,5,1,6,1,7,1,8))
 trans.rates.nodual.allequal
 ```
-I will provide a third option which specifies three rates: one rate describing transitions among the different hidden states (A<->B, which could be intrepreted as the rate by which shifts in diversification occur), and two rates for transitions between the observed character states (0->1 or 1->0). Unfortunately, this requires a little bit of clunky coding:
+We could also specify three rates: one rate describing transitions among the different hidden states (A<->B, which could be intrepreted as the rate by which shifts in diversification occur), and two rates for transitions between the observed character states (0->1 or 1->0). Unfortunately, this requires a little bit of clunky coding:
 ```{r, eval=TRUE}
 # Now we want three specific rates:
 trans.rates.nodual.threerates <- trans.rates.nodual

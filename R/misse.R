@@ -34,6 +34,12 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
 
+    ntips <- Ntip(phy)
+    param.count <- sum(c(unique(turnover), unique(eps), 1))
+    if(param.count > (ntips/20)){
+        warning("You might not have enough data to fit this model well", call.=FALSE, immediate.=TRUE)
+    }
+
     pars <- numeric(53)
     rate.cats <- hidden.states <- length(turnover)
     turnover.tmp <- numeric(26)
@@ -43,8 +49,12 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     eps.tmp[1:length(eps)] <- eps
     eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
     pars.tmp <- c(pars.tmp, eps.tmp)
-    trans.tmp <- 1
-    trans.tmp <- trans.tmp + max(pars.tmp)
+    if(rate.cats > 1){
+        trans.tmp <- 1
+        trans.tmp <- trans.tmp + max(pars.tmp)
+    }else{
+        trans.tmp <- 0
+    }
     pars.tmp <- c(turnover.tmp[1], eps.tmp[1], turnover.tmp[2], eps.tmp[2], turnover.tmp[3], eps.tmp[3], turnover.tmp[4], eps.tmp[4], turnover.tmp[5], eps.tmp[5], turnover.tmp[6], eps.tmp[6], turnover.tmp[7], eps.tmp[7], turnover.tmp[8], eps.tmp[8], turnover.tmp[9], eps.tmp[9], turnover.tmp[10], eps.tmp[10], turnover.tmp[11], eps.tmp[11], turnover.tmp[12], eps.tmp[12], turnover.tmp[13], eps.tmp[13], turnover.tmp[14], eps.tmp[14], turnover.tmp[15], eps.tmp[15], turnover.tmp[16], eps.tmp[16], turnover.tmp[17], eps.tmp[17], turnover.tmp[18], eps.tmp[18], turnover.tmp[19], eps.tmp[19], turnover.tmp[20], eps.tmp[20], turnover.tmp[21], eps.tmp[21], turnover.tmp[22], eps.tmp[22], turnover.tmp[23], eps.tmp[23], turnover.tmp[24], eps.tmp[24], turnover.tmp[25], eps.tmp[25], turnover.tmp[26], eps.tmp[26], trans.tmp[1])
     pars[1:length(pars.tmp)] <- pars.tmp
     

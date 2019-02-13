@@ -701,15 +701,15 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
             hisse.results <- tmp.list
         } else { ## Then it is a list.
             ## If x is a list we need to check if all elements have the $aic to make the model average.
-            any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="hisse.states") ) )
-            if( any.other.class ) stop("All elements of the list 'x' need to be of class 'hisse.states'.")
+            any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="misse.states") ) )
+            if( any.other.class ) stop("All elements of the list 'x' need to be of class 'misse.states'.")
             
             any.missing <- any( sapply(hisse.results, function(x) is.null(x$aic) ) )
             if( any.missing ) stop( "If x is a list, then each reconstruction need to have $aic information in order to make the model average." )
             
         }
     } else {
-        stop( "x needs to be an object of class 'hisse.states'." )
+        stop( "x needs to be an object of class 'misse.states'." )
     }
     
     ## Check the parameters for the functions:
@@ -742,13 +742,13 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         edge.width <- list(...)$edge.width
         if( !is.numeric( edge.width ) ) stop("edge.width needs a single numeric value")
     } else{
-        edge.width <- 5
+        edge.width <- 1
     }
     if(hasArg(width.factor)){
         width.factor <- list(...)$width.factor
         if( !is.numeric( width.factor ) ) stop("width.factor needs a single numeric value")
     } else{
-        width.factor <- 0.5
+        width.factor <- 0
     }
     if(hasArg(mar)){
         mar <- list(...)$mar
