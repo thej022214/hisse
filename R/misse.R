@@ -87,7 +87,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 
         if(is.null(starting.vals)){
             def.set.pars <- rep(c(log(init.pars[1]+init.pars[2]), log(init.pars[2]/init.pars[1])), rate.cats)
-            trans.start <- log(0.01)
+            trans.start <- log(0.0001)
         }else{
             def.set.pars <- rep(c(log(starting.vals[1]), log(starting.vals[2])), rate.cats)
             trans.start <- log(starting.vals[3])
@@ -587,13 +587,13 @@ print.misse.fit <- function(x,...){
 
 #phy <- read.tree("whales_Slateretal2010.tre")
 ## print(p.new)
-#gen <- FindGenerations(phy)
-#dat.tab <- OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2)
+#gen <- hisse:::FindGenerations(phy)
+#dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2)
 #nb.tip <- Ntip(phy)
 #nb.node <- phy$Nnode
-#model.vec <- c(0.1344463, 0.150996, 0.1344463, 0.150996, rep(0,48), 1)
-#cache = ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
-#logl <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=root.p)
+#model.vec <- c(0.1344463, 0.150996, 0.1344463, 0.150996, 0.1344463, 0.150996, rep(0,48), 1)
+#cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+#logl <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
 
 
 
