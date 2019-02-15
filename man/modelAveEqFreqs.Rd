@@ -24,7 +24,7 @@ Provides a data frame model-averaged equilibrium frequencies across a set of mod
 Note, that this function does not work for model fits obtained from fGeoHiSSE. This will provided in the next version.  
 }
 \references{
-Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, https://doi.org/10.1111/evo.13602
+Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, 72:2308-2324.
 }
 \author{Jeremy M. Beaulieu}
 \keyword{plotting}

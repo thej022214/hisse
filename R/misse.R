@@ -35,7 +35,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     }
 
     ntips <- Ntip(phy)
-    param.count <- sum(c(unique(turnover), unique(eps), 1))
+    param.count <- sum(c(length(unique(turnover)), length(unique(eps)), 1))
     if(param.count > (ntips/20)){
         warning("You might not have enough data to fit this model well", call.=FALSE, immediate.=TRUE)
     }
@@ -87,7 +87,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 
         if(is.null(starting.vals)){
             def.set.pars <- rep(c(log(init.pars[1]+init.pars[2]), log(init.pars[2]/init.pars[1])), rate.cats)
-            trans.start <- log(0.01)
+            trans.start <- log(0.0001)
         }else{
             def.set.pars <- rep(c(log(starting.vals[1]), log(starting.vals[2])), rate.cats)
             trans.start <- log(starting.vals[3])
@@ -105,8 +105,10 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
             ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
             upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
         }
-        ip <- c(ip, trans.start)
-        upper <- c(upper, trans.upper)
+        if(rate.cats > 1){
+            ip <- c(ip, trans.start)
+            upper <- c(upper, log(trans.upper))
+        }
         lower <- rep(-20, length(ip))
     }else{
         upper <- restart.obj$upper.bounds
@@ -218,9 +220,7 @@ OrganizeDataMiSSE <- function(phy, f, hidden.states){
     nb.node <- phy$Nnode
     
     compD <- matrix(0, nrow=nb.tip, ncol=26)
-    compD[,1:hidden.states] = 1
     compE <- matrix(0, nrow=nb.tip, ncol=26)
-    compE[,1:hidden.states] = 1
     
     #Initializes the tip sampling and sets internal nodes to be zero:
     ncols = hidden.states
@@ -258,126 +258,35 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
     yini <- c(E0A = compE[1], E0B = compE[2], E0C = compE[3], E0D = compE[4], E0E = compE[5], E0F = compE[6], E0G = compE[7], E0H = compE[8], E0I = compE[9], E0J = compE[10], E0K = compE[11], E0L = compE[12], E0M = compE[13], E0N = compE[14], E0O = compE[15], E0P = compE[16], E0Q = compE[17], E0R = compE[18], E0S = compE[19], E0T = compE[20], E0U = compE[21], E0V = compE[22], E0W = compE[23], E0X = compE[24], E0Y = compE[25], E0Z = compE[26], D0A = compD[1], D0B = compD[2], D0C = compD[3], D0D = compD[4], D0E = compD[5], D0F = compD[6], D0G = compD[7], D0H = compD[8], D0I = compD[9], D0J = compD[10], D0K = compD[11], D0L = compD[12], D0M = compD[13], D0N = compD[14], D0O = compD[15], D0P = compD[16], D0Q = compD[17], D0R = compD[18], D0S = compD[19], D0T = compD[20], D0U = compD[21], D0V = compD[22], D0W = compD[23], D0X = compD[24], D0Y = compD[25], D0Z = compD[26])
     times=c(start.time, end.time)
     
-    ode.not.solved <- TRUE
-    ode.solver.attempt <- 0
-    ode.method.vec <- c("lsoda", "ode45")
-    num.ode.method <- length(ode.method.vec)
-    neg.pr.threshold <- -1e-8
-    
-    while(ode.not.solved && ode.solver.attempt < num.ode.method){
-        ode.solver.attempt <- ode.solver.attempt+1
-        ode.method <-  ode.method.vec[ode.solver.attempt]
-        #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dll = "misse-ext-derivs", rtol=1e-8, atol=1e-8)
-        
-        prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-        prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-        
-        ## CHECK TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
-        ## $istate should be = 0 [documentation in doc/deSolve.Rnw indicates
-        ## it should be 2]
-        ## Values < 0 indicate problems
-        ## TODO: take advantage of while() around ode solving created
-        ## for when we hit negative values
-        istate <- attributes(prob.subtree.cal.full)$istate[1]
-        
-        if(istate < 0){
-            ## For \code{lsoda, lsodar, lsode, lsodes, vode, rk, rk4, euler} these are
-            error.text <- switch(as.character(istate),
-            "-1"="excess work done",
-            "-2"="excess accuracy requested",
-            "-3"="illegal input detected",
-            "-4"="repeated error test failures",
-            "-5"="repeated convergence failures",
-            "-6"="error weight became zero",
-            paste("unknown error. ode() istate value: ", as.character(istate))
-            )
-            warning(print(paste("misse.R: Integration of descendent returned state = ",  istate, " : ", error.text)))
-            
-            if(ode.solver.attempt < num.ode.method){
-                warning.message <- paste("\tTrying ode method ", ode.method.vec[ode.solver.attempt+1])
-                warning(warning.message)
-            }else{
-                warning.message <- paste(warning.message, "No additional ode methods available. Returning bad.likelihood: ", cache$bad.likelihood)
-                warning(warning.message)
-                prob.subtree.cal[27:52] <- cache$bad.likelihood
-                return(prob.subtree.cal)
-            }
-            #return(bad.likelihood)
-        }else{
-            ##no integration issues,
-            ## object consists of pr values at start and end time
-            ## extract final state variable, dropping time entry
-            #prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-            
-            ## test for negative entries
-            ## if encountered and less than neg.pr.threshold
-            ## replace the negative values to 0
-            ## if there are values less than neg.pr.threshold, then
-            ## resolve equations using more robust method on the list
-            ## Alternative: use 'event' option in deSolve as described at
-            ## http://stackoverflow.com/questions/34424716/using-events-in-desolve-to-prevent-negative-state-variables-r
-            neg.vector.pos <- which(prob.subtree.cal < 0, arr.ind=TRUE)
-            num.neg.vector.pos <- length(neg.vector.pos)
-            
-            if(num.neg.vector.pos > 0){
-                min.vector.val <- min(prob.subtree.cal[neg.vector.pos])
-                neg.vector.pos.as.string <- toString(neg.vector.pos)
-                
-                warning.message <- paste("WARNING: prob.subtree.cal solved with ode method ", ode.method, " contains ", num.neg.vector.pos, " negative values at positions ", neg.vector.pos.as.string ,  "of a ", length(prob.subtree.cal), " vector." )
-                
-                if(min.vector.val > neg.pr.threshold){
-                    warning.message <- paste(warning.message, "\nMinimum value ", min.vector.val, " >  ", neg.pr.threshold, " the neg.pr.threshold.\nSetting all negative values to 0.")
-                    warning(warning.message)
-                    prob.subtree.cal[neg.vector.pos] <- 0
-                }else{
-                    warning.message <- paste(warning.message, "misse.R: minimum value ", min.vector.val, " <  ", neg.pr.threshold, " the neg.pr.threshold.")
-                    
-                    if(ode.solver.attempt < num.ode.method){
-                        warning.message <- paste(warning.message, " Trying ode method ", ode.method.vec[ode.solver.attempt+1])
-                        warning(warning.message)
-                        
-                    }else{
-                        warning.message <- paste(warning.message, "No additional ode methods available. Returning bad.likelihood: ", cache$bad.likelihood)
-                        warning(warning.message)
-                        prob.subtree.cal[27:52] <- cache$bad.likelihood
-                        return(prob.subtree.cal)
-                    }
-                }
-            }else{
-                ## no negative values in pr.vs.time.matrix
-                ode.not.solved <- FALSE
-            }
-        } ## end else to istate < 0
-    } ##end while() for ode solver
-
     #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dll = "misse-ext-derivs", rtol=1e-8, atol=1e-8)
-    #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+    prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+    
     ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
-    #if(attributes(prob.subtree.cal.full)$istate[1] < 0){
-    #    prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-    #    if(cache$hidden.states == TRUE){
-    #        prob.subtree.cal[27:52] <- cache$bad.likelihood
-    #        return(prob.subtree.cal)
-    #    }
-    #}else{
-    #    prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-    #}
+    if(attributes(prob.subtree.cal.full)$istate[1] < 0){
+        prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+        if(cache$hidden.states == TRUE){
+            prob.subtree.cal[27:52] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }else{
+        prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+    }
     ##############################################################################
     
-    #if(any(is.nan(prob.subtree.cal[27:52]))){
-    #    prob.subtree.cal[27:52] <- cache$bad.likelihood
-    #    return(prob.subtree.cal)
-    #}
+    if(any(is.nan(prob.subtree.cal[27:52]))){
+        prob.subtree.cal[27:52] <- cache$bad.likelihood
+        return(prob.subtree.cal)
+    }
     #This is default and cannot change, but if we get a negative probability, discard the results:
-    #if(any(prob.subtree.cal[27:52] < 0)){
-    #    prob.subtree.cal[27:52] <- cache$bad.likelihood
-    #    return(prob.subtree.cal)
-    #}
-    #if(sum(prob.subtree.cal[27:52]) < cache$ode.eps){
-    #    prob.subtree.cal[27:52] <- cache$bad.likelihood
-    #    return(prob.subtree.cal)
-    #}
-
+    if(any(prob.subtree.cal[27:52] < 0)){
+        prob.subtree.cal[27:52] <- cache$bad.likelihood
+        return(prob.subtree.cal)
+    }
+    if(sum(prob.subtree.cal[27:52]) < cache$ode.eps){
+        prob.subtree.cal[27:52] <- cache$bad.likelihood
+        return(prob.subtree.cal)
+    }
+    
     return(prob.subtree.cal)
 }
 
@@ -676,17 +585,18 @@ print.misse.fit <- function(x,...){
 
 
 
+#phy <- read.tree("/Users/jmbeauli/hisse/vignettes/whales_Steemanetal2009.tre")
 #phy <- read.tree("whales_Slateretal2010.tre")
 ## print(p.new)
-#gen <- FindGenerations(phy)
-#dat.tab <- OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2)
+#gen <- hisse:::FindGenerations(phy)
+#dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=3)
 #nb.tip <- Ntip(phy)
 #nb.node <- phy$Nnode
-#model.vec <- c(0.1344463, 0.150996, 0.1344463, 0.150996, rep(0,48), 1)
-#cache = ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
-#logl <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=root.p)
+#model.vec <- c(0.103624, 5.207178e-09, 0.103624, 5.207178e-09, 0.103624, 5.207178e-09, rep(0,46), .01)
 
-
-
+#cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=3, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+#logl <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+#right.logl <- -277.6942
+#round(logl,4) == round(right.logl,4)
 
 

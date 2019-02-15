@@ -20,8 +20,8 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
             par[i] <- hisse.obj$solution[which(hisse.obj$index.par == np.sequence[i])[1]]
         }
 
-        lower <- hisse.obj$lower.bounds
-        upper <- hisse.obj$upper.bounds
+        lower <- exp(hisse.obj$lower.bounds)
+        upper <- exp(hisse.obj$upper.bounds)
 
         params_and_bounds <- data.frame(lower=lower, par=par, upper=upper)
         while(any(c(par<lower, par>upper))) {
@@ -147,10 +147,10 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
             par[i] <- hisse.obj$solution[which(hisse.obj$index.par == np.sequence[i])[1]]
         }
 
-        lower <- hisse.obj$lower.bounds
-        upper <- hisse.obj$upper.bounds
+        lower <- exp(hisse.obj$lower.bounds)
+        upper <- exp(hisse.obj$upper.bounds)
 
-                                        #Bad Jeremy! Hard-coded column headers...
+        #Bad Jeremy! Hard-coded column headers...
         if(output.type == "turnover"){
             interval.names <- c("lnLik", "turn.0A", "turn.1A", "turn.0B", "turn.1B", "eps.0A", "eps.1A", "eps.0B", "eps.1B","q1A0A","q0B0A","q1B0A","q0A1A","q0B1A","q1B1A","q0A0B","q1A0B","q1B0B","q0A1B","q1A1B","q0A1B","turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
         }
@@ -221,6 +221,7 @@ SupportRegion <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta
     }
 }
 
+
 AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=2, n.points=5000, verbose=TRUE, phy, data, index.par, f, hidden.states, condition.on.survival, root.type, root.p, scale.int, hisse.null.four=FALSE, min.number.points=10) {
                                         #Wrangle the data so that we can make use of DownPass easily:
     actual.params = which(index.par < max(index.par))
@@ -244,11 +245,11 @@ AdaptiveConfidenceIntervalSampling <- function(par, lower, upper, desired.delta=
         cache$eps.beta.factorA = 1 / dbeta(0.1, model.vec[31], model.vec[35])
         cache$eps.beta.factorB = 1 / dbeta(0.1, model.vec[32], model.vec[36])
         phy$node.label <- NULL
-#############################################################
-                                        #Now assess the likelihood at the MLE:
+        #############################################################
+        #Now assess the likelihood at the MLE:
         starting <- -DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     }
-                                        #Generate the multipliers for feeling the boundaries:
+    #Generate the multipliers for feeling the boundaries:
     min.multipliers <- rep(1, length(par))
     max.multipliers <- rep(1, length(par))
     results <- data.frame(data.frame(matrix(nrow=n.points+1, ncol=1+length(par))))
