@@ -167,7 +167,7 @@ void misse_derivs(int *neq, double *t, double *y, double *ydot, double *yout, in
             q0[i] = params_misse[52];
         }
     }
-
+    printf("Your string: %s\n", q0);
     
     ydot[0] = mu0A - (lambda0A + q0[0] + mu0A) * E0A + lambda0A*E0A*E0A + (q0[1]*E0B + q0[2]*E0C + q0[2]*E0D + q0[2]*E0E + q0[2]*E0F + q0[2]*E0G + q0[2]*E0H + q0[2]*E0I + q0[2]*E0J + q0[2]*E0K + q0[2]*E0L + q0[2]*E0M + q0[2]*E0N + q0[2]*E0O + q0[2]*E0P + q0[2]*E0Q + q0[2]*E0R + q0[2]*E0S + q0[2]*E0T + q0[2]*E0U + q0[2]*E0V + q0[2]*E0W + q0[2]*E0X + q0[2]*E0Y + q0[2]*E0Z);
     
