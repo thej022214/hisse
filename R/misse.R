@@ -35,7 +35,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     }
 
     ntips <- Ntip(phy)
-    param.count <- sum(c(unique(turnover), unique(eps), 1))
+    param.count <- sum(c(length(unique(turnover)), length(unique(eps)), 1))
     if(param.count > (ntips/20)){
         warning("You might not have enough data to fit this model well", call.=FALSE, immediate.=TRUE)
     }
