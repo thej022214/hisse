@@ -589,12 +589,12 @@ print.misse.fit <- function(x,...){
 #phy <- read.tree("whales_Slateretal2010.tre")
 ## print(p.new)
 #gen <- hisse:::FindGenerations(phy)
-#dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=3)
+#dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2)
 #nb.tip <- Ntip(phy)
 #nb.node <- phy$Nnode
-#model.vec <- c(0.103624, 5.207178e-09, 0.103624, 5.207178e-09, 0.103624, 5.207178e-09, rep(0,46), .01)
+#model.vec <- c(0.103624, 5.207178e-09, 0.103624, 5.207178e-09, rep(0,48), .1)
 
-#cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=3, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+#cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
 #logl <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
 #right.logl <- -277.6942
 #round(logl,4) == round(right.logl,4)
