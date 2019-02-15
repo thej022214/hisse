@@ -106,7 +106,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
             upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
         }
         ip <- c(ip, trans.start)
-        upper <- c(upper, trans.upper)
+        upper <- c(upper, log(trans.upper))
         lower <- rep(-20, length(ip))
     }else{
         upper <- restart.obj$upper.bounds
