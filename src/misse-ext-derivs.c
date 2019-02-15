@@ -160,7 +160,7 @@ void misse_derivs(int *neq, double *t, double *y, double *ydot, double *yout, in
     mu0Z = params_misse[51];
     
     int hidden_states = params_misse[53];
-    printf("%d", hidden.states)
+    printf("%d", hidden_states)
     double q0[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     int i;
     for ( i = 0; i < 26; i++ ) {
