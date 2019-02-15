@@ -165,7 +165,7 @@ void misse_derivs(int *neq, double *t, double *y, double *ydot, double *yout, in
     for ( i = 0; i < 26; i++ ) {
         if(i < hidden_states){
             q0[i] = params_misse[52];
-            scanf("%lf", q0[]);
+            scanf("%lf", q0);
         }
     }
     
