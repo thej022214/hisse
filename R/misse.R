@@ -1,13 +1,13 @@
 
 
-library(ape)
-library(deSolve)
-library(subplex)
-library(phytools)
-library(nloptr)
-library(GenSA)
-library(data.table)
-dyn.load("misse-ext-derivs.so")
+#library(ape)
+#library(deSolve)
+#library(subplex)
+#library(phytools)
+#library(nloptr)
+#library(GenSA)
+#library(data.table)
+#dyn.load("misse-ext-derivs.so")
 
 ######################################################################################################################################
 ######################################################################################################################################
