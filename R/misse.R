@@ -76,9 +76,9 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 
     if(is.null(restart.obj)){
         if(sum(eps)==0){
-            init.pars <- hisse:::starting.point.generator(phy, 1, samp.freq.tree, yule=TRUE)
+            init.pars <- starting.point.generator(phy, 1, samp.freq.tree, yule=TRUE)
         }else{
-            init.pars <- hisse:::starting.point.generator(phy, 1, samp.freq.tree, yule=FALSE)
+            init.pars <- starting.point.generator(phy, 1, samp.freq.tree, yule=FALSE)
             if(any(init.pars[2] == 0)){
                 init.pars[2] = 1e-6
             }
@@ -105,8 +105,10 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
             ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
             upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
         }
-        ip <- c(ip, trans.start)
-        upper <- c(upper, log(trans.upper))
+        if(rate.cats > 1){
+            ip <- c(ip, trans.start)
+            upper <- c(upper, log(trans.upper))
+        }
         lower <- rep(-20, length(ip))
     }else{
         upper <- restart.obj$upper.bounds
