@@ -1,13 +1,13 @@
 
 
-#library(ape)
-#library(deSolve)
-#library(subplex)
-#library(phytools)
-#library(nloptr)
-#library(GenSA)
-#library(data.table)
-#dyn.load("misse-ext-derivs.so")
+library(ape)
+library(deSolve)
+library(subplex)
+library(phytools)
+library(nloptr)
+library(GenSA)
+library(data.table)
+dyn.load("misse-ext-derivs.so")
 
 ######################################################################################################################################
 ######################################################################################################################################
@@ -76,9 +76,9 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 
     if(is.null(restart.obj)){
         if(sum(eps)==0){
-            init.pars <- starting.point.generator(phy, 1, samp.freq.tree, yule=TRUE)
+            init.pars <- hisse:::starting.point.generator(phy, 1, samp.freq.tree, yule=TRUE)
         }else{
-            init.pars <- starting.point.generator(phy, 1, samp.freq.tree, yule=FALSE)
+            init.pars <- hisse:::starting.point.generator(phy, 1, samp.freq.tree, yule=FALSE)
             if(any(init.pars[2] == 0)){
                 init.pars[2] = 1e-6
             }
@@ -299,9 +299,11 @@ FocalNodeProbMiSSE <- function(cache, dat.tab, generations){
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[data.table(generations)]
     tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbMiSSE(cache, z[7:32], z[33:58],  z[2], z[1])))
+    print(tmp)
     v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),27:52] * tmp[seq(2,nrow(tmp),2),27:52], length(unique(CurrentGenData$FocalNode)), 26)
     v.mat <- v.mat * matrix(c(cache$lambda0A, cache$lambda0B, cache$lambda0C, cache$lambda0D, cache$lambda0E, cache$lambda0F, cache$lambda0G, cache$lambda0H, cache$lambda0I, cache$lambda0J, cache$lambda0K, cache$lambda0L, cache$lambda0M, cache$lambda0N, cache$lambda0O, cache$lambda0P, cache$lambda0Q, cache$lambda0R, cache$lambda0S, cache$lambda0T, cache$lambda0U, cache$lambda0V, cache$lambda0W, cache$lambda0X, cache$lambda0Y, cache$lambda0Z), length(unique(CurrentGenData$FocalNode)), 26, byrow=TRUE)
     phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:26], length(unique(CurrentGenData$FocalNode)), 26)
+    print(phi.mat)
     if(!is.null(cache$node)){
         if(which(generations == cache$node)){
             fixer = numeric(26)
@@ -587,13 +589,13 @@ print.misse.fit <- function(x,...){
 
 #phy <- read.tree("whales_Slateretal2010.tre")
 ## print(p.new)
-#gen <- hisse:::FindGenerations(phy)
-#dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2)
-#nb.tip <- Ntip(phy)
-#nb.node <- phy$Nnode
-#model.vec <- c(0.1344463, 0.150996, 0.1344463, 0.150996, 0.1344463, 0.150996, rep(0,48), 1)
-#cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
-#logl <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+gen <- hisse:::FindGenerations(phy)
+dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2)
+nb.tip <- Ntip(phy)
+nb.node <- phy$Nnode
+model.vec <- c(0.1344463, 0.150996, 0.1344463, 0.150996, rep(0,48), 1)
+cache = ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+logl <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
 
 
 
