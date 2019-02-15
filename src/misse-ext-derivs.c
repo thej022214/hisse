@@ -165,10 +165,8 @@ void misse_derivs(int *neq, double *t, double *y, double *ydot, double *yout, in
     for ( i = 0; i < 26; i++ ) {
         if(i < hidden_states){
             q0[i] = params_misse[52];
-            scanf("%lf", q0);
         }
     }
-    
     
     ydot[0] = mu0A - (lambda0A + q0[0] + mu0A) * E0A + lambda0A*E0A*E0A + (q0[1]*E0B + q0[2]*E0C + q0[3]*E0D + q0[4]*E0E + q0[5]*E0F + q0[6]*E0G + q0[7]*E0H + q0[8]*E0I + q0[9]*E0J + q0[10]*E0K + q0[11]*E0L + q0[12]*E0M + q0[13]*E0N + q0[14]*E0O + q0[15]*E0P + q0[16]*E0Q + q0[17]*E0R + q0[18]*E0S + q0[19]*E0T + q0[20]*E0U + q0[21]*E0V + q0[22]*E0W + q0[23]*E0X + q0[24]*E0Y + q0[25]*E0Z);
     
