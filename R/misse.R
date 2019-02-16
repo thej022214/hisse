@@ -87,7 +87,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 
         if(is.null(starting.vals)){
             def.set.pars <- rep(c(log(init.pars[1]+init.pars[2]), log(init.pars[2]/init.pars[1])), rate.cats)
-            trans.start <- log(0.0001)
+            trans.start <- log(rate.cat/sum(phy$edge.length))
         }else{
             def.set.pars <- rep(c(log(starting.vals[1]), log(starting.vals[2])), rate.cats)
             trans.start <- log(starting.vals[3])
