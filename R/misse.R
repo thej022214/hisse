@@ -1,13 +1,14 @@
 
 
-#library(ape)
-#library(deSolve)
-#library(subplex)
-#library(phytools)
-#library(nloptr)
-#library(GenSA)
-#library(data.table)
-#dyn.load("misse-ext-derivs.so")
+library(ape)
+library(deSolve)
+library(subplex)
+library(phytools)
+library(nloptr)
+library(GenSA)
+library(data.table)
+dyn.load("misse-ext-derivs.so")
+dyn.load("birthdeath-ext-derivs.so")
 
 ######################################################################################################################################
 ######################################################################################################################################
@@ -177,7 +178,6 @@ DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip
     model.vec[] <- c(p.new, 0)[pars]
     cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
     logl <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-
     return(-logl)
 }
 
@@ -218,10 +218,9 @@ OrganizeDataMiSSE <- function(phy, f, hidden.states){
     
     nb.tip <- length(phy$tip.label)
     nb.node <- phy$Nnode
-    
+
     compD <- matrix(0, nrow=nb.tip, ncol=26)
     compE <- matrix(0, nrow=nb.tip, ncol=26)
-    
     #Initializes the tip sampling and sets internal nodes to be zero:
     ncols = hidden.states
     if(length(f) == 1){
@@ -350,7 +349,7 @@ GetRootProbMiSSE <- function(cache, dat.tab, generations){
 
 ######################################################################################################################################
 ######################################################################################################################################
-### The MuHiSSE type down pass that carries out the integration and returns the likelihood:
+### The MiSSE type down pass that carries out the integration and returns the likelihood:
 ######################################################################################################################################
 ######################################################################################################################################
 
@@ -437,6 +436,93 @@ DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type,
         return(loglik)
     }
 }
+
+
+
+######################################################################################################################################
+######################################################################################################################################
+### A simple Birth-Death model down pass that carries out the integration and returns the likelihood:
+######################################################################################################################################
+######################################################################################################################################
+
+DownPassBD <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL) {
+    
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
+    compE = NULL
+    
+    nb.tip <- cache$nb.tip
+    nb.node <- cache$nb.node
+    TIPS <- 1:nb.tip
+    for(i in 1:length(gen)){
+        if(i == length(gen)){
+            if(!is.null(node)){
+                if(node %in% gen[[i]]){
+                    cache$node <- node
+                    cache$state <- state
+                    res.tmp <- GetRootProbBD(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
+                    cache$node <- NULL
+                    cache$state <- NULL
+                }else{
+                    res.tmp <- GetRootProbBD(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
+                }
+            }else{
+                res.tmp <- GetRootProbBD(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
+            }
+            compD.root <- res.tmp[c(3)]
+            compE.root <- res.tmp[c(2)]
+            setkey(dat.tab, DesNode)
+            comp <- dat.tab[["comp"]]
+            comp <- c(comp[-TIPS], res.tmp[1])
+        }else{
+            if(!is.null(node)){
+                if(node %in% gen[[i]]){
+                    cache$node <- node
+                    cache$state <- state
+                    dat.tab <- FocalNodeProbBD(cache, dat.tab, gen[[i]])
+                    cache$node <- NULL
+                    cache$state <- NULL
+                }else{
+                    dat.tab <- FocalNodeProbBD(cache, dat.tab, gen[[i]])
+                }
+            }else{
+                dat.tab <- FocalNodeProbBD(cache, dat.tab, gen[[i]])
+            }
+        }
+    }
+    if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
+        return(log(cache$bad.likelihood)^13)
+    }else{
+        if(root.type == "madfitz" | root.type == "herr_als"){
+            if(is.null(root.p)){
+                root.p = compD.root/sum(compD.root)
+                root.p[which(is.na(root.p))] = 0
+            }
+        }
+        if(condition.on.survival == TRUE){
+            if(root.type == "madfitz" | root.type == "herr_als"){
+                lambda <- c(cache$lambda0A)
+                compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
+                #Corrects for possibility that you have 0/0:
+                compD.root[which(is.na(compD.root))] = 0
+                loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
+            }
+        }
+        if(!is.finite(loglik)){
+            return(log(cache$bad.likelihood)^7)
+        }
+    }
+    if(get.phi==TRUE){
+        obj = NULL
+        obj$compD.root = compD.root/sum(compD.root)
+        obj$compE = compE
+        obj$root.p = root.p
+        return(obj)
+    }else{
+        return(loglik)
+    }
+}
+
 
 
 ######################################################################################################################################
@@ -585,18 +671,26 @@ print.misse.fit <- function(x,...){
 
 
 
-#phy <- read.tree("whales_Steemanetal2009.tre")
+#phy <- read.tree("../vignettes/whales_Steemanetal2009.tre")
 #phy <- read.tree("whales_Slateretal2010.tre")
 ## print(p.new)
 #gen <- hisse:::FindGenerations(phy)
-#dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=4)
+#dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1)
 #nb.tip <- Ntip(phy)
 #nb.node <- phy$Nnode
-#model.vec <- c(0.103624, 5.207178e-09, 0.103624, 5.207178e-09, 0.103624, 5.207178e-09, 0.103624, 5.207178e-09, rep(0,44), 1)
+#model.vec <- c(0.103624, 5.207178e-09, rep(0,52), 1)
 
-#cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=4, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+#cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
 #logl <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
 #right.logl <- -277.6942
 #round(logl,4) == round(right.logl,4)
+
+
+
+
+
+
+
+
 
 
