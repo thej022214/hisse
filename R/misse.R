@@ -35,9 +35,14 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
 
+    if(length(turnover) != length(eps)){
+        stop("The number of turnover parameters need to match the number of extinction fraction parameters.", call.=FALSE)
+    }
+
+
     ntips <- Ntip(phy)
     param.count <- sum(c(length(unique(turnover)), length(unique(eps)), 1))
-    if(param.count > (ntips/20)){
+    if(param.count > (ntips/10)){
         warning("You might not have enough data to fit this model well", call.=FALSE, immediate.=TRUE)
     }
 
