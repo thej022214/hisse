@@ -452,7 +452,7 @@ test_that("MuHiSSE_test2", {
 test_that("MiSSE_test1", {
     skip_on_cran()
 
-    phy <- read.tree("../../vignettes/whales_Steemanetal2009.tre")
+    phy <- read.tree("whales_Steemanetal2009.tre")
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1)
     nb.tip <- Ntip(phy)
@@ -463,13 +463,13 @@ test_that("MiSSE_test1", {
     right.logl <- -277.6942
     comparison <- round(logl.one.rate,4) == round(right.logl,4)
     expect_true(comparison)
-}
+})
 
 
 test_that("MiSSE_test2", {
     skip_on_cran()
     
-    phy <- read.tree("../../vignettes/whales_Steemanetal2009.tre")
+    phy <- read.tree("whales_Steemanetal2009.tre")
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=3)
     nb.tip <- Ntip(phy)
@@ -480,4 +480,4 @@ test_that("MiSSE_test2", {
     right.logl <- -277.6942
     comparison <- round(logl.three.rate,4) == round(right.logl,4)
     expect_true(comparison)
-}
+})
