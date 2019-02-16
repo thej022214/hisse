@@ -58,7 +58,6 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     }
     pars.tmp <- c(turnover.tmp[1], eps.tmp[1], turnover.tmp[2], eps.tmp[2], turnover.tmp[3], eps.tmp[3], turnover.tmp[4], eps.tmp[4], turnover.tmp[5], eps.tmp[5], turnover.tmp[6], eps.tmp[6], turnover.tmp[7], eps.tmp[7], turnover.tmp[8], eps.tmp[8], turnover.tmp[9], eps.tmp[9], turnover.tmp[10], eps.tmp[10], turnover.tmp[11], eps.tmp[11], turnover.tmp[12], eps.tmp[12], turnover.tmp[13], eps.tmp[13], turnover.tmp[14], eps.tmp[14], turnover.tmp[15], eps.tmp[15], turnover.tmp[16], eps.tmp[16], turnover.tmp[17], eps.tmp[17], turnover.tmp[18], eps.tmp[18], turnover.tmp[19], eps.tmp[19], turnover.tmp[20], eps.tmp[20], turnover.tmp[21], eps.tmp[21], turnover.tmp[22], eps.tmp[22], turnover.tmp[23], eps.tmp[23], turnover.tmp[24], eps.tmp[24], turnover.tmp[25], eps.tmp[25], turnover.tmp[26], eps.tmp[26], trans.tmp[1])
     pars[1:length(pars.tmp)] <- pars.tmp
-    
     np <- max(pars)
     pars[pars==0] <- np + 1
 
@@ -99,9 +98,16 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
             upper.full <- rep(21, length(def.set.pars))
         }
 
-        np.sequence <- 1:(np-1)
-        ip <- numeric(np-1)
-        upper <- numeric(np-1)
+        if(rate.cats > 1){
+            np.sequence <- 1:(np-1)
+            ip <- numeric(np-1)
+            upper <- numeric(np-1)
+        }else{
+            np.sequence <- 1:np
+            ip <- numeric(np)
+            upper <- numeric(np)
+        }
+        
         for(i in np.sequence){
             ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
             upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
@@ -438,93 +444,6 @@ DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type,
 }
 
 
-
-######################################################################################################################################
-######################################################################################################################################
-### A simple Birth-Death model down pass that carries out the integration and returns the likelihood:
-######################################################################################################################################
-######################################################################################################################################
-
-DownPassBD <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL) {
-    
-    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
-    DesNode = NULL
-    compE = NULL
-    
-    nb.tip <- cache$nb.tip
-    nb.node <- cache$nb.node
-    TIPS <- 1:nb.tip
-    for(i in 1:length(gen)){
-        if(i == length(gen)){
-            if(!is.null(node)){
-                if(node %in% gen[[i]]){
-                    cache$node <- node
-                    cache$state <- state
-                    res.tmp <- GetRootProbBD(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
-                    cache$node <- NULL
-                    cache$state <- NULL
-                }else{
-                    res.tmp <- GetRootProbBD(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
-                }
-            }else{
-                res.tmp <- GetRootProbBD(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
-            }
-            compD.root <- res.tmp[c(3)]
-            compE.root <- res.tmp[c(2)]
-            setkey(dat.tab, DesNode)
-            comp <- dat.tab[["comp"]]
-            comp <- c(comp[-TIPS], res.tmp[1])
-        }else{
-            if(!is.null(node)){
-                if(node %in% gen[[i]]){
-                    cache$node <- node
-                    cache$state <- state
-                    dat.tab <- FocalNodeProbBD(cache, dat.tab, gen[[i]])
-                    cache$node <- NULL
-                    cache$state <- NULL
-                }else{
-                    dat.tab <- FocalNodeProbBD(cache, dat.tab, gen[[i]])
-                }
-            }else{
-                dat.tab <- FocalNodeProbBD(cache, dat.tab, gen[[i]])
-            }
-        }
-    }
-    if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
-        return(log(cache$bad.likelihood)^13)
-    }else{
-        if(root.type == "madfitz" | root.type == "herr_als"){
-            if(is.null(root.p)){
-                root.p = compD.root/sum(compD.root)
-                root.p[which(is.na(root.p))] = 0
-            }
-        }
-        if(condition.on.survival == TRUE){
-            if(root.type == "madfitz" | root.type == "herr_als"){
-                lambda <- c(cache$lambda0A)
-                compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
-                #Corrects for possibility that you have 0/0:
-                compD.root[which(is.na(compD.root))] = 0
-                loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
-            }
-        }
-        if(!is.finite(loglik)){
-            return(log(cache$bad.likelihood)^7)
-        }
-    }
-    if(get.phi==TRUE){
-        obj = NULL
-        obj$compD.root = compD.root/sum(compD.root)
-        obj$compE = compE
-        obj$root.p = root.p
-        return(obj)
-    }else{
-        return(loglik)
-    }
-}
-
-
-
 ######################################################################################################################################
 ######################################################################################################################################
 ### Cache object for storing parameters that are used throughout MiSSE:
@@ -668,6 +587,7 @@ print.misse.fit <- function(x,...){
     print(par.list)
     cat("\n")
 }
+
 
 
 
