@@ -10,7 +10,7 @@ hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE,
 condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE,
 sann.its=10000, bounded.search=TRUE,  max.tol=.Machine$double.eps^.50,
 mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, 
-trans.upper=100, ode.eps=0)
+trans.upper=100, ode.eps=0, benchmark.lik=FALSE)
 }
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
@@ -78,7 +78,11 @@ trans.upper=100, ode.eps=0)
   branch. Essentially if the sum of compD is less than this tolerance,
   then it assumes the results are unstable and discards them. The
   default is set to zero, but in testing a value of 1e-8 can sometimes
-  produce stable solutions for both easy and very difficult optimization problems.}
+  produce stable solutions for both easy and very difficult optimization
+  problems.}
+\item{benchmark.lik}{whether to compute and return the time to
+  evaluate the likelihood of the model using the starting
+  parameters. Benchmarking uses the \code{Sys.time} function from base.}
 }
 \details{
 Please note that the format of the data and parameter vectors here differs

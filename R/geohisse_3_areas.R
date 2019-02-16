@@ -8,7 +8,7 @@
 ## Here we are using functions to call different types of models. To reduce unnecessary opperations inside the likelihood evaluation this code make primary checks for the size of the model and restrict the ODE's only to the potential scenarios under a particular number of hidden states.
 ## This reduces the number of ODE numerical integrations per branch and can significatly improve time to fit the model.
 
-GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6), extirpation=c(1,2,3), hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, trans.upper=100, ode.eps=0){
+GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6), extirpation=c(1,2,3), hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, speciation.upper=1000, extirpation.upper=1000, trans.upper=100, ode.eps=0, benchmark.lik = FALSE){
 
     ## This is the higher-level function. Here we will get the data, perform tests and pass to more specific functions.
 
@@ -148,7 +148,12 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
                                      , bounded.search=bounded.search, max.tol=max.tol
                                      , mag.san.start=mag.san.start, starting.vals=starting.vals
                                      , speciation.upper=speciation.upper, extirpation.upper=extirpation.upper
-                                     , trans.upper=trans.upper, ode.eps=ode.eps)
+                                     , trans.upper=trans.upper, ode.eps=ode.eps, benchmark.lik=benchmark.lik)
+        if( benchmark.lik ){
+            ## In this case just return the time estimate.
+            return( fit.out )
+        }
+        
         obj <- list(loglik = fit.out$loglik, AIC = fit.out$AIC, AICc = fit.out$AICc, solution= fit.out$solution
                   , index.par= fit.out$index.par, f=fit.out$f, hidden.areas=FALSE
                   , assume.cladogenetic=TRUE, condition.on.survival=condition.on.survival
@@ -169,7 +174,12 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
                                      , bounded.search=bounded.search, max.tol=max.tol
                                      , mag.san.start=mag.san.start, starting.vals=starting.vals
                                      , speciation.upper=speciation.upper, extirpation.upper=extirpation.upper
-                                     , trans.upper=trans.upper, ode.eps=ode.eps)
+                                     , trans.upper=trans.upper, ode.eps=ode.eps, benchmark.lik=benchmark.lik)
+        if( benchmark.lik ){
+            ## In this case just return the time estimate.
+            return( fit.out )
+        }
+        
         obj <- list(loglik = fit.out$loglik, AIC = fit.out$AIC, AICc = fit.out$AICc, solution= fit.out$solution
                   , index.par= fit.out$index.par, f=fit.out$f, hidden.areas=FALSE
                   , assume.cladogenetic=TRUE, condition.on.survival=condition.on.survival
@@ -193,7 +203,12 @@ GeoHiSSE_Plus <- function(phy, data, f=c(1,1,1,1,1,1), speciation=c(1,2,3,4,5,6)
                                      , bounded.search=bounded.search, max.tol=max.tol
                                      , mag.san.start=mag.san.start, starting.vals=starting.vals
                                      , speciation.upper=speciation.upper, extirpation.upper=extirpation.upper
-                                     , trans.upper=trans.upper, ode.eps=ode.eps)
+                                     , trans.upper=trans.upper, ode.eps=ode.eps, benchmark.lik=benchmark.lik)
+        if( benchmark.lik ){
+            ## In this case just return the time estimate.
+            return( fit.out )
+        }
+        
         obj <- list(loglik = fit.out$loglik, AIC = fit.out$AIC, AICc = fit.out$AICc, solution= fit.out$solution
                   , index.par= fit.out$index.par, f=fit.out$f, hidden.areas=FALSE
                   , assume.cladogenetic=TRUE, condition.on.survival=condition.on.survival
@@ -232,7 +247,7 @@ print.geohisse_plus.fit <- function(x,...){
 ## Fitting function for no hidden states:
 ## ##############################################################################################################
 
-geohisse_3_one_rate <- function(phy, data, f, speciation, extirpation, trans.rate, condition.on.survival, root.type, root.p, sann, sann.its, bounded.search, max.tol, mag.san.start, starting.vals, speciation.upper, extirpation.upper, trans.upper, ode.eps){
+geohisse_3_one_rate <- function(phy, data, f, speciation, extirpation, trans.rate, condition.on.survival, root.type, root.p, sann, sann.its, bounded.search, max.tol, mag.san.start, starting.vals, speciation.upper, extirpation.upper, trans.upper, ode.eps, benchmark.lik){
 
     ## Note that some parameters are not present at this function call.
     ## We are assuming no hidden states and that the model is cladogenetic.
@@ -402,6 +417,21 @@ geohisse_3_one_rate <- function(phy, data, f, speciation, extirpation, trans.rat
     }
 
     ## ##########################
+
+    ## If set to benchmark, then compute times and return:
+    if( benchmark.lik ){
+        print( "Computing time for lik evaluation." )
+        time.start <- Sys.time()
+        start.lik <- opt_geohisse_3_one_rate(pars.lik, pars=pars.tmp, phy=phy
+                                           , condition.on.survival=condition.on.survival
+                                           , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                                           , split.times=split.times, nb.tip=nb.tip, nb.node=nb.node
+                                           , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+        time.stop <- Sys.time()
+        print( "Likelihood evaluation completed." )
+        print( paste0("log-likelihood value: ", -1 * start.lik) )
+        return( paste0("logLik evaluation time: ", format(time.stop - time.start)) )
+    }
     
     if(sann == FALSE){
         if(bounded.search == TRUE){
@@ -494,7 +524,7 @@ geohisse_3_one_rate <- function(phy, data, f, speciation, extirpation, trans.rat
 
 ## Run the fit of a GeoHiSSE model with two hidden rates.
 ## This function is generic and will work with both full and "null" models.
-geohisse_3_two_rate <- function(phy, data, f, speciation, extirpation, trans.rate, condition.on.survival, root.type, root.p, sann, sann.its, bounded.search, max.tol, mag.san.start, starting.vals, speciation.upper, extirpation.upper, trans.upper, ode.eps){
+geohisse_3_two_rate <- function(phy, data, f, speciation, extirpation, trans.rate, condition.on.survival, root.type, root.p, sann, sann.its, bounded.search, max.tol, mag.san.start, starting.vals, speciation.upper, extirpation.upper, trans.upper, ode.eps, benchmark.lik){
     ## This function is called internally and should not need any default value.
 
     extirpation.tmp <- extirpation
@@ -659,6 +689,21 @@ geohisse_3_two_rate <- function(phy, data, f, speciation, extirpation, trans.rat
     }
 
     ## ##########################
+
+    ## If set to benchmark, then compute times and return:
+    if( benchmark.lik ){
+        print( "Computing time for lik evaluation." )
+        time.start <- Sys.time()
+        start.lik <- opt_geohisse_3_two_rate(pars.lik, pars=pars.tmp, phy=phy
+                                           , condition.on.survival=condition.on.survival
+                                           , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                                           , split.times=split.times, nb.tip=nb.tip, nb.node=nb.node
+                                           , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+        time.stop <- Sys.time()
+        print( "Likelihood evaluation completed." )
+        print( paste0("log-likelihood value: ", -1 * start.lik) )
+        return( paste0("logLik evaluation time: ", format(time.stop - time.start)) )
+    }
     
     if(sann == FALSE){
         if(bounded.search == TRUE){
@@ -743,7 +788,7 @@ geohisse_3_two_rate <- function(phy, data, f, speciation, extirpation, trans.rat
 ## The general function that should fit any number of hidden rates to the model.
 ## #################################################################
 
-geohisse_3_multi_rate <- function(phy, data, f, speciation, extirpation, trans.rate, condition.on.survival, root.type, root.p, sann, sann.its, bounded.search, max.tol, mag.san.start, starting.vals, speciation.upper, extirpation.upper, trans.upper, ode.eps){
+geohisse_3_multi_rate <- function(phy, data, f, speciation, extirpation, trans.rate, condition.on.survival, root.type, root.p, sann, sann.its, bounded.search, max.tol, mag.san.start, starting.vals, speciation.upper, extirpation.upper, trans.upper, ode.eps, benchmark.lik){
 
     ## Another way to do this is to inflate all the parameter vector.
     ## We can add 0's to indicate the parameters that are not in use in this case.
@@ -901,6 +946,21 @@ geohisse_3_multi_rate <- function(phy, data, f, speciation, extirpation, trans.r
     }
 
     ## ##########################
+
+    ## If set to benchmark, then compute times and return:
+    if( benchmark.lik ){
+        print( "Computing time for lik evaluation." )
+        time.start <- Sys.time()
+        start.lik <- opt_geohisse_3_multi_rate(pars.lik, pars=pars.tmp, phy=phy
+                                             , condition.on.survival=condition.on.survival
+                                             , root.type=root.type, root.p=root.p, ode.eps=ode.eps
+                                             , split.times=split.times, nb.tip=nb.tip, nb.node=nb.node
+                                             , anc=anc, compD=compD, compE=compE, bad.likelihood=10000000)
+        time.stop <- Sys.time()
+        print( "Likelihood evaluation completed." )
+        print( paste0("log-likelihood value: ", -1 * start.lik) )
+        return( paste0("logLik evaluation time: ", format(time.stop - time.start)) )
+    }
     
     if(sann == FALSE){
         if(bounded.search == TRUE){
