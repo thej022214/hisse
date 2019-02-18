@@ -40,7 +40,7 @@ eps <- c(1,1)
 two.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 ```
 
-Overall, the `MiSSE` allows up to 26 possible hidden states in diversification (denoted by A-Z), and in this example since we fit two rate classes, we have two hidden states, A and B, impacting turnover rates. Here is the rest of the model set applied to the whale data set:
+Overall, `MiSSE` allows up to 26 possible hidden states in diversification (denoted by A-Z), and in this example since we fit two rate classes, we have two hidden states, A and B, impacting turnover rates. Here is the rest of the model set applied to the whale data set:
 
 ```{r, eval=FALSE}
 #rate classes A:C
@@ -70,10 +70,11 @@ eps <- c(1,2,3)
 three.rate.weps <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 ```
 
-However, in the case of cetaceans, allowing extinction fraction to vary does not provide any additional information to the model as all rate classes return nearly identical estimates.
+However, in the case of cetaceans, allowing extinction fraction to vary does not provide any additional information to the model as all rate classes return nearly identical estimates (not shown).
 
-I have already fit these models and have include a file that contains the fits. Here is a simple plot to show that improvement in AIC as we increase the complexity of the model:
-```{r, eval=TRUE, echo=FALSE, fig.cap = "The fit of an incremental increase in the number of rate classes estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009). There is a clear reduction in AIC from one to three rate classes, which levels off at four rate classes and five rate classes returns an AIC that is about 1 unit higher than either hte three and four rate class."}
+I have already fit these models. Here is a simple plot to show that improvement in AIC as we increase the complexity of the model:
+
+```{r, eval=TRUE, echo=FALSE, fig.cap = "The fit of an incremental increase in the number of rate classes estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009). There is a clear reduction in AIC from one to three rate classes, which levels off at four rate classes and five rate classes returns an AIC that is about 1 unit higher than either the three and four rate class."}
 load("misse.vignette.Rsave")
 model.fits <- c(one.rate$AIC, two.rate$AIC, three.rate$AIC, four.rate$AIC, five.rate$AIC)
 plot(x=1:5, y=model.fits, bty="n", xlab="", ylab="", type="l", axes=FALSE, xlim=c(1,5.0), ylim=c(530,560))
@@ -87,7 +88,7 @@ axis(1, at = seq(1, 5, by = 1), las =1, lwd=1, labels=c("One Rate", "Two Rate", 
 
 ##Plotting MiSSE reconstructions
 
-Like with all other functions, we provide plotting functionality with `plot.misse.states()` for hidden state reconstructions of `class misse.states` output by our `MarginReconMiSSE()` function. And, as with other functions, a single `misse.states` object can be supplied and the plotting function will provide a heat map of the diversification rate parameter of choice, or a list of `misse.states` objects can be supplied and the function will "model-average" the results. For plotting rates, users can choose among turnover, net diversification ("net.div"), speciation, extinction, or extinction fraction ("extinction.fraction"). Below is an example of how to run the reconstruction function to obtain `misse.states` output from our two rate model for cetaceans. But, for simplicity, I have a file that contains the reconstruction and we can check that everything has loaded correctly and is of the proper `misse.states` class:
+Like with all other functions, we provide plotting functionality with `plot.misse.states()` for hidden state reconstructions of `class misse.states` output by our `MarginReconMiSSE()` function. And, as with other functions, a single `misse.states` object can be supplied and the plotting function will provide a heat map of the diversification rate parameter of choice, or a list of `misse.states` objects can be supplied and the function will "model-average" the results. For plotting rates, users can choose among turnover, net diversification ("net.div"), speciation, extinction, or extinction fraction ("extinction.fraction"). Below is an example of how to run the reconstruction function to obtain `misse.states` output from our two rate model for cetaceans. But, again, for simplicity, I have a file that contains the reconstructions and we can check that everything has loaded correctly and is of the proper `misse.states` class:
 ```{r, eval=TRUE}
 # two.rate.recon <- MarginReconMiSSE(phy=phy, f=1,  hidden.states=2, 
                 #pars=two.rate$solution, n.cores=3, aic=two.rate$AIC)
@@ -96,7 +97,18 @@ class(two.rate.recon)
 two.rate.recon
 ```
 
-I have also conducted reconstructions on the three models shown described above -- i.e., `one.rate.recon`, `two.rate.recon`, and `two.rate.weps.recon`. To plot model-averaged rates we simply supply these reconstructions as a list. There are many ways to generate a list, but here is one way:
+Let's take a look at the reconstruction for the `two.rate` model reconstruction. I will simply supply the reconstruction object if `misse.states` class to the plotting function, `plot.misse.states()`, and plot net diversification.
+```{r, eval=FALSE}
+plot.misse.states(two.rate.recon, rate.param="net.div", show.tip.label=TRUE, type="phylogram",
+                  fsize=.25, legend="none")
+```
+
+```{r, eval=TRUE, echo=FALSE, fig.cap = "A two-rate class MiSSE analysis and reconstruction of the cetacean phylogeny of Steeman et al. (2009) shows a clear increase in the net diversification rate within the Delphinidae (dolphins) relative to all other cetaceans; there also seems to be a slightly elevated rates in the sister group of Delphinidae, the Monodontidae+Phocenidae. Overall, this particular MiSSE model seems to correctly identify the source of 'trait-independent' diversification that can plague BiSSE analyses of simulated data sets on the cetacean tree (see Rabosky and Goldberg, 2015)."}
+plot.misse.states(two.rate.recon, rate.param="net.div", show.tip.label=TRUE, type="phylogram",
+                  fsize=.25, legend="none")
+```
+
+Of course, in this example we have a set of models that includes models that contain upwards of five rate classes. Also, we know from AIC that there are three model -- the three-, four-, and five rate class models -- that are within 2 AIC units away from each. As we do in all other `hisse` functions, we allow for plots to be model-averaging of the rates at nodes and tips. To do this, we simply supply all reconstructions you want to average as elements in a list. There are many ways to generate a list, but here is one way:
 
 ```{r, eval=TRUE}
 misse.results.list = list()
@@ -107,31 +119,47 @@ misse.results.list[[4]] = four.rate.recon
 misse.results.list[[5]] = five.rate.recon
 ```
 
-And finally, we will supply this list the plotting function, `plot.misse.states()`, and plot net diversification.
+And, as before, we simply supply this list to the plotting function, `plot.misse.states()`, and plot net diversification.
 ```{r, eval=FALSE}
 plot.misse.states(misse.results.list, rate.param="net.div", show.tip.label=TRUE, type="phylogram",
                   fsize=.25, legend="none")
 ```
 
-```{r, eval=TRUE, echo=FALSE, fig.cap = "A MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009) shows a clear increase in the net diversification rate within the Delphinidae (dolphins) relative to all other cetaceans; there also seems to be a slightly elevated rates in the sister group of Delphinidae, the Monodontidae+Phocenidae. Overall, our MiSSE model seems to correctly identify the source of 'trait-independent' diversification that can plague BiSSE analyses of simulated data sets on the cetacean tree (see Rabosky and Goldberg, 2015)."}
+```{r, eval=TRUE, echo=FALSE, fig.cap = "A model-averaged MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009) shows an apparent slow down in the net diversification through time."}
 plot.misse.states(misse.results.list, rate.param="net.div", show.tip.label=TRUE, type="phylogram",
                   fsize=.25, legend="none")
 ```
 
-
 ## Other considerations
 
-Like with `hisse`, `GeoHiSSE`, and `MuHiSSE`, there are functions available to obtain model averages (i.e., `GetModelAveRates()`) for nodes, for tips, or for both to be used in post-hoc tests. Users are encouraged to read other vignettes and help pages provided for more information. For more conceptual discussions of these functions and ideas, readers are also encouraged to read Caetano et al. (2018). 
+Like with `hisse`, `GeoHiSSE`, and `MuHiSSE`, there are functions available for generating estimates of the uncertainty in the parameter estimates (i.e., `SupportRegionMiSSE()`), and to obtain model averages (i.e., `GetModelAveRates()`) for nodes, for tips, or for both to be used in post-hoc tests. Users are encouraged to read other vignettes and help pages provided for more information. For more conceptual discussions of these functions and ideas, readers are also encouraged to read Caetano et al. (2018). 
 
 There are two additional items that are worth mentioning. First, like with `MuHiSSE`, I would recommend users try multiple random starting points when optimizing any given model with `MiSSE`. In Nakov et al. (2018), we found that the default starting values often did not return the highest log likelihood. To alleviate this issue, we performed $\ge$ 50 maximum likelihood optimizations for each model, each initiated from a distinct starting point. All functions within `hisse` are provided with `starting.vals` option for these purposes. 
 
-We also note that `MiSSE` may seem slower than most other functions within `hisse`. This is somewhat intentional. Underneath the hood we have implemented a lot of checks to the integration for calculating probabilities along branches. This will mean that often times weird messages will spit out to the screen. For now, ignore them, the optimization "feels" these issues and takes necessary action. But this also means that users must pay particular attention to the complexity of the models they are fitting and critically think whether or not the parameters make sense. For example, in cetacean tree used above, I attemped to fit a model with three hidden states, A, B, and C, but the output indicated that perhaps this model was overly complex for the data at hand:
+Second, we note that `MiSSE` may seem slower than most other functions within `hisse`. This is somewhat intentional. Underneath the hood we have implemented a lot of checks to the integration for calculating probabilities along branches. This will mean that often times weird messages will spit out to the screen. For now, ignore them, the optimization "feels" these issues and takes necessary action. But this also means that users must pay particular attention to the complexity of the models they are fitting and critically think whether or not the parameters make sense. For example, in cetacean tree used above, I attemped to fit a model with three, four, and five hidden states, A, B, and C, but the reconstructions indicated a rather complicated, and highly uncertain, diversification history:
 
 ```{r, eval=TRUE}
 three.rate
 ```
 
-Note that the likelihood was a significant improvement from the two rate model, but the transition rate, $q$, never changed from the initial start value ($q = 0.01$). Also, this particular fit spit out an unusually large number of integration warnings, indicating that this was a rather difficult model to fit to the tree. There are other considerations that users should consider, such as the number of parameters relative to the size of the tree. In the case of the cetaceans, a three rate model consisted of 5 parameters total, which is roughly ~17 taxa per parameter. Our feeling is that, conservatively, there should be at least 20 taxa for every parameter in the model. When this assumption is not met, a warning is printed to the screen (though note users are still allowed to carry on with their analyses). Again, we hope users take these warnings into consideration when examining the fit of the model and deciding whether or not to cull potentially problematic models from the set.
+Note that the likelihood was a significant improvement from the two rate model, but the transition rate, $q$, is roughly two orders of magnitude higher ($q=0.131$) relative to the two-rate model estimate ($q=0.004$). The same is true for the four and five rate class models. What does this mean? Well, we can convert this into the expected number of transitions by multiplying the rate by the sum of the branch lengths in the cetacean phylogeny:
+
+```{r, eval=TRUE}
+expected.transitions.two <- 0.004 * sum(two.rate$phy$edge.length)
+expected.transitions.two
+expected.transitions.three <- 0.131 * sum(three.rate$phy$edge.length)
+expected.transitions.three
+```
+
+At first glance, this might seem that something is off with the three-rate class model -- e.g., 3 vs. 107 number of shifts among the different classes? However, examining the support region around the parameters can give an indication as to the overall reliability of these estimates:
+
+```{r, eval=TRUE}
+load("misse.support.Rsave")
+two.rate.support$ci[,"q0"]
+three.rate.support$ci[,"q0"]
+```
+
+In the case of the two rate class model, even though the MLE indicates very few transitions among the rate classes, there is a model within 2 log likelihood units that suggests as many as 17 expected transitions. In other words, the $q$ estimate even under the two rate class model is fairly certain. We suspect that what is being picked up by these models is something that is both clade-specific (i.e., implied by the two rate class model) and time-dependent (i.e., implied by the three, four, and five rate class models), with the latter exerting the strongest influence on the overall fit. 
 
 ## References
 
