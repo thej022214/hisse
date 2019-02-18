@@ -72,7 +72,7 @@ three.rate.weps <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 
 However, in the case of cetaceans, allowing extinction fraction to vary does not provide any additional information to the model as all rate classes return nearly identical estimates (not shown).
 
-I have already fit these models. Here is a simple plot to show that improvement in AIC as we increase the complexity of the model:
+I have already fit these models. Figure 1 shows the improvement in AIC as we increase the complexity of the model
 
 ```{r, eval=TRUE, echo=FALSE, fig.cap = "The fit of an incremental increase in the number of rate classes estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009). There is a clear reduction in AIC from one to three rate classes, which levels off at four rate classes and five rate classes returns an AIC that is about 1 unit higher than either the three and four rate class."}
 load("misse.vignette.Rsave")
@@ -97,7 +97,7 @@ class(two.rate.recon)
 two.rate.recon
 ```
 
-Let's take a look at the reconstruction for the `two.rate` model reconstruction. I will simply supply the reconstruction object if `misse.states` class to the plotting function, `plot.misse.states()`, and plot net diversification.
+Let's take a look at the reconstruction for the `two.rate` model reconstruction. I will simply supply the reconstruction object if `misse.states` class to the plotting function, `plot.misse.states()`, and plot net diversification (see Figure 2).
 ```{r, eval=FALSE}
 plot.misse.states(two.rate.recon, rate.param="net.div", show.tip.label=TRUE, type="phylogram",
                   fsize=.25, legend="none")
@@ -119,7 +119,7 @@ misse.results.list[[4]] = four.rate.recon
 misse.results.list[[5]] = five.rate.recon
 ```
 
-And, as before, we simply supply this list to the plotting function, `plot.misse.states()`, and plot net diversification.
+And, as before, we simply supply this list to the plotting function, `plot.misse.states()`, and plot net diversification (see Figure 3).
 ```{r, eval=FALSE}
 plot.misse.states(misse.results.list, rate.param="net.div", show.tip.label=TRUE, type="phylogram",
                   fsize=.25, legend="none")
@@ -139,6 +139,7 @@ There are two additional items that are worth mentioning. First, like with `MuHi
 Second, we note that `MiSSE` may seem slower than most other functions within `hisse`. This is somewhat intentional. Underneath the hood we have implemented a lot of checks to the integration for calculating probabilities along branches. This will mean that often times weird messages will spit out to the screen. For now, ignore them, the optimization "feels" these issues and takes necessary action. But this also means that users must pay particular attention to the complexity of the models they are fitting and critically think whether or not the parameters make sense. For example, in cetacean tree used above, I attemped to fit a model with three, four, and five hidden states, A, B, and C, but the reconstructions indicated a rather complicated, and highly uncertain, diversification history:
 
 ```{r, eval=TRUE}
+two.rate
 three.rate
 ```
 

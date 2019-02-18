@@ -647,7 +647,7 @@ ParametersToPass <- function(phy, data, f, model.vec, timeslice, hidden.states){
 print.hisse.fit <- function(x,...){
 	ntips=Ntip(x$phy)
 	output<-data.frame(x$loglik,x$AIC,x$AICc,ntips,row.names="")
-	names(output)<-c("-lnL","AIC","AICc","ntax")
+	names(output)<-c("lnL","AIC","AICc","ntax")
 	cat("\nFit\n")
 	print(output)
 	cat("\n")

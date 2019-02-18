@@ -1414,7 +1414,7 @@ print.geohisse.fit <- function(x,...){
     ntips <- Ntip( x$phy )
     nareas <- ncol( x$trans.matrix )/3
     output <- c(x$loglik, x$AIC, x$AICc, ntips, nareas)
-    names(output) <- c("-lnL", "AIC", "AICc", "n.taxa", "n.hidden.classes")
+    names(output) <- c("lnL", "AIC", "AICc", "n.taxa", "n.hidden.classes")
     cat("\n")
     cat("Fit \n")
     print(output)
