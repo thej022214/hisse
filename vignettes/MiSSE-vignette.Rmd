@@ -72,7 +72,7 @@ three.rate.weps <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 
 However, in the case of cetaceans, allowing extinction fraction to vary does not provide any additional information to the model as all rate classes return nearly identical estimates (not shown).
 
-I have already fit these models. Figure 1 shows the improvement in AIC as we increase the complexity of the model
+I have already fit these models. Figure 1 shows the improvement in AIC as we increase the complexity of the model.
 
 ```{r, eval=TRUE, echo=FALSE, fig.cap = "The fit of an incremental increase in the number of rate classes estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009). There is a clear reduction in AIC from one to three rate classes, which levels off at four rate classes and five rate classes returns an AIC that is about 1 unit higher than either the three and four rate class."}
 load("misse.vignette.Rsave")
