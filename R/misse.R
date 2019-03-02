@@ -8,6 +8,7 @@
 #library(GenSA)
 #library(data.table)
 #dyn.load("misse-ext-derivs.so")
+#dyn.load("birthdeath-ext-derivs.so")
 
 ######################################################################################################################################
 ######################################################################################################################################
@@ -34,9 +35,14 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
 
+    if(length(turnover) != length(eps)){
+        stop("The number of turnover parameters need to match the number of extinction fraction parameters.", call.=FALSE)
+    }
+
+
     ntips <- Ntip(phy)
     param.count <- sum(c(length(unique(turnover)), length(unique(eps)), 1))
-    if(param.count > (ntips/20)){
+    if(param.count > (ntips/10)){
         warning("You might not have enough data to fit this model well", call.=FALSE, immediate.=TRUE)
     }
 
@@ -57,7 +63,6 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     }
     pars.tmp <- c(turnover.tmp[1], eps.tmp[1], turnover.tmp[2], eps.tmp[2], turnover.tmp[3], eps.tmp[3], turnover.tmp[4], eps.tmp[4], turnover.tmp[5], eps.tmp[5], turnover.tmp[6], eps.tmp[6], turnover.tmp[7], eps.tmp[7], turnover.tmp[8], eps.tmp[8], turnover.tmp[9], eps.tmp[9], turnover.tmp[10], eps.tmp[10], turnover.tmp[11], eps.tmp[11], turnover.tmp[12], eps.tmp[12], turnover.tmp[13], eps.tmp[13], turnover.tmp[14], eps.tmp[14], turnover.tmp[15], eps.tmp[15], turnover.tmp[16], eps.tmp[16], turnover.tmp[17], eps.tmp[17], turnover.tmp[18], eps.tmp[18], turnover.tmp[19], eps.tmp[19], turnover.tmp[20], eps.tmp[20], turnover.tmp[21], eps.tmp[21], turnover.tmp[22], eps.tmp[22], turnover.tmp[23], eps.tmp[23], turnover.tmp[24], eps.tmp[24], turnover.tmp[25], eps.tmp[25], turnover.tmp[26], eps.tmp[26], trans.tmp[1])
     pars[1:length(pars.tmp)] <- pars.tmp
-    
     np <- max(pars)
     pars[pars==0] <- np + 1
 
@@ -87,7 +92,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 
         if(is.null(starting.vals)){
             def.set.pars <- rep(c(log(init.pars[1]+init.pars[2]), log(init.pars[2]/init.pars[1])), rate.cats)
-            trans.start <- log(0.0001)
+            trans.start <- log(rate.cats/sum(phy$edge.length))
         }else{
             def.set.pars <- rep(c(log(starting.vals[1]), log(starting.vals[2])), rate.cats)
             trans.start <- log(starting.vals[3])
@@ -98,9 +103,16 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
             upper.full <- rep(21, length(def.set.pars))
         }
 
-        np.sequence <- 1:(np-1)
-        ip <- numeric(np-1)
-        upper <- numeric(np-1)
+        if(rate.cats > 1){
+            np.sequence <- 1:(np-1)
+            ip <- numeric(np-1)
+            upper <- numeric(np-1)
+        }else{
+            np.sequence <- 1:np
+            ip <- numeric(np)
+            upper <- numeric(np)
+        }
+        
         for(i in np.sequence){
             ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
             upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
@@ -177,7 +189,6 @@ DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip
     model.vec[] <- c(p.new, 0)[pars]
     cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
     logl <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-
     return(-logl)
 }
 
@@ -189,28 +200,6 @@ DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip
 ######################################################################################################################################
 ######################################################################################################################################
 
-FindGenerations <- function(phy){
-    generation <- list()
-    known <- 1:Ntip(phy)
-    unknown <- phy$edge[,1]
-    needed <- phy$edge[,2]
-    root <- min(unknown)
-    i <- 1
-    repeat{
-        knowable <- unknown[needed %in% known]
-        knowable <- knowable[duplicated(knowable)]
-        generation[[i]] <-  knowable
-        
-        known <- c(known, knowable)
-        needed <- needed[!unknown %in% knowable]
-        unknown <- unknown[!unknown %in% knowable]
-        i <- i + 1
-        if (any(root == knowable)) break
-    }
-    res <- generation
-    return(res)
-}
-
 
 OrganizeDataMiSSE <- function(phy, f, hidden.states){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
@@ -218,10 +207,9 @@ OrganizeDataMiSSE <- function(phy, f, hidden.states){
     
     nb.tip <- length(phy$tip.label)
     nb.node <- phy$Nnode
-    
+
     compD <- matrix(0, nrow=nb.tip, ncol=26)
     compE <- matrix(0, nrow=nb.tip, ncol=26)
-    
     #Initializes the tip sampling and sets internal nodes to be zero:
     ncols = hidden.states
     if(length(f) == 1){
@@ -350,7 +338,7 @@ GetRootProbMiSSE <- function(cache, dat.tab, generations){
 
 ######################################################################################################################################
 ######################################################################################################################################
-### The MuHiSSE type down pass that carries out the integration and returns the likelihood:
+### The MiSSE type down pass that carries out the integration and returns the likelihood:
 ######################################################################################################################################
 ######################################################################################################################################
 
@@ -572,7 +560,7 @@ print.misse.fit <- function(x,...){
     ntips <- Ntip( x$phy )
     nstates <- x$hidden.states
     output <- c(x$loglik, x$AIC, x$AICc, ntips, nstates)
-    names(output) <- c("-lnL", "AIC", "AICc", "n.taxa", "n.hidden.states")
+    names(output) <- c("lnL", "AIC", "AICc", "n.taxa", "n.hidden.states")
     cat("\n")
     cat("Fit \n")
     print(output)
@@ -585,18 +573,27 @@ print.misse.fit <- function(x,...){
 
 
 
-#phy <- read.tree("/Users/jmbeauli/hisse/vignettes/whales_Steemanetal2009.tre")
+
+#phy <- read.tree("../vignettes/whales_Steemanetal2009.tre")
 #phy <- read.tree("whales_Slateretal2010.tre")
 ## print(p.new)
 #gen <- hisse:::FindGenerations(phy)
-#dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2)
+#dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1)
 #nb.tip <- Ntip(phy)
 #nb.node <- phy$Nnode
-#model.vec <- c(0.103624, 5.207178e-09, 0.103624, 5.207178e-09, rep(0,48), .1)
+#model.vec <- c(0.103624, 5.207178e-09, rep(0,52), 1)
 
-#cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+#cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
 #logl <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
 #right.logl <- -277.6942
 #round(logl,4) == round(right.logl,4)
+
+
+
+
+
+
+
+
 
 

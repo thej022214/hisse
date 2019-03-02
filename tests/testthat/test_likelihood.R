@@ -448,3 +448,36 @@ test_that("MuHiSSE_test2", {
     expect_true(comparison)
 })
 
+
+test_that("MiSSE_test1", {
+    skip_on_cran()
+
+    phy <- read.tree("whales_Steemanetal2009.tre")
+    gen <- hisse:::FindGenerations(phy)
+    dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1)
+    nb.tip <- Ntip(phy)
+    nb.node <- phy$Nnode
+    model.vec <- c(0.103624, 5.207178e-09, rep(0,52), 1)
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+    logl.one.rate <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    right.logl <- -277.6942
+    comparison <- round(logl.one.rate,4) == round(right.logl,4)
+    expect_true(comparison)
+})
+
+
+test_that("MiSSE_test2", {
+    skip_on_cran()
+    
+    phy <- read.tree("whales_Steemanetal2009.tre")
+    gen <- hisse:::FindGenerations(phy)
+    dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=3)
+    nb.tip <- Ntip(phy)
+    nb.node <- phy$Nnode
+    model.vec <- c(0.103624, 5.207178e-09, 0.103624, 5.207178e-09, 0.103624, 5.207178e-09, rep(0,46), 1)
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=3, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+    logl.three.rate <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
+    right.logl <- -277.6942
+    comparison <- round(logl.three.rate,4) == round(right.logl,4)
+    expect_true(comparison)
+})

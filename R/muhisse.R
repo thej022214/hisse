@@ -1197,7 +1197,7 @@ print.muhisse.fit <- function(x,...){
     ntips <- Ntip( x$phy )
     nstates <- ncol( x$trans.matrix )/4
     output <- c(x$loglik, x$AIC, x$AICc, ntips, nstates)
-    names(output) <- c("-lnL", "AIC", "AICc", "n.taxa", "n.hidden.states")
+    names(output) <- c("lnL", "AIC", "AICc", "n.taxa", "n.hidden.states")
     cat("\n")
     cat("Fit \n")
     print(output)
