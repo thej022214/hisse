@@ -124,10 +124,10 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
         #}
 	}
 
-    if(smart.bounds == TRUE | fast.int == TRUE){
+    if(smart.bounds == TRUE){
+        cat("Using smart MLE bounds computed from the data.", "\n")
         ## Find smart bounds by using a quick MLE search.
         ## Set the bounds to the turnover.upper and trans.upper and continue.
-        ## Smart bounds are necessary in the case of fast integration.
         bd.mle <- birthdeath( phy = phy )
         mle.birth <- bd.mle$para[2] / (1-bd.mle$para[1])
         mle.death <- (bd.mle$para[1] * bd.mle$para[2]) / (1-bd.mle$para[1])
@@ -201,7 +201,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
         ## ###########################################
         
         ## Make general checks and messages:
-        print( "Using fast integration algorithm." )
+        cat("Using fast integration algorithm.", "\n")
         if( condition.on.survival == FALSE ){
             stop( "This algorithm only implements the condition.on.survival approach." )
         }
@@ -262,7 +262,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
                                       , tip_pstates = data.castor, proxy_map = c(1,2,1,2)
                                       , birth_rates = lambda.vec, death_rates = mu.vec
                                       , transition_matrix = Q.mat, Ntrials = 0, root_conditioning = root.type
-                                      , sampling_fractions = f, verbose = FALSE)
+                                      , sampling_fractions = f, verbose = FALSE, check_input = FALSE)
                 return( -1 * fit.castor$loglikelihood )
             }
             
@@ -286,7 +286,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
                 fit.castor <- fit_musse(tree = phy, Nstates = 2, tip_pstates = data.castor
                                       , birth_rates = lambda.vec[1:2], death_rates = mu.vec[1:2]
                                       , transition_matrix = Q.mat, Ntrials = 0, root_conditioning = root.type
-                                      , sampling_fractions = f, verbose = FALSE)
+                                      , sampling_fractions = f, verbose = FALSE, check_input = FALSE)
                 return( -1 * fit.castor$loglikelihood )
             }
         }
@@ -338,14 +338,15 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
         turn.vec <- c(0, turnover)[turnover.anc.padded]
         eps.vec <- c(0, eps)[eps.anc.padded]
         trans.vec.padded <- c(0, trans.vec)
-        Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = 2, nrow = 2)
 
         if( ncol(trans.rate) > 2 ){
+            Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = 4, nrow = 4)
             solution.effect <- c(turn.vec, eps.vec
                                , Q.mat[2,1], Q.mat[3,1], Q.mat[4,1], Q.mat[1,2]
                                , Q.mat[3,2], Q.mat[4,2], Q.mat[1,3], Q.mat[2,3]
                                , Q.mat[4,3], Q.mat[1,4], Q.mat[2,4], Q.mat[1,4])
         } else{
+            Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = 2, nrow = 2)
             solution.effect <- c(turn.vec, eps.vec
                                , Q.mat[2,1], 0, 0, Q.mat[1,2]
                                , 0, 0, 0, 0
