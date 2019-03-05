@@ -210,9 +210,9 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
         names( data.castor ) <- data[,1]
 
         ## Create starting vectors for the analyses.
-        turnover.init <- rep(init.pars[1]+init.pars[3], max( turnover.anc ))
-        eps.init <- rep(init.pars[3]/init.pars[1], max( eps.anc ))
-        trans.vec.init <- rep(init.pars[6], max(trans.rate, na.rm = TRUE))
+        turnover.init <- log( rep(init.pars[1]+init.pars[3], max( turnover.anc )) )
+        eps.init <- log( rep(init.pars[3]/init.pars[1], max( eps.anc )) )
+        trans.vec.init <- log( rep(init.pars[6], max(trans.rate, na.rm = TRUE)) )
         init.castor.vec <- c(turnover.init, eps.init, trans.vec.init)
 
         ## Get the indexes to cut the vector of parameters.
