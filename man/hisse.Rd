@@ -5,11 +5,11 @@
 \usage{
 hisse(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), 
 eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), 
-eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, 
+eps.beta=c(0,0,0,0), fast.int=TRUE, timeslice=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE,
 sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25,
-starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100,
-ode.eps=0)
+starting.vals=NULL, smart.bounds=FALSE, turnover.upper=10000,
+eps.upper=3, trans.upper=100, ode.eps=0)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -20,7 +20,10 @@ ode.eps=0)
 \item{eps.anc}{a vector of length 4, indicating the free parameters associated with the extinction fractions. Default settings is a BiSSE model with fixed extinction fractions for both observed states (see Details).} 
 \item{trans.rate}{provides the transition rate model.}
 \item{turnover.beta}{a vector of length 4, indicating the free parameters associated with time-varying net turnover rates (see Details).}
-\item{eps.beta}{a vector of length 4, indicating the free parameters associated with time-varying extinction fractions (see Details).}
+\item{eps.beta}{a vector of length 4, indicating the free parameters
+  associated with time-varying extinction fractions (see Details).}
+\item{fast.int}{whether to use the fast integration algorithm as
+  implemented in the package \dQuote{castor} (see Details).}
 \item{timeslice}{a user-supplied time to split the tree.}
 \item{condition.on.survival}{a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
 \item{root.type}{indicates whether root summarization follow the procedure described by FitzJohn et al. 2009, \dQuote{madfitz} or Herrera-Alsina et al. 2018, \dQuote{herr_als}.}
@@ -32,38 +35,104 @@ ode.eps=0)
 \item{max.tol}{supplies the relative optimization tolerance to \code{subplex}.}
 \item{starting.vals}{a vector of starting values to be used instead of the default settings. These are just three values given in the following order: turnover (1), extinction fraction (2), and a single transition rate (3)}
 \item{turnover.upper}{sets the upper bound for the turnover parameters. The default upper bound assumes an event occurs every 100 years.}
-\item{eps.upper}{sets the upper bound for the extinction fraction parameters.}
+\item{eps.upper}{sets the upper bound for the extinction fraction
+  parameters.}
+\item{smart.bounds}{whether to set the upper bound for the turnover
+  and transition rates from the observed data. Upper bounds are defined
+  as two order of magnitude (x * 100) over a simplistic MLE based on a
+  birth-death and MK model.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
 \item{ode.eps}{sets the tolerance for the integration at the end of a branch. Essentially if the sum of compD is less than this tolerance, then it assumes the results are unstable and discards them. The default is set to zero, but in testing a value of 1e-8 can sometimes produce stable solutions for both easy and very difficult optimization problems.}
 }
 \details{
-This function sets up and executes the HiSSE model. The model closely follows \code{diversitree}, although here we employ modified optimization procedures. For example, rather than optimizing birth and death separately, hisse optimizes orthogonal transformations of these variables: we let tau = birth+death define "net turnover", and we let eps = death/birth define the \dQuote{extinction fraction}. This reparameterization alleviates problems associated with overfitting when birth and death are highly correlated, but both matter in explaining the diversity pattern. As for data file format, \code{hisse} expects a two column matrix or data frame, with the first column containing the species names and the second containing the binary character information. Note that the order of the data file and the names in the \dQuote{phylo} object need not be in the same order; \code{hisse} deals with this internally. Also, the character information should be binary and coded as 0 and 1, otherwise the function will misbehave. However, if the state for a species is unknown, a user can specify this with a 2, and the state will be considered maximally ambiguous.
+  The model closely follows \code{diversitree}, although here we employ
+  modified optimization procedures. For example, rather than optimizing
+  birth and death separately, hisse optimizes orthogonal transformations
+  of these variables: we let tau = birth+death define "net turnover",
+  and we let eps = death/birth define the \dQuote{extinction fraction}.
+  This reparameterization alleviates problems associated
+  with overfitting when birth and death are highly correlated, but both
+  matter in explaining the diversity pattern. 
 
-To setup a model, users input vectors containing values to indicate how many free parameters are to be estimated for each of the variables in the model. For example, the \dQuote{turnover.anc} input vector is set by default as c(1,1,0,0). This means for state 0 and state 1, we are allowing one free parameter to define the net turnover rate (birth+death) in the model. This is essentially a BiSSE model with fixed turnover rates. Now, say we want to include separate turnover rates for both states we would simply input c(1,2,0,0). The last two entries, which in the preceding example are set to zero, correspond to the hidden states; the third entry corresponds to a hidden state associated with observed state 0, such that 0A (hidden state absent) is the first entry, and 0B (hidden state present) is the third entry. So, to set up a model with three turnover rates, where we include a free parameter for a hidden state associated with state 0 we input c(1,2,3,0). A full model would thus be c(1,2,3,4), which corresponds to four separate net turnover rates, for states 0A (first entry), 1A (second entry), 0B (third entry), and 1B (fourth entry). Extinction fraction, or \dQuote{eps.anc}, follows the same format, though including a zero for a state we want to include in the model corresponds to no extinction, which is the Yule equivalent. In general, we follow this format to make it easier to generate a large set of nested models. Once the model is specified, the parameters can be estimated using the subplex routine (default), or use a two-step process (i.e., sann=TRUE) that first employs a stochastic simulated annealing procedure, which is later refined using the subplex routine.
+  Data format for \code{hisse} need to be a two column matrix or
+  data frame, with the first column containing the species names and the
+  second containing the binary character information. Note that the
+  order of the data file and the names in the \dQuote{phylo} object need
+  not be in the same order; \code{hisse} deals with this
+  internally.
 
-The \dQuote{trans.rate} input is the transition model and has an entirely different setup than turnover and extinction rates. See \code{TransMatMaker} function for more details. 
+  Character information should be binary and coded as 0 and 1, otherwise
+  the function will misbehave. However, if the state for a species is
+  unknown, a user can specify this with a 2, and the state will be
+  considered maximally ambiguous.
 
-For user-specified \dQuote{root.p}, you should specify the probability for each state. If you are doing a hidden model, there will be four states: 0A, 1A, 0B, 1B. So if you wanted to say the root had to be state 0, you would specify \dQuote{root.p = c(0.5, 0, 0.5, 0)}.
+  To setup a model, users input vectors containing values to indicate how
+  many free parameters are to be estimated for each of the variables in
+  the model. For example, the \dQuote{turnover.anc} input vector is set by
+  default as c(1,1,0,0). This means for state 0 and state 1, we are
+  allowing one free parameter to define the net turnover rate
+  (birth+death) in the model. This is essentially a BiSSE model with fixed
+  turnover rates. Now, say we want to include separate turnover rates for
+  both states we would simply input c(1,2,0,0). The last two entries,
+  which in the preceding example are set to zero, correspond to the hidden
+  states; the third entry corresponds to a hidden state associated with
+  observed state 0, such that 0A (hidden state absent) is the first entry,
+  and 0B (hidden state present) is the third entry. So, to set up a model
+  with three turnover rates, where we include a free parameter for a
+  hidden state associated with state 0 we input c(1,2,3,0). A full model
+  would thus be c(1,2,3,4), which corresponds to four separate net
+  turnover rates, for states 0A (first entry), 1A (second entry), 0B
+  (third entry), and 1B (fourth entry). Extinction fraction, or
+  \dQuote{eps.anc}, follows the same format, though including a zero for a
+  state we want to include in the model corresponds to no extinction,
+  which is the Yule equivalent. In general, we follow this format to make
+  it easier to generate a large set of nested models.
 
-For the \dQuote{root.type} option, we are currently maintaining the previous default of 
-\dQuote{madfitz}. However, it was recently pointed out by Herrera-Alsina et al. (2018)
-that at the root, the individual likelihoods for each possible state should be conditioned
-prior to averaging the individual likelihoods across states. This can be set doing 
-\dQuote{herr_als}. It is unclear to us which is exactly correct, but it does seem that 
-both \dQuote{madfitz} and \dQuote{herr_als} behave exactly as they should in the case of 
-character-independent diversification (i.e., reduces to likelihood of tree + likelihood of
-trait model). We've also tested the behavior and the likelihood differences are very 
-subtle and the parameter estimates in simulation are nearly indistinguishable from the
-\dQuote{madfitz} conditioning scheme. We provide both options and encourage users to try 
-both and let us know conditions in which the result vary dramatically under the two root
-implementations. We suspect they do not. 
+  Parameters can be estimated using the subplex routine
+  (default), or use a two-step process (i.e., sann=TRUE) that first
+  employs a stochastic simulated annealing procedure, which is later
+  refined using the subplex routine. The \dQuote{trans.rate} input is
+  the transition model and has an entirely different setup than
+  turnover and extinction rates. See \code{TransMatMaker} function
+  for more details.
 
-Also, note, that in the case of \dQuote{root.type=user} and \dQuote{root.type=equal} are
-no longer explicit \dQuote{root.type} options. Instead, either \dQuote{madfitz} or 
-\dQuote{herr_als} are specified and the \dQuote{root.p} can be set to allow for custom
-root options.  
+  For user-specified \dQuote{root.p}, you should specify the probability
+  for each state. If you are doing a hidden model, there will be four
+  states: 0A, 1A, 0B, 1B. So if you wanted to say the root had to be state
+  0, you would specify \dQuote{root.p = c(0.5, 0, 0.5, 0)}.
 
-Finally, the options \dQuote{.beta} and \dQuote{timeslice} are included, but neither have been tested -- needless to say, use at your own risk (but really, though, you should probably forget that these options exist for the time being). The \dQuote{.beta} provides a means for testing for time-varying rates, whereas \dQuote{timeslice} splits the tree to allow the process to vary before and after some user defined time period. These options will be further developed in due course.
+  For the \dQuote{root.type} option, we are currently maintaining the previous default of 
+  \dQuote{madfitz}. However, it was recently pointed out by Herrera-Alsina et al. (2018)
+  that at the root, the individual likelihoods for each possible state should be conditioned
+  prior to averaging the individual likelihoods across states. This can be set doing 
+  \dQuote{herr_als}. It is unclear to us which is exactly correct, but it does seem that 
+  both \dQuote{madfitz} and \dQuote{herr_als} behave exactly as they should in the case of 
+  character-independent diversification (i.e., reduces to likelihood of tree + likelihood of
+  trait model). We've also tested the behavior and the likelihood differences are very 
+  subtle and the parameter estimates in simulation are nearly indistinguishable from the
+  \dQuote{madfitz} conditioning scheme. We provide both options and encourage users to try 
+  both and let us know conditions in which the result vary dramatically under the two root
+  implementations. We suspect they do not.
+
+  Also, note, that in the case of \dQuote{root.type=user} and \dQuote{root.type=equal} are
+  no longer explicit \dQuote{root.type} options. Instead, either \dQuote{madfitz} or 
+  \dQuote{herr_als} are specified and the \dQuote{root.p} can be set to allow for custom
+  root options.
+
+  The option \dQuote{fast.int=TRUE} make use of a faster integration
+  algorithm as implemented in the package \dQuote{castor::fit_musse}. We
+  detected minimum differences in the likelihood values computed by our
+  implementation and the one conducted by \dQuote{castor::fit_musse}
+  which are likely due to numeric approximations. This option greatly
+  reduces the time to perform estimates.
+
+  Finally, the options \dQuote{.beta} and \dQuote{timeslice} are included,
+  but neither have been tested -- needless to say, use at your own risk
+  (but really, though, you should probably forget that these options exist
+  for the time being). The \dQuote{.beta} provides a means for testing for
+  time-varying rates, whereas \dQuote{timeslice} splits the tree to allow
+  the process to vary before and after some user defined time
+  period. These options will be further developed in due course.
 }
 \value{
 \code{hisse} returns an object of class \code{hisse.fit}. This is a list with elements:
