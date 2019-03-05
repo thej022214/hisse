@@ -4,7 +4,10 @@ test_that("BiSSE_HiSSE_test",{
     library(diversitree)
 	pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
 	set.seed(4)
-	phy <- tree.bisse(pars, max.t=30, x0=0)
+        phy <- NULL
+        while( is.null( phy ) ){
+            phy <- tree.bisse(pars, max.t=30, x0=0)
+        }
 	lik <- make.bisse(phy, phy$tip.state, sampling.f=c(.4,.6))
 	diversitree.full <- lik(pars)
 	
@@ -38,8 +41,11 @@ test_that("MuSSE_HiSSE_test1", {
 			  .05, 0,         # q12, q13
 			  .05, .05,       # q21, q23
 			  0,   .05)       # q31, q32
-	set.seed(2)
-	phy <- tree.musse(pars, 30, x0=1)
+        set.seed(2)
+        phy <- NULL
+        while( is.null( phy ) ){
+            phy <- tree.musse(pars, 30, x0=1)
+        }
 	states <- phy$tip.state
 	lik <- make.musse(phy, states, 3)
 	lik.base <- constrain(lik, lambda2 ~ lambda1, lambda3 ~ lambda1,
@@ -79,8 +85,11 @@ test_that("MuSSE_HiSSE_test2", {
 			  .05, 0,         # q12, q13
 			  .05, .05,       # q21, q23
 			  0,   .05)       # q31, q32
-	set.seed(2)
-	phy <- tree.musse(pars, 30, x0=1)
+        set.seed(2)
+        phy <- NULL
+        while( is.null( phy ) ){
+            phy <- tree.musse(pars, 30, x0=1)
+        }
 	states <- phy$tip.state
 	lik <- make.musse(phy, states, 3)
 	diversitree.full = lik(pars)
@@ -112,8 +121,11 @@ test_that("HiSSE_Null_Four_test", {
 
 	library(diversitree)
 	pars <- c(0.1, 0.1, 0.03, 0.03, 0.01, 0.01)
-	set.seed(4)
-	phy <- tree.bisse(pars, max.t=30, x0=0)
+        set.seed(4)
+        phy <- NULL
+        while( is.null( phy ) ){
+            phy <- tree.bisse(pars, max.t=30, x0=0)
+        }
 	lik <- make.bisse(phy, phy$tip.state)
 	diversitree.full <- lik(pars)
 	
@@ -136,7 +148,10 @@ test_that("GeoHiSSE_test1", {
     pars <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
     names(pars) <- diversitree:::default.argnames.geosse()
     set.seed(5)
-    phy <- tree.geosse(pars, max.t=4, x0=0)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.geosse(pars, max.t=4, x0=0)
+    }
     lik <- make.geosse(phy, phy$tip.state)
     diversitree.full <- lik(pars)
     
@@ -160,7 +175,10 @@ test_that("GeoHiSSE_test2", {
     pars <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
     names(pars) <- diversitree:::default.argnames.geosse()
     set.seed(5)
-    phy <- tree.geosse(pars, max.t=4, x0=0)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.geosse(pars, max.t=4, x0=0)
+    }
     lik <- make.geosse(phy, phy$tip.state)
     diversitree.full <- lik(pars)
     
@@ -184,7 +202,10 @@ test_that("GeoHiSSE_test3", {
     pars <- c(1.5, 0.5, 1.0, 0.7, 0.4, 2.5, 0.5)
     names(pars) <- diversitree:::default.argnames.geosse()
     set.seed(9)
-    phy <- tree.geosse(pars, max.t=4, x0=0)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.geosse(pars, max.t=4, x0=0)
+    }
     lik <- make.geosse(phy, phy$tip.state)
     diversitree.full <- lik(pars)
     
@@ -208,7 +229,10 @@ test_that("GeoHiSSE_test4", {
     pars <- c(1.5, 0.5, 1.0, 0.7, 0.4, 2.5, 0.5)
     names(pars) <- diversitree:::default.argnames.geosse()
     set.seed(9)
-    phy <- tree.geosse(pars, max.t=4, x0=0)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.geosse(pars, max.t=4, x0=0)
+    }
     lik <- make.geosse(phy, phy$tip.state)
     diversitree.full <- lik(pars)
     
@@ -288,7 +312,10 @@ test_that("MuSSE_test1", {
     .05, .05,       # q21, q23
     0,   .05)       # q31, q32
     set.seed(2)
-    phy <- tree.musse(pars, 30, x0=1)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.musse(pars, 30, x0=1)
+    }
     states <- phy$tip.state
     lik <- make.musse(phy, states, 3)
     lik.base <- constrain(lik, lambda2 ~ lambda1, lambda3 ~ lambda1,
@@ -321,7 +348,10 @@ test_that("MuSSE_test2", {
     .05, .05,       # q21, q23
     0,   .05)       # q31, q32
     set.seed(2)
-    phy <- tree.musse(pars, 30, x0=1)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.musse(pars, 30, x0=1)
+    }    
     states <- phy$tip.state
     lik <- make.musse(phy, states, 3)
     lik.base <- constrain(lik,
@@ -354,7 +384,10 @@ test_that("MuHiSSE_test1", {
     .05, .00, .05,     # q31, q32, q34
     .00, .05, .05)
     set.seed(2)
-    phy <- tree.musse(pars, 30, x0=1)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.musse(pars, 30, x0=1)
+    }
     states <- phy$tip.state
     lik <- make.musse(phy, states, 4)
     #lik <- make.musse(phy, states, 3)
@@ -408,7 +441,10 @@ test_that("MuHiSSE_test2", {
     .05, .05,       # q21, q23
     0,   .05)       # q31, q32
     set.seed(2)
-    phy <- tree.musse(pars, 30, x0=1)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.musse(pars, 30, x0=1)
+    }
     states <- phy$tip.state
     lik <- make.musse(phy, states, 3)
     lik.base <- constrain(lik, lambda2 ~ lambda1, lambda3 ~ lambda1,
