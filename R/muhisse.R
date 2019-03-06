@@ -302,8 +302,18 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         if(is.null(starting.vals)){
             def.set.pars <- rep(c(log(init.pars[1:4]+init.pars[5:8]), log(init.pars[5:8]/init.pars[1:4]), log(init.pars[9:20]), rep(log(.01), 28)), rate.cats)
         }else{
-            def.set.pars <- rep(c(log(starting.vals[1:4]), log(starting.vals[5:8]), log(starting.vals[9:20]), rep(log(0.01), 28)), rate.cats)
+            ## Check if 'starting.vals' has the correct format.
+            if( !length(starting.vals) %in% c(3,20) ){
+                stop("Wrong length of starting.vals")
+            }
+            if( length(starting.vals) == 20 ){
+                cat("Using developer mode for starting.vals.", "\n")
+                def.set.pars <- rep(c(log(starting.vals[1:4]), log(starting.vals[5:8]), log(starting.vals[9:20]), rep(log(0.01), 28)), rate.cats)
+            } else{
+                def.set.pars <- rep(c(log( rep(starting.vals[1],4) ), log( rep(starting.vals[2],4) ), log( rep(starting.vals[3],12) ), rep(log(0.01), 28)), rate.cats)
+            }
         }
+        
         if(bounded.search == TRUE){
             upper.full <- rep(c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper),12), rep(log(10), 28)), rate.cats)
         }else{

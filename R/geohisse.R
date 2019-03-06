@@ -219,7 +219,16 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         if(is.null(starting.vals)){
             def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]),3), rep(log(.01), 12)), rate.cats)
         }else{
-            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[6:7]),3), rep(log(0.01), 12)), rate.cats)
+            ## Check if 'starting.vals' has the correct format.
+            if( !length(starting.vals) %in% c(3,7) ){
+                stop("Wrong length of starting.vals")
+            }
+            if( length(starting.vals) == 7 ){
+                cat("Using developer mode for starting.vals.", "\n")
+                def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(starting.vals[6:7]),3), rep(log(0.01), 12)), rate.cats)
+            } else{
+                def.set.pars <- rep(c(log( rep(starting.vals[1],3) ), log( rep(starting.vals[2],2) ), rep(log(starting.vals[3]),6), rep(log(0.01), 12)), rate.cats)
+            }
         }
         if(bounded.search == TRUE){
             upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),2), rep(log(trans.upper),2*3), rep(log(10), 12)), rate.cats)
@@ -375,8 +384,18 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
         if(is.null(starting.vals)){
             def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:6]), log(init.pars[7:12]), rep(log(.01), 12)), rate.cats)
         }else{
+            ## Check if 'starting.vals' has the correct format.
+            if( !length(starting.vals) %in% c(3,12) ){
+                stop("Wrong length of starting.vals")
+            }
+            if( length(starting.vals) == 12 ){
+                cat("Using developer mode for starting.vals.", "\n")
             def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:6]), log(starting.vals[7:12]), rep(log(0.01), 12)), rate.cats)
+            } else{
+                def.set.pars <- rep(c(log( rep(starting.vals[1],3) ), log( rep(starting.vals[2],2) ), rep(log(starting.vals[3]),6), rep(log(0.01), 12)), rate.cats)
+            }
         }
+        
         if(bounded.search == TRUE){
             upper.full <- rep(c(rep(log(speciation.upper),3), rep(log(extirpation.upper),3), rep(log(trans.upper),6), rep(log(10), 12)), rate.cats)
         }else{

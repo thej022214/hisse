@@ -56,8 +56,9 @@ ode.eps=0)
   be enforced during optimization. The default is is \code{TRUE}.}
 \item{max.tol}{supplies the relative optimization tolerance to
   \code{subplex}.}
-\item{starting.vals}{a vector of starting values for the diversification parameters
-  to be used instead of the default settings.}
+\item{starting.vals}{a numeric vector of length 3 with starting values for the
+  model for all areas and hidden states. Position [1] sets turnover, [2]
+  sets extinction fraction, and [3] transition rates.}
 \item{turnover.upper}{sets the upper bound for the turnover parameters.}
 \item{eps.upper}{sets the upper bound for the eps parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
