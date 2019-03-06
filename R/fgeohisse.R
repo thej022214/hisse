@@ -383,8 +383,16 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1
             #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[7:8]*.1),3), rep(log(.01), 27)), rate.cats)
             def.set.pars <- rep(c(log(init.pars[1]+init.pars[4]), log(init.pars[2]+init.pars[5]), log(sum(init.pars[1:3])), log(init.pars[4]/init.pars[1]),  log(init.pars[5]/init.pars[2]), rep(log(init.pars[7:8]),3), rep(log(0.001), 27)), rate.cats)
         }else{
-            def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(starting.vals[6:7]),3), rep(log(0.001), 27)), rate.cats)
-            #def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(init.pars[7:8]),3), rep(log(0.01), 27)), rate.cats)
+            ## Check the format for the starting.vals and accepts legacy mode if necessary.
+            if( !length(starting.vals) %in% c(3,7) ){
+                stop("Wrong length of starting.vals")
+            }
+            if( length(starting.vals) == 7 ){
+                cat("Using developer mode for starting.vals.", "\n")
+                def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(starting.vals[6:7]),3), rep(log(0.001), 27)), rate.cats)
+            } else{
+                def.set.pars <- rep(c(log( rep(starting.vals[1],3) ), log( rep(starting.vals[2],2) ), rep(log(starting.vals[3]),6), rep(log(0.001), 27)), rate.cats)
+            }
         }
         if(bounded.search == TRUE){
             #upper.full <- rep(c(rep(log(turnover.upper),3), rep(log(extinct.frac.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)

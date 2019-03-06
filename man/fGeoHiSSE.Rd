@@ -62,8 +62,9 @@ model.}
   for the diversification parameters. The equation used is based on Magallon and 
   Sanderson (2001), and follows the procedure used in the original GeoSSE 
   implementation.}
-\item{starting.vals}{a vector of starting values for the diversification parameters
-  to be used instead of the default settings.}
+\item{starting.vals}{a numeric vector of length 3 with starting values for the
+  model for all areas and hidden states. Position [1] sets turnover, [2]
+  sets extinction fraction, and [3] dispersal rates.}
 \item{turnover.upper}{sets the upper bound for the speciation parameters.}
 \item{extinct.frac.upper}{sets the upper bound for the extirpation parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
