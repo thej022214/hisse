@@ -15,7 +15,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), fast.int=TRUE, hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0){
+MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), fast.int=TRUE, hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, smart.bounds = FALSE, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -69,6 +69,32 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     ## Check if unavailable option for parameter f is used:
     if( !length(f) == 4 ){
         stop("Length of parameter 'f' needs to be 4.")
+    }
+
+    ## Check if 'smart bounds' were called.
+    ## If positive, then updates the turnover and trans upper valus.
+    if(smart.bounds == TRUE){
+        cat("Using smart MLE bounds computed from the data.", "\n")
+        ## Find smart bounds by using a quick MLE search.
+        ## Set the bounds to the turnover.upper and trans.upper and continue.
+        bd.mle <- birthdeath( phy = phy )
+        mle.birth <- bd.mle$para[2] / (1-bd.mle$para[1])
+        mle.death <- (bd.mle$para[1] * bd.mle$para[2]) / (1-bd.mle$para[1])
+        mle.turn <- mle.birth + mle.death
+        ## For the bounds on the MK need to transform the data into a numeric vector.
+        vector.data <- apply(data[,2:3], 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "01" = 2, "10" = 3, "11" = 4, "02"=1, "20"=3, "21"=2, "12"=4, "22"=4))
+        names(vector.data) <- data[,1]
+        ## Fit a quick MLE for a single rate transition model.
+        mle.mk <- hsp_mk_model(tree = phy, tip_states = vector.data, rate_model = "ER")
+        mle.trans <- mle.mk$transition_matrix[1,2]
+        ## Set the upper bounds one order of magnitude higher than the mle.
+        turnover.upper <- unname( mle.turn * 100 )
+        trans.upper <- unname( mle.trans * 100 )
+        ## Make sure we are using a bounded search:
+        if( bounded.search == FALSE ){
+            warning( "Using bounded search." )
+            bounded.search <- TRUE
+        }
     }
     
     pars <- numeric(384)

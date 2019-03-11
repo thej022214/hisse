@@ -7,9 +7,9 @@
 MuHiSSE(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4),
 fast.int=TRUE, hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, 
-bounded.search=TRUE,  max.tol=.Machine$double.eps^.50, starting.vals=NULL,
-turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, 
-ode.eps=0)
+bounded.search=TRUE,  max.tol=.Machine$double.eps^.50,
+starting.vals=NULL, smart.bounds=FALSE, turnover.upper=10000,
+eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
@@ -61,6 +61,10 @@ ode.eps=0)
 \item{starting.vals}{a numeric vector of length 3 with starting values for the
   model for all areas and hidden states. Position [1] sets turnover, [2]
   sets extinction fraction, and [3] transition rates.}
+\item{smart.bounds}{whether to set the upper bound for the turnover
+  and transition rates from the observed data. Upper bounds are defined
+  as two order of magnitude (x * 100) over a simplistic MLE based on a
+  birth-death and MK model.}
 \item{turnover.upper}{sets the upper bound for the turnover parameters.}
 \item{eps.upper}{sets the upper bound for the eps parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
