@@ -4,8 +4,8 @@
 \description{Sets up and executes a MuHiSSE model (Multicharacter Hidden State Speciation
  and Extinction) on a phylogeny and character distribution.}
 \usage{
-MuHiSSE(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), 
-hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, 
+MuHiSSE(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4),
+fast.int=TRUE, hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, 
 bounded.search=TRUE,  max.tol=.Machine$double.eps^.50, starting.vals=NULL,
 turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, 
@@ -36,6 +36,8 @@ ode.eps=0)
   parameters: mu00A, mu01A, mu10A, mu11A, mu00B, mu01B, mu10B, and mu11B. And so on. The 
   length of the numeric vector needs to match the number of extinction parameters in the 
   model. See 'Details'.}
+\item{fast.int}{whether to use the fast integration algorithm as
+  implemented in the package \dQuote{castor} (see Details).}
 \item{hidden.states}{a logical indicating whether the model includes a
   hidden states. The default is \code{FALSE}.} 
 \item{trans.rate}{provides the transition rate model. See function
@@ -132,7 +134,14 @@ trait model). We've also tested the behavior and the likelihood differences are 
 subtle and the parameter estimates in simulation are nearly indistinguishable from the
 \dQuote{madfitz} conditioning scheme. We provide both options and encourage users to try 
 both and let us know conditions in which the result vary dramatically under the two root
-implementations. We suspect they do not. 
+implementations. We suspect they do not.
+
+The option \dQuote{fast.int=TRUE} make use of a faster integration
+algorithm as implemented in the package \dQuote{castor::fit_musse}. We
+detected minimum differences in the likelihood values computed by our
+implementation and the one conducted by \dQuote{castor::fit_musse}
+which are likely due to numeric approximations. This option greatly
+reduces the time to perform estimates.
 
 Also, note, that in the case of \dQuote{root.type=user} and \dQuote{root.type=equal} are
 no longer explicit \dQuote{root.type} options. Instead, either \dQuote{madfitz} or 

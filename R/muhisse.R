@@ -15,7 +15,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0){
+MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), fast.int=TRUE, hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -30,7 +30,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     }
     
     if(any(f == 0)){
-        f[which(f==0)] <- 1
+        f[f == 0] <- 1 ## which() is not necessary.
     }
     
     if(!root.type == "madfitz" & !root.type == "herr_als"){
@@ -64,6 +64,11 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     }
     if( length(turnover) == 4 & hidden.states ){
         stop("Turnover has only 4 elements but 'hidden.states' was set to TRUE. Please set 'hidden.states' to FALSE if the model does not include hidden rate classes.")
+    }
+
+    ## Check if unavailable option for parameter f is used:
+    if( !length(f) == 4 ){
+        stop("Length of parameter 'f' needs to be 4.")
     }
     
     pars <- numeric(384)
@@ -274,18 +279,22 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     #This is used to scale starting values to account for sampling:
     if(length(f) == 4){
         freqs <- table(apply(data.new, 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "01" = 2, "10" = 3, "11" = 4, "02"=1, "20"=3, "21"=2, "12"=4, "22"=4)))
-        if(length(freqs == 4)){
-            freqs[which(!c(1:4) %in% names(freqs))] <- 0
-            samp.freq.tree <- Ntip(phy) / sum(freqs / f)
-        }else{
-            samp.freq.tree <- Ntip(phy) / sum(freqs / f)
-        }
+        ## Fixing the structure of the freqs vector.
+        ## if(length(freqs == 4)){
+        ##     freqs[which(!c(1:4) %in% names(freqs))] <- 0
+        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
+        ## }else{
+        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
+        ## }
+        freqs.vec <- rep(0, times = 4)
+        freqs.vec[as.numeric(names(freqs))] <- as.numeric( freqs )
+        samp.freq.tree <- Ntip(phy) / sum(freqs.vec / f)
     }else{
         if(length(f) == Ntip(phy)){
             stop("This functionality has been temporarily removed.")
             #samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f[as.numeric(names(freqs))+1]))
         }else{
-            stop("The vector of sampling frequencies does not match the number of tips in the tree.")
+            stop("The vector of sampling frequencies should have length equal to number of observed states.")
         }
     }
     if(is.null(restart.obj)){
@@ -344,6 +353,253 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ##########################
+
+    ## Prepare long vector of names for the parameters. These will be used later on regardless of the value of 'fast.int'.
+    ## Breaking the names into separated strings for human readability and to avoid bugs. The long vector was not working for me (Daniel). Guess that some R interpreters don't like vector this long.
+    nm_A <- c("turnover00A","turnover01A","turnover10A","turnover11A","eps00A","eps01A","eps10A","eps11A","q00A_01A","q00A_10A","q00A_11A","q01A_00A","q01A_10A","q01A_11A","q10A_00A","q10A_01A","q10A_11A","q11A_00A","q11A_01A","q11A_10A","q00A_00B","q00A_00C","q00A_00D","q00A_00E","q00A_00F","q00A_00G","q00A_00H","q01A_01B","q01A_01C","q01A_01D","q01A_01E","q01A_01F","q01A_01G","q01A_01H","q10A_10B","q10A_10C","q10A_10D","q10A_10E","q10A_10F","q10A_10G","q10A_10H","q11A_11B","q11A_11C","q11A_11D","q11A_11E","q11A_11F","q11A_11G","q11A_11H")
+    nm_B <- c("turnover00B","turnover01B","turnover10B","turnover11B","eps00B","eps01B","eps10B","eps11B","q00B_01B","q00B_10B","q00B_11B","q01B_00B","q01B_10B","q01B_11B","q10B_00B","q10B_01B","q10B_11B","q11B_00B","q11B_01B","q11B_10B","q00B_00A","q00B_00C","q00B_00D","q00B_00E","q00B_00F","q00B_00G","q00B_00H","q01B_01A","q01B_01C","q01B_01D","q01B_01E","q01B_01F","q01B_01G","q01B_01H","q10B_10A","q10B_10C","q10B_10D","q10B_10E","q10B_10F","q10B_10G","q10B_10H","q11B_11A","q11B_11C","q11B_11D","q11B_11E","q11B_11F","q11B_11G","q11B_11H")
+    nm_C <- c("turnover00C","turnover01C","turnover10C","turnover11C","eps00C","eps01C","eps10C","eps11C","q00C_01C","q00C_10C","q00C_11C","q01C_00C","q01C_10C","q01C_11C","q10C_00C","q10C_01C","q10C_11C","q11C_00C","q11C_01C","q11C_10C","q00C_00A","q00C_00B","q00C_00D","q00C_00E","q00C_00F","q00C_00G","q00C_00H","q01C_01A","q01C_01B","q01C_01D","q01C_01E","q01C_01F","q01C_01G","q01C_01H","q10C_10A","q10C_10B","q10C_10D","q10C_10E","q10C_10F","q10C_10G","q10C_10H","q11C_11A","q11C_11B","q11C_11D","q11C_11E","q11C_11F","q11C_11G","q11C_11H")
+    nm_D <- c("turnover00D","turnover01D","turnover10D","turnover11D","eps00D","eps01D","eps10D","eps11D","q00D_01D","q00D_10D","q00D_11D","q01D_00D","q01D_10D","q01D_11D","q10D_00D","q10D_01D","q10D_11D","q11D_00D","q11D_01D","q11D_10D","q00D_00A","q00D_00B","q00D_00C","q00D_00E","q00D_00F","q00D_00G","q00D_00H","q01D_01A","q01D_01B","q01D_01C","q01D_01E","q01D_01F","q01D_01G","q01D_01H","q10D_10A","q10D_10B","q10D_10C","q10D_10E","q10D_10F","q10D_10G","q10D_10H","q11D_11A","q11D_11B","q11D_11C","q11D_11E","q11D_11F","q11D_11G","q11D_11H")
+    nm_E <- c("turnover00E","turnover01E","turnover10E","turnover11E","eps00E","eps01E","eps10E","eps11E","q00E_01E","q00E_10E","q00E_11E","q01E_00E","q01E_10E","q01E_11E","q10E_00E","q10E_01E","q10E_11E","q11E_00E","q11E_01E","q11E_10E","q00E_00A","q00E_00B","q00E_00C","q00E_00D","q00E_00F","q00E_00G","q00E_00H","q01E_01A","q01E_01B","q01E_01C","q01E_01D","q01E_01F","q01E_01G","q01E_01H","q10E_10A","q10E_10B","q10E_10C","q10E_10D","q10E_10F","q10E_10G","q10E_10H","q11E_11A","q11E_11B","q11E_11C","q11E_11D","q11E_11F","q11E_11G","q11E_11H")
+    nm_F <- c("turnover00F","turnover01F","turnover10F","turnover11F","eps00F","eps01F","eps10F","eps11F","q00F_01F","q00F_10F","q00F_11F","q01F_00F","q01F_10F","q01F_11F","q10F_00F","q10F_01F","q10F_11F","q11F_00F","q11F_01F","q11F_10F","q00F_00A","q00F_00B","q00F_00C","q00F_00D","q00F_00E","q00F_00G","q00F_00H","q01F_01A","q01F_01B","q01F_01C","q01F_01D","q01F_01E","q01F_01G","q01F_01H","q10F_10A","q10F_10B","q10F_10C","q10F_10D","q10F_10E","q10F_10G","q10F_10H","q11F_11A","q11F_11B","q11F_11C","q11F_11D","q11F_11E","q11F_11G","q11F_11H")
+    nm_G <- c("turnover00G","turnover01G","turnover10G","turnover11G","eps00G","eps01G","eps10G","eps11G","q00G_01G","q00G_10G","q00G_11G","q01G_00G","q01G_10G","q01G_11G","q10G_00G","q10G_01G","q10G_11G","q11G_00G","q11G_01G","q11G_10G","q00G_00A","q00G_00B","q00G_00C","q00G_00D","q00G_00E","q00G_00F","q00G_00H","q01G_01A","q01G_01B","q01G_01C","q01G_01D","q01G_01E","q01G_01F","q01G_01H","q10G_10A","q10G_10B","q10G_10C","q10G_10D","q10G_10E","q10G_10F","q10G_10H","q11G_11A","q11G_11B","q11G_11C","q11G_11D","q11G_11E","q11G_11F","q11G_11H")
+    nm_H <- c("turnover00H","turnover01H","turnover10H","turnover11H","eps00H","eps01H","eps10H","eps11H","q00H_01H","q00H_10H","q00H_11H","q01H_00H","q01H_10H","q01H_11H","q10H_00H","q10H_01H","q10H_11H","q11H_00H","q11H_01H","q11H_10H","q00H_00A","q00H_00B","q00H_00C","q00H_00D","q00H_00E","q00H_00F","q00H_00G","q01H_01A","q01H_01B","q01H_01C","q01H_01D","q01H_01E","q01H_01F","q01H_01G","q10H_10A","q10H_10B","q10H_10C","q10H_10D","q10H_10E","q10H_10F","q10H_10G","q11H_11A","q11H_11B","q11H_11C","q11H_11D","q11H_11E","q11H_11F","q11H_11G")
+    
+    ## Check if to use the fast integration algorithm:
+    if( fast.int == TRUE ){
+
+        ## ###########################################
+        ## Prepare objects to use castor likelihood.
+        ## ###########################################
+        
+        ## Make general checks and messages:
+        cat("Using fast integration algorithm.", "\n")
+        if( condition.on.survival == FALSE ){
+            stop( "This algorithm only implements the condition.on.survival approach." )
+        }
+
+        ## Prepare the data vector for castor:
+        if( any(c(data[,2:3]) == "2") ){
+            ## Check for uncertain states. Will translate this into tip priors.
+            ## tip_priors: Numeric matrix of size Ntips x ‘NPstates’, listing prior likelihoods of each proxy state at each tip.
+            ## NOTE: castor has a BUG here at the moment. Will need to implement later.
+            ## Will need to wait for the update of castor to release this option.
+            print("Uncertain states detected.")
+            print("Depends on updated version of 'castor'. Please contact Daniel if it breaks.")
+            data.paste <- paste0(data[,2], data[,3])
+            prior.castor <- t( sapply( data.paste, function(x) switch(x, "00"=c(1,0,0,0)
+                                                                    , "01"=c(0,1,0,0)
+                                                                    , "10"=c(0,0,1,0)
+                                                                    , "11"=c(0,0,0,1)
+                                                                    , "20"=c(0.5,0,0.5,0)
+                                                                    , "02"=c(0.5,0.5,0,0)
+                                                                     ,"22"=c(0.25,0.25,0.25,0.25)
+                                                                     ,"21"=c(0,0.5,0,0.5)
+                                                                     ,"12"=c(0,0,0.5,0.5)
+                                                                      ) ) )
+            rownames( prior.castor ) <- rownames( data )
+            has.uncertain <- TRUE
+        } else{
+            data.paste <- paste0(data[,2], data[,3])
+            ## Order need to follow the transition matrix!
+            data.castor <- unname( sapply( data.paste, function(x) switch(x, "00"=1, "01"=2, "10"=3, "11"=4) ) )
+            names( data.castor ) <- data[,1]
+            has.uncertain <- FALSE
+        }
+        
+        Nstates <- ncol( trans.rate ) ## Number of total states in the model.
+        NPstates <- 4 ## Number of observed states in the model.
+        ## This sets the full model given the number of hidden states.
+        proxy_map <- rep(c(1,2,3,4), times = Nstates / 4)
+
+        ## Create starting vectors for the analyses.
+        turnover.init <- log( rep(init.pars[1]+init.pars[5], max( turnover )) )
+        eps.init <- log( rep(init.pars[5]/init.pars[1], max( eps )) )
+        trans.vec.init <- log( rep(init.pars[9], max(trans.rate, na.rm = TRUE)) )
+        init.castor.vec <- c(turnover.init, eps.init, trans.vec.init)
+
+        ## Get the indexes to cut the vector of parameters.
+        ## This is necessary because the likelihood function will accept only a vector.
+        par.vec.cuts.end <- c(length(turnover.init)
+                            , length(turnover.init) + length(eps.init)
+                            , length(turnover.init) + length(eps.init) + length(trans.vec.init) )
+        par.vec.cuts.start <- c(1, length(turnover.init)+1, length(turnover.init) + length(eps.init) + 1)
+        par.vec.cuts <- cbind(par.vec.cuts.start, par.vec.cuts.end)
+
+        ## Find the ID for the turnover and eps.
+        ## This assumes the ID are sequential. Need to make sure of this.
+        turnover.anc.padded <- turnover + 1
+        eps.anc.padded <- eps + 1
+        ## Find the ID for the Q matrix.
+        trans.mat.padded <- trans.rate + 1
+
+        ## For this to work, we need to have the sequence of numbers:
+        if( !all( turnover.anc.padded %in% 1:(max(turnover.anc.padded)) ) ){
+            stop("Problem with turnover.anc indexation. Check help page.")
+        }
+        if( !all( eps.anc.padded %in% 1:(max(eps.anc.padded)) ) ){
+            stop("Problem with eps.anc indexation. Check help page.")
+        }
+        trans.mat.padded.check <- c(trans.mat.padded)[!is.na(c(trans.mat.padded))]
+        if( !all( trans.mat.padded.check %in% 1:(max(trans.mat.padded.check)) ) ){
+            stop("Problem with trans.rate indexation. Check help page.")
+        }
+
+        ## ##########################################################
+        ## BLOCK TO DEFINE THE LIKELIHOOD FUNCTIONS
+        ## ##########################################################
+        if( has.uncertain ){
+            ## Deal with uncertain states on the data:
+            get.likelihood.castor <- function(x){
+                ## The parameters will always be in this order.
+                x.nat <- exp(x)
+                turnover <- x.nat[par.vec.cuts[1,1]:par.vec.cuts[1,2]]
+                eps <- x.nat[par.vec.cuts[2,1]:par.vec.cuts[2,2]]
+                trans.vec <- x.nat[par.vec.cuts[3,1]:par.vec.cuts[3,2]]
+                turn.vec <- c(0, turnover)[turnover.anc.padded]
+                eps.vec <- c(0, eps)[eps.anc.padded]
+                lambda.vec <- turn.vec / (1 + eps.vec)
+                mu.vec <- (turn.vec * eps.vec) / (1 + eps.vec)
+                trans.vec.padded <- c(0, trans.vec)
+                Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = Nstates, nrow = Nstates)
+                ## Note that the dimension of the castor model is hard-coded.
+                ## Constrains are created on a higher level.
+                fit.castor <- fit_musse(tree = phy, NPstates = NPstates, Nstates = Nstates
+                                      , tip_priors = prior.castor, proxy_map = proxy_map
+                                      , birth_rates = lambda.vec, death_rates = mu.vec
+                                      , transition_matrix = Q.mat, Ntrials = 0, root_conditioning = root.type
+                                      , sampling_fractions = f, verbose = FALSE, check_input = FALSE)
+                return( -1 * fit.castor$loglikelihood )
+            }
+        } else{
+            ## Then all states at the tips are completely known.
+            get.likelihood.castor <- function(x){
+                ## The parameters will always be in this order.
+                x.nat <- exp(x)
+                turnover <- x.nat[par.vec.cuts[1,1]:par.vec.cuts[1,2]]
+                eps <- x.nat[par.vec.cuts[2,1]:par.vec.cuts[2,2]]
+                trans.vec <- x.nat[par.vec.cuts[3,1]:par.vec.cuts[3,2]]
+                turn.vec <- c(0, turnover)[turnover.anc.padded]
+                eps.vec <- c(0, eps)[eps.anc.padded]
+                lambda.vec <- turn.vec / (1 + eps.vec)
+                mu.vec <- (turn.vec * eps.vec) / (1 + eps.vec)
+                trans.vec.padded <- c(0, trans.vec)
+                Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = Nstates, nrow = Nstates)
+                ## Note that the dimension of the castor model is hard-coded.
+                ## Constrains are created on a higher level.
+                fit.castor <- fit_musse(tree = phy, NPstates = NPstates, Nstates = Nstates
+                                      , tip_pstates = data.castor, proxy_map = proxy_map
+                                      , birth_rates = lambda.vec, death_rates = mu.vec
+                                      , transition_matrix = Q.mat, Ntrials = 0, root_conditioning = root.type
+                                      , sampling_fractions = f, verbose = FALSE, check_input = FALSE)
+                return( -1 * fit.castor$loglikelihood )
+            }
+        }
+
+        ## Check length of option parameters. Return internal error if bad.
+        if( length( upper ) != length( init.castor.vec ) | length( lower ) != length( init.castor.vec ) ){
+            stop("Internal error. Search bounds have wrong length.")
+        }
+        
+        if(sann == FALSE){
+            if(bounded.search == TRUE){
+                cat("Finished. Beginning bounded subplex routine...", "\n")
+                opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
+                out <- nloptr(x0=init.castor.vec, eval_f=get.likelihood.castor, ub=upper, lb=lower, opts=opts)
+                loglik <- -1 * out$objective
+            }else{
+                cat("Finished. Beginning subplex routine...", "\n")
+                out <- subplex(init.castor.vec, fn=get.likelihood.castor
+                             , control=list(reltol=max.tol, parscale=rep(0.1, length(ip)))
+                               )
+                loglik <- -1 * out$value
+            }
+	}else{
+            cat("Finished. Beginning simulated annealing...", "\n")
+            out.sann <- GenSA(init.castor.vec, fn=get.likelihood.castor, lower=lower, upper=upper
+                            , control=list(max.call=sann.its) )
+            cat("Finished. Refining using subplex routine...", "\n")
+            opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
+            out <- nloptr(x0=out.sann$par, eval_f=get.likelihood.castor, ub=upper, lb=lower, opts=opts)
+            loglik <- -1 * out$objective
+	}
+
+        ## ###########################################
+        ## Wrap up estimate and format output.
+        ## ###########################################
+
+        ## Will need to manually set the output parameter order to be congruent with normal hisse function.
+	cat("Finished. Summarizing results...", "\n")
+
+        solution.nat <- exp( out$solution )
+        turnover <- solution.nat[par.vec.cuts[1,1]:par.vec.cuts[1,2]]
+        eps <- solution.nat[par.vec.cuts[2,1]:par.vec.cuts[2,2]]
+        trans.vec <- solution.nat[par.vec.cuts[3,1]:par.vec.cuts[3,2]]
+        turn.vec <- c(0, turnover)[turnover.anc.padded]
+        eps.vec <- c(0, eps)[eps.anc.padded]
+
+        ## Construct vector of names for the output.
+        ## Initiate all parameters with 0.
+        solution <- rep(0, times = 384)
+        names( solution ) <- c(nm_A, nm_B, nm_C, nm_D, nm_E, nm_F, nm_G, nm_H)
+        
+        letter_rates <- LETTERS[1:(Nstates / 4)]
+        Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = Nstates, nrow = Nstates)
+        tmp.mat <- rbind(paste0("q00Z_00", letter_rates)
+                       , paste0("q01Z_01", letter_rates)
+                       , paste0("q10Z_10", letter_rates)
+                       , paste0("q11Z_11", letter_rates) )
+        
+        for( i in 1:length(letter_rates) ){
+            ## Using the loop to populate the solution vector.
+            dd <- (i - 1) * 4 ## Shift to get the parameters from the big transition matrix.
+            
+            turn.vec_names <- paste0(c("turnover00","turnover01","turnover10","turnover11"), letter_rates[i])
+            turn.vec_vals <- turn.vec[1:4 + dd]
+            solution[turn.vec_names] <- turn.vec_vals
+            
+            eps.vec_names <- paste0(c("eps00","eps01","eps10","eps11"), letter_rates[i])
+            eps.vec_vals <- eps.vec[1:4 + dd]
+            solution[eps.vec_names] <- eps.vec_vals
+            
+            ## For the transition rates will need to be a little more flexible here.
+            t_block_names <- gsub(pattern = "Z", replacement = letter_rates[i]
+                                , x = c("q00Z_01Z","q00Z_10Z","q00Z_11Z"
+                                       ,"q01Z_00Z","q01Z_10Z","q01Z_11Z"
+                                       ,"q10Z_00Z","q10Z_01Z","q10Z_11Z"
+                                       ,"q11Z_00Z","q11Z_01Z","q11Z_10Z") )
+            t_block_vals <- c(Q.mat[1+dd,2+dd], Q.mat[1+dd,3+dd], Q.mat[1+dd,4+dd]
+                            , Q.mat[2+dd,1+dd], Q.mat[2+dd,3+dd], Q.mat[2+dd,4+dd]
+                            , Q.mat[3+dd,1+dd], Q.mat[3+dd,2+dd], Q.mat[3+dd,4+dd]
+                            , Q.mat[4+dd,1+dd], Q.mat[4+dd,2+dd], Q.mat[4+dd,3+dd])
+            solution[t_block_names] <- t_block_vals
+
+            ## For the last part I need to use the transition name and translate that info into the positions.
+            t_hidden_names <- c( t( gsub(pattern = "Z_", replacement = paste0(letter_rates[i],"_"), x = tmp.mat[,-i]) ) )
+            letters_split <- strsplit(t_hidden_names, split = "[q_01]")
+            letters_split <- sapply(letters_split, function(x) x[ x != "" ] )
+            number_split <- strsplit(t_hidden_names, split = paste0("[q_",paste0(letter_rates, collapse=""),"]", collapse=""))
+            number_split <- sapply(number_split, function(x) x[ x != "" ] )
+            ## Now just need to use these matrices to find the positions.
+            ## The direction is row1 to row2, column by column.
+            number_id <- matrix( sapply(number_split, function(x) switch(x, "00"=1, "01"=2, "10"=3, "11"=4) ), ncol = 4)
+            letters_id <- matrix( sapply(letters_split, function(x) (which(letter_rates == x)-1)*4), ncol = 4)
+            Q.mat_id <- number_id + letters_id
+            t_hidden_vals <- sapply(1:ncol(Q.mat_id), function(x) Q.mat[Q.mat_id[1,x], Q.mat_id[2,x]] )
+            solution[t_hidden_names] <- t_hidden_vals
+        }
+
+        cat("Finished. Summarizing results...", "\n")
+        
+        obj <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1)))
+                 , solution=solution, index.par=pars, f=f, hidden.states=hidden.states
+                 , condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data
+                 , trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower
+                 , ode.eps=ode.eps, fast.int=fast.int)
+        class(obj) <- append(class(obj), "muhisse.fit")
+        return(obj)
+        
+    } ## Ends call to 'fast.int'
     
     if(sann == FALSE){
         if(bounded.search == TRUE){
@@ -373,12 +629,17 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         
         loglik = -out$objective
     }
-    
-    names(solution) <- c("turnover00A","turnover01A","turnover10A","turnover11A","eps00A","eps01A","eps10A","eps11A","q00A_01A","q00A_10A","q00A_11A","q01A_00A","q01A_10A","q01A_11A","q10A_00A","q10A_01A","q10A_11A","q11A_00A","q11A_01A","q11A_10A","q00A_00B","q00A_00C","q00A_00D","q00A_00E","q00A_00F","q00A_00G","q00A_00H","q01A_01B","q01A_01C","q01A_01D","q01A_01E","q01A_01F","q01A_01G","q01A_01H","q10A_10B","q10A_10C","q10A_10D","q10A_10E","q10A_10F","q10A_10G","q10A_10H","q11A_11B","q11A_11C","q11A_11D","q11A_11E","q11A_11F","q11A_11G","q11A_11H","turnover00B","turnover01B","turnover10B","turnover11B","eps00B","eps01B","eps10B","eps11B","q00B_01B","q00B_10B","q00B_11B","q01B_00B","q01B_10B","q01B_11B","q10B_00B","q10B_01B","q10B_11B","q11B_00B","q11B_01B","q11B_10B","q00B_00A","q00B_00C","q00B_00D","q00B_00E","q00B_00F","q00B_00G","q00B_00H","q01B_01A","q01B_01C","q01B_01D","q01B_01E","q01B_01F","q01B_01G","q01B_01H","q10B_10A","q10B_10C","q10B_10D","q10B_10E","q10B_10F","q10B_10G","q10B_10H","q11B_11A","q11B_11C","q11B_11D","q11B_11E","q11B_11F","q11B_11G","q11B_11H","turnover00C","turnover01C","turnover10C","turnover11C","eps00C","eps01C","eps10C","eps11C","q00C_01C","q00C_10C","q00C_11C","q01C_00C","q01C_10C","q01C_11C","q10C_00C","q10C_01C","q10C_11C","q11C_00C","q11C_01C","q11C_10C","q00C_00A","q00C_00B","q00C_00D","q00C_00E","q00C_00F","q00C_00G","q00C_00H","q01C_01A","q01C_01B","q01C_01D","q01C_01E","q01C_01F","q01C_01G","q01C_01H","q10C_10A","q10C_10B","q10C_10D","q10C_10E","q10C_10F","q10C_10G","q10C_10H","q11C_11A","q11C_11B","q11C_11D","q11C_11E","q11C_11F","q11C_11G","q11C_11H","turnover00D","turnover01D","turnover10D","turnover11D","eps00D","eps01D","eps10D","eps11D","q00D_01D","q00D_10D","q00D_11D","q01D_00D","q01D_10D","q01D_11D","q10D_00D","q10D_01D","q10D_11D","q11D_00D","q11D_01D","q11D_10D","q00D_00A","q00D_00B","q00D_00C","q00D_00E","q00D_00F","q00D_00G","q00D_00H","q01D_01A","q01D_01B","q01D_01C","q01D_01E","q01D_01F","q01D_01G","q01D_01H","q10D_10A","q10D_10B","q10D_10C","q10D_10E","q10D_10F","q10D_10G","q10D_10H","q11D_11A","q11D_11B","q11D_11C","q11D_11E","q11D_11F","q11D_11G","q11D_11H","turnover00E","turnover01E","turnover10E","turnover11E","eps00E","eps01E","eps10E","eps11E","q00E_01E","q00E_10E","q00E_11E","q01E_00E","q01E_10E","q01E_11E","q10E_00E","q10E_01E","q10E_11E","q11E_00E","q11E_01E","q11E_10E","q00E_00A","q00E_00B","q00E_00C","q00E_00D","q00E_00F","q00E_00G","q00E_00H","q01E_01A","q01E_01B","q01E_01C","q01E_01D","q01E_01F","q01E_01G","q01E_01H","q10E_10A","q10E_10B","q10E_10C","q10E_10D","q10E_10F","q10E_10G","q10E_10H","q11E_11A","q11E_11B","q11E_11C","q11E_11D","q11E_11F","q11E_11G","q11E_11H","turnover00F","turnover01F","turnover10F","turnover11F","eps00F","eps01F","eps10F","eps11F","q00F_01F","q00F_10F","q00F_11F","q01F_00F","q01F_10F","q01F_11F","q10F_00F","q10F_01F","q10F_11F","q11F_00F","q11F_01F","q11F_10F","q00F_00A","q00F_00B","q00F_00C","q00F_00D","q00F_00E","q00F_00G","q00F_00H","q01F_01A","q01F_01B","q01F_01C","q01F_01D","q01F_01E","q01F_01G","q01F_01H","q10F_10A","q10F_10B","q10F_10C","q10F_10D","q10F_10E","q10F_10G","q10F_10H","q11F_11A","q11F_11B","q11F_11C","q11F_11D","q11F_11E","q11F_11G","q11F_11H","turnover00G","turnover01G","turnover10G","turnover11G","eps00G","eps01G","eps10G","eps11G","q00G_01G","q00G_10G","q00G_11G","q01G_00G","q01G_10G","q01G_11G","q10G_00G","q10G_01G","q10G_11G","q11G_00G","q11G_01G","q11G_10G","q00G_00A","q00G_00B","q00G_00C","q00G_00D","q00G_00E","q00G_00F","q00G_00H","q01G_01A","q01G_01B","q01G_01C","q01G_01D","q01G_01E","q01G_01F","q01G_01H","q10G_10A","q10G_10B","q10G_10C","q10G_10D","q10G_10E","q10G_10F","q10G_10H","q11G_11A","q11G_11B","q11G_11C","q11G_11D","q11G_11E","q11G_11F","q11G_11H","turnover00H","turnover01H","turnover10H","turnover11H","eps00H","eps01H","eps10H","eps11H","q00H_01H","q00H_10H","q00H_11H","q01H_00H","q01H_10H","q01H_11H","q10H_00H","q10H_01H","q10H_11H","q11H_00H","q11H_01H","q11H_10H","q00H_00A","q00H_00B","q00H_00C","q00H_00D","q00H_00E","q00H_00F","q00H_00G","q01H_01A","q01H_01B","q01H_01C","q01H_01D","q01H_01E","q01H_01F","q01H_01G","q10H_10A","q10H_10B","q10H_10C","q10H_10D","q10H_10E","q10H_10F","q10H_10G","q11H_11A","q11H_11B","q11H_11C","q11H_11D","q11H_11E","q11H_11F","q11H_11G")
+
+    ## These are the names for the parameters on each of the layers from A to H. Defined a priori.
+    names( solution)  <- c(nm_A, nm_B, nm_C, nm_D, nm_E, nm_F, nm_G, nm_H)
     
     cat("Finished. Summarizing results...", "\n")
     
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
+    obj <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1)))
+              , solution=solution, index.par=pars, f=f, hidden.states=hidden.states
+              , condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data
+              , trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower
+              , ode.eps=ode.eps, fast.int=fast.int)
     class(obj) <- append(class(obj), "muhisse.fit")
     return(obj)
 }
