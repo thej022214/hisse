@@ -83,7 +83,9 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         mle.turn <- mle.birth + mle.death
         ## For the bounds on the MK need to transform the data into a numeric vector.
         vector.data <- apply(data[,2:3], 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "01" = 2, "10" = 3, "11" = 4, "02"=1, "20"=3, "21"=2, "12"=4, "22"=4))
-        names(vector.data) <- data[,1]
+        names(vector.data) <- as.character( data[,1] )
+        ## Need to make sure the order is correct.
+        vector.data <- vector.data[ phy$tip.label ]
         ## Fit a quick MLE for a single rate transition model.
         mle.mk <- hsp_mk_model(tree = phy, tip_states = vector.data, rate_model = "ER")
         mle.trans <- mle.mk$transition_matrix[1,2]
