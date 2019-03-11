@@ -274,12 +274,18 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     #This is used to scale starting values to account for sampling:
     if(length(f) == 4){
         freqs <- table(apply(data.new, 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "01" = 2, "10" = 3, "11" = 4, "02"=1, "20"=3, "21"=2, "12"=4, "22"=4)))
-        if(length(freqs == 4)){
-            freqs[which(!c(1:4) %in% names(freqs))] <- 0
-            samp.freq.tree <- Ntip(phy) / sum(freqs / f)
-        }else{
-            samp.freq.tree <- Ntip(phy) / sum(freqs / f)
-        }
+        
+        ## if(length(freqs == 4)){
+        ##     freqs[which(!c(1:4) %in% names(freqs))] <- 0
+        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
+        ## }else{
+        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
+        ## }
+        
+        ## Fixing the structure of the freqs vector.
+        freqs.vec <- rep(0, times = 4)
+        freqs.vec[as.numeric(names(freqs))] <- as.numeric( freqs )
+        samp.freq.tree <- Ntip(phy) / sum(freqs.vec / f)
     }else{
         if(length(f) == Ntip(phy)){
             stop("This functionality has been temporarily removed.")
@@ -302,8 +308,18 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         if(is.null(starting.vals)){
             def.set.pars <- rep(c(log(init.pars[1:4]+init.pars[5:8]), log(init.pars[5:8]/init.pars[1:4]), log(init.pars[9:20]), rep(log(.01), 28)), rate.cats)
         }else{
-            def.set.pars <- rep(c(log(starting.vals[1:4]), log(starting.vals[5:8]), log(starting.vals[9:20]), rep(log(0.01), 28)), rate.cats)
+            ## Check if 'starting.vals' has the correct format.
+            if( !length(starting.vals) %in% c(3,20) ){
+                stop("Wrong length of starting.vals")
+            }
+            if( length(starting.vals) == 20 ){
+                cat("Using developer mode for starting.vals.", "\n")
+                def.set.pars <- rep(c(log(starting.vals[1:4]), log(starting.vals[5:8]), log(starting.vals[9:20]), rep(log(0.01), 28)), rate.cats)
+            } else{
+                def.set.pars <- rep(c(log( rep(starting.vals[1],4) ), log( rep(starting.vals[2],4) ), log( rep(starting.vals[3],12) ), rep(log(0.01), 28)), rate.cats)
+            }
         }
+        
         if(bounded.search == TRUE){
             upper.full <- rep(c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper),12), rep(log(10), 28)), rate.cats)
         }else{
