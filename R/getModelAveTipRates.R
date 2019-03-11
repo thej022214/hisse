@@ -40,7 +40,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         if( is.null( AIC.weights ) ){
             empty.aic <- sapply(hisse.results, function(x) !is.null(x$aic) )
             if( sum( empty.aic ) != length(hisse.results) ) stop("All elements of the list need to have a '$aic' element.")
-            model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states", "muhisse.states")) )
+            model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states", "muhisse.states", "misse.states")) )
             if( as.logical( sum( model.class ) ) ) stop("x needs to be a list of model reconstruction with class 'hisse.states' or 'hisse.geosse.states' ")
         } else{
             if( !length(hisse.results) == length(AIC.weights) ){
