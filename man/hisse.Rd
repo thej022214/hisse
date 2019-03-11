@@ -33,14 +33,17 @@ eps.upper=3, trans.upper=100, ode.eps=0)
 \item{sann.its}{a numeric indicating the number of times the simulated annealing algorithm should call the objective function.}
 \item{bounded.search}{a logical indicating whether or not bounds should be enforced during optimization. The default is is \code{TRUE}.}
 \item{max.tol}{supplies the relative optimization tolerance to \code{subplex}.}
-\item{starting.vals}{a vector of starting values to be used instead of the default settings. These are just three values given in the following order: turnover (1), extinction fraction (2), and a single transition rate (3)}
-\item{turnover.upper}{sets the upper bound for the turnover parameters. The default upper bound assumes an event occurs every 100 years.}
-\item{eps.upper}{sets the upper bound for the extinction fraction
-  parameters.}
+\item{starting.vals}{a vector of starting values to be used instead of
+  the default settings. These are just three values given in the
+  following order: turnover (1), extinction fraction (2), and a single
+  transition rate (3)}
 \item{smart.bounds}{whether to set the upper bound for the turnover
   and transition rates from the observed data. Upper bounds are defined
   as two order of magnitude (x * 100) over a simplistic MLE based on a
   birth-death and MK model.}
+\item{turnover.upper}{sets the upper bound for the turnover parameters. The default upper bound assumes an event occurs every 100 years.}
+\item{eps.upper}{sets the upper bound for the extinction fraction
+  parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
 \item{ode.eps}{sets the tolerance for the integration at the end of a branch. Essentially if the sum of compD is less than this tolerance, then it assumes the results are unstable and discards them. The default is set to zero, but in testing a value of 1e-8 can sometimes produce stable solutions for both easy and very difficult optimization problems.}
 }
