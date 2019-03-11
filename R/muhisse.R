@@ -274,12 +274,18 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     #This is used to scale starting values to account for sampling:
     if(length(f) == 4){
         freqs <- table(apply(data.new, 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "01" = 2, "10" = 3, "11" = 4, "02"=1, "20"=3, "21"=2, "12"=4, "22"=4)))
-        if(length(freqs == 4)){
-            freqs[which(!c(1:4) %in% names(freqs))] <- 0
-            samp.freq.tree <- Ntip(phy) / sum(freqs / f)
-        }else{
-            samp.freq.tree <- Ntip(phy) / sum(freqs / f)
-        }
+        
+        ## if(length(freqs == 4)){
+        ##     freqs[which(!c(1:4) %in% names(freqs))] <- 0
+        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
+        ## }else{
+        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
+        ## }
+        
+        ## Fixing the structure of the freqs vector.
+        freqs.vec <- rep(0, times = 4)
+        freqs.vec[as.numeric(names(freqs))] <- as.numeric( freqs )
+        samp.freq.tree <- Ntip(phy) / sum(freqs.vec / f)
     }else{
         if(length(f) == Ntip(phy)){
             stop("This functionality has been temporarily removed.")
