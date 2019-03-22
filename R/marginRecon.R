@@ -14,7 +14,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
             warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
         }
     }
-    
+
     if(four.state.null == FALSE){
         phy$node.label = NULL
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
@@ -30,7 +30,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
         cache$eps.beta.factor1 = 1 / dbeta(0.1, model.vec[30], model.vec[34])
         cache$eps.beta.factorA = 1 / dbeta(0.1, model.vec[31], model.vec[35])
         cache$eps.beta.factorB = 1 / dbeta(0.1, model.vec[32], model.vec[36])
-        
+
         nb.tip <- length(phy$tip.label)
         nb.node <- phy$Nnode
         if(hidden.states == FALSE){
@@ -39,7 +39,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
             nstates=4
         }
         nodes <- unique(phy$edge[,1])
-        
+
         if(is.null(n.cores)){
             marginal.probs <- matrix(0, nb.node+nb.tip, nstates)
             for (i in seq(from = 1, length.out = nb.node)) {
@@ -120,7 +120,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
                 return(c(node, marginal.probs))
             }
             node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-            
+
             if(hidden.states==TRUE){
                 TipEval <- function(tip){
                     marginal.probs.tmp <- numeric(4)
@@ -179,12 +179,12 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
         model.vec = pars
         #Prerequisites for running the downpass algorithm:
         cache = ParametersToPassNull(phy, data.new[,1], model.vec, f=f)
-        
+
         nb.tip <- length(phy$tip.label)
         nb.node <- phy$Nnode
         nstates=8
         nodes <- unique(phy$edge[,1])
-        
+
         if(is.null(n.cores)){
             marginal.probs <- matrix(0, nb.node+nb.tip, nstates)
             for (i in seq(from = 1, length.out = nb.node)) {
@@ -248,7 +248,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
                 return(c(node, marginal.probs))
             }
             node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-            
+
             TipEval <- function(tip){
                 marginal.probs.tmp <- numeric(8)
                 nstates = which(!cache$states[tip,] == 0)
@@ -300,9 +300,9 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 ######################################################################################################################################
 
 MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
-    
+
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
+
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
@@ -313,18 +313,18 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
             warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance among all hidden states.")
         }
     }
-    
+
     data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
     model.vec = pars
-    
+
     #Prerequisites for running the downpass algorithm:
     if(assume.cladogenetic == TRUE){
         cache = ParametersToPassGeoHiSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
     }else{
         cache = ParametersToPassMuSSE(phy, data.new[,1], model.vec, f=f, hidden.states=hidden.areas)
     }
-    
+
     nb.tip <- length(phy$tip.label)
     nb.node <- phy$Nnode
     if(hidden.areas == FALSE){
@@ -333,7 +333,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
         nstates = 15
     }
     nodes <- unique(phy$edge[,1])
-    
+
     if(is.null(n.cores)){
         marginal.probs <- matrix(0, nb.node+nb.tip, nstates)
         for (i in seq(from = 1, length.out = nb.node)) {
@@ -429,7 +429,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
             return(c(node, marginal.probs))
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-        
+
         if(hidden.areas==TRUE){
             TipEval <- function(tip){
                 marginal.probs.tmp <- numeric(4)
@@ -454,7 +454,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
             tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         }
         obj <- NULL
-        
+
         if(hidden.areas == TRUE){
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 15+1, byrow = TRUE)
             obj$tip.mat = matrix(unlist(tip.marginals), ncol = 15+1, byrow = TRUE)
@@ -489,11 +489,11 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
         phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
         obj$phy = phy
     }
-    
+
     if(!is.null(aic)){
         obj$aic = aic
     }
-    
+
     class(obj) = "hisse.geosse.states"
     return(obj)
 }
@@ -506,9 +506,9 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
 ######################################################################################################################################
 
 MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
-    
+
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
+
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
@@ -518,7 +518,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition
             warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
         }
     }
-    
+
     model.vec = pars
 
     # Some new prerequisites #
@@ -533,14 +533,14 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition
     ##########################
 
     cache <- ParametersToPassMuHiSSE(model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
-    
+
     if(hidden.states == TRUE){
         nstates = 32
     }else{
         nstates = 4
     }
     nodes <- unique(phy$edge[,1])
-    
+
     if(is.null(n.cores)){
         marginal.probs <- matrix(0, nb.node+nb.tip, nstates)
         for (i in seq(from = 1, length.out = nb.node)) {
@@ -627,7 +627,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition
             return(c(node, marginal.probs))
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-        
+
         if(hidden.states==TRUE){
             TipEval <- function(tip){
                 dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
@@ -657,7 +657,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition
             tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         }
         obj <- NULL
-        
+
         if(hidden.states == TRUE){
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 32+1, byrow = TRUE)
             obj$tip.mat = matrix(unlist(tip.marginals), ncol = 32+1, byrow = TRUE)
@@ -684,11 +684,11 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition
         phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
         obj$phy = phy
     }
-    
+
     if(!is.null(aic)){
         obj$aic = aic
     }
-    
+
     class(obj) = "muhisse.states"
     return(obj)
 }
@@ -701,9 +701,9 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition
 ######################################################################################################################################
 
 MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL, total.hidden=NULL){
-    
+
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
+
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
@@ -713,9 +713,9 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
         }
     }
-    
+
     model.vec = pars
-    
+
     # Some new prerequisites #
     data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
@@ -726,9 +726,9 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     ##########################
-    
+
     cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
-    
+
     if(hidden.areas == TRUE){
         if(is.null(total.hidden)){
             nstates = 30
@@ -745,7 +745,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         nstates.not.eval <- 0
     }
     nodes <- unique(phy$edge[,1])
-    
+
     if(is.null(n.cores)){
         marginal.probs <- matrix(0, nb.node+nb.tip, nstates)
         for (i in seq(from = 1, length.out = nb.node)) {
@@ -872,7 +872,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
             tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         }
         obj <- NULL
-        
+
         if(hidden.areas == TRUE){
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 30+1, byrow = TRUE)
             obj$tip.mat = matrix(unlist(tip.marginals), ncol = 30+1, byrow = TRUE)
@@ -901,11 +901,11 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
         obj$phy = phy
     }
-    
+
     if(!is.null(aic)){
         obj$aic = aic
     }
-    
+
     class(obj) = "hisse.geosse.states"
     return(obj)
 }
@@ -920,9 +920,9 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
 
 
 MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
-    
+
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
+
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
@@ -932,9 +932,9 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
             warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for each of the specified hidden states")
         }
     }
-    
+
     model.vec = pars
-    
+
     # Some new prerequisites #
     gen <- FindGenerations(phy)
     dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
@@ -943,14 +943,14 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     ##########################
-    
+
     cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
-    
+
     nstates = 26
     nstates.to.eval <- hidden.states
     nstates.not.eval <- 26 - nstates.to.eval
     nodes <- unique(phy$edge[,1])
-    
+
     if(is.null(n.cores)){
         marginal.probs <- matrix(0, nb.node+nb.tip, nstates)
         for (i in seq(from = 1, length.out = nb.node)) {
@@ -995,7 +995,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
             }
         }
         obj <- NULL
-        
+
         #if(!hidden.states == TRUE){
         #    setkey(dat.tab, DesNode)
         #    tmp.stuff <- as.data.frame(dat.tab[1:nb.tip,])
@@ -1003,14 +1003,15 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         #        marginal.probs[1:nb.tip,j] <- tmp.stuff[,j+6]
         #    }
         #}
-        
+
         marginal.probs <- cbind(1:(nb.node+nb.tip), marginal.probs)
         obj$node.mat = marginal.probs[-(1:nb.tip),]
         obj$tip.mat = marginal.probs[1:nb.tip,]
         rates.mat <- matrix(0, 2, 26)
         index.vector <- 1:52
-        rates.mat[1,] <- model.vec[index.vector %% 2 == 1]
-        rates.mat[2,] <- model.vec[index.vector %% 2 == 0]
+        model.vec.no.q <- model.vec[!grepl("q", names(model.vec))]
+        rates.mat[1,] <- model.vec.no.q[index.vector %% 2 == 1]
+        rates.mat[2,] <- model.vec.no.q[index.vector %% 2 == 0]
         rownames(rates.mat) <- c("turnover", "extinction.fraction")
         colnames(rates.mat) <- c(c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)"))
         rates.mat <- ParameterTransformMiSSE(rates.mat)
@@ -1032,7 +1033,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
             return(c(node, marginal.probs))
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-        
+
         if(hidden.states>0){
             TipEval <- function(tip){
                 dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
@@ -1063,7 +1064,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
             tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         }
         obj <- NULL
-        
+
         obj$node.mat <- matrix(unlist(node.marginals), ncol = 26+1, byrow = TRUE)
         obj$tip.mat = matrix(unlist(tip.marginals), ncol = 26+1, byrow = TRUE)
         rates.mat <- matrix(0, 2, 26)
@@ -1079,11 +1080,11 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
         obj$phy = phy
     }
-    
+
     if(!is.null(aic)){
         obj$aic = aic
     }
-    
+
     class(obj) = "misse.states"
     return(obj)
 }
@@ -1273,5 +1274,3 @@ print.muhisse.states <- function(x,...){
 print.misse.states <- function(x,...){
     print(x$phy)
 }
-
-
