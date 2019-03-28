@@ -968,7 +968,16 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
                     cat(paste(i, "of", nb.node, "nodes done"), "\n")
                 }
             }
+            obj <- NULL
+            obj$node.mat = marginal.probs[-(1:nb.tip),]
+            colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)"))
+            marginal.probs <- cbind(1:(nb.node+nb.tip), marginal.probs)
+            phy$node.label = apply(marginal.probs[,-1], 1, which.max)[-(1:nb.tip)]
+        }else{
+            obj <- NULL
+            marginal.probs <- cbind(1:(nb.node+nb.tip), marginal.probs)
         }
+        
         if(hidden.states > 1){
             for (i in seq(from = 1, length.out = nb.tip)) {
                 setkey(dat.tab, DesNode)
@@ -996,7 +1005,6 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
                 }
             }
         }
-        obj <- NULL
 
         #if(!hidden.states == TRUE){
         #    setkey(dat.tab, DesNode)
@@ -1006,8 +1014,6 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         #    }
         #}
 
-        marginal.probs <- cbind(1:(nb.node+nb.tip), marginal.probs)
-        obj$node.mat = marginal.probs[-(1:nb.tip),]
         obj$tip.mat = marginal.probs[1:nb.tip,]
         rates.mat <- matrix(0, 2, 26)
         index.vector <- 1:52
@@ -1019,7 +1025,6 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         rates.mat <- ParameterTransformMiSSE(rates.mat)
         colnames(obj$node.mat) <- colnames(obj$tip.mat)  <- c("id", c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)"))
         obj$rates.mat = rates.mat
-        phy$node.label = apply(marginal.probs[,-1], 1, which.max)[-(1:nb.tip)]
         obj$phy = phy
     }else{
         
@@ -1037,10 +1042,13 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         }
         
         if(get.tips.only == FALSE){
+            obj <- NULL
             node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
             obj$node.mat <- matrix(unlist(node.marginals), ncol = 26+1, byrow = TRUE)
             colnames(obj$node.mat) <- c("id", c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)"))
             phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
+        }else{
+            obj <- NULL
         }
         
         if(hidden.states>0){
@@ -1071,7 +1079,6 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
             }
             tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         }
-        obj <- NULL
 
         obj$tip.mat.mod = matrix(unlist(tip.marginals), ncol = 26+1, byrow = TRUE)
         rates.mat <- matrix(0, 2, 26)
