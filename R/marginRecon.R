@@ -629,8 +629,8 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=TRUE, condition
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
 
         if(hidden.states==TRUE){
+            dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
             TipEval <- function(tip){
-                dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[tip,7:38] == 0)
@@ -839,8 +839,8 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         if(hidden.areas==TRUE){
+            dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.areas)
             TipEval <- function(tip){
-                dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.areas)
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(4)
                 nstates = which(!dat.tab[tip,7:36] == 0)
@@ -1052,8 +1052,8 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         }
         
         if(hidden.states>0){
+            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
             TipEval <- function(tip){
-                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(2)
                 nstates = which(!dat.tab[tip,7:32] == 0)
