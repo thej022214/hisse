@@ -1052,8 +1052,8 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         }
         
         if(hidden.states>0){
-            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
             TipEval <- function(tip){
+                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
                 setkey(dat.tab, DesNode)
                 marginal.probs.tmp <- numeric(2)
                 nstates = which(!dat.tab[tip,7:32] == 0)
@@ -1080,7 +1080,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
             tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         }
 
-        obj$tip.mat.mod = matrix(unlist(tip.marginals), ncol = 26+1, byrow = TRUE)
+        obj$tip.mat = matrix(unlist(tip.marginals), ncol = 26+1, byrow = TRUE)
         rates.mat <- matrix(0, 2, 26)
         index.vector <- 1:52
         rates.mat[1,] <- model.vec[index.vector %% 2 == 1][-27]
