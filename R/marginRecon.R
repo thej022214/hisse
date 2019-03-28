@@ -919,7 +919,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cla
 ######################################################################################################################################
 
 
-MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, get.tips.only=FALSE, n.cores=NULL){
+MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL){
 
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
 
