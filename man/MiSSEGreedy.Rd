@@ -4,7 +4,7 @@
 \description{Sets up and executes a set of MiSSE models (Missing State Speciation
  and Extinction) on a phylogeny, varying the number of parameters for turnover and extinction fraction and stopping when models stop being very good.}
 \usage{
-MiSSE(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,FALSE), stop.count=2,
+MiSSEGreedy(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,FALSE), stop.count=2,
 stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL,
 sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50,
 starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100,
@@ -58,6 +58,14 @@ You can change how quickly the function stops trying new models with stop.count 
 }
 \value{
 \code{MiSSE} returns a list of class \code{misse.fit} objects.
+}
+\examples{
+\donttest{
+  library(ape)
+  phy <- rcoal(30)
+  result <- MiSSEGreedy(phy)
+  print(length(result))
+}
 }
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models
