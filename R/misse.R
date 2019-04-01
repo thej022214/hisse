@@ -189,7 +189,12 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,F
     if(!should.stop) {
       for (eps.index in seq_along(eps.same)) {
         cat("Now starting run with ", turnover.tries[turnover.index], " categories and ", ifelse(eps.same[eps.index], "the same number of eps categories", "one eps category"), "\n")
-        current.run <- MiSSE(phy, f=f, turnover=___, eps=___, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)
+        turnover <- sequence(turnover.tries[turnover.index])
+        eps <- turnover
+        if(!eps.same[eps.index]) {
+          eps <- rep(1, length(turnover))
+        }
+        current.run <- MiSSE(phy, f=f, turnover=turnover, eps=eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)
         misse.list <- append(misse.list, current.run)
         if(current.run$AICc < best.AICc) {
           cat("Found better AICc by ",  best.AIC - current.run$AICc, "\n")
