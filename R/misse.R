@@ -182,37 +182,33 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 
 MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
   misse.list <- list()
-  best.AICc <- Inf
   times.since.close.enough <- 0
-  should.stop <- FALSE
-  for (turnover.index in seq_along(turnover.tries)) {
-    if(!should.stop) {
-      for (eps.index in seq_along(eps.same)) {
-        if(eps.index!=2 & turnover.index!=1) { # don't do the 1 turnover, 1 eps model twice -- overcounts it
-          cat("Now starting run with", turnover.tries[turnover.index], "turnover categories and", ifelse(eps.same[eps.index], "the same number of eps categories", "one eps category"), "\n")
-          turnover <- sequence(turnover.tries[turnover.index])
-          eps <- turnover
-          if(!eps.same[eps.index]) {
-            eps <- rep(1, length(turnover))
-          }
-          current.run <- MiSSE(phy, f=f, turnover=turnover, eps=eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)
-          misse.list <- append(misse.list, current.run)
-          cat("Current AICc is", current.run$AICc, "\n")
-          if(current.run$AICc < best.AICc) {
-            cat("Found better AICc by ",  best.AICc - current.run$AICc, "\n")
-            best.AICc <- current.run$AICc
-            times.since.close.enough <- 0
-          } else if ((current.run$AICc - best.AICc ) < stop.deltaAICc) {
-            cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n")
-            times.since.close.enough <- 0
-          } else {
-            times.since.close.enough <- times.since.close.enough + 1
-            cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n")
+  for (eps.index in seq_along(eps.same)) {
+    best.AICc <- Inf #reset so we start over at one turnover parameter and work our way back up
+    for (turnover.index in seq_along(turnover.tries)) {
+      if(turnover.index>1 | eps.index==1) { # don't do the 1 turnover, 1 eps model twice -- overcounts it
+        turnover <- sequence(turnover.tries[turnover.index])
+        eps <- turnover
+        if(!eps.same[eps.index]) {
+          eps <- rep(1, length(turnover))
+        }
+        cat("\nNow starting run with", turnover.tries[turnover.index], "turnover categories and", length(unique(eps)), "extinction fraction categories", "\n")
+        current.run <- MiSSE(phy, f=f, turnover=turnover, eps=eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)
+        misse.list <- append(misse.list, current.run)
+        cat("Current AICc is", current.run$AICc, "\n")
+        if(current.run$AICc < best.AICc) {
+          cat("Found better AICc by ",  best.AICc - current.run$AICc, "\n")
+          best.AICc <- current.run$AICc
+          times.since.close.enough <- 0
+        } else if ((current.run$AICc - best.AICc ) < stop.deltaAICc) {
+          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n")
+          times.since.close.enough <- 0
+        } else {
+          times.since.close.enough <- times.since.close.enough + 1
+          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n")
 
-            if(times.since.close.enough > stop.count) {
-              should.stop <- TRUE
-              break()
-            }
+          if(times.since.close.enough > stop.count) {
+            break()
           }
         }
       }
