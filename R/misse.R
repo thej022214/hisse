@@ -180,10 +180,10 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 }
 
 
-MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,FALSE), stop.count=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
+MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
   misse.list <- list()
   best.AICc <- Inf
-  times.since.best <- 0
+  times.since.close.enough <- 0
   should.stop <- FALSE
   for (turnover.index in seq_along(turnover.tries)) {
     if(!should.stop) {
@@ -194,12 +194,15 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,F
         if(current.run$AICc < best.AICc) {
           cat("Found better AICc by ",  best.AIC - current.run$AICc, "\n")
           best.AICc <- current.run$AICc
-          times.since.best <- 0
+          times.since.close.enough <- 0
+        } else if (best.AICc - current.run$AICc < stop.deltaAICc) {
+          cat("Found worse AICc by ",  current.run$AICc -best.AIC , ", but this is still within ", stop.deltaAICc, " of the best", "\n")
+          times.since.close.enough <- 0
         } else {
-          times.since.best <- times.since.best + 1
-          cat("Found worse AICc by ",  current.run$AICc -best.AIC , ", it has been ", times.since.best, " models since finding a better one", "\n")
+          times.since.close.enough <- times.since.close.enough + 1
+          cat("Found worse AICc by ",  current.run$AICc -best.AIC , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n")
 
-          if(times.since.best > stop.count) {
+          if(times.since.close.enough > stop.count) {
             should.stop <- TRUE
             break()
           }
