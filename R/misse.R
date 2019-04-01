@@ -188,28 +188,31 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,F
   for (turnover.index in seq_along(turnover.tries)) {
     if(!should.stop) {
       for (eps.index in seq_along(eps.same)) {
-        cat("Now starting run with", turnover.tries[turnover.index], "turnover categories and", ifelse(eps.same[eps.index], "the same number of eps categories", "one eps category"), "\n")
-        turnover <- sequence(turnover.tries[turnover.index])
-        eps <- turnover
-        if(!eps.same[eps.index]) {
-          eps <- rep(1, length(turnover))
-        }
-        current.run <- MiSSE(phy, f=f, turnover=turnover, eps=eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)
-        misse.list <- append(misse.list, current.run)
-        if(current.run$AICc < best.AICc) {
-          cat("Found better AICc by ",  best.AIC - current.run$AICc, "\n")
-          best.AICc <- current.run$AICc
-          times.since.close.enough <- 0
-        } else if (best.AICc - current.run$AICc < stop.deltaAICc) {
-          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n")
-          times.since.close.enough <- 0
-        } else {
-          times.since.close.enough <- times.since.close.enough + 1
-          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n")
+        if(eps.index!=2 & turnover.index!=1) { # don't do the 1 turnover, 1 eps model twice -- overcounts it
+          cat("Now starting run with", turnover.tries[turnover.index], "turnover categories and", ifelse(eps.same[eps.index], "the same number of eps categories", "one eps category"), "\n")
+          turnover <- sequence(turnover.tries[turnover.index])
+          eps <- turnover
+          if(!eps.same[eps.index]) {
+            eps <- rep(1, length(turnover))
+          }
+          current.run <- MiSSE(phy, f=f, turnover=turnover, eps=eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)
+          misse.list <- append(misse.list, current.run)
+          cat("Current AICc is", current.run$AICc, "\n")
+          if(current.run$AICc < best.AICc) {
+            cat("Found better AICc by ",  best.AICc - current.run$AICc, "\n")
+            best.AICc <- current.run$AICc
+            times.since.close.enough <- 0
+          } else if ((current.run$AICc - best.AICc ) < stop.deltaAICc) {
+            cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n")
+            times.since.close.enough <- 0
+          } else {
+            times.since.close.enough <- times.since.close.enough + 1
+            cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n")
 
-          if(times.since.close.enough > stop.count) {
-            should.stop <- TRUE
-            break()
+            if(times.since.close.enough > stop.count) {
+              should.stop <- TRUE
+              break()
+            }
           }
         }
       }
