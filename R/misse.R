@@ -188,7 +188,7 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,F
   for (turnover.index in seq_along(turnover.tries)) {
     if(!should.stop) {
       for (eps.index in seq_along(eps.same)) {
-        cat("Now starting run with ", turnover.tries[turnover.index], " categories and ", ifelse(eps.same[eps.index], "the same number of eps categories", "one eps category"), "\n")
+        cat("Now starting run with", turnover.tries[turnover.index], "turnover categories and", ifelse(eps.same[eps.index], "the same number of eps categories", "one eps category"), "\n")
         turnover <- sequence(turnover.tries[turnover.index])
         eps <- turnover
         if(!eps.same[eps.index]) {
