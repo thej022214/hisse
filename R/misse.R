@@ -201,11 +201,11 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,F
           best.AICc <- current.run$AICc
           times.since.close.enough <- 0
         } else if (best.AICc - current.run$AICc < stop.deltaAICc) {
-          cat("Found worse AICc by ",  current.run$AICc -best.AIC , ", but this is still within ", stop.deltaAICc, " of the best", "\n")
+          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n")
           times.since.close.enough <- 0
         } else {
           times.since.close.enough <- times.since.close.enough + 1
-          cat("Found worse AICc by ",  current.run$AICc -best.AIC , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n")
+          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n")
 
           if(times.since.close.enough > stop.count) {
             should.stop <- TRUE
