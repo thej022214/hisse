@@ -183,8 +183,9 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
   misse.list <- list()
   times.since.close.enough <- 0
+  first.AICc <- Inf
   for (eps.index in seq_along(eps.same)) {
-    best.AICc <- Inf #reset so we start over at one turnover parameter and work our way back up
+    best.AICc <- first.AICc #reset so we start over at one turnover parameter and work our way back up
     for (turnover.index in seq_along(turnover.tries)) {
       if(turnover.index>1 | eps.index==1) { # don't do the 1 turnover, 1 eps model twice -- overcounts it
         turnover <- sequence(turnover.tries[turnover.index])
@@ -196,6 +197,9 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,F
         current.run <- MiSSE(phy, f=f, turnover=turnover, eps=eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)
         misse.list <- append(misse.list, current.run)
         cat("Current AICc is", current.run$AICc, "\n")
+        if(is.infinite(first.AICc)) {
+          first.AICc <- current.run$AICc # so when we reset, use the 1,1 AICc, not Inf
+        }
         if(current.run$AICc < best.AICc) {
           cat("Found better AICc by ",  best.AICc - current.run$AICc, "\n")
           best.AICc <- current.run$AICc
