@@ -179,13 +179,13 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     return(obj)
 }
 
-
+# Note it'd be tempting to make this parallel. Go for it, but note that MiSSE itself already sprawls parallel (could be data.table) so there might not be the speedups you want -- BCO
 MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
   misse.list <- list()
-  times.since.close.enough <- 0
   first.AICc <- Inf
   for (eps.index in seq_along(eps.same)) {
     best.AICc <- first.AICc #reset so we start over at one turnover parameter and work our way back up
+    times.since.close.enough <- 0
     for (turnover.index in seq_along(turnover.tries)) {
       if(turnover.index>1 | eps.index==1) { # don't do the 1 turnover, 1 eps model twice -- overcounts it
         turnover <- sequence(turnover.tries[turnover.index])
@@ -193,23 +193,28 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,F
         if(!eps.same[eps.index]) {
           eps <- rep(1, length(turnover))
         }
+        starting.time <- Sys.time()
         cat("\nNow starting run with", turnover.tries[turnover.index], "turnover categories and", length(unique(eps)), "extinction fraction categories", "\n")
+        cat("Starting at ", as.character(starting.time), "\n", sep="")
         current.run <- MiSSE(phy, f=f, turnover=turnover, eps=eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)
-        misse.list <- append(misse.list, current.run)
-        cat("Current AICc is", current.run$AICc, "\n")
+        misse.list[[length(misse.list)+1]] <- current.run
+        ending.time <- Sys.time()
+        cat("Finished at ", as.character(ending.time),"; this model took ", round(difftime(ending.time,starting.time, units="mins"),2), " minutes\n",sep="")
+
+        cat("Current AICc is ", current.run$AICc, "\n", sep="")
         if(is.infinite(first.AICc)) {
           first.AICc <- current.run$AICc # so when we reset, use the 1,1 AICc, not Inf
         }
         if(current.run$AICc < best.AICc) {
-          cat("Found better AICc by ",  best.AICc - current.run$AICc, "\n")
+          cat("Found better AICc by ",  best.AICc - current.run$AICc, "\n", sep="")
           best.AICc <- current.run$AICc
           times.since.close.enough <- 0
         } else if ((current.run$AICc - best.AICc ) < stop.deltaAICc) {
-          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n")
+          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n"), sep=""
           times.since.close.enough <- 0
         } else {
           times.since.close.enough <- times.since.close.enough + 1
-          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n")
+          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n", sep="")
 
           if(times.since.close.enough > stop.count) {
             break()
