@@ -1,13 +1,13 @@
 \name{Compute Model Weights}
 \alias{GetModelWeight}
 \title{Compute model weights}
-\description{Computes the Akaike model weights for a list of HiSSE or
+\description{Computes the Akaike model weights for a list of HiSSE, MiSSE,
   GeoHiSSE model fits.}
 \usage{
 GetModelWeight(...)
-}       
+}
 \arguments{
-\item{...}{Any number of model fits of class 'hisse.fit' or
+\item{...}{Any number of model fits of class 'hisse.fit', 'misse.fit', or
   'geohisse.fit' separated by commas OR a single list object composed by
 the model fits.}
 }
@@ -22,8 +22,8 @@ formula:
 
 
 Function will return model names is these are provided in the call using
-'...' or a list object.    
-    
+'...' or a list object.
+
 }
 \author{Daniel Caetano}
 \keyword{AICw}
