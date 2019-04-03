@@ -1186,7 +1186,7 @@ ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights=NU
     return(final.results)
 }
 
-GetAICWeights <- function(hisse.results, criterion="aic") {
+GetAICWeights <- function(hisse.results, criterion="AIC") {
     AIC.vector <- sapply(hisse.results, "[[", criterion)
     delta.AIC.vector <- AIC.vector - min(AIC.vector)
     rel.likelihood <- exp(-0.5 * delta.AIC.vector)

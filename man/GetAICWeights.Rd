@@ -4,7 +4,7 @@
 \description{Computes the Akaike model weights for a list of HiSSE, MiSSE,
   and/or GeoHiSSE model fits.}
 \usage{
-GetAICWeights(hisse.results, criterion="aic")
+GetAICWeights(hisse.results, criterion="AIC")
 }
 \arguments{
 \item{hisse.results}{A list of models (such as from MiSSEGreedy or just putting individual hisse runs in a list)}
