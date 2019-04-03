@@ -180,17 +180,17 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 }
 
 # Note it'd be tempting to make this parallel. Go for it, but note that MiSSE itself already sprawls parallel (could be data.table) so there might not be the speedups you want -- BCO
-MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
+MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
   misse.list <- list()
   first.AICc <- Inf
-  for (eps.index in seq_along(eps.same)) {
+  for (eps.index in seq_along(eps.constant)) {
     best.AICc <- first.AICc #reset so we start over at one turnover parameter and work our way back up
     times.since.close.enough <- 0
     for (turnover.index in seq_along(turnover.tries)) {
       if(turnover.index>1 | eps.index==1) { # don't do the 1 turnover, 1 eps model twice -- overcounts it
         turnover <- sequence(turnover.tries[turnover.index])
         eps <- turnover
-        if(!eps.same[eps.index]) {
+        if(eps.constant[eps.index]) {
           eps <- rep(1, length(turnover))
         }
         starting.time <- Sys.time()
