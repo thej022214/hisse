@@ -210,7 +210,7 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.same=c(TRUE,F
           best.AICc <- current.run$AICc
           times.since.close.enough <- 0
         } else if ((current.run$AICc - best.AICc ) < stop.deltaAICc) {
-          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n"), sep=""
+          cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n", sep="")
           times.since.close.enough <- 0
         } else {
           times.since.close.enough <- times.since.close.enough + 1
