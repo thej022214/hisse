@@ -1,15 +1,14 @@
 \name{Compute Model Weights}
-\alias{GetModelWeight}
+\alias{GetAICWeights}
 \title{Compute model weights}
 \description{Computes the Akaike model weights for a list of HiSSE, MiSSE,
-  GeoHiSSE model fits.}
+  and/or GeoHiSSE model fits.}
 \usage{
-GetModelWeight(...)
+GetAICWeights(hisse.results, criterion="aic")
 }
 \arguments{
-\item{...}{Any number of model fits of class 'hisse.fit', 'misse.fit', or
-  'geohisse.fit' separated by commas OR a single list object composed by
-the model fits.}
+\item{hisse.results}{A list of models (such as from MiSSEGreedy or just putting individual hisse runs in a list)}
+\item{criterion}{Which criterion to use, AIC or AICc (with correction for sample size)}
 }
 \details{
 Function computes the model weight from their AIC values using the
@@ -21,8 +20,7 @@ formula:
 \dQuote{aicw <- exp( -0.5 * delta) / sum( exp( -0.5 * delta) )}
 
 
-Function will return model names is these are provided in the call using
-'...' or a list object.
+Function will return vector of weights
 
 }
 \author{Daniel Caetano}

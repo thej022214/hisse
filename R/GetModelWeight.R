@@ -1,5 +1,7 @@
 ## Compute model weights for GeoHiSSE, HiSSE, or MiSSE models given a list of models.
 
+# BCO: DEPRECATED -- duplicates functionality in GetAICWeights, while not allowing for the possibility of AICc. Do not use. Kept here for historical reference for now
+
 GetModelWeight <- function(...){
     models <- list(...)
     ## Check if we have a single list with all the models or the arguments are a list.
