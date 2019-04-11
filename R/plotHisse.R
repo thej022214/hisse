@@ -1111,7 +1111,7 @@ ConvertToRate <- function(x, rate.vector) {
 
 ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weights=NULL) {
     if( is.null(AIC.weights) ){
-        AIC.weights <- GetAICWeights(hisse.results)
+        AIC.weights <- ights(hisse.results)
     }
     storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
     for (i in sequence(length(hisse.results))) {
@@ -1187,6 +1187,9 @@ ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights=NU
 }
 
 GetAICWeights <- function(hisse.results, criterion="AIC") {
+    if(class(hisse.results)=="misse.states") {
+        hisse.results <- list(hisse.results)
+    }
     AIC.vector <- sapply(hisse.results, "[[", criterion)
     delta.AIC.vector <- AIC.vector - min(AIC.vector)
     rel.likelihood <- exp(-0.5 * delta.AIC.vector)
