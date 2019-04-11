@@ -1186,7 +1186,7 @@ ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights=NU
     return(final.results)
 }
 
-GetAICWeights <- function(hisse.results, criterion="AIC") {
+GetAICWeights <- function(hisse.results, criterion="aic") {
     if(class(hisse.results)=="misse.states") {
         hisse.results <- list(hisse.results)
     }
