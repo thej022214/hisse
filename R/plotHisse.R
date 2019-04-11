@@ -1111,7 +1111,7 @@ ConvertToRate <- function(x, rate.vector) {
 
 ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weights=NULL) {
     if( is.null(AIC.weights) ){
-        AIC.weights <- ights(hisse.results)
+        AIC.weights <- GetAICWeights(hisse.results)
     }
     storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
     for (i in sequence(length(hisse.results))) {
