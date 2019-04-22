@@ -3,7 +3,7 @@ addons:
     packages:
       - libgslcblas0
       - gsl-bin
-      - libgsl-dev
+      - libgsl0-dev
       - libmagick++-dev
 before_install:
 #  - sudo apt-get -qq update
