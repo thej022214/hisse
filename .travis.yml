@@ -1,6 +1,7 @@
 addons:
   apt:
     packages:
+      - libgsl0ldbl
       - libgslcblas0
       - gsl-bin
       - libgsl0-dev
