@@ -19,7 +19,6 @@ The main difference between GeoSSE and GeoHiSSE is that here we implement models
 Best place to install the package with the new functions provided here is from our github repository using the package `devtools`:
 ```{r, eval=FALSE}
 library( devtools )
-## At the moment you need to point to the development branch on github.
 install_github(repo = "thej022214/hisse", ref = "master")
 ```
 
@@ -141,11 +140,11 @@ Models with higher weight show better fit to the data and, as a result, have mor
 
 To compute model weight we can use one of the functions of the package. This will work with both HiSSE and GeoHiSSE objects.
 ```{r, eval=TRUE}
-GetAICWeights(list(model1 = mod1, model2 = mod2, model3 = mod3, model4 = mod4))
+GetAICWeights(list(model1 = mod1, model2 = mod2, model3 = mod3, model4 = mod4), criterion="AIC")
 ## As the number of models in the set grows, naming each model in the set can become hard.
 ## So one can use a list (created by some automated code) as an input also:
 list.geohisse <- list(model1 = mod1, model2 = mod2, model3 = mod3, model4 = mod4)
-GetAICWeights(list.geohisse)
+GetAICWeights(list.geohisse, criterion="AIC")
 ```
 
 ## Model averaging and plotting.
