@@ -1,23 +1,27 @@
-## Compute model weights for GeoHiSSE and HiSSE models given a list of models.
+## Compute model weights for GeoHiSSE, HiSSE, or MiSSE models given a list of models.
+
+# BCO: DEPRECATED -- duplicates functionality in GetAICWeights, while not allowing for the possibility of AICc. Do not use. Kept here for historical reference for now
 
 GetModelWeight <- function(...){
     models <- list(...)
     ## Check if we have a single list with all the models or the arguments are a list.
-    if( !inherits(models[[1]], what = c("geohisse.fit", "hisse.fit")) ){
+    if( !inherits(models[[1]], what = c("geohisse.fit", "hisse.fit", "misse.fit")) ){
         ## This is a list of models. Need to extract.
         models <- models[[1]]
     }
-    ## Check if elements of the list are HiSSE or GeoHiSSE models.
+    ## Check if elements of the list are HiSSE, GeoHiSSE, or MiSSE models.
     mod.class.geohisse <- sapply(models, function(x) inherits(x, what = "geohisse.fit"))
     mod.class.hisse <- sapply(models, function(x) inherits(x, what = "hisse.fit"))
-    if( all(mod.class.geohisse) & all(mod.class.hisse) ){
+    mod.class.misse <- sapply(models, function(x) inherits(x, what = "misse.fit"))
+
+    if( all(mod.class.geohisse) & all(mod.class.hisse) & all(mod.class.misse) ){
         ## Strange! Break.
-        stop( "list of models need to be only HiSSE OR GeoHiSSE fits." )
+        stop( "list of models need to be only HiSSE, or GeoHiSSE, or MiSSE fits." )
     }
-    if( !all(mod.class.geohisse) & !all(mod.class.hisse) ){
+    if( !all(mod.class.geohisse) & !all(mod.class.hisse & !all(mod.class.misse)) ){
         ## Strange! Break.
-        stop( "list of models need to be only HiSSE OR GeoHiSSE fits." )
-    }    
+        stop( "list of models need to be only HiSSE, or GeoHiSSE, or MiSSE fits." )
+    }
     mod.names <- names( models )
     mod.AIC <- sapply(models, function(x) x$AIC )
     delta <- mod.AIC - min( mod.AIC )
@@ -25,4 +29,3 @@ GetModelWeight <- function(...){
     names( aicw ) <- mod.names
     return( aicw )
 }
-

@@ -6,7 +6,7 @@
 \usage{
 MarginReconMiSSE(phy, f, pars, hidden.states=2, 
 condition.on.survival=TRUE,  root.type="madfitz", root.p=NULL, 
-aic=NULL, verbose=TRUE, n.cores=NULL)
+aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -20,6 +20,7 @@ aic=NULL, verbose=TRUE, n.cores=NULL)
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
 \item{aic}{the AIC for the model being used for the reconstruction. This is used by the plotting function. The default is \code{NULL}.}
 \item{verbose}{a logical indicating whether progress should be printed to screen. The default is \code{TRUE}.}
+\item{get.tips.only}{a logical indicating whether just tip reconstructions should be output. The default is \code{FALSE}.}
 \item{n.cores}{specifies the number of independent processors to conduct the analysis. The default is \code{NULL}.}
 }
 \details{

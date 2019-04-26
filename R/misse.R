@@ -17,10 +17,10 @@
 ######################################################################################################################################
 
 MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0){
-    
+
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
+
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
@@ -30,7 +30,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
             warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
         }
     }
-    
+
     if(!root.type == "madfitz" & !root.type == "herr_als"){
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
@@ -67,7 +67,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     pars[pars==0] <- np + 1
 
     cat("Initializing...", "\n")
-    
+
     #This is used to scale starting values to account for sampling:
     if(length(f) == 1){
             samp.freq.tree <- f
@@ -116,7 +116,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
             ip <- numeric(np)
             upper <- numeric(np)
         }
-        
+
         for(i in np.sequence){
             ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
             upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
@@ -142,7 +142,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ##########################
-    
+
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
@@ -166,18 +166,67 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
         out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
-        
+
         loglik = -out$objective
     }
-    
+
     names(solution) <- c("turnover0A","eps0A", "turnover0B","eps0B", "turnover0C","eps0C", "turnover0D","eps0D", "turnover0E","eps0E", "turnover0F","eps0F", "turnover0G","eps0G", "turnover0H","eps0H", "turnover0I","eps0I", "turnover0J","eps0J", "turnover0K","eps0K", "turnover0L","eps0L", "turnover0M","eps0M", "turnover0N","eps0N", "turnover0O","eps0O", "turnover0P","eps0P", "turnover0Q","eps0Q", "turnover0R","eps0R", "turnover0S","eps0S", "turnover0T","eps0T", "turnover0U","eps0U", "turnover0V","eps0V","turnover0W","eps0W","turnover0X","eps0X", "turnover0Y","eps0Y", "turnover0Z","eps0Z", "q0")
-    
+
     cat("Finished. Summarizing results...", "\n")
-    
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
+
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, turnover=turnover, eps=eps)
     class(obj) <- append(class(obj), "misse.fit")
     return(obj)
 }
+
+
+# Note it'd be tempting to make this parallel. Go for it, but note that MiSSE itself already sprawls parallel (could be data.table) so there might not be the speedups you want -- BCO
+MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
+    misse.list <- list()
+    first.AICc <- Inf
+    for (eps.index in seq_along(eps.constant)) {
+        best.AICc <- first.AICc #reset so we start over at one turnover parameter and work our way back up
+        times.since.close.enough <- 0
+        for (turnover.index in seq_along(turnover.tries)) {
+            if(turnover.index>1 | eps.index==1) { # don't do the 1 turnover, 1 eps model twice -- overcounts it
+                turnover <- sequence(turnover.tries[turnover.index])
+                eps <- turnover
+                if(eps.constant[eps.index]) {
+                    eps <- rep(1, length(turnover))
+                }
+                starting.time <- Sys.time()
+                cat("\nNow starting run with", turnover.tries[turnover.index], "turnover categories and", length(unique(eps)), "extinction fraction categories", "\n")
+                cat("Starting at ", as.character(starting.time), "\n", sep="")
+                current.run <- MiSSE(phy, f=f, turnover=turnover, eps=eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)
+                misse.list[[length(misse.list)+1]] <- current.run
+                ending.time <- Sys.time()
+                cat("Finished at ", as.character(ending.time),"; this model took ", round(difftime(ending.time,starting.time, units="mins"),2), " minutes\n",sep="")
+                
+                cat("Current AICc is ", current.run$AICc, "\n", sep="")
+                if(is.infinite(first.AICc)) {
+                    first.AICc <- current.run$AICc # so when we reset, use the 1,1 AICc, not Inf
+                }
+                if(current.run$AICc < best.AICc) {
+                    cat("Found better AICc by ",  best.AICc - current.run$AICc, "\n", sep="")
+                    best.AICc <- current.run$AICc
+                    times.since.close.enough <- 0
+                } else if ((current.run$AICc - best.AICc ) < stop.deltaAICc) {
+                    cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", but this is still within ", stop.deltaAICc, " of the best", "\n", sep="")
+                    times.since.close.enough <- 0
+                } else {
+                    times.since.close.enough <- times.since.close.enough + 1
+                    cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n", sep="")
+                    
+                    if(times.since.close.enough > stop.count) {
+                        break()
+                    }
+                }
+            }
+        }
+    }
+    return(misse.list)
+}
+
 
 ######################################################################################################################################
 ######################################################################################################################################
@@ -208,7 +257,7 @@ DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip
 OrganizeDataMiSSE <- function(phy, f, hidden.states){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
-    
+
     nb.tip <- length(phy$tip.label)
     nb.node <- phy$Nnode
 
@@ -249,10 +298,10 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
     pars <- c(cache$lambda0A, cache$mu0A, cache$lambda0B, cache$mu0B, cache$lambda0C, cache$mu0C, cache$lambda0D, cache$mu0D, cache$lambda0E, cache$mu0E, cache$lambda0F, cache$mu0F, cache$lambda0G, cache$mu0G, cache$lambda0H, cache$mu0H, cache$lambda0I, cache$mu0I, cache$lambda0J, cache$mu0J, cache$lambda0K, cache$mu0K, cache$lambda0L, cache$mu0L, cache$lambda0M, cache$mu0M, cache$lambda0N, cache$mu0N, cache$lambda0O, cache$mu0O, cache$lambda0P, cache$mu0P, cache$lambda0Q, cache$mu0Q, cache$lambda0R, cache$mu0R, cache$lambda0S, cache$mu0S, cache$lambda0T, cache$mu0T, cache$lambda0U, cache$mu0U, cache$lambda0V, cache$mu0V, cache$lambda0W, cache$mu0W, cache$lambda0X, cache$mu0X, cache$lambda0Y, cache$mu0Y, cache$lambda0Z, cache$mu0Z, cache$q0, cache$hidden.states)
     yini <- c(E0A = compE[1], E0B = compE[2], E0C = compE[3], E0D = compE[4], E0E = compE[5], E0F = compE[6], E0G = compE[7], E0H = compE[8], E0I = compE[9], E0J = compE[10], E0K = compE[11], E0L = compE[12], E0M = compE[13], E0N = compE[14], E0O = compE[15], E0P = compE[16], E0Q = compE[17], E0R = compE[18], E0S = compE[19], E0T = compE[20], E0U = compE[21], E0V = compE[22], E0W = compE[23], E0X = compE[24], E0Y = compE[25], E0Z = compE[26], D0A = compD[1], D0B = compD[2], D0C = compD[3], D0D = compD[4], D0E = compD[5], D0F = compD[6], D0G = compD[7], D0H = compD[8], D0I = compD[9], D0J = compD[10], D0K = compD[11], D0L = compD[12], D0M = compD[13], D0N = compD[14], D0O = compD[15], D0P = compD[16], D0Q = compD[17], D0R = compD[18], D0S = compD[19], D0T = compD[20], D0U = compD[21], D0V = compD[22], D0W = compD[23], D0X = compD[24], D0Y = compD[25], D0Z = compD[26])
     times=c(start.time, end.time)
-    
+
     #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dll = "misse-ext-derivs", rtol=1e-8, atol=1e-8)
     prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-    
+
     ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
     if(attributes(prob.subtree.cal.full)$istate[1] < 0){
         prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
@@ -264,7 +313,7 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
         prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
     }
     ##############################################################################
-    
+
     if(any(is.nan(prob.subtree.cal[27:52]))){
         prob.subtree.cal[27:52] <- cache$bad.likelihood
         return(prob.subtree.cal)
@@ -278,7 +327,7 @@ SingleChildProbMiSSE <- function(cache, compD, compE, start.time, end.time, x){
         prob.subtree.cal[27:52] <- cache$bad.likelihood
         return(prob.subtree.cal)
     }
-    
+
     return(prob.subtree.cal)
 }
 
@@ -331,10 +380,10 @@ GetRootProbMiSSE <- function(cache, dat.tab, generations){
             v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
         }
     }
-    
+
     tmp.comp <- rowSums(v.mat)
     tmp.probs <- v.mat / tmp.comp
-    
+
     return(cbind(tmp.comp, phi.mat, tmp.probs))
 }
 
@@ -347,11 +396,11 @@ GetRootProbMiSSE <- function(cache, dat.tab, generations){
 ######################################################################################################################################
 
 DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL) {
-    
+
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     compE = NULL
-    
+
     nb.tip <- cache$nb.tip
     nb.node <- cache$nb.node
     TIPS <- 1:nb.tip
@@ -440,13 +489,13 @@ DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type,
 ParametersToPassMiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, bad.likelihood, ode.eps){
     #Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
     obj <- NULL
-    
+
     obj$hidden.states <- hidden.states
     obj$nb.tip <- nb.tip
     obj$nb.node <- nb.node
     obj$bad.likelihood <- bad.likelihood
     obj$ode.eps <- ode.eps
-    
+
     ##Hidden State A
     obj$lambda0A = model.vec[1] / (1 + model.vec[2])
     obj$mu0A = (model.vec[2] * model.vec[1]) / (1 + model.vec[2])
@@ -591,13 +640,3 @@ print.misse.fit <- function(x,...){
 #logl <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
 #right.logl <- -277.6942
 #round(logl,4) == round(right.logl,4)
-
-
-
-
-
-
-
-
-
-
