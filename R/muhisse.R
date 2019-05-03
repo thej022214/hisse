@@ -15,7 +15,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), fast.int=TRUE, hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, smart.bounds = FALSE, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0){
+MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), fast.int=TRUE, hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, smart.bounds = FALSE, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, time.scalar = 10){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -388,6 +388,18 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
+    
+    # Some more new prerequisites for castor #
+    if(fast.int == TRUE){
+      p.new <- exp(ip)
+      model.vec <- numeric(length(pars))
+      model.vec[] <- c(p.new, 0)[pars]
+      cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
+      castor_dat <- getCastorDat(cache = cache, phy = phy, data.new = data.new, trans.rate = trans.rate, hidden.states = hidden.states, root.type = root.type, root.p = root.p)
+      time <- system.time(quiet((castor::fit_musse(tree = castor_dat$phy, Nstates = castor_dat$Nstates, NPstates = castor_dat$NPstates, tip_pstates = castor_dat$tip_pstates, birth_rates = castor_dat$birth_rates, death_rates = castor_dat$death_rates, transition_matrix = castor_dat$full_mat, proxy_map = castor_dat$proxy_map, root_prior = castor_dat$root_prior, root_conditioning = castor_dat$root_conditioning))))    
+      time <- time[3]*time.scalar
+      }
+    
     ##########################
 
     ## Prepare long vector of names for the parameters. These will be used later on regardless of the value of 'fast.int'.
@@ -402,252 +414,18 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     nm_H <- c("turnover00H","turnover01H","turnover10H","turnover11H","eps00H","eps01H","eps10H","eps11H","q00H_01H","q00H_10H","q00H_11H","q01H_00H","q01H_10H","q01H_11H","q10H_00H","q10H_01H","q10H_11H","q11H_00H","q11H_01H","q11H_10H","q00H_00A","q00H_00B","q00H_00C","q00H_00D","q00H_00E","q00H_00F","q00H_00G","q01H_01A","q01H_01B","q01H_01C","q01H_01D","q01H_01E","q01H_01F","q01H_01G","q10H_10A","q10H_10B","q10H_10C","q10H_10D","q10H_10E","q10H_10F","q10H_10G","q11H_11A","q11H_11B","q11H_11C","q11H_11D","q11H_11E","q11H_11F","q11H_11G")
     
     ## Check if to use the fast integration algorithm:
-    if( fast.int == TRUE ){
 
-        ## ###########################################
-        ## Prepare objects to use castor likelihood.
-        ## ###########################################
-        
-        ## Make general checks and messages:
-        cat("Using fast integration algorithm.", "\n")
-        if( condition.on.survival == FALSE ){
-            stop( "This algorithm only implements the condition.on.survival approach." )
-        }
-
-        ## Prepare the data vector for castor:
-        if( any(c(data[,2:3]) == "2") ){
-            ## Check for uncertain states. Will translate this into tip priors.
-            ## tip_priors: Numeric matrix of size Ntips x ‘NPstates’, listing prior likelihoods of each proxy state at each tip.
-            ## NOTE: castor has a BUG here at the moment. Will need to implement later.
-            ## Will need to wait for the update of castor to release this option.
-            print("Uncertain states detected.")
-            print("Depends on updated version of 'castor'. Please contact Daniel if it breaks.")
-            data.paste <- paste0(data[,2], data[,3])
-            prior.castor <- t( sapply( data.paste, function(x) switch(x, "00"=c(1,0,0,0)
-                                                                    , "01"=c(0,1,0,0)
-                                                                    , "10"=c(0,0,1,0)
-                                                                    , "11"=c(0,0,0,1)
-                                                                    , "20"=c(0.5,0,0.5,0)
-                                                                    , "02"=c(0.5,0.5,0,0)
-                                                                     ,"22"=c(0.25,0.25,0.25,0.25)
-                                                                     ,"21"=c(0,0.5,0,0.5)
-                                                                     ,"12"=c(0,0,0.5,0.5)
-                                                                      ) ) )
-            rownames( prior.castor ) <- rownames( data )
-            has.uncertain <- TRUE
-        } else{
-            data.paste <- paste0(data[,2], data[,3])
-            ## Order need to follow the transition matrix!
-            data.castor <- unname( sapply( data.paste, function(x) switch(x, "00"=1, "01"=2, "10"=3, "11"=4) ) )
-            names( data.castor ) <- data[,1]
-            has.uncertain <- FALSE
-        }
-        
-        Nstates <- ncol( trans.rate ) ## Number of total states in the model.
-        NPstates <- 4 ## Number of observed states in the model.
-        ## This sets the full model given the number of hidden states.
-        proxy_map <- rep(c(1,2,3,4), times = Nstates / 4)
-
-        ## Create starting vectors for the analyses.
-        turnover.init <- log( rep(init.pars[1]+init.pars[5], max( turnover )) )
-        eps.init <- log( rep(init.pars[5]/init.pars[1], max( eps )) )
-        trans.vec.init <- log( rep(init.pars[9], max(trans.rate, na.rm = TRUE)) )
-        init.castor.vec <- c(turnover.init, eps.init, trans.vec.init)
-
-        ## Get the indexes to cut the vector of parameters.
-        ## This is necessary because the likelihood function will accept only a vector.
-        par.vec.cuts.end <- c(length(turnover.init)
-                            , length(turnover.init) + length(eps.init)
-                            , length(turnover.init) + length(eps.init) + length(trans.vec.init) )
-        par.vec.cuts.start <- c(1, length(turnover.init)+1, length(turnover.init) + length(eps.init) + 1)
-        par.vec.cuts <- cbind(par.vec.cuts.start, par.vec.cuts.end)
-
-        ## Find the ID for the turnover and eps.
-        ## This assumes the ID are sequential. Need to make sure of this.
-        turnover.anc.padded <- turnover + 1
-        eps.anc.padded <- eps + 1
-        ## Find the ID for the Q matrix.
-        trans.mat.padded <- trans.rate + 1
-
-        ## For this to work, we need to have the sequence of numbers:
-        if( !all( turnover.anc.padded %in% 1:(max(turnover.anc.padded)) ) ){
-            stop("Problem with turnover.anc indexation. Check help page.")
-        }
-        if( !all( eps.anc.padded %in% 1:(max(eps.anc.padded)) ) ){
-            stop("Problem with eps.anc indexation. Check help page.")
-        }
-        trans.mat.padded.check <- c(trans.mat.padded)[!is.na(c(trans.mat.padded))]
-        if( !all( trans.mat.padded.check %in% 1:(max(trans.mat.padded.check)) ) ){
-            stop("Problem with trans.rate indexation. Check help page.")
-        }
-
-        ## ##########################################################
-        ## BLOCK TO DEFINE THE LIKELIHOOD FUNCTIONS
-        ## ##########################################################
-        if( has.uncertain ){
-            ## Deal with uncertain states on the data:
-            get.likelihood.castor <- function(x){
-                ## The parameters will always be in this order.
-                x.nat <- exp(x)
-                turnover <- x.nat[par.vec.cuts[1,1]:par.vec.cuts[1,2]]
-                eps <- x.nat[par.vec.cuts[2,1]:par.vec.cuts[2,2]]
-                trans.vec <- x.nat[par.vec.cuts[3,1]:par.vec.cuts[3,2]]
-                turn.vec <- c(0, turnover)[turnover.anc.padded]
-                eps.vec <- c(0, eps)[eps.anc.padded]
-                lambda.vec <- turn.vec / (1 + eps.vec)
-                mu.vec <- (turn.vec * eps.vec) / (1 + eps.vec)
-                trans.vec.padded <- c(0, trans.vec)
-                Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = Nstates, nrow = Nstates)
-                ## Note that the dimension of the castor model is hard-coded.
-                ## Constrains are created on a higher level.
-                fit.castor <- fit_musse(tree = phy, NPstates = NPstates, Nstates = Nstates
-                                      , tip_priors = prior.castor, proxy_map = proxy_map
-                                      , birth_rates = lambda.vec, death_rates = mu.vec
-                                      , transition_matrix = Q.mat, Ntrials = 0, root_conditioning = root.type
-                                      , sampling_fractions = f, verbose = FALSE, check_input = FALSE)
-                return( -1 * fit.castor$loglikelihood )
-            }
-        } else{
-            ## Then all states at the tips are completely known.
-            get.likelihood.castor <- function(x){
-                ## The parameters will always be in this order.
-                x.nat <- exp(x)
-                turnover <- x.nat[par.vec.cuts[1,1]:par.vec.cuts[1,2]]
-                eps <- x.nat[par.vec.cuts[2,1]:par.vec.cuts[2,2]]
-                trans.vec <- x.nat[par.vec.cuts[3,1]:par.vec.cuts[3,2]]
-                turn.vec <- c(0, turnover)[turnover.anc.padded]
-                eps.vec <- c(0, eps)[eps.anc.padded]
-                lambda.vec <- turn.vec / (1 + eps.vec)
-                mu.vec <- (turn.vec * eps.vec) / (1 + eps.vec)
-                trans.vec.padded <- c(0, trans.vec)
-                Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = Nstates, nrow = Nstates)
-                ## Note that the dimension of the castor model is hard-coded.
-                ## Constrains are created on a higher level.
-                fit.castor <- fit_musse(tree = phy, NPstates = NPstates, Nstates = Nstates
-                                      , tip_pstates = data.castor, proxy_map = proxy_map
-                                      , birth_rates = lambda.vec, death_rates = mu.vec
-                                      , transition_matrix = Q.mat, Ntrials = 0, root_conditioning = root.type
-                                      , sampling_fractions = f, verbose = FALSE, check_input = FALSE)
-                return( -1 * fit.castor$loglikelihood )
-            }
-        }
-
-        ## Check length of option parameters. Return internal error if bad.
-        if( length( upper ) != length( init.castor.vec ) | length( lower ) != length( init.castor.vec ) ){
-            stop("Internal error. Search bounds have wrong length.")
-        }
-        
-        if(sann == FALSE){
-            if(bounded.search == TRUE){
-                cat("Finished. Beginning bounded subplex routine...", "\n")
-                opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-                out <- nloptr(x0=init.castor.vec, eval_f=get.likelihood.castor, ub=upper, lb=lower, opts=opts)
-                loglik <- -1 * out$objective
-            }else{
-                cat("Finished. Beginning subplex routine...", "\n")
-                out <- subplex(init.castor.vec, fn=get.likelihood.castor
-                             , control=list(reltol=max.tol, parscale=rep(0.1, length(ip)))
-                               )
-                loglik <- -1 * out$value
-            }
-	}else{
-            cat("Finished. Beginning simulated annealing...", "\n")
-            out.sann <- GenSA(init.castor.vec, fn=get.likelihood.castor, lower=lower, upper=upper
-                            , control=list(max.call=sann.its) )
-            cat("Finished. Refining using subplex routine...", "\n")
-            opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out <- nloptr(x0=out.sann$par, eval_f=get.likelihood.castor, ub=upper, lb=lower, opts=opts)
-            loglik <- -1 * out$objective
-	}
-
-        ## ###########################################
-        ## Wrap up estimate and format output.
-        ## ###########################################
-
-        ## Will need to manually set the output parameter order to be congruent with normal hisse function.
-	cat("Finished. Summarizing results...", "\n")
-
-        solution.nat <- exp( out$solution )
-        turnover <- solution.nat[par.vec.cuts[1,1]:par.vec.cuts[1,2]]
-        eps <- solution.nat[par.vec.cuts[2,1]:par.vec.cuts[2,2]]
-        trans.vec <- solution.nat[par.vec.cuts[3,1]:par.vec.cuts[3,2]]
-        turn.vec <- c(0, turnover)[turnover.anc.padded]
-        eps.vec <- c(0, eps)[eps.anc.padded]
-
-        ## Construct vector of names for the output.
-        ## Initiate all parameters with 0.
-        solution <- rep(0, times = 384)
-        names( solution ) <- c(nm_A, nm_B, nm_C, nm_D, nm_E, nm_F, nm_G, nm_H)
-        
-        letter_rates <- LETTERS[1:(Nstates / 4)]
-        Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = Nstates, nrow = Nstates)
-        tmp.mat <- rbind(paste0("q00Z_00", letter_rates)
-                       , paste0("q01Z_01", letter_rates)
-                       , paste0("q10Z_10", letter_rates)
-                       , paste0("q11Z_11", letter_rates) )
-        
-        for( i in 1:length(letter_rates) ){
-            ## Using the loop to populate the solution vector.
-            dd <- (i - 1) * 4 ## Shift to get the parameters from the big transition matrix.
-            
-            turn.vec_names <- paste0(c("turnover00","turnover01","turnover10","turnover11"), letter_rates[i])
-            turn.vec_vals <- turn.vec[1:4 + dd]
-            solution[turn.vec_names] <- turn.vec_vals
-            
-            eps.vec_names <- paste0(c("eps00","eps01","eps10","eps11"), letter_rates[i])
-            eps.vec_vals <- eps.vec[1:4 + dd]
-            solution[eps.vec_names] <- eps.vec_vals
-            
-            ## For the transition rates will need to be a little more flexible here.
-            t_block_names <- gsub(pattern = "Z", replacement = letter_rates[i]
-                                , x = c("q00Z_01Z","q00Z_10Z","q00Z_11Z"
-                                       ,"q01Z_00Z","q01Z_10Z","q01Z_11Z"
-                                       ,"q10Z_00Z","q10Z_01Z","q10Z_11Z"
-                                       ,"q11Z_00Z","q11Z_01Z","q11Z_10Z") )
-            t_block_vals <- c(Q.mat[1+dd,2+dd], Q.mat[1+dd,3+dd], Q.mat[1+dd,4+dd]
-                            , Q.mat[2+dd,1+dd], Q.mat[2+dd,3+dd], Q.mat[2+dd,4+dd]
-                            , Q.mat[3+dd,1+dd], Q.mat[3+dd,2+dd], Q.mat[3+dd,4+dd]
-                            , Q.mat[4+dd,1+dd], Q.mat[4+dd,2+dd], Q.mat[4+dd,3+dd])
-            solution[t_block_names] <- t_block_vals
-
-            ## For the last part I need to use the transition name and translate that info into the positions.
-            t_hidden_names <- c( t( gsub(pattern = "Z_", replacement = paste0(letter_rates[i],"_"), x = tmp.mat[,-i]) ) )
-            letters_split <- strsplit(t_hidden_names, split = "[q_01]")
-            letters_split <- sapply(letters_split, function(x) x[ x != "" ] )
-            number_split <- strsplit(t_hidden_names, split = paste0("[q_",paste0(letter_rates, collapse=""),"]", collapse=""))
-            number_split <- sapply(number_split, function(x) x[ x != "" ] )
-            ## Now just need to use these matrices to find the positions.
-            ## The direction is row1 to row2, column by column.
-            number_id <- matrix( sapply(number_split, function(x) switch(x, "00"=1, "01"=2, "10"=3, "11"=4) ), ncol = 4)
-            letters_id <- matrix( sapply(letters_split, function(x) (which(letter_rates == x)-1)*4), ncol = 4)
-            Q.mat_id <- number_id + letters_id
-            t_hidden_vals <- sapply(1:ncol(Q.mat_id), function(x) Q.mat[Q.mat_id[1,x], Q.mat_id[2,x]] )
-            solution[t_hidden_names] <- t_hidden_vals
-        }
-
-        cat("Finished. Summarizing results...", "\n")
-        
-        obj <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1)))
-                 , solution=solution, index.par=pars, f=f, hidden.states=hidden.states
-                 , condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data
-                 , trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower
-                 , ode.eps=ode.eps, fast.int=fast.int)
-        class(obj) <- append(class(obj), "muhisse.fit")
-        return(obj)
-        
-    } ## Ends call to 'fast.int'
-    
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = nloptr(x0=ip, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, phy=phy, data.new=data.new, trans.rate=trans.rate, fast.int = fast.int, time = time)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeMuHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = subplex(ip, fn=DevOptimizeMuHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, phy=phy, data.new=data.new, trans.rate=trans.rate, fast.int = fast.int, time = time)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
@@ -655,11 +433,11 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
         opts <- list("algorithm"="NLOPT_GD_STOGO", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out.sann = GenSA(ip, fn=DevOptimizeMuHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out.sann = GenSA(ip, fn=DevOptimizeMuHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, phy=phy, data.new=data.new, trans.rate=trans.rate,fast.int = fast.int, time = time)
         #out.sann <- stogo(x0=ip, fn=DevOptimizeMuHiSSE, gr=NULL, upper=upper, lower=lower, pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, phy=phy, data.new=data.new, trans.rate=trans.rate,fast.int = fast.int, time = time)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         
@@ -686,16 +464,26 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
 ######################################################################################################################################
 ######################################################################################################################################
 
+# HAVE TO CHANGE THE ROOT PRIORS TO MATCH
 
-DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, ode.eps) {
+
+DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, ode.eps, phy, data.new, trans.rate, fast.int, time) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
     ## print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
-    logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-
+    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
+    if(fast.int == TRUE){
+      castor_dat <- getCastorDat(cache = cache, phy = phy, data.new = data.new, trans.rate = trans.rate, hidden.states = hidden.states, root.type = root.type, root.p = root.p)
+      castor_res <- quiet(castor::fit_musse(tree = castor_dat$phy, Nstates = castor_dat$Nstates, NPstates = castor_dat$NPstates, tip_pstates = castor_dat$tip_pstates, birth_rates = castor_dat$birth_rates, death_rates = castor_dat$death_rates, transition_matrix = castor_dat$full_mat, proxy_map = castor_dat$proxy_map, root_prior = castor_dat$root_prior, root_conditioning = castor_dat$root_conditioning, check_input = FALSE, max_model_runtime = time))
+      logl <- castor_res$loglikelihood
+      if(is.null(logl)){
+        logl <- -Inf
+      }
+    }else{
+      logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p) 
+    }
     return(-logl)
 }
 
@@ -706,6 +494,67 @@ DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.t
 ### The various utility functions used
 ######################################################################################################################################
 ######################################################################################################################################
+
+quiet <- function(x){ 
+  sink(tempfile()) 
+  on.exit(sink()) 
+  invisible(force(x)) 
+} 
+
+getCastorDat <- function(cache, phy, data.new, trans.rate, hidden.states = FALSE, root.type= "madfitz", root.p = NULL){
+  
+  data.paste <- paste0(data.new[, 1], data.new[, 2])
+  data.castor <- unname(sapply(data.paste, function(x) switch(x, `00` = 1, `01` = 2, `10` = 3, `11` = 4)))
+  names(data.castor) <- rownames(data.new)
+  data.castor <- data.castor[phy$tip.label]
+  
+  # number of observed states and hiddent states
+  NPstates <- length(unique(data.castor))
+  Nstates <- NPstates * dim(trans.rate)[1]/4
+  
+  # from the cache we get ALL parameters of interest
+  transition_matrix <- unlist(cache)[grep("q", names(cache))]
+  birth_rates <- unlist(cache)[grep("lambda", names(cache))]
+  death_rates <- unlist(cache)[grep("mu", names(cache))]
+  
+  # root conditioning, 
+  # set the root prior (NULL in hisse is likelihoods in castor)
+  if(is.null(root.p)){
+    root_prior <- "likelihoods"
+  }else{
+    root_prior <- root.p
+  }
+  root_conditioning <- root.type
+  
+  # some random thing castor needs, I think this is general...
+  proxy_map <- rep(1:NPstates, length.out = Nstates)
+  
+  # get the birth and death rates we are interested
+  birth_rates <- as.vector(matrix(birth_rates,4,8)[1:NPstates, 1:(Nstates/NPstates)])
+  death_rates <- as.vector(matrix(death_rates,4,8)[1:NPstates, 1:(Nstates/NPstates)])
+  
+  # get the indexes of all possible transition rates and compare it to the requested trans.rate
+  from <- strsplit(names(transition_matrix), "_") %>% lapply(., function(x) gsub("q", "", x = x[1])) %>% do.call(rbind, .)
+  to <- strsplit(names(transition_matrix), "_") %>% lapply(., function(x) x[2]) %>% do.call(rbind, .)
+  transition_IndexMatrix <- paste(from, to, sep = "")
+  trans.rate_IndexMatrix <- which(!(trans.rate == 0 | is.na(trans.rate)), arr.ind = TRUE)
+  if(NPstates == Nstates){
+    transition_IndexMatrix <- gsub(c("A|B|C|D|E|F|G|H"), "", transition_IndexMatrix)
+  }
+  rows2Match <- rownames(trans.rate)[trans.rate_IndexMatrix[,1]] %>% gsub("\\(", "", .) %>% gsub("\\)", "", .)
+  cols2Match <- colnames(trans.rate)[trans.rate_IndexMatrix[,2]] %>% gsub("\\(", "", .) %>% gsub("\\)", "", .)
+  trans.rate2Match <- paste(rows2Match, cols2Match, sep = "")
+  neededTransitions <- transition_matrix[match(trans.rate2Match, transition_IndexMatrix)]
+  full_mat <- matrix(0, dim(trans.rate)[1], dim(trans.rate)[2])
+  
+  for(i in 1:length(neededTransitions)){
+    full_mat[trans.rate_IndexMatrix[i, 1], trans.rate_IndexMatrix[i, 2]] <- neededTransitions[i]
+  }
+  mat_reducer <- proxy_map + (rep(0:((Nstates/NPstates)-1), each = NPstates) * 4)
+  full_mat <- full_mat[c(mat_reducer), c(mat_reducer)]
+  
+  return(list(phy = phy, Nstates = Nstates, NPstates = NPstates, tip_pstates = data.castor, birth_rates = birth_rates, death_rates = death_rates, full_mat = full_mat, proxy_map = proxy_map, root_prior = root_prior, root_conditioning = root_conditioning))
+}
 
 OrganizeData <- function(data, phy, f, hidden.states){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
