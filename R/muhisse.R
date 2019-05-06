@@ -534,15 +534,27 @@ getCastorDat <- function(cache, phy, data.new, trans.rate, hidden.states = FALSE
   death_rates <- as.vector(matrix(death_rates,4,8)[1:NPstates, 1:(Nstates/NPstates)])
   
   # get the indexes of all possible transition rates and compare it to the requested trans.rate
-  from <- strsplit(names(transition_matrix), "_") %>% lapply(., function(x) gsub("q", "", x = x[1])) %>% do.call(rbind, .)
-  to <- strsplit(names(transition_matrix), "_") %>% lapply(., function(x) x[2]) %>% do.call(rbind, .)
+  from <- strsplit(names(transition_matrix), "_") %>% 
+  from <- lapply(from, function(x) gsub("q", "", x = x[1])) 
+  from <- do.call(rbind, from)
+  
+  to <- strsplit(names(transition_matrix), "_") 
+  to <- lapply(to, function(x) x[2]) 
+  to <- do.call(rbind, to)
+  
   transition_IndexMatrix <- paste(from, to, sep = "")
   trans.rate_IndexMatrix <- which(!(trans.rate == 0 | is.na(trans.rate)), arr.ind = TRUE)
   if(NPstates == Nstates){
     transition_IndexMatrix <- gsub(c("A|B|C|D|E|F|G|H"), "", transition_IndexMatrix)
   }
-  rows2Match <- rownames(trans.rate)[trans.rate_IndexMatrix[,1]] %>% gsub("\\(", "", .) %>% gsub("\\)", "", .)
-  cols2Match <- colnames(trans.rate)[trans.rate_IndexMatrix[,2]] %>% gsub("\\(", "", .) %>% gsub("\\)", "", .)
+  rows2Match <- rownames(trans.rate)[trans.rate_IndexMatrix[,1]]
+  rows2Match <- gsub("\\(", "", rows2Match) 
+  rows2Match <- gsub("\\)", "", rows2Match)
+  
+  cols2Match <- colnames(trans.rate)[trans.rate_IndexMatrix[,2]] 
+  cols2Match <- gsub("\\(", "", cols2Match) 
+  cols2Match <- gsub("\\)", "", cols2Match)
+  
   trans.rate2Match <- paste(rows2Match, cols2Match, sep = "")
   neededTransitions <- transition_matrix[match(trans.rate2Match, transition_IndexMatrix)]
   full_mat <- matrix(0, dim(trans.rate)[1], dim(trans.rate)[2])
