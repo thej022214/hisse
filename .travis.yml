@@ -1,8 +1,10 @@
+dist: xenial
 addons:
   apt:
     packages:
       - libgsl0ldbl
-#      - libgslcblas0
+      - libgslcblas0
+      - libgsl-dev
       - gsl-bin
       - libgsl0-dev
       - libmagick++-dev
