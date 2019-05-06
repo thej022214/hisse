@@ -2,7 +2,6 @@ dist: xenial
 addons:
   apt:
     packages:
-      - libgsl0ldbl
       - libgslcblas0
       - libgsl-dev
       - gsl-bin
