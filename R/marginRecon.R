@@ -343,7 +343,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
     nstates <- 32
     nstates.to.eval <- 4 * hidden.states
@@ -459,14 +459,14 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladog
     data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
     gen <- FindGenerations(phy)
-    dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.areas)
+    dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=TRUE)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=TRUE, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
     nstates = 30
     nstates.to.eval <- 3 * hidden.areas
@@ -501,7 +501,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladog
         obj <- NULL
     }
     
-    dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.areas)
+    dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=TRUE)
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
         marginal.probs.tmp <- numeric(4)
@@ -528,9 +528,16 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladog
         return(c(tip, marginal.probs))
     }
     
-    tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
-    
-    obj$tip.mat = matrix(unlist(tip.marginals), ncol = 30+1, byrow = TRUE)
+    if(hidden.states>1){
+        tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
+        obj$tip.mat = matrix(unlist(tip.marginals), ncol = 30+1, byrow = TRUE)
+    }else{
+        obj$tip.mat <- matrix(0, ncol = 30+1, nrow = nb.tip)
+        obj$tip.mat[,1] <- 1:nb.tip
+        setkey(dat.tab, DesNode)
+        obj$tip.mat[,2:4] <- matrix(unlist(dat.tab[1:nb.tip,7:9]), ncol = 3, byrow = FALSE)
+    }
+
     rates.mat <- matrix(0, 2, 30)
     rates.mat[1,] <- model.vec[c(1:3, 39:41, 77:79, 115:117, 153:155, 191:193, 229:231, 267:269, 305:307, 343:345)]
     rates.mat[2,] <- c(model.vec[c(4:5)],0, model.vec[c(42:43)],0,  model.vec[c(80:81)],0, model.vec[c(118:119)],0, model.vec[c(156:157)],0, model.vec[c(194:195)],0, model.vec[c(232:233)],0, model.vec[c(270:271)],0, model.vec[c(308:309)],0, model.vec[c(346:347)],0)
