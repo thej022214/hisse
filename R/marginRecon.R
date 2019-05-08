@@ -410,7 +410,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
         obj$tip.mat <- matrix(0, ncol = 32+1, nrow = nb.tip)
         obj$tip.mat[,1] <- 1:nb.tip
         setkey(dat.tab, DesNode)
-        obj$tip.mat[,2:5] <- dat.tab[,7:10]
+        obj$tip.mat[,2:5] <- as.data.frame(dat.tab[,7:10])
     }
     print(obj$tip.mat)
     colnames(obj$tip.mat)  <- c("id", "(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
