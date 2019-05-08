@@ -352,7 +352,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
     nstates <- 32
-    nstates.to.eval <- hidden.states
+    nstates.to.eval <- 4 * hidden.states
     nstates.not.eval <- 32 - nstates.to.eval
     nodes <- unique(phy$edge[,1])
     
