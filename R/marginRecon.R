@@ -339,8 +339,8 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     # Some new prerequisites #
     data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
-    gen <- FindGenerations(phy)
-    dat.tab <- OrganizeData(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.logical)
+    gen <- hisse:::FindGenerations(phy)
+    dat.tab <- hisse:::OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.logical)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ##########################
