@@ -333,8 +333,8 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     # Some new prerequisites #
     data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
-    gen <- hisse:::FindGenerations(phy)
-    dat.tab <- hisse:::OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+    gen <- FindGenerations(phy)
+    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ##########################
@@ -343,7 +343,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     DesNode = NULL
     ##########################
     
-    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
     nstates <- 32
     nstates.to.eval <- 4 * hidden.states
@@ -357,10 +357,8 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     NodeEval <- function(node){
         focal <- node
         marginal.probs.tmp <- c()
-        print(node)
         for (j in 1:nstates.to.eval){
-            print(j)
-            marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+            marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
         }
         marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
         best.probs <- max(marginal.probs.tmp)
@@ -404,8 +402,16 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
         marginal.probs[nstates] <- exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(tip, marginal.probs))
     }
-    tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
-    obj$tip.mat <- matrix(unlist(tip.marginals), ncol = 32+1, byrow = TRUE)
+    
+    if(hidden.states>1){
+        tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
+        obj$tip.mat <- matrix(unlist(tip.marginals), ncol = 32+1, byrow = TRUE)
+    }else{
+        tip.marginals <- matrix(0, ncol = 32+1, byrow = TRUE)
+        tip.marginals[,1] <- 1:nb.tip
+        setkey(dat.tab, DesNode)
+        tip.marginals[,2:5] <- dat.tab[tip,7:10]
+    }
     colnames(obj$tip.mat)  <- c("id", "(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
     
     rates.mat <- matrix(0, 2, 32)
