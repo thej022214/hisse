@@ -318,7 +318,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
-    if(hidden.states > 1){
+    if(hidden.states > 2){
         hidden.logical <- TRUE
     }else{
         hidden.logical <- FALSE
@@ -349,7 +349,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
     nstates <- 32
     nstates.to.eval <- 4 * hidden.states
@@ -364,7 +364,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
         focal <- node
         marginal.probs.tmp <- c()
         for (j in 1:nstates.to.eval){
-            marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+            marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
         }
         marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
         best.probs <- max(marginal.probs.tmp)
