@@ -383,7 +383,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
         obj <- NULL
     }
     
-    dat.tab <- OrganizeData(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.logical)
+    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.logical)
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
         marginal.probs.tmp <- numeric(4)
