@@ -321,7 +321,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
-        if(hidden.logical == TRUE & length(root.p)==4){
+        if(hidden.states > 1 & length(root.p)==4){
             root.p <- rep(root.p, hidden.states)
             root.p <- root.p / sum(root.p)
             warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for each of the specified hidden states")
@@ -528,7 +528,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladog
         return(c(tip, marginal.probs))
     }
     
-    if(hidden.states>1){
+    if(hidden.areas>1){
         tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         obj$tip.mat = matrix(unlist(tip.marginals), ncol = 30+1, byrow = TRUE)
     }else{
