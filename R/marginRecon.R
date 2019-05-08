@@ -407,7 +407,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
         tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         obj$tip.mat <- matrix(unlist(tip.marginals), ncol = 32+1, byrow = TRUE)
     }else{
-        tip.marginals <- matrix(0, ncol = 32+1, byrow = TRUE)
+        tip.marginals <- matrix(0, ncol = 32+1, nrow = nb.tip)
         tip.marginals[,1] <- 1:nb.tip
         setkey(dat.tab, DesNode)
         tip.marginals[,2:5] <- dat.tab[tip,7:10]
