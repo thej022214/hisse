@@ -318,17 +318,11 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
-    if(hidden.states > 2){
-        hidden.logical <- TRUE
-    }else{
-        hidden.logical <- FALSE
-    }
-    
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
         if(hidden.logical == TRUE & length(root.p)==4){
-            root.p <- rep(root.p, 2)
+            root.p <- rep(root.p, hidden.states)
             root.p <- root.p / sum(root.p)
             warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for each of the specified hidden states")
         }
@@ -340,7 +334,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
     gen <- hisse:::FindGenerations(phy)
-    dat.tab <- hisse:::OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.logical)
+    dat.tab <- hisse:::OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ##########################
@@ -363,7 +357,9 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     NodeEval <- function(node){
         focal <- node
         marginal.probs.tmp <- c()
+        print(node)
         for (j in 1:nstates.to.eval){
+            print(j)
             marginal.probs.tmp <- c(marginal.probs.tmp, hisse:::DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
         }
         marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
@@ -383,7 +379,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
         obj <- NULL
     }
     
-    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.logical)
+    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
         marginal.probs.tmp <- numeric(4)
