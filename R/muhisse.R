@@ -391,6 +391,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     
     # Some more new prerequisites for castor #
     if(fast.int == TRUE){
+      print("Using a fast integreation approximation - See: Louca and Pennel (2019)")
       p.new <- exp(ip)
       model.vec <- numeric(length(pars))
       model.vec[] <- c(p.new, 0)[pars]
@@ -534,7 +535,7 @@ getCastorDat <- function(cache, phy, data.new, trans.rate, hidden.states = FALSE
   death_rates <- as.vector(matrix(death_rates,4,8)[1:NPstates, 1:(Nstates/NPstates)])
   
   # get the indexes of all possible transition rates and compare it to the requested trans.rate
-  from <- strsplit(names(transition_matrix), "_") %>% 
+  from <- strsplit(names(transition_matrix), "_")
   from <- lapply(from, function(x) gsub("q", "", x = x[1])) 
   from <- do.call(rbind, from)
   
