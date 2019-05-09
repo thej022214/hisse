@@ -601,7 +601,7 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
-                for(fix.index in 1:length(node)){
+                for(fix.index in 1:length(cache$node)){
                     fixer = numeric(32)
                     fixer[cache$state[fix.index]] = 1
                     v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
@@ -615,7 +615,7 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
-                for(fix.index in 1:length(node)){
+                for(fix.index in 1:length(cache$node)){
                     fixer = numeric(4)
                     fixer[cache$state[fix.index]] = 1
                     v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
@@ -649,7 +649,7 @@ GetRootProb <- function(cache, dat.tab, generations){
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
-                for(fix.index in 1:length(node)){
+                for(fix.index in 1:length(cache$node)){
                     fixer = numeric(32)
                     fixer[cache$state[fix.index]] = 1
                     v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
@@ -663,7 +663,7 @@ GetRootProb <- function(cache, dat.tab, generations){
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
-                for(fix.index in 1:length(node)){
+                for(fix.index in 1:length(cache$node)){
                     fixer = numeric(4)
                     fixer[cache$state[fix.index]] = 1
                     v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
