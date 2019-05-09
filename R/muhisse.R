@@ -600,10 +600,12 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         v.mat <- v.mat * matrix(c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H), length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
         if(!is.null(cache$node)){
-            if(which(generations == cache$node)){
-                fixer = numeric(32)
-                fixer[cache$state] = 1
-                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(node)){
+                    fixer = numeric(32)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                }
             }
         }
     }else{
@@ -612,10 +614,12 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         v.mat <- v.mat * matrix(c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A), length(unique(CurrentGenData$FocalNode)), 4, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
         if(!is.null(cache$node)){
-            if(which(generations == cache$node)){
-                fixer = numeric(4)
-                fixer[cache$state] = 1
-                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(node)){
+                    fixer = numeric(4)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                }
             }
         }
     }
@@ -644,10 +648,12 @@ GetRootProb <- function(cache, dat.tab, generations){
         v.mat <- v.mat * matrix(c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H), length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
         if(!is.null(cache$node)){
-            if(which(generations == cache$node)){
-                fixer = numeric(32)
-                fixer[cache$state] = 1
-                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(node)){
+                    fixer = numeric(32)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                }
             }
         }
     }else{
@@ -656,10 +662,12 @@ GetRootProb <- function(cache, dat.tab, generations){
         v.mat <- v.mat * matrix(c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A), length(unique(CurrentGenData$FocalNode)), 4, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
         if(!is.null(cache$node)){
-            if(which(generations == cache$node)){
-                fixer = numeric(4)
-                fixer[cache$state] = 1
-                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(node)){
+                    fixer = numeric(4)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                }
             }
         }
     }
@@ -714,7 +722,7 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
             comp <- c(comp[-TIPS], res.tmp[1])
         }else{
             if(!is.null(node)){
-                if(node %in% gen[[i]]){
+                if(any(node %in% gen[[i]])){
                     cache$node <- node
                     cache$state <- state
                     dat.tab <- FocalNodeProb(cache, dat.tab, gen[[i]])
