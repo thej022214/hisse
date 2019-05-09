@@ -1,13 +1,4 @@
 
-#library(ape)
-#library(deSolve)
-#library(subplex)
-#library(phytools)
-#library(nloptr)
-#library(GenSA)
-#library(data.table)
-#dyn.load("canonical-musse-ext-derivs.so")
-#dyn.load("muhisse-ext-derivs.so")
 
 ######################################################################################################################################
 ######################################################################################################################################
