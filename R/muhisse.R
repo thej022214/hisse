@@ -43,11 +43,6 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     if( !ncol( data ) == 3 ){
         stop("'data' needs to be a matrix or data.frame with 3 columns. See help.")
     }
-    ## Check if the states are %in% 0:2:
-    #states.check <- all( as.numeric(data[,c(2:3)]) %in% 0:2 )
-    #if( !states.check ){
-    #    stop("states need to be one of 0, 1, or 2. See help.")
-    #}
     
     ## Check if 'hidden.states' parameter is congruent with the turnover vector:
     if( length(turnover) > 4 & !hidden.states ){
