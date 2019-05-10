@@ -684,7 +684,7 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
     for(i in 1:length(gen)){
         if(i == length(gen)){
             if(!is.null(node)){
-                if(node %in% gen[[i]]){
+                if(any(node %in% gen[[i]])){
                     cache$node <- node
                     cache$state <- state
                     res.tmp <- GetRootProb(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
