@@ -15,7 +15,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), fast.int=TRUE, hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, smart.bounds = FALSE, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, time.scalar = 10){
+MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), fast.int=FALSE, hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, smart.bounds = FALSE, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, time.scalar = 10){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -391,7 +391,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     
     # Some more new prerequisites for castor #
     if(fast.int == TRUE){
-      print("Using a fast integreation approximation - See: Louca and Pennel (2019)")
+      cat("Using a fast integreation approximation - See: Louca and Pennel (2019)", "\n")
       p.new <- exp(ip)
       model.vec <- numeric(length(pars))
       model.vec[] <- c(p.new, 0)[pars]
@@ -399,6 +399,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
       castor_dat <- getCastorDat(cache = cache, phy = phy, data.new = data.new, trans.rate = trans.rate, hidden.states = hidden.states, root.type = root.type, root.p = root.p)
       time <- system.time(quiet((castor::fit_musse(tree = castor_dat$phy, Nstates = castor_dat$Nstates, NPstates = castor_dat$NPstates, tip_pstates = castor_dat$tip_pstates, birth_rates = castor_dat$birth_rates, death_rates = castor_dat$death_rates, transition_matrix = castor_dat$full_mat, proxy_map = castor_dat$proxy_map, root_prior = castor_dat$root_prior, root_conditioning = castor_dat$root_conditioning))))    
       time <- time[3]*time.scalar
+      cat(paste("Time allotted for a single downpass:", round(time, 3), "seconds", "\n"))
       }
     
     ##########################
