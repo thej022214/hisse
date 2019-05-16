@@ -2115,7 +2115,7 @@ void geosse_3_areas_multi_rates_derivs(int *neq, double *t, double *y, double *y
     + d2_1A * D_N1A
     + d2_23A * D_N23A
     + d2_12A * D_N12A
-    + 2.0 * s2A * D_N2A * E_2A;
+    + 2.0 * s2A * D_N2A * E_2A
     + dLAY_B * D_N2B
     + dLAY_C * D_N2C
     + dLAY_D * D_N2D
