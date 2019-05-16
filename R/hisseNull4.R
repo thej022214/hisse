@@ -6,9 +6,9 @@
 ######################################################################################################################################
 
 hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps.anc=rep(c(1,2,3,4),2), trans.type = "equal", condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
-	
+
 	#Some basic formatting of parameters:
-	phy$node.label <- NULL	
+	phy$node.label <- NULL
 	sub.mat1 <- sub.mat2 <- TransMatMaker(hidden.states=TRUE)
 	sub.mat3 <- sub.mat4 <- matrix(NA, 4,4)
 	if(trans.type == "equal"){
@@ -16,7 +16,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 		trans.mat <-rbind(cbind(sub.mat1, sub.mat3),cbind(sub.mat4,sub.mat2))
 		trans.mat[!is.na(trans.mat)] = 1
 		rownames(trans.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")
-		colnames(trans.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")			
+		colnames(trans.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")
 	}else{
 		sub.mat1 <- TransMatMaker(hidden.states=TRUE)
 		sub.mat2 <- TransMatMaker(hidden.states=TRUE)
@@ -25,7 +25,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 		diag(sub.mat3) <- 3
 		trans.mat <-rbind(cbind(sub.mat1,sub.mat3),cbind(sub.mat4,sub.mat2))
 		rownames(trans.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")
-		colnames(trans.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")			
+		colnames(trans.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")
 	}
 	trans.rate <- trans.mat
 
@@ -39,12 +39,12 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 	trans.rate.tmp = trans.rate[!is.na(trans.rate)]
 	trans.rate.tmp[which(trans.rate.tmp > 0)] = (trans.rate.tmp[which(trans.rate.tmp > 0)] + max(pars))
 	pars = c(pars, trans.rate.tmp)
-	
+
 	np <- max(pars)
 	pars[pars==0] <- np+1
-	
+
 	cat("Initializing...", "\n")
-	
+
 	data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
 	data.new <- data.new[phy$tip.label,]
 
@@ -99,7 +99,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 		upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
 	}
 	lower <- rep(-20, length(ip))
-	
+
 	if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
@@ -124,15 +124,15 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
         solution[] <- c(exp(out$solution), 0)[pars]
         loglik = -out$objective
 	}
-	
+
     names(solution) <- c("turn.0A", "turn.0B", "turn.0C", "turn.0D", "turn.1A", "turn.1B", "turn.1C", "turn.1D", "eps.0A", "eps.0B", "eps.0C", "eps.0D", "eps.1A", "eps.1B", "eps.1C", "eps.1D", "q0B0A", "q0C0A", "q0D0A", "q1A0A", "q0A0B", "q0C0B", "q0D0B", "q1B0B", "q0A0C", "q0B0C", "q0D0C", "q1C0C", "q0A0D", "q0B0D", "q0C0D", "q1D0D", "q0A1A", "q1B1A", "q1C1A", "q1D1A", "q0B1B", "q1A1B", "q1C1B", "q1D1B", "q0C1C", "q1A1C", "q1B1C", "q1D1C", "q0D1D", "q1A1D", "q1B1D", "q1C1D")
-    
+
 	cat("Finished. Summarizing results...", "\n")
-	
+
 	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, output.type=output.type, trans.type=trans.type, trans.mat=trans.mat, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
-	class(obj) = "hisse.null4.fit"		
-	
-	return(obj)		
+	class(obj) = "hisse.null4.fit"
+
+	return(obj)
 }
 
 
@@ -155,7 +155,7 @@ DevOptimizeNull <- function(p, pars, phy, data, f, condition.on.survival, root.t
 
 ######################################################################################################################################
 ######################################################################################################################################
-### The down pass that carries out the integration and returns the likelihood: 
+### The down pass that carries out the integration and returns the likelihood:
 ######################################################################################################################################
 ######################################################################################################################################
 
@@ -164,12 +164,12 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 	nb.tip <- length(phy$tip.label)
 	nb.node <- phy$Nnode
 	phy <- reorder(phy, "pruningwise")
-	anc <- unique(phy$edge[,1])		
+	anc <- unique(phy$edge[,1])
 	TIPS <- 1:nb.tip
 
 	compD <- matrix(0, nrow=nb.tip + nb.node, ncol=8)
-	compE <- matrix(0, nrow=nb.tip + nb.node, ncol=8)		
-		
+	compE <- matrix(0, nrow=nb.tip + nb.node, ncol=8)
+
 	#Initializes the tip sampling and sets internal nodes to be zero:
 	ncols = dim(compD)[2]
 	if(length(cache$f) == 2){
@@ -184,7 +184,7 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 		}
 	}
 	logcomp <- c()
-	#Start the postorder traversal indexing lists by node number: 
+	#Start the postorder traversal indexing lists by node number:
 	for (i in seq(from = 1, length.out = nb.node)) {
 		#A vector of all the internal nodes:
 		focal <- anc[i]
@@ -209,7 +209,7 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 			padded.pars <- rep(0, NUMELEMENTS)
 			pars <- c(unlist(pars))
 			stopifnot(length(padded.pars)<=NUMELEMENTS)
-			padded.pars[sequence(length(pars))]<-pars				
+			padded.pars[sequence(length(pars))]<-pars
 			yini <-c(E0A=cache$node.E[1], E0B=cache$node.E[2], E0C=cache$node.E[3], E0D=cache$node.E[4], E1A=cache$node.E[5], E1B=cache$node.E[6], E1C=cache$node.E[7], E1D=cache$node.E[8], D0A=cache$node.D[1], D0B=cache$node.D[2], D0C=cache$node.D[3], D0D=cache$node.D[4], D1A=cache$node.D[5], D1B=cache$node.D[6], D1C=cache$node.D[7], D1D=cache$node.D[8])
 			times=c(cache$tipward.age, cache$rootward.age)
 			prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_hisse_null", padded.pars, initfunc="initmod_hisse_null", dllname = "hisse", rtol=1e-8, atol=1e-8, hmax=10)
@@ -223,18 +223,18 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 			##############################################################################
 			if(!is.finite(prob.subtree.cal[9]) | !is.finite(prob.subtree.cal[10]) | !is.finite(prob.subtree.cal[11]) | !is.finite(prob.subtree.cal[12]) | !is.finite(prob.subtree.cal[13]) | !is.finite(prob.subtree.cal[14]) | !is.finite(prob.subtree.cal[15]) | !is.finite(prob.subtree.cal[16])){
 				return(bad.likelihood)
-			}				
+			}
 			if(prob.subtree.cal[9]<0 | prob.subtree.cal[10]<0 | prob.subtree.cal[11]<0 | prob.subtree.cal[12]<0 | prob.subtree.cal[13]<0 | prob.subtree.cal[14]<0 | prob.subtree.cal[15]<0 | prob.subtree.cal[16]<0){
 					return(bad.likelihood)
 			}
-            
+
             if(sum(prob.subtree.cal[9:16] < ode.eps)){
                 return(bad.likelihood)
             }
-            
+
 			#Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
 			phi <- c(phi, prob.subtree.cal[1:8])
-			v <- v * prob.subtree.cal[9:16]				
+			v <- v * prob.subtree.cal[9:16]
 		}
 		#C call to set_birth_void -- NOTE: The first input is zero as we need to declare the birth_rate. It gets written over and is now the first element in the list that is returned. Everything else should be self explanatory.
 		lambda0A <- .C("set_birth_hisse_null_void", as.double(0.0), as.double(cache$rootward.age), as.double(cache$tot_time), as.double(cache$x_turnover0A), as.double(cache$x_eps0A), as.double(cache$x_turnover0B), as.double(cache$x_eps0B),as.double(cache$x_turnover0C), as.double(cache$x_eps0C), as.double(cache$x_turnover0D), as.double(cache$x_eps0D), as.double(cache$x_turnover1A), as.double(cache$x_eps1A), as.double(cache$x_turnover1B), as.double(cache$x_eps1B),as.double(cache$x_turnover1C), as.double(cache$x_eps1C), as.double(cache$x_turnover1D), as.double(cache$x_eps1D), as.double(cache$q0B0A), as.double(cache$q0C0A), as.double(cache$q0D0A), as.double(cache$q1A0A), as.double(cache$q0A0B), as.double(cache$q0C0B), as.double(cache$q0D0B), as.double(cache$q1B0B), as.double(cache$q0A0C), as.double(cache$q0B0C), as.double(cache$q0D0C), as.double(cache$q1C0C), as.double(cache$q0A0D), as.double(cache$q0B0D), as.double(cache$q0C0D), as.double(cache$q1D0D), as.double(cache$q0A1A), as.double(cache$q1B1A), as.double(cache$q1C1A), as.double(cache$q1D1A), as.double(cache$q0B1B), as.double(cache$q1A1B), as.double(cache$q1C1B), as.double(cache$q1D1B), as.double(cache$q0C1C), as.double(cache$q1A1C), as.double(cache$q1B1C), as.double(cache$q1D1C), as.double(cache$q0D1D), as.double(cache$q1A1D), as.double(cache$q1B1D), as.double(cache$q1C1D), as.double(cache$focal.edge.length), as.double(cache$tipward.age), as.integer(0))
@@ -308,7 +308,7 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 #does a diversification analysis of a clade of Gingko: there is one species, so there is no point. The clades selected for analysis are larger than clades
 #evolving for the same time with the same birth and death rates, and so rate estimates are biased towards greater net diversification. As a first attempt to deal with this
 #we have allowed an ascertainment filter to be implemented. We assume that the true parameters of evolution make the examined clade exceptionally diverse in some way, and
-#thus only allow parameter values that make it exceptional enough. For example, by default we assume that clades of the observed number of taxa or greater should have a 
+#thus only allow parameter values that make it exceptional enough. For example, by default we assume that clades of the observed number of taxa or greater should have a
 #probability of being used of 5% or less. There is room for future improvements in dealing with this, but the effect size of this bias is large enough that it must be
 #attempted to be dealt with. By changing max.probability to 1.0, the traditional approach that ignores the reality of ascertainment bias may be used.
 #One possibility for this probability may be the number of taxa in the focal group divided by the number of taxa in the overall larger set of "similar" things
@@ -319,7 +319,7 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 #	if(is.null(max.probability) && !is.null(comparison.clade.diversity)) {
 #		comparison.clade.rate = log(comparison.clade.diversity / 2) / comparison.clade.age
 #		#Magallon and Sanderson 2001 -- Eq. 4 -- we want to calculate how many lineages we expect to be around at the age of origin of the focal clade. We have only looked at our special one:
-#		comparison.clade.expected.lineages = 2 * exp(comparison.clade.rate * (comparison.clade.age-time)) 
+#		comparison.clade.expected.lineages = 2 * exp(comparison.clade.rate * (comparison.clade.age-time))
 #		#Out of all the lineages alive at time t, we chose this one, presumably because it is diverse:
 #		max.probability = 1/comparison.clade.expected.lineages
 #	}
@@ -352,7 +352,7 @@ ParametersToPassNull <- function(phy, data, f, model.vec){
 		if(data[i]==1){states[i,c(5,6,7,8)]=1}
 		if(data[i]==2){states[i,1:8]=1}
 	}
-	
+
 	obj$states = states
 	obj$tot_time = max(branching.times(phy))
 	obj$f = f
@@ -365,7 +365,7 @@ ParametersToPassNull <- function(phy, data, f, model.vec){
 	obj$x_turnover1B = model.vec[6]
 	obj$x_turnover1C = model.vec[7]
 	obj$x_turnover1D = model.vec[8]
-	
+
 	obj$x_eps0A = model.vec[9]
 	obj$x_eps0B = model.vec[10]
 	obj$x_eps0C = model.vec[11]
@@ -385,32 +385,32 @@ ParametersToPassNull <- function(phy, data, f, model.vec){
 	obj$q0D0B = model.vec[23]
 	obj$q1B0B = model.vec[24]
 	obj$q0A0C = model.vec[25]
-	obj$q0B0C = model.vec[26] 
+	obj$q0B0C = model.vec[26]
 	obj$q0D0C = model.vec[27]
 	obj$q1C0C = model.vec[28]
 	obj$q0A0D = model.vec[29]
-	obj$q0B0D = model.vec[30] 
+	obj$q0B0D = model.vec[30]
 	obj$q0C0D = model.vec[31]
 	obj$q1D0D = model.vec[32]
 	obj$q0A1A = model.vec[33]
-	obj$q1B1A = model.vec[34] 
+	obj$q1B1A = model.vec[34]
 	obj$q1C1A = model.vec[35]
 	obj$q1D1A = model.vec[36]
 	obj$q0B1B = model.vec[37]
-	obj$q1A1B = model.vec[38] 
+	obj$q1A1B = model.vec[38]
 	obj$q1C1B = model.vec[39]
 	obj$q1D1B = model.vec[40]
 	obj$q0C1C = model.vec[41]
-	obj$q1A1C = model.vec[42] 
+	obj$q1A1C = model.vec[42]
 	obj$q1B1C = model.vec[43]
 	obj$q1D1C = model.vec[44]
 	obj$q0D1D = model.vec[45]
-	obj$q1A1D = model.vec[46] 
+	obj$q1A1D = model.vec[46]
 	obj$q1B1D = model.vec[47]
 	obj$q1C1D = model.vec[48]
-	
+
 	obj$split.times = sort(branching.times(phy), decreasing=TRUE)
-	
+
 	return(obj)
 }
 
@@ -431,9 +431,9 @@ print.hisse.null4.fit <- function(x,...){
 	param.est[,1] <- x$solution[c(1:8)]
 	param.est[,2] <- x$solution[c(9:16)]
 	param.est <- data.frame(param.est, row.names=c("rate0A", "rate0B", "rate0C", "rate0D", "rate1A", "rate1B", "rate1C", "rate1D"))
-	
-	names(param.est) <- c("turnover", "extinction")	
-	
+
+	names(param.est) <- c("turnover", "ext.frac")
+
 	param.est.sp.0A <- param.est[1,1] / (1 + param.est[1,2])
 	param.est.mu.0A <- (param.est[1,1] * param.est[1,2]) / (1 + param.est[1,2])
 	param.est.sp.0B <- param.est[2,1] / (1 + param.est[2,2])
@@ -451,7 +451,7 @@ print.hisse.null4.fit <- function(x,...){
 	param.est.mu.1C <- (param.est[7,1] * param.est[7,2]) / (1 + param.est[7,2])
 	param.est.sp.1D <- param.est[8,1] / (1 + param.est[8,2])
 	param.est.mu.1D <- (param.est[8,1] * param.est[8,2]) / (1 + param.est[8,2])
-	
+
 	if(x$output.type == "net.div"){
 		param.est[1,1] <- param.est.sp.0A - param.est.mu.0A
 		param.est[2,1] <- param.est.sp.0B - param.est.mu.0B
@@ -461,9 +461,9 @@ print.hisse.null4.fit <- function(x,...){
 		param.est[6,1] <- param.est.sp.1B - param.est.mu.1B
 		param.est[7,1] <- param.est.sp.1C - param.est.mu.1C
 		param.est[8,1] <- param.est.sp.1D - param.est.mu.1D
-		names(param.est) <- c("net.div", "extinction")	
+		names(param.est) <- c("net.div", "extinction")
 	}
-	
+
 	if(x$output.type == "raw"){
 		param.est[1,1:2] <- c(param.est.sp.0A, param.est.mu.0A)
 		param.est[2,1:2] <- c(param.est.sp.0B, param.est.mu.0B)
@@ -472,10 +472,10 @@ print.hisse.null4.fit <- function(x,...){
 		param.est[5,1:2] <- c(param.est.sp.1A, param.est.mu.1A)
 		param.est[6,1:2] <- c(param.est.sp.1B, param.est.mu.1B)
 		param.est[7,1:2] <- c(param.est.sp.1C, param.est.mu.1C)
-		param.est[8,1:2] <- c(param.est.sp.1D, param.est.mu.1D)		
-		names(param.est) <- c("lambda", "mu")	
+		param.est[8,1:2] <- c(param.est.sp.1D, param.est.mu.1D)
+		names(param.est) <- c("lambda", "mu")
 	}
-	
+
 	cat("Diversification Rates\n")
 	print(param.est)
 	cat("\n")
@@ -484,8 +484,7 @@ print.hisse.null4.fit <- function(x,...){
 	t.rates <- x$solution[c(17:48)]
 	q.mat <- matrix(t.rates[x$trans.mat],dim(x$trans.mat))
 	rownames(q.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")
-	colnames(q.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")			
+	colnames(q.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")
 	cat("Transition Rates\n")
 	print(q.mat)
 }
-

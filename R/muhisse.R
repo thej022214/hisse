@@ -1,13 +1,4 @@
 
-#library(ape)
-#library(deSolve)
-#library(subplex)
-#library(phytools)
-#library(nloptr)
-#library(GenSA)
-#library(data.table)
-#dyn.load("canonical-musse-ext-derivs.so")
-#dyn.load("muhisse-ext-derivs.so")
 
 ######################################################################################################################################
 ######################################################################################################################################
@@ -52,11 +43,6 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     if( !ncol( data ) == 3 ){
         stop("'data' needs to be a matrix or data.frame with 3 columns. See help.")
     }
-    ## Check if the states are %in% 0:2:
-    #states.check <- all( as.numeric(data[,c(2:3)]) %in% 0:2 )
-    #if( !states.check ){
-    #    stop("states need to be one of 0, 1, or 2. See help.")
-    #}
     
     ## Check if 'hidden.states' parameter is congruent with the turnover vector:
     if( length(turnover) > 4 & !hidden.states ){
@@ -96,6 +82,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         rows <- c("(00A)", "(01A)", "(10A)", "(11A)", "(00B)", "(01B)", "(10B)", "(11B)")
         cols <- c("(00B)", "(01B)", "(10B)", "(11B)", "(00A)", "(01A)", "(10A)", "(11A)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1], rep(0,6), category.rate.shift[2], rep(0,6), category.rate.shift[3], rep(0,6), category.rate.shift[4], rep(0,6))
@@ -119,6 +106,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         rows <- c("(00A)", "(00A)", "(01A)", "(01A)", "(10A)", "(10A)", "(11A)", "(11A)", "(00B)", "(00B)", "(01B)", "(01B)", "(10B)", "(10B)", "(11B)", "(11B)", "(00C)", "(00C)", "(01C)", "(01C)", "(10C)", "(10C)", "(11C)", "(11C)")
         cols <- c("(00B)", "(00C)", "(01B)", "(01C)", "(10B)", "(10C)", "(11B)", "(11C)", "(00A)", "(00C)", "(01A)", "(01C)", "(10A)", "(10C)", "(11A)", "(11C)", "(00A)", "(00B)", "(01A)", "(01B)", "(10A)", "(10B)", "(11A)", "(11B)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,5), category.rate.shift[3:4], rep(0,5), category.rate.shift[5:6], rep(0,5), category.rate.shift[7:8], rep(0,5))
@@ -143,6 +131,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         rows <- c("(00A)", "(00A)", "(00A)", "(01A)", "(01A)", "(01A)", "(10A)", "(10A)", "(10A)", "(11A)", "(11A)", "(11A)", "(00B)", "(00B)", "(00B)", "(01B)", "(01B)", "(01B)", "(10B)", "(10B)", "(10B)", "(11B)", "(11B)", "(11B)", "(00C)", "(00C)", "(00C)", "(01C)", "(01C)", "(01C)", "(10C)", "(10C)", "(10C)", "(11C)", "(11C)", "(11C)", "(00D)", "(00D)", "(00D)", "(01D)", "(01D)", "(01D)", "(10D)", "(10D)", "(10D)", "(11D)", "(11D)", "(11D)")
         cols <- c("(00B)", "(00C)", "(00D)", "(01B)", "(01C)", "(01D)", "(10B)", "(10C)", "(10D)", "(11B)", "(11C)", "(11D)", "(00A)", "(00C)", "(00D)", "(01A)", "(01C)", "(01D)", "(10A)", "(10C)", "(10D)", "(11A)", "(11C)", "(11D)", "(00A)", "(00B)", "(00D)", "(01A)", "(01B)", "(01D)", "(10A)", "(10B)", "(10D)", "(11A)", "(11B)", "(11D)", "(00A)", "(00B)", "(00C)", "(01A)", "(01B)", "(01C)", "(10A)", "(10B)", "(10C)", "(11A)", "(11B)", "(11C)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:3], rep(0,4), category.rate.shift[4:6], rep(0,4), category.rate.shift[7:9], rep(0,4), category.rate.shift[10:12], rep(0,4))
@@ -168,6 +157,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         rows <- c("(00A)","(00A)","(00A)","(00A)","(01A)","(01A)","(01A)","(01A)","(10A)","(10A)","(10A)","(10A)","(11A)","(11A)","(11A)","(11A)","(00B)","(00B)","(00B)","(00B)","(01B)","(01B)","(01B)","(01B)","(10B)","(10B)","(10B)","(10B)","(11B)","(11B)","(11B)","(11B)","(00C)","(00C)","(00C)","(00C)","(01C)","(01C)","(01C)","(01C)","(10C)","(10C)","(10C)","(10C)","(11C)","(11C)","(11C)","(11C)","(00D)","(00D)","(00D)","(00D)","(01D)","(01D)","(01D)","(01D)","(10D)","(10D)","(10D)","(10D)","(11D)","(11D)","(11D)","(11D)","(00E)","(00E)","(00E)","(00E)","(01E)","(01E)","(01E)","(01E)","(10E)","(10E)","(10E)","(10E)","(11E)","(11E)","(11E)","(11E)")
         cols <- c("(00B)","(00C)","(00D)","(00E)","(01B)","(01C)","(01D)","(01E)","(10B)","(10C)","(10D)","(10E)","(11B)","(11C)","(11D)","(11E)","(00A)","(00C)","(00D)","(00E)","(01A)","(01C)","(01D)","(01E)","(10A)","(10C)","(10D)","(10E)","(11A)","(11C)","(11D)","(11E)","(00A)","(00B)","(00D)","(00E)","(01A)","(01B)","(01D)","(01E)","(10A)","(10B)","(10D)","(10E)","(11A)","(11B)","(11D)","(11E)","(00A)","(00B)","(00C)","(00E)","(01A)","(01B)","(01C)","(01E)","(10A)","(10B)","(10C)","(10E)","(11A)","(11B)","(11C)","(11E)","(00A)","(00B)","(00C)","(00D)","(01A)","(01B)","(01C)","(01D)","(10A)","(10B)","(10C)","(10D)","(11A)","(11B)","(11C)","(11D)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:4], rep(0,3), category.rate.shift[5:8], rep(0,3), category.rate.shift[9:12], rep(0,3), category.rate.shift[13:16], rep(0,3))
@@ -194,6 +184,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         rows <- c("(00A)","(00A)","(00A)","(00A)","(00A)","(01A)","(01A)","(01A)","(01A)","(01A)","(10A)","(10A)","(10A)","(10A)","(10A)","(11A)","(11A)","(11A)","(11A)","(11A)","(00B)","(00B)","(00B)","(00B)","(00B)","(01B)","(01B)","(01B)","(01B)","(01B)","(10B)","(10B)","(10B)","(10B)","(10B)","(11B)","(11B)","(11B)","(11B)","(11B)","(00C)","(00C)","(00C)","(00C)","(00C)","(01C)","(01C)","(01C)","(01C)","(01C)","(10C)","(10C)","(10C)","(10C)","(10C)","(11C)","(11C)","(11C)","(11C)","(11C)","(00D)","(00D)","(00D)","(00D)","(00D)","(01D)","(01D)","(01D)","(01D)","(01D)","(10D)","(10D)","(10D)","(10D)","(10D)","(11D)","(11D)","(11D)","(11D)","(11D)","(00E)","(00E)","(00E)","(00E)","(00E)","(01E)","(01E)","(01E)","(01E)","(01E)","(10E)","(10E)","(10E)","(10E)","(10E)","(11E)","(11E)","(11E)","(11E)","(11E)","(00F)","(00F)","(00F)","(00F)","(00F)","(01F)","(01F)","(01F)","(01F)","(01F)","(10F)","(10F)","(10F)","(10F)","(10F)","(11F)","(11F)","(11F)","(11F)","(11F)")
         cols <- c("(00B)","(00C)","(00D)","(00E)","(00F)","(01B)","(01C)","(01D)","(01E)","(01F)","(10B)","(10C)","(10D)","(10E)","(10F)","(11B)","(11C)","(11D)","(11E)","(11F)","(00A)","(00C)","(00D)","(00E)","(00F)","(01A)","(01C)","(01D)","(01E)","(01F)","(10A)","(10C)","(10D)","(10E)","(10F)","(11A)","(11C)","(11D)","(11E)","(11F)","(00A)","(00B)","(00D)","(00E)","(00F)","(01A)","(01B)","(01D)","(01E)","(01F)","(10A)","(10B)","(10D)","(10E)","(10F)","(11A)","(11B)","(11D)","(11E)","(11F)","(00A)","(00B)","(00C)","(00E)","(00F)","(01A)","(01B)","(01C)","(01E)","(01F)","(10A)","(10B)","(10C)","(10E)","(10F)","(11A)","(11B)","(11C)","(11E)","(11F)","(00A)","(00B)","(00C)","(00D)","(00F)","(01A)","(01B)","(01C)","(01D)","(01F)","(10A)","(10B)","(10C)","(10D)","(10F)","(11A)","(11B)","(11C)","(11D)","(11F)","(00A)","(00B)","(00C)","(00D)","(00E)","(01A)","(01B)","(01C)","(01D)","(01E)","(10A)","(10B)","(10C)","(10D)","(10E)","(11A)","(11B)","(11C)","(11D)","(11E)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:5], rep(0,2), category.rate.shift[6:10], rep(0,2), category.rate.shift[11:15], rep(0,2), category.rate.shift[16:20], rep(0,2))
@@ -221,6 +212,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         rows <- c("(00A)","(00A)","(00A)","(00A)","(00A)","(00A)","(01A)","(01A)","(01A)","(01A)","(01A)","(01A)","(10A)","(10A)","(10A)","(10A)","(10A)","(10A)","(11A)","(11A)","(11A)","(11A)","(11A)","(11A)","(00B)","(00B)","(00B)","(00B)","(00B)","(00B)","(01B)","(01B)","(01B)","(01B)","(01B)","(01B)","(10B)","(10B)","(10B)","(10B)","(10B)","(10B)","(11B)","(11B)","(11B)","(11B)","(11B)","(11B)","(00C)","(00C)","(00C)","(00C)","(00C)","(00C)","(01C)","(01C)","(01C)","(01C)","(01C)","(01C)","(10C)","(10C)","(10C)","(10C)","(10C)","(10C)","(11C)","(11C)","(11C)","(11C)","(11C)","(11C)","(00D)","(00D)","(00D)","(00D)","(00D)","(00D)","(01D)","(01D)","(01D)","(01D)","(01D)","(01D)","(10D)","(10D)","(10D)","(10D)","(10D)","(10D)","(11D)","(11D)","(11D)","(11D)","(11D)","(11D)","(00E)","(00E)","(00E)","(00E)","(00E)","(00E)","(01E)","(01E)","(01E)","(01E)","(01E)","(01E)","(10E)","(10E)","(10E)","(10E)","(10E)","(10E)","(11E)","(11E)","(11E)","(11E)","(11E)","(11E)","(00F)","(00F)","(00F)","(00F)","(00F)","(00F)","(01F)","(01F)","(01F)","(01F)","(01F)","(01F)","(10F)","(10F)","(10F)","(10F)","(10F)","(10F)","(11F)","(11F)","(11F)","(11F)","(11F)","(11F)","(00G)","(00G)","(00G)","(00G)","(00G)","(00G)","(01G)","(01G)","(01G)","(01G)","(01G)","(01G)","(10G)","(10G)","(10G)","(10G)","(10G)","(10G)","(11G)","(11G)","(11G)","(11G)","(11G)","(11G)")
         cols <- c("(00B)","(00C)","(00D)","(00E)","(00F)","(00G)","(01B)","(01C)","(01D)","(01E)","(01F)","(01G)","(10B)","(10C)","(10D)","(10E)","(10F)","(10G)","(11B)","(11C)","(11D)","(11E)","(11F)","(11G)","(00A)","(00C)","(00D)","(00E)","(00F)","(00G)","(01A)","(01C)","(01D)","(01E)","(01F)","(01G)","(10A)","(10C)","(10D)","(10E)","(10F)","(10G)","(11A)","(11C)","(11D)","(11E)","(11F)","(11G)","(00A)","(00B)","(00D)","(00E)","(00F)","(00G)","(01A)","(01B)","(01D)","(01E)","(01F)","(01G)","(10A)","(10B)","(10D)","(10E)","(10F)","(10G)","(11A)","(11B)","(11D)","(11E)","(11F)","(11G)","(00A)","(00B)","(00C)","(00E)","(00F)","(00G)","(01A)","(01B)","(01C)","(01E)","(01F)","(01G)","(10A)","(10B)","(10C)","(10E)","(10F)","(10G)","(11A)","(11B)","(11C)","(11E)","(11F)","(11G)","(00A)","(00B)","(00C)","(00D)","(00F)","(00G)","(01A)","(01B)","(01C)","(01D)","(01F)","(01G)","(10A)","(10B)","(10C)","(10D)","(10F)","(10G)","(11A)","(11B)","(11C)","(11D)","(11F)","(11G)","(00A)","(00B)","(00C)","(00D)","(00E)","(00G)","(01A)","(01B)","(01C)","(01D)","(01E)","(01G)","(10A)","(10B)","(10C)","(10D)","(10E)","(10G)","(11A)","(11B)","(11C)","(11D)","(11E)","(11G)","(00A)","(00B)","(00C)","(00D)","(00E)","(00F)","(01A)","(01B)","(01C)","(01D)","(01E)","(01F)","(10A)","(10B)","(10C)","(10D)","(10E)","(10F)","(11A)","(11B)","(11C)","(11D)","(11E)","(11F)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:6], rep(0,1), category.rate.shift[7:12], rep(0,1), category.rate.shift[13:18], rep(0,1), category.rate.shift[19:24], rep(0,1))
@@ -249,6 +241,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         rows <- c("(00A)","(00A)","(00A)","(00A)","(00A)","(00A)","(00A)","(01A)","(01A)","(01A)","(01A)","(01A)","(01A)","(01A)","(10A)","(10A)","(10A)","(10A)","(10A)","(10A)","(10A)","(11A)","(11A)","(11A)","(11A)","(11A)","(11A)","(11A)","(00B)","(00B)","(00B)","(00B)","(00B)","(00B)","(00B)","(01B)","(01B)","(01B)","(01B)","(01B)","(01B)","(01B)","(10B)","(10B)","(10B)","(10B)","(10B)","(10B)","(10B)","(11B)","(11B)","(11B)","(11B)","(11B)","(11B)","(11B)","(00C)","(00C)","(00C)","(00C)","(00C)","(00C)","(00C)","(01C)","(01C)","(01C)","(01C)","(01C)","(01C)","(01C)","(10C)","(10C)","(10C)","(10C)","(10C)","(10C)","(10C)","(11C)","(11C)","(11C)","(11C)","(11C)","(11C)","(11C)","(00D)","(00D)","(00D)","(00D)","(00D)","(00D)","(00D)","(01D)","(01D)","(01D)","(01D)","(01D)","(01D)","(01D)","(10D)","(10D)","(10D)","(10D)","(10D)","(10D)","(10D)","(11D)","(11D)","(11D)","(11D)","(11D)","(11D)","(11D)","(00E)","(00E)","(00E)","(00E)","(00E)","(00E)","(00E)","(01E)","(01E)","(01E)","(01E)","(01E)","(01E)","(01E)","(10E)","(10E)","(10E)","(10E)","(10E)","(10E)","(10E)","(11E)","(11E)","(11E)","(11E)","(11E)","(11E)","(11E)","(00F)","(00F)","(00F)","(00F)","(00F)","(00F)","(00F)","(01F)","(01F)","(01F)","(01F)","(01F)","(01F)","(01F)","(10F)","(10F)","(10F)","(10F)","(10F)","(10F)","(10F)","(11F)","(11F)","(11F)","(11F)","(11F)","(11F)","(11F)","(00G)","(00G)","(00G)","(00G)","(00G)","(00G)","(00G)","(01G)","(01G)","(01G)","(01G)","(01G)","(01G)","(01G)","(10G)","(10G)","(10G)","(10G)","(10G)","(10G)","(10G)","(11G)","(11G)","(11G)","(11G)","(11G)","(11G)","(11G)","(00H)","(00H)","(00H)","(00H)","(00H)","(00H)","(00H)","(01H)","(01H)","(01H)","(01H)","(01H)","(01H)","(01H)","(10H)","(10H)","(10H)","(10H)","(10H)","(10H)","(10H)","(11H)","(11H)","(11H)","(11H)","(11H)","(11H)","(11H)")
         cols <- c("(00B)","(00C)","(00D)","(00E)","(00F)","(00G)","(00H)","(01B)","(01C)","(01D)","(01E)","(01F)","(01G)","(01H)","(10B)","(10C)","(10D)","(10E)","(10F)","(10G)","(10H)","(11B)","(11C)","(11D)","(11E)","(11F)","(11G)","(11H)","(00A)","(00C)","(00D)","(00E)","(00F)","(00G)","(00H)","(01A)","(01C)","(01D)","(01E)","(01F)","(01G)","(01H)","(10A)","(10C)","(10D)","(10E)","(10F)","(10G)","(10H)","(11A)","(11C)","(11D)","(11E)","(11F)","(11G)","(11H)","(00A)","(00B)","(00D)","(00E)","(00F)","(00G)","(00H)","(01A)","(01B)","(01D)","(01E)","(01F)","(01G)","(01H)","(10A)","(10B)","(10D)","(10E)","(10F)","(10G)","(10H)","(11A)","(11B)","(11D)","(11E)","(11F)","(11G)","(11H)","(00A)","(00B)","(00C)","(00E)","(00F)","(00G)","(00H)","(01A)","(01B)","(01C)","(01E)","(01F)","(01G)","(01H)","(10A)","(10B)","(10C)","(10E)","(10F)","(10G)","(10H)","(11A)","(11B)","(11C)","(11E)","(11F)","(11G)","(11H)","(00A)","(00B)","(00C)","(00D)","(00F)","(00G)","(00H)","(01A)","(01B)","(01C)","(01D)","(01F)","(01G)","(01H)","(10A)","(10B)","(10C)","(10D)","(10F)","(10G)","(10H)","(11A)","(11B)","(11C)","(11D)","(11F)","(11G)","(11H)","(00A)","(00B)","(00C)","(00D)","(00E)","(00G)","(00H)","(01A)","(01B)","(01C)","(01D)","(01E)","(01G)","(01H)","(10A)","(10B)","(10C)","(10D)","(10E)","(10G)","(10H)","(11A)","(11B)","(11C)","(11D)","(11E)","(11G)","(11H)","(00A)","(00B)","(00C)","(00D)","(00E)","(00F)","(00H)","(01A)","(01B)","(01C)","(01D)","(01E)","(01F)","(01H)","(10A)","(10B)","(10C)","(10D)","(10E)","(10F)","(10H)","(11A)","(11B)","(11C)","(11D)","(11E)","(11F)","(11H)","(00A)","(00B)","(00C)","(00D)","(00E)","(00F)","(00G)","(01A)","(01B)","(01C)","(01D)","(01E)","(01F)","(01G)","(10A)","(10B)","(10C)","(10D)","(10E)","(10F)","(10G)","(11A)","(11B)","(11C)","(11D)","(11E)","(11F)","(11G)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:28])
@@ -593,10 +586,12 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         v.mat <- v.mat * matrix(c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H), length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
         if(!is.null(cache$node)){
-            if(which(generations == cache$node)){
-                fixer = numeric(32)
-                fixer[cache$state] = 1
-                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(cache$node)){
+                    fixer = numeric(32)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                }
             }
         }
     }else{
@@ -605,10 +600,12 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         v.mat <- v.mat * matrix(c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A), length(unique(CurrentGenData$FocalNode)), 4, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
         if(!is.null(cache$node)){
-            if(which(generations == cache$node)){
-                fixer = numeric(4)
-                fixer[cache$state] = 1
-                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(cache$node)){
+                    fixer = numeric(4)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                }
             }
         }
     }
@@ -637,10 +634,12 @@ GetRootProb <- function(cache, dat.tab, generations){
         v.mat <- v.mat * matrix(c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H), length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
         if(!is.null(cache$node)){
-            if(which(generations == cache$node)){
-                fixer = numeric(32)
-                fixer[cache$state] = 1
-                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(cache$node)){
+                    fixer = numeric(32)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                }
             }
         }
     }else{
@@ -649,10 +648,12 @@ GetRootProb <- function(cache, dat.tab, generations){
         v.mat <- v.mat * matrix(c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A), length(unique(CurrentGenData$FocalNode)), 4, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
         if(!is.null(cache$node)){
-            if(which(generations == cache$node)){
-                fixer = numeric(4)
-                fixer[cache$state] = 1
-                v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(cache$node)){
+                    fixer = numeric(4)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                }
             }
         }
     }
@@ -683,7 +684,7 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
     for(i in 1:length(gen)){
         if(i == length(gen)){
             if(!is.null(node)){
-                if(node %in% gen[[i]]){
+                if(any(node %in% gen[[i]])){
                     cache$node <- node
                     cache$state <- state
                     res.tmp <- GetRootProb(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
@@ -707,7 +708,7 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
             comp <- c(comp[-TIPS], res.tmp[1])
         }else{
             if(!is.null(node)){
-                if(node %in% gen[[i]]){
+                if(any(node %in% gen[[i]])){
                     cache$node <- node
                     cache$state <- state
                     dat.tab <- FocalNodeProb(cache, dat.tab, gen[[i]])

@@ -53,10 +53,10 @@ ode.eps=0)
 One thing pointed out in the original HiSSE paper (Beaulieu & O'Meara, 2016) is
 that the trait-independent hisse model is basically a model for traits and a separate
 model for shifts in diversification parameters, much like BAMM (though without priors,
-discontinuous inheritance of extinction probability, or other mathematical foibles). 
-The hidden states can drive different diversification processes, and the traits just 
-evolve in a regular trait model. At that point, there is no harm in just dropping the 
-trait (or analyzing separately) and just focusing on diversification driven by unknown 
+discontinuous inheritance of extinction probability, or other mathematical foibles).
+The hidden states can drive different diversification processes, and the traits just
+evolve in a regular trait model. At that point, there is no harm in just dropping the
+trait (or analyzing separately) and just focusing on diversification driven by unknown
 factors. That is what this function does. It sets up and executes a completely trait-free
 version of a HiSSE model.
 
@@ -74,7 +74,7 @@ This is true for HiSSE, but is especially important to grasp for MiSSE. It could
 be that there is some single discrete trait that drives everything; it's more likely
 that a whole range of factors play a role, and we just slice them up into discrete
 categories, the same way we slice up mammals into carnivore / omnivore / herbivore
-or plants into woody / herbaceous when the reality is more continuous. 
+or plants into woody / herbaceous when the reality is more continuous.
 
 As with \code{hisse}, we employ a modified optimization procedure. In other words, rather
 than optimizing birth and death separately, \code{MiSSE} optimizes orthogonal
@@ -125,6 +125,8 @@ subtending them.}
 \item{$lower.bounds}{the vector of lower limits to the optimization
   search.}
 \item{$ode.eps}{The ode.eps value used for the estimation.}
+\item{$turnover}{The turnover vector used.}
+\item{$eps}{The eps vector used.}
 }
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models
