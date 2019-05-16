@@ -1,9 +1,11 @@
+dist: xenial
 addons:
   apt:
     packages:
-      - libgsl2
-      - gsl-bin
+      - libgslcblas0
       - libgsl-dev
+      - gsl-bin
+      - libgsl0-dev
       - libmagick++-dev
 before_install:
 #  - sudo apt-get -qq update
