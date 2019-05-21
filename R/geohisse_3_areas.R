@@ -264,12 +264,12 @@ geohisse_3_one_rate <- function(phy, data, f, speciation, extirpation, trans.rat
     ## Here we need a vector with the transition indexes from the 'trans.rate' parameter in the same order as the vector we call in the C code.
     ## This matrix also informs the model about jumps between endemic regions and separated rates between extirpation and local extinction.
     ## We can use the values of this transition matrix to guess if the model is separating local extinction from extirpation. This information will be important to set appropriate starting values and bound values.
-    trans.tmp <- c(trans.rate["(1)", "(2)"], trans.rate["(2)", "(1)"], trans.rate["(2)", "(3)"]
-                 , trans.rate["(3)", "(2)"], trans.rate["(1)", "(3)"], trans.rate["(3)", "(1)"]
-                 , trans.rate["(1)", "(12)"], trans.rate["(1)", "(13)"], trans.rate["(2)", "(12)"]
-                 , trans.rate["(2)", "(23)"], trans.rate["(3)", "(13)"], trans.rate["(3)", "(23)"]
-                 , trans.rate["(12)", "(1)"], trans.rate["(13)", "(1)"], trans.rate["(12)", "(2)"]
-                 , trans.rate["(23)", "(2)"], trans.rate["(13)", "(3)"], trans.rate["(23)", "(3)"])
+    trans.tmp <- c(trans.rate["(1A)", "(2A)"], trans.rate["(2A)", "(1A)"], trans.rate["(2A)", "(3A)"]
+                 , trans.rate["(3A)", "(2A)"], trans.rate["(1A)", "(3A)"], trans.rate["(3A)", "(1A)"]
+                 , trans.rate["(1A)", "(12A)"], trans.rate["(1A)", "(13A)"], trans.rate["(2A)", "(12A)"]
+                 , trans.rate["(2A)", "(23A)"], trans.rate["(3A)", "(13A)"], trans.rate["(3A)", "(23A)"]
+                 , trans.rate["(12A)", "(1A)"], trans.rate["(13A)", "(1A)"], trans.rate["(12A)", "(2A)"]
+                 , trans.rate["(23A)", "(2A)"], trans.rate["(13A)", "(3A)"], trans.rate["(23A)", "(3A)"])
 
     ## In this case the vector will very often have 0 positions. Should just assume some 0s.
     trans.tmp[which(trans.tmp > 0)] <- trans.tmp[which(trans.tmp > 0)] + max(pars.tmp)
