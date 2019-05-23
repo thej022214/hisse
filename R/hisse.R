@@ -5,7 +5,8 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), fast.int=TRUE, smart.bounds=FALSE, timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
+hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
+
     if(!is.null(root.p)) {
 		root.p <- root.p / sum(root.p)
 		if(hidden.states ==TRUE & length(root.p)==2){
@@ -113,7 +114,7 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
 	data.new <- data.new[phy$tip.label,]
 
-    ## This is used to scale starting values to account for sampling:
+    #This is used to scale starting values to account for sampling:
 	if(length(f) == 2){
 		samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
 	}else{
@@ -124,65 +125,37 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
         #}
 	}
 
-    if(smart.bounds == TRUE){
-        cat("Using smart MLE bounds computed from the data.", "\n")
-        ## Find smart bounds by using a quick MLE search.
-        ## Set the bounds to the turnover.upper and trans.upper and continue.
-        bd.mle <- birthdeath( phy = phy )
-        mle.birth <- bd.mle$para[2] / (1-bd.mle$para[1])
-        mle.death <- (bd.mle$para[1] * bd.mle$para[2]) / (1-bd.mle$para[1])
-        mle.turn <- mle.birth + mle.death
-        vector.data <- setNames(as.numeric(data[,2])+1, data[,1])
-        mle.mk <- hsp_mk_model(tree = phy, tip_states = vector.data)
-        mle.trans <- mle.mk$transition_matrix[1,2]
-        ## Set the upper bounds one order of magnitude higher than the mle.
-        turnover.upper <- unname( mle.turn * 100 )
-        trans.upper <- unname( mle.trans * 100 )
-        ## Make sure we are using a bounded search:
-        if( bounded.search == FALSE ){
-            warning( "Using bounded search." )
-            bounded.search <- TRUE
-        }
-    }
-
-    if( sum(eps.anc) == 0 ){
-        init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
-        names(init.pars) <- NULL
-        
+	if(sum(eps.anc)==0){
+		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
+		names(init.pars) <- NULL
         if(is.null(starting.vals)){
             def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.pars[3]/init.pars[1]),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
         }else{
             def.set.pars <- c(rep(log(starting.vals[1]), 4), rep(log(starting.vals[2]),4), rep(log(starting.vals[3]), 12), rep(log(1), 36))
         }
-        
         if(bounded.search == TRUE){
             upper.full <- c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper), 12), rep(log(10),36))
         }else{
             upper.full <- c(rep(21,4), rep(21,4), rep(21, 12), rep(21, 36))
         }
-        
-    }else{
-        init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=FALSE)
-        names(init.pars) <- NULL
-        init.eps = init.pars[3]/init.pars[1]
-        
-        if(init.eps == 0){
-            init.eps = 1e-6
-        }
-        
+	}else{
+		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=FALSE)
+		names(init.pars) <- NULL
+		init.eps = init.pars[3]/init.pars[1]
+		if(init.eps == 0){
+			init.eps = 1e-6
+		}
         if(is.null(starting.vals)){
             def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.eps),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
         }else{
             def.set.pars <- c(rep(log(starting.vals[1]), 4), rep(log(starting.vals[2]),4), rep(log(starting.vals[3]), 12), rep(log(1), 36))
         }
-        
         if(bounded.search == TRUE){
             upper.full <- c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper), 12), rep(log(10),36))
         }else{
             upper.full <- c(rep(21,4), rep(21,4), rep(21, 12), rep(21, 36))
         }
-    }
-    
+	}
 	#Set initials using estimates from constant bd model:
 	np.sequence <- 1:np
 	ip <- numeric(np)
@@ -193,189 +166,6 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	}
 	lower <- rep(-20, length(ip))
 
-    ## Check if using the likelihood function from castor.
-    if(fast.int == TRUE){
-        
-        ## ###########################################
-        ## Prepare objects to use castor likelihood.
-        ## ###########################################
-        
-        ## Make general checks and messages:
-        cat("Using fast integration algorithm.", "\n")
-        if( condition.on.survival == FALSE ){
-            stop( "This algorithm only implements the condition.on.survival approach." )
-        }
-        
-        data.castor <- as.numeric(data[,2]) + 1 ## Castor works with 1 and 2 as states.
-        names( data.castor ) <- data[,1]
-
-        ## Create starting vectors for the analyses.
-        turnover.init <- log( rep(init.pars[1]+init.pars[3], max( turnover.anc )) )
-        eps.init <- log( rep(init.pars[3]/init.pars[1], max( eps.anc )) )
-        trans.vec.init <- log( rep(init.pars[6], max(trans.rate, na.rm = TRUE)) )
-        init.castor.vec <- c(turnover.init, eps.init, trans.vec.init)
-
-        ## Get the indexes to cut the vector of parameters.
-        ## This is necessary because the likelihood function will accept only a vector.
-        par.vec.cuts.end <- c(length(turnover.init)
-                            , length(turnover.init) + length(eps.init)
-                            , length(turnover.init) + length(eps.init) + length(trans.vec.init) )
-        par.vec.cuts.start <- c(1, length(turnover.init)+1, length(turnover.init) + length(eps.init) + 1)
-        par.vec.cuts <- cbind(par.vec.cuts.start, par.vec.cuts.end)
-        
-        ## Find the ID for the turnover and eps.
-        ## This assumes the ID are sequential. Need to make sure of this.
-        turnover.anc.padded <- turnover.anc + 1
-        eps.anc.padded <- eps.anc + 1
-        ## Find the ID for the Q matrix.
-        trans.mat.padded <- trans.rate + 1
-
-        ## For this to work, we need to have the sequence of numbers:
-        if( !all( turnover.anc.padded %in% 1:(max(turnover.anc.padded)) ) ){
-            stop("Problem with turnover.anc indexation. Check help page.")
-        }
-        if( !all( eps.anc.padded %in% 1:(max(eps.anc.padded)) ) ){
-            stop("Problem with eps.anc indexation. Check help page.")
-        }
-        trans.mat.padded.check <- c(trans.mat.padded)[!is.na(c(trans.mat.padded))]
-        if( !all( trans.mat.padded.check %in% 1:(max(trans.mat.padded.check)) ) ){
-            stop("Problem with trans.rate indexation. Check help page.")
-        }
-        
-        if( ncol(trans.rate) > 2 ){
-            ## Model has more states.
-            get.likelihood.castor <- function(x){
-                ## The parameters will always be in this order.
-                x.nat <- exp(x)
-                turnover <- x.nat[par.vec.cuts[1,1]:par.vec.cuts[1,2]]
-                eps <- x.nat[par.vec.cuts[2,1]:par.vec.cuts[2,2]]
-                trans.vec <- x.nat[par.vec.cuts[3,1]:par.vec.cuts[3,2]]
-                turn.vec <- c(0, turnover)[turnover.anc.padded]
-                eps.vec <- c(0, eps)[eps.anc.padded]
-                lambda.vec <- turn.vec / (1 + eps.vec)
-                mu.vec <- (turn.vec * eps.vec) / (1 + eps.vec)
-                trans.vec.padded <- c(0, trans.vec)
-                Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = 4, nrow = 4)
-                ## Note that the dimension of the castor model is hard-coded.
-                ## Constrains are created on a higher level.
-                fit.castor <- fit_musse(tree = phy, NPstates = 2, Nstates = 4
-                                      , tip_pstates = data.castor, proxy_map = c(1,2,1,2)
-                                      , birth_rates = lambda.vec, death_rates = mu.vec
-                                      , transition_matrix = Q.mat, Ntrials = 0, root_conditioning = root.type
-                                      , sampling_fractions = f, verbose = FALSE, check_input = FALSE)
-                return( -1 * fit.castor$loglikelihood )
-            }
-            
-        } else{
-            ## Here we have a BiSSE type model. Need to set castor likelihood for this case.
-            get.likelihood.castor <- function(x){
-                ## The parameters will always be in this order.
-                x.nat <- exp(x)
-                turnover <- x.nat[par.vec.cuts[1,1]:par.vec.cuts[1,2]]
-                eps <- x.nat[par.vec.cuts[2,1]:par.vec.cuts[2,2]]
-                trans.vec <- x.nat[par.vec.cuts[3,1]:par.vec.cuts[3,2]]
-                turn.vec <- c(0, turnover)[turnover.anc.padded]
-                eps.vec <- c(0, eps)[eps.anc.padded]
-                lambda.vec <- turn.vec / (1 + eps.vec)
-                mu.vec <- (turn.vec * eps.vec) / (1 + eps.vec)
-                trans.vec.padded <- c(0, trans.vec)
-                Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = 2, nrow = 2)
-                ## Note that the dimension of the castor model is hard-coded.
-                ## Constrains are created on a higher level.
-                ## Note that here we need to reduce the lenght of the birth and death rate vectors.
-                fit.castor <- fit_musse(tree = phy, Nstates = 2, tip_pstates = data.castor
-                                      , birth_rates = lambda.vec[1:2], death_rates = mu.vec[1:2]
-                                      , transition_matrix = Q.mat, Ntrials = 0, root_conditioning = root.type
-                                      , sampling_fractions = f, verbose = FALSE, check_input = FALSE)
-                return( -1 * fit.castor$loglikelihood )
-            }
-        }
-
-        ## ###########################################
-        ## MLE estimation using castor likelihood
-        ## ###########################################
-
-        ## Check length of option parameters. Return internal error if bad.
-        if( length( upper ) != length( init.castor.vec ) | length( lower ) != length( init.castor.vec ) ){
-            stop("Internal error. Search bounds have wrong length.")
-        }
-        
-        if(sann == FALSE){
-            if(bounded.search == TRUE){
-                cat("Finished. Beginning bounded subplex routine...", "\n")
-                opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-                out <- nloptr(x0=init.castor.vec, eval_f=get.likelihood.castor, ub=upper, lb=lower, opts=opts)
-                loglik <- -1 * out$objective
-            }else{
-                cat("Finished. Beginning subplex routine...", "\n")
-                out <- subplex(init.castor.vec, fn=get.likelihood.castor
-                             , control=list(reltol=max.tol, parscale=rep(0.1, length(ip)))
-                               )
-                loglik <- -1 * out$value
-            }
-	}else{
-            cat("Finished. Beginning simulated annealing...", "\n")
-            out.sann <- GenSA(init.castor.vec, fn=get.likelihood.castor, lower=lower, upper=upper
-                            , control=list(max.call=sann.its) )
-            cat("Finished. Refining using subplex routine...", "\n")
-            opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out <- nloptr(x0=out.sann$par, eval_f=get.likelihood.castor, ub=upper, lb=lower, opts=opts)
-            loglik <- -1 * out$objective
-	}
-
-        ## ###########################################
-        ## Wrap up estimate and format output.
-        ## ###########################################
-
-        ## Will need to manually set the output parameter order to be congruent with normal hisse function.
-	cat("Finished. Summarizing results...", "\n")
-
-        ## Reconstruct the parameters:
-        solution.nat <- exp( out$solution )
-        turnover <- solution.nat[par.vec.cuts[1,1]:par.vec.cuts[1,2]]
-        eps <- solution.nat[par.vec.cuts[2,1]:par.vec.cuts[2,2]]
-        trans.vec <- solution.nat[par.vec.cuts[3,1]:par.vec.cuts[3,2]]
-        turn.vec <- c(0, turnover)[turnover.anc.padded]
-        eps.vec <- c(0, eps)[eps.anc.padded]
-        trans.vec.padded <- c(0, trans.vec)
-
-        if( ncol(trans.rate) > 2 ){
-            Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = 4, nrow = 4)
-            solution.effect <- c(turn.vec, eps.vec
-                               , Q.mat[2,1], Q.mat[3,1], Q.mat[4,1], Q.mat[1,2]
-                               , Q.mat[3,2], Q.mat[4,2], Q.mat[1,3], Q.mat[2,3]
-                               , Q.mat[4,3], Q.mat[1,4], Q.mat[2,4], Q.mat[1,4])
-        } else{
-            Q.mat <- matrix(trans.vec.padded[trans.mat.padded], ncol = 2, nrow = 2)
-            solution.effect <- c(turn.vec, eps.vec
-                               , Q.mat[2,1], 0, 0, Q.mat[1,2]
-                               , 0, 0, 0, 0
-                               , 0, 0, 0, 0)
-        }
-        
-        names( solution.effect ) <- c("turn.0A", "turn.1A", "turn.0B", "turn.1B"
-                                    , "eps.0A", "eps.1A", "eps.0B", "eps.1B"
-                                    , "q1A0A", "q0B0A", "q1B0A", "q0A1A"
-                                    , "q0B1A", "q1B1A", "q0A0B", "q1A0B"
-                                    , "q1B0B", "q0A1B", "q1A1B", "q0A1B")
-        names.dead <- c("turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
-        pars.dead <- rep(1, times = length(names.dead))
-        names( pars.dead ) <- names.dead
-        
-        solution <- c(solution.effect, pars.dead)
-
- 	obj <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1)))
-                  , solution=solution, index.par=pars, f=f, hidden.states=hidden.states
-                  , condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p
-                  , timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type
-                  , max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps
-                  , fast.int=TRUE)
-        
-	class(obj) <- "hisse.fit"
-	return(obj)
-       
-    }
-    
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
@@ -408,9 +198,9 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 	solution.tmp = solution[21:56]
 	solution.tmp[solution.tmp==0] = 1
 	solution[21:56] = solution.tmp
-    names(solution) = c("turn.0A", "turn.1A", "turn.0B", "turn.1B", "eps.0A", "eps.1A", "eps.0B", "eps.1B","q1A0A","q0B0A","q1B0A","q0A1A","q0B1A","q1B1A","q0A0B","q1A0B","q1B0B","q0A1B","q1A1B","q0A1B","turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
+    names(solution) = c("turn.0A", "turn.1A", "turn.0B", "turn.1B", "eps.0A", "eps.1A", "eps.0B", "eps.1B","q1A0A","q0B0A","q1B0A","q0A1A","q0B1A","q1B1A","q0A0B","q1A0B","q1B0B","q0A1B","q1A1B","q0B1B","turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
 
- 	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, fast.int=FALSE)
+ 	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
 	class(obj) = "hisse.fit"
 
 	return(obj)
