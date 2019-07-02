@@ -22,7 +22,7 @@ In other words, rescaling speciation and extinction in different parts of the tr
 
 ```{r, eval=TRUE, echo=FALSE}
 suppressPackageStartupMessages(library(deSolve))
-dyn.load("bisse-ext-derivs.so")
+suppressPackageStartupMessages(library(hisse))
 load("cladeSamplingVariables.Rsave")
 ```
 
@@ -31,7 +31,7 @@ We can demonstrate this behavior using a straightforward example. Here we will u
 ```{r, eval=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
 GetProbs <- function(yini, times){
         times=times
-        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dll = "bisse-ext-derivs", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
         probs.out <- prob.subtree.cal.full[-1,-1]
     return(probs.out)
 }
