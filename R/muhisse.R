@@ -588,8 +588,14 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
-                    fixer = numeric(32)
-                    fixer[cache$state[fix.index]] = 1
+                    if(is.na(cache$fix.type[fix.index])){
+                        fixer.tmp = numeric(4)
+                        fixer.tmp[cache$state[fix.index]] = 1
+                        fixer = rep(fixer.tmp, 8)
+                    }else{
+                        fixer = numeric(32)
+                        fixer[cache$state[fix.index]] = 1
+                    }
                     v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                 }
             }
@@ -636,8 +642,14 @@ GetRootProb <- function(cache, dat.tab, generations){
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
-                    fixer = numeric(32)
-                    fixer[cache$state[fix.index]] = 1
+                    if(is.na(cache$fix.type[fix.index])){
+                        fixer.tmp = numeric(4)
+                        fixer.tmp[cache$state[fix.index]] = 1
+                        fixer = rep(fixer.tmp, 8)
+                    }else{
+                        fixer = numeric(32)
+                        fixer[cache$state[fix.index]] = 1
+                    }
                     v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                 }
             }
@@ -672,7 +684,7 @@ GetRootProb <- function(cache, dat.tab, generations){
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL) {
+DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, fix.type=NULL) {
     
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
@@ -687,9 +699,11 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                 if(any(node %in% gen[[i]])){
                     cache$node <- node
                     cache$state <- state
+                    cache$fix.type <- fix.type
                     res.tmp <- GetRootProb(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
                     cache$node <- NULL
                     cache$state <- NULL
+                    cache$fix.type <- NULL
                 }else{
                     res.tmp <- GetRootProb(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
                 }
@@ -711,9 +725,11 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                 if(any(node %in% gen[[i]])){
                     cache$node <- node
                     cache$state <- state
+                    cache$fix.type <- fix.type
                     dat.tab <- FocalNodeProb(cache, dat.tab, gen[[i]])
                     cache$node <- NULL
                     cache$state <- NULL
+                    cache$fix.type <- NULL
                 }else{
                     dat.tab <- FocalNodeProb(cache, dat.tab, gen[[i]])
                 }
