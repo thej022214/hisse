@@ -18,7 +18,7 @@ We get a lot of requests to include clade-specific sampling capabilities, like t
 The same problem occurs when the sampling fraction varies across the tree because it actually transforms the speciation and extinction rates to account for the missing diversity. Stadler (2013) showed the relationship between sampling fraction and speciation/extinction rates is as follows:
 
 $$\lambda_i^* = \lambda_i / f_i; \mu_i^* = \mu_i - \lambda_i(1-1/f_i)$$
-In other words, rescaling a global set of speciation and extinction rate parameters in different parts of the tree due to different sampling fractions effectively creates "rate shifts" in the tree. This means that wherever in the tree any two clades that differ in their sampling fractions coalesce it is not possible to simply arbitrarily choose one set of extinction probabilities to carry down in the likelihood calculation. 
+In other words, rescaling a global set of speciation and extinction rate parameters in different parts of the tree due to different sampling fractions effectively creates "rate shifts" in the tree. This also means that wherever in the tree any two clades that differ in their sampling fractions coalesce it is not possible to simply arbitrarily choose one set of extinction probabilities to carry down in the likelihood calculation. 
 
 ```{r, eval=TRUE, echo=FALSE}
 suppressPackageStartupMessages(library(deSolve))
@@ -32,7 +32,7 @@ We can demonstrate this behavior using a slightly involved but straightforward e
 ```{r, eval=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
 GetProbs <- function(yini, times){
         times=times
-        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dll = "bisse-ext-derivs", rtol=1e-8, atol=1e-8)
         probs.out <- prob.subtree.cal.full[-1,-1]
     return(probs.out)
 }
@@ -44,7 +44,7 @@ In the case of a global sampling fraction of 50%, we can calculate the probabili
 times=c(0, 20)
 yini <-c(E0=1-0.5, E1=1-0.5, D0=0.5, D1=0)
 left.branch.probs <- GetProbs(yini, times)
-left.branch.probs
+left.branch.probs[1:2]
 ```
 
 The calculation of the extinction probabilities for the right clade, which contains two taxa that coalesce at 10 time units, is a bit more involved. We first have to combine the probabilities of the two tip branches at node R:
@@ -66,7 +66,7 @@ But, from here we simply use these probabilities as the initial conditions when 
 times=c(10, 20)
 yini <-c(E0=phi_A[1], E1=phi_A[2], D0=nodeR[1], D1=nodeR[2])
 right.branch.probs <- GetProbs(yini, times)
-right.branch.probs
+right.branch.probs[1:2]
 ```
 
 As expected, the probabilities of the left and right lineages converge to the same extinction probabilities (note, there may be slight precision issues due to our reliance on ode integration):
