@@ -358,7 +358,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
         focal <- node
         marginal.probs.tmp <- c()
         for (j in 1:nstates.to.eval){
-            marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, type="fix"))
+            marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fix.type="fix"))
         }
         marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
         best.probs <- max(marginal.probs.tmp)
