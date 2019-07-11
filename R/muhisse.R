@@ -12,27 +12,24 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
     if(!is.null(root.p)) {
-        ## The vector of the root.p need to be as long as the speciation vector.
-        if( length(root.p) != length(turnover)){
-            if(hidden.states ==TRUE){
-                if( length( root.p ) == 4 ){
-                    root.p <- rep(root.p, 4)
-                    root.p <- root.p / sum(root.p)
-                    warning("For hidden states, you need to specify the root.p for all hidden states. We have adjusted it so that there's equal chance for among all hidden states.")
-                } else{
-                    root.p.new <- numeric(32)
-                    root.p.new[1:length(root.p)] <- root.p
-                    root.p <- root.p.new
-                    root.p <- root.p / sum(root.p)
-                }
-            }else{
-                stop("Check that you specified the proper root.p vector length.", call.=FALSE)
+        if(hidden.states ==TRUE){
+            if( length( root.p ) == 4 ){
+                root.p <- rep(root.p, 4)
+                root.p <- root.p / sum(root.p)
+                warning("For hidden states, you need to specify the root.p for all hidden states. We have adjusted it so that there's equal chance for among all hidden states.")
+            } else{
+                root.p.new <- numeric(32)
+                root.p.new[1:length(root.p)] <- root.p
+                root.p <- root.p.new
+                root.p <- root.p / sum(root.p)
             }
-        } else{
+        }else{
             ## All good:
             root.p <- root.p / sum(root.p)
+            
         }
     }
+    
     
     if(any(f == 0)){
         f[which(f==0)] <- 1
