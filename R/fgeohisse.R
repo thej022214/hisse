@@ -1,17 +1,4 @@
 
-#library(ape)
-#library(deSolve)
-#library(subplex)
-#library(phytools)
-#library(nloptr)
-#library(GenSA)
-#library(data.table)
-#dyn.load("fcanonical_geosse-ext-derivs.so")
-#dyn.load("fgeohisse-ext-derivs.so")
-#dyn.load("fnotclasse-more-ext-derivs.so")
-#dyn.load("fnotclasse-ext-derivs.so")
-
-
 ######################################################################################################################################
 ######################################################################################################################################
 ### fGeoHiSSE -- Very fast version of the expanded set of GeoSSE models
@@ -24,11 +11,25 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
     if(!is.null(root.p)) {
-        root.p <- root.p / sum(root.p)
-        if(hidden.areas ==TRUE & length(root.p)==2){
-            root.p <- rep(root.p, 2)
+        ## The vector of the root.p need to be as long as the speciation vector.
+        if(length( root.p ) != length(turnover)){
+            if(hidden.areas == TRUE){
+                if( length( root.p ) == 3 ){
+                    root.p <- rep(root.p, 10)
+                    root.p <- root.p / sum(root.p)
+                    warning("For hidden areas, you need to specify the root.p for all hidden areas. We have adjusted it so that there's equal chance for among all hidden areas.")
+                } else{
+                    root.p.new <- numeric(30)
+                    root.p.new[1:length(root.p)] <- root.p
+                    root.p <- root.p.new
+                    root.p <- root.p / sum(root.p)
+                }
+            }else{
+                stop("Check that you specified the proper root.p vector length.", call.=FALSE)
+            }
+        } else{
+            ## All good:
             root.p <- root.p / sum(root.p)
-            warning("For hidden areas, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance for 00A as 00B, and for 11A as 11B")
         }
     }
     

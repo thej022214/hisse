@@ -13,18 +13,24 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation=c(1
     if(!is.null(root.p)) {
         ## The vector of the root.p need to be as long as the speciation vector.
         if( length( root.p ) != length( speciation ) ){
-            if( length( root.p ) == 3 ){
-                warning("For hidden states, you need to specify the root.p for all four hidden states. We have adjusted it so that there's equal chance among all hidden states.")
-                nrates <- length( speciation ) / 3 ## Number of hidden states.
-                root.p <- rep(root.p, times = nrates)
-                root.p <- root.p / sum(root.p)
-            } else{
-                stop("User provided root probabilities need to be a vector of length 3 or 3 * # of hiddens rates.")
-            }            
+            if(hidden.areas ==TRUE){
+                if( length( root.p ) == 3 ){
+                    root.p <- rep(root.p, 5)
+                    root.p <- root.p / sum(root.p)
+                    warning("For hidden areas, you need to specify the root.p for all hidden areas. We have adjusted it so that there's equal chance for among all hidden areas.")
+                } else{
+                    root.p.new <- numeric(15)
+                    root.p.new[1:length(root.p)] <- root.p
+                    root.p <- root.p.new
+                    root.p <- root.p / sum(root.p)
+                }
+            }else{
+                stop("Check that you specified the proper root.p vector length.", call.=FALSE)
+            }
         } else{
             ## All good:
             root.p <- root.p / sum(root.p)
-        }        
+        }
     }
     
     if(!root.type == "madfitz" & !root.type == "herr_als"){

@@ -24,7 +24,6 @@ In other words, rescaling a global set of speciation and extinction rate paramet
 suppressPackageStartupMessages(library(deSolve))
 suppressPackageStartupMessages(library(hisse))
 load("cladeSamplingVariables.Rsave")
-dyn.load("bisse-ext-derivs.so")
 ```
 
 We can demonstrate this behavior using a slightly involved but straightforward example. Here we will use a three-taxon tree to show that even after combining probabilities at a nested node, under ideal conditions, $E_i(t)$ for a L and R descedant branches should converge at a node. We will assume the tree has a total height of 20 time units, and we will also assume that the character states of the unsampled species are unknown completely, which means $f_i$ simply reflects the number of extant species sampled. We will use the following function to conduct our branch calculations: 
@@ -32,7 +31,7 @@ We can demonstrate this behavior using a slightly involved but straightforward e
 ```{r, eval=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
 GetProbs <- function(yini, times){
         times=times
-        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dll = "bisse-ext-derivs", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
         probs.out <- prob.subtree.cal.full[-1,-1]
     return(probs.out)
 }

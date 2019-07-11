@@ -26,4 +26,6 @@ of parameters of the correspondent ClaSSE model given the parameter
   have the parameter names for the matching GeoHiSSE model.
       }
 \author{Daniel Caetano}
-\keyword{simulation, GeoSSE, GeoHiSSE}
+\concept{simulation}
+\concept{GeoSSE}
+\concept{GeoHiSSE}

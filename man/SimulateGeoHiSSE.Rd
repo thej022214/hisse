@@ -72,4 +72,6 @@ sim <- SimulateGeoHiSSE(pars=pars, hidden.areas=1, x0="01A", max.taxa=100)
 }
 }
 \author{Daniel Caetano}
-\keyword{simulation, GeoSSE, GeoHiSSE}
+\concept{simulation}
+\concept{GeoSSE}
+\concept{GeoHiSSE}
