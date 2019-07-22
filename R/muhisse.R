@@ -599,6 +599,7 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
+                    print(cache$fix.type[fix.index])
                     if(is.na(cache$fix.type[fix.index])){
                         fixer.tmp = numeric(4)
                         fixer.tmp[cache$state[fix.index]] = 1
