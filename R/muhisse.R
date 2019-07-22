@@ -599,6 +599,8 @@ FocalNodeProb <- function(cache, dat.tab, generations){
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
+                    print("here")
+                    print(cache$fix.type[fix.index])
                     if(cache$fix.type[fix.index] == "event"){
                         fixer.tmp = numeric(4)
                         fixer.tmp[cache$state[fix.index]] = 1
@@ -621,6 +623,8 @@ FocalNodeProb <- function(cache, dat.tab, generations){
                 for(fix.index in 1:length(cache$node)){
                     fixer = numeric(4)
                     fixer[cache$state[fix.index]] = 1
+                    print("here")
+                    print(fixer)
                     v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                 }
             }
