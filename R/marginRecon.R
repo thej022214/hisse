@@ -368,12 +368,14 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     }
     
     if(get.tips.only == FALSE){
+        cat(paste("Calculating marginal probabilities for", length(nodes), "...", sep=""), "\n")
         obj <- NULL
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         obj$node.mat <- matrix(unlist(node.marginals), ncol = 32+1, byrow = TRUE)
         colnames(obj$node.mat) <- c("id", "(00A)","(01A)","(10A)","(11A)", "(00B)","(01B)","(10B)","(11B)", "(00C)","(01C)","(10C)","(11C)", "(00D)","(01D)","(10D)","(11D)", "(00E)","(01E)","(10E)","(11E)", "(00F)","(01F)","(10F)","(11F)", "(00G)","(01G)","(10G)","(11G)", "(00H)","(01H)","(10H)","(11H)")
         phy$node.label <- apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
     }else{
+        cat("Calculating marginal probabilities for internal nodes is turned off,", "\n")
         obj <- NULL
     }
     
@@ -404,6 +406,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     }
     
     if(hidden.states>1){
+        cat(paste("Finished. Calculating marginal probabilities for", nb.tip, "...", sep=""), "\n")
         tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         obj$tip.mat <- matrix(unlist(tip.marginals), ncol = 32+1, byrow = TRUE)
     }else{
@@ -492,12 +495,14 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladog
     }
     
     if(get.tips.only == FALSE){
+        cat(paste("Calculating marginal probabilities for", length(nodes), "...", sep=""), "\n")
         obj <- NULL
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         obj$node.mat <- matrix(unlist(node.marginals), ncol = 30+1, byrow = TRUE)
         colnames(obj$node.mat) <- c("id", "(00A)", "(11A)", "(01A)", "(00B)", "(11B)", "(01B)", "(00C)", "(11C)", "(01C)", "(00D)", "(11D)", "(01D)", "(00E)", "(11E)", "(01E)", "(00F)", "(11F)", "(01F)", "(00G)", "(11G)", "(01G)", "(00H)", "(11H)", "(01H)", "(00I)", "(11I)", "(01I)", "(00J)", "(11J)", "(01J)")
         phy$node.label <- apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
     }else{
+        cat("Calculating marginal probabilities for internal nodes is turned off,", "\n")
         obj <- NULL
     }
     
@@ -529,6 +534,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladog
     }
     
     if(hidden.areas>1){
+        cat(paste("Finished. Calculating marginal probabilities for", nb.tip, "...", sep=""), "\n")
         tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         obj$tip.mat = matrix(unlist(tip.marginals), ncol = 30+1, byrow = TRUE)
     }else{
@@ -618,12 +624,14 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
     }
     
     if(get.tips.only == FALSE){
+        cat(paste("Calculating marginal probabilities for", length(nodes), "...", sep=""), "\n")
         obj <- NULL
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         obj$node.mat <- matrix(unlist(node.marginals), ncol = 26+1, byrow = TRUE)
         colnames(obj$node.mat) <- c("id", "(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)")
         phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
     }else{
+        cat("Calculating marginal probabilities for internal nodes is turned off,", "\n")
         obj <- NULL
     }
     
@@ -652,6 +660,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         marginal.probs[nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(tip, marginal.probs))
     }
+    cat(paste("Finished. Calculating marginal probabilities for", nb.tip, "...", sep=""), "\n")
     tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
     obj$tip.mat = matrix(unlist(tip.marginals), ncol = 26+1, byrow = TRUE)
     colnames(obj$tip.mat)  <- c("id", "(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)")
