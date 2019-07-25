@@ -759,10 +759,16 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                     cache$state <- NULL
                     cache$fix.type <- NULL
                 }else{
-                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                    CurrentGenData <- dat.tab[data.table(gen[[i]])]
+                    setkey(dat.tab, DesNode)
+                    gens <- data.table(c(gen[[i]]))
+                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, CurrentGenData=CurrentGenData, dat.tab, gens)
                 }
             }else{
-                dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                CurrentGenData <- dat.tab[data.table(gen[[i]])]
+                setkey(dat.tab, DesNode)
+                gens <- data.table(c(gen[[i]]))
+                dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, CurrentGenData=CurrentGenData, dat.tab, gens)
             }
         }
     }
