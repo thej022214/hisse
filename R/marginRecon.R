@@ -368,7 +368,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     }
     
     if(get.tips.only == FALSE){
-        cat(paste("Calculating marginal probabilities for", length(nodes), "...", sep=""), "\n")
+        cat(paste("Calculating marginal probabilities for ", length(nodes), "...", sep=""), "\n")
         obj <- NULL
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         obj$node.mat <- matrix(unlist(node.marginals), ncol = 32+1, byrow = TRUE)
@@ -382,10 +382,10 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
     dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
-        marginal.probs.tmp <- numeric(4)
+        marginal.probs.tmp <- numeric(32)
         nstates = which(!dat.tab[tip,7:38] == 0)
         cache$states.keep <- as.data.frame(dat.tab[tip,7:38])
-        for (j in nstates[1:nstates.to.eval]){
+        for (j in nstates[1:hidden.states]){
             cache$to.change <- cache$states.keep
             tmp.state <- 1 * c(cache$to.change[1,j])
             cache$to.change[1,] <- 0
@@ -398,15 +398,15 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
         for (k in 1:dim(cache$to.change)[2]){
             dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
         }
-        best.probs <- max(marginal.probs.tmp[nstates])
-        marginal.probs.rescaled <- marginal.probs.tmp[nstates] - best.probs
+        best.probs <- max(marginal.probs.tmp[nstates[1:hidden.states]])
+        marginal.probs.rescaled <- marginal.probs.tmp[nstates[1:hidden.states]] - best.probs
         marginal.probs <- numeric(32)
-        marginal.probs[nstates] <- exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+        marginal.probs[nstates[1:hidden.states]] <- exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(tip, marginal.probs))
     }
     
     if(hidden.states>1){
-        cat(paste("Finished. Calculating marginal probabilities for", nb.tip, "...", sep=""), "\n")
+        cat(paste("Finished. Calculating marginal probabilities for ", nb.tip, "...", sep=""), "\n")
         tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         obj$tip.mat <- matrix(unlist(tip.marginals), ncol = 32+1, byrow = TRUE)
     }else{
@@ -495,7 +495,7 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladog
     }
     
     if(get.tips.only == FALSE){
-        cat(paste("Calculating marginal probabilities for", length(nodes), "...", sep=""), "\n")
+        cat(paste("Calculating marginal probabilities for ", length(nodes), "...", sep=""), "\n")
         obj <- NULL
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         obj$node.mat <- matrix(unlist(node.marginals), ncol = 30+1, byrow = TRUE)
@@ -509,10 +509,10 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladog
     dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=TRUE)
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
-        marginal.probs.tmp <- numeric(4)
+        marginal.probs.tmp <- numeric(30)
         nstates = which(!dat.tab[tip,7:36] == 0)
         cache$states.keep <- as.data.frame(dat.tab[tip,7:36])
-        for (j in nstates[1:nstates.to.eval]){
+        for (j in nstates[1:hidden.areas]){
             cache$to.change <- cache$states.keep
             tmp.state <- 1 * c(cache$to.change[1,j])
             cache$to.change[1,] <- 0
@@ -526,15 +526,15 @@ MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladog
         for (k in 1:dim(cache$to.change)[2]){
             dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
         }
-        best.probs = max(marginal.probs.tmp[nstates])
-        marginal.probs.rescaled = marginal.probs.tmp[nstates] - best.probs
+        best.probs = max(marginal.probs.tmp[nstates[1:hidden.areas]])
+        marginal.probs.rescaled = marginal.probs.tmp[nstates[1:hidden.areas]] - best.probs
         marginal.probs <- numeric(30)
-        marginal.probs[nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+        marginal.probs[nstates[1:hidden.areas]] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(tip, marginal.probs))
     }
     
     if(hidden.areas>1){
-        cat(paste("Finished. Calculating marginal probabilities for", nb.tip, "...", sep=""), "\n")
+        cat(paste("Finished. Calculating marginal probabilities for ", nb.tip, "...", sep=""), "\n")
         tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         obj$tip.mat = matrix(unlist(tip.marginals), ncol = 30+1, byrow = TRUE)
     }else{
@@ -624,7 +624,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
     }
     
     if(get.tips.only == FALSE){
-        cat(paste("Calculating marginal probabilities for", length(nodes), "...", sep=""), "\n")
+        cat(paste("Calculating marginal probabilities for ", length(nodes), "...", sep=""), "\n")
         obj <- NULL
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
         obj$node.mat <- matrix(unlist(node.marginals), ncol = 26+1, byrow = TRUE)
@@ -660,7 +660,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, condition.on.surviva
         marginal.probs[nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(tip, marginal.probs))
     }
-    cat(paste("Finished. Calculating marginal probabilities for", nb.tip, "...", sep=""), "\n")
+    cat(paste("Finished. Calculating marginal probabilities for ", nb.tip, "...", sep=""), "\n")
     tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
     obj$tip.mat = matrix(unlist(tip.marginals), ncol = 26+1, byrow = TRUE)
     colnames(obj$tip.mat)  <- c("id", "(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)")
