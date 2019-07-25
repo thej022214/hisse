@@ -687,6 +687,8 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
     return(list(rate.tree=rate.tree, state.tree=state.tree))
 }
 
+
+
 plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.label = TRUE, fsize = 1.0, legend = "tips", ...) {
     hisse.results <- x
     if( inherits(hisse.results, what=c("misse.states","list")) ){
