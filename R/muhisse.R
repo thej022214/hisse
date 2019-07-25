@@ -633,11 +633,12 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
     tmp.comp <- rowSums(v.mat)
     tmp.probs <- v.mat / tmp.comp
     setkey(dat.tab, DesNode)
+    gens <- data.table(c(generations))
     for (j in 1:(dim(tmp.probs)[2])){
-        dat.tab[data.table(c(generations)), paste("compD", j, sep="_") := tmp.probs[,j]]
-        dat.tab[data.table(c(generations)), paste("compE", j, sep="_") := phi.mat[,j]]
+        dat.tab[gens, paste("compD", j, sep="_") := tmp.probs[,j]]
+        dat.tab[gens, paste("compE", j, sep="_") := phi.mat[,j]]
     }
-    dat.tab[data.table(c(generations)), "comp" := tmp.comp]
+    dat.tab[gens, "comp" := tmp.comp]
     return(dat.tab)
 }
 
