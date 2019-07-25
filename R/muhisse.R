@@ -586,13 +586,11 @@ SingleChildProb <- function(cache, pars, compD, compE, start.time, end.time, x){
 }
 
 
-FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
+FocalNodeProb <- function(cache, pars, lambdas, CurrentGenData, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     FocalNode = NULL
 
-    setkey(dat.tab, FocalNode)
-    CurrentGenData <- dat.tab[data.table(generations)]
     if(cache$hidden.states == TRUE){
         tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:38], z[39:70],  z[2], z[1])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),33:64] * tmp[seq(2,nrow(tmp),2),33:64], length(unique(CurrentGenData$FocalNode)), 32)
@@ -633,7 +631,6 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
     tmp.comp <- rowSums(v.mat)
     tmp.probs <- v.mat / tmp.comp
     setkey(dat.tab, DesNode)
-    gens <- data.table(c(generations))
     for (j in 1:(dim(tmp.probs)[2])){
         dat.tab[gens, paste("compD", j, sep="_") := tmp.probs[,j]]
         dat.tab[gens, paste("compE", j, sep="_") := phi.mat[,j]]
@@ -753,7 +750,11 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                     cache$node <- node
                     cache$state <- state
                     cache$fix.type <- fix.type
-                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                    setkey(dat.tab, FocalNode)
+                    CurrentGenData <- dat.tab[data.table(gen[[i]])]
+                    setkey(dat.tab, DesNode)
+                    gens <- data.table(c(gen[[i]]))
+                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, CurrentGenData=CurrentGenData, dat.tab, gens)
                     cache$node <- NULL
                     cache$state <- NULL
                     cache$fix.type <- NULL
