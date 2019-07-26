@@ -636,8 +636,8 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
     gens <- data.table(c(generations))
     cols <- names(dat.tab)
     for (j in 1:(dim(tmp.probs)[2])){
-        dat.tab[gens, cols[j+6] := tmp.probs[,j]]
-        dat.tab[gens, cols[j+38] := phi.mat[,j]]
+        dat.tab[gens, cols[6+j] := tmp.probs[,j]]
+        dat.tab[gens, cols[38+j] := phi.mat[,j]]
     }
     dat.tab[gens, "comp" := tmp.comp]
     return(dat.tab)
