@@ -755,6 +755,7 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
             comp <- dat.tab[["comp"]]
             comp <- c(comp[-TIPS], res.tmp[1])
         }else{
+            setkey(dat.tab, DesNode)
             rows <- dat.tab[.(gen[[i]]), which=TRUE]
             if(!is.null(node)){
                 if(any(node %in% gen[[i]])){
