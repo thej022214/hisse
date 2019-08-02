@@ -587,6 +587,7 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
     DesNode = NULL
     FocalNode = NULL
     gens <- data.table(c(generations))
+    #gens <- dat.tab[.(generations), which=TRUE]
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
     if(cache$hidden.states == TRUE){
@@ -615,8 +616,10 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
         #gens <- data.table(c(generations))
         cols <- names(dat.tab)
         for (j in 1:(dim(tmp.probs)[2])){
-            dat.tab[gens, cols[6+j] := tmp.probs[,j]]
-            dat.tab[gens, cols[38+j] := phi.mat[,j]]
+            #dat.tab[gens, cols[6+j] := tmp.probs[,j]]
+            set(dat.tab, gens, cols[6+j], tmp.probs[[j]])
+            #dat.tab[gens, cols[38+j] := phi.mat[,j]]
+            set(dat.tab, gens, cols[38+j], phi.mat[[j]])
         }
         dat.tab[gens, "comp" := tmp.comp]
     }else{
