@@ -656,9 +656,10 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
 GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     FocalNode = NULL
+    gens <- data.table(c(generations))
 
     setkey(dat.tab, FocalNode)
-    CurrentGenData <- dat.tab[data.table(generations)]
+    CurrentGenData <- dat.tab[gens]
     if(cache$hidden.states == TRUE){
         tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:38], z[39:70],  z[2], z[1])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),33:64] * tmp[seq(2,nrow(tmp),2),33:64], length(unique(CurrentGenData$FocalNode)), 32)
