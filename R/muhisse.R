@@ -586,7 +586,7 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     FocalNode = NULL
-    #gens <- data.table(c(generations))
+    gens <- data.table(c(generations))
     #gens <- dat.tab[.(generations), which=TRUE]
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
@@ -759,21 +759,20 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
             comp <- dat.tab[["comp"]]
             comp <- c(comp[-TIPS], res.tmp[1])
         }else{
-            generations <- data.table(c(gen[[i]]))
             if(!is.null(node)){
                 if(any(node %in% gen[[i]])){
                     cache$node <- node
                     cache$state <- state
                     cache$fix.type <- fix.type
-                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, generations)
+                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
                     cache$node <- NULL
                     cache$state <- NULL
                     cache$fix.type <- NULL
                 }else{
-                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, generations)
+                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
                 }
             }else{
-                dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, generations)
+                dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
             }
         }
     }
