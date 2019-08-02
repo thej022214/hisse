@@ -586,7 +586,7 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     FocalNode = NULL
-    #gens <- data.table(c(generations))
+    gens <- data.table(c(generations))
     gens <- dat.tab[.(generations), which=TRUE]
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
@@ -614,12 +614,13 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
         tmp.probs <- v.mat / tmp.comp
         setkey(dat.tab, DesNode)
         #gens <- data.table(c(generations))
+        test <- dat.tab[.(generations), which=TRUE]
         cols <- names(dat.tab)
         for (j in 1:(dim(tmp.probs)[2])){
             #dat.tab[gens, cols[6+j] := tmp.probs[,j]]
-            set(dat.tab, gens, cols[6+j], tmp.probs[,j])
+            set(dat.tab, test, cols[6+j], tmp.probs[,j])
             #dat.tab[gens, cols[38+j] := phi.mat[,j]]
-            set(dat.tab, gens, cols[38+j], phi.mat[,j])
+            set(dat.tab, test, cols[38+j], phi.mat[,j])
         }
         dat.tab[gens, "comp" := tmp.comp]
     }else{
