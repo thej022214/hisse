@@ -586,7 +586,7 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     FocalNode = NULL
-    gens <- data.table(c(generations))
+    #gens <- data.table(c(generations))
     #gens <- dat.tab[.(generations), which=TRUE]
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
@@ -641,10 +641,13 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
         tmp.probs <- v.mat / tmp.comp
         setkey(dat.tab, DesNode)
         #gens <- data.table(c(generations))
+        rows <- dat.tab[.(generations), which=TRUE]
         cols <- names(dat.tab)
         for (j in 1:(dim(tmp.probs)[2])){
-            dat.tab[gens, cols[6+j] := tmp.probs[,j]]
-            dat.tab[gens, cols[10+j] := phi.mat[,j]]
+            #dat.tab[gens, cols[6+j] := tmp.probs[,j]]
+            set(dat.tab, rows, cols[6+j], tmp.probs[,j])
+            #dat.tab[gens, cols[10+j] := phi.mat[,j]]
+            set(dat.tab, rows, cols[10+j], phi.mat[,j])
         }
         dat.tab[gens, "comp" := tmp.comp]
     }
@@ -756,20 +759,21 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
             comp <- dat.tab[["comp"]]
             comp <- c(comp[-TIPS], res.tmp[1])
         }else{
+            generations <- data.table(c(gen[[i]]))
             if(!is.null(node)){
                 if(any(node %in% gen[[i]])){
                     cache$node <- node
                     cache$state <- state
                     cache$fix.type <- fix.type
-                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, generations)
                     cache$node <- NULL
                     cache$state <- NULL
                     cache$fix.type <- NULL
                 }else{
-                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, generations)
                 }
             }else{
-                dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, generations)
             }
         }
     }
