@@ -336,7 +336,7 @@ SingleChildProbMiSSE <- function(cache, pars, compD, compE, start.time, end.time
 }
 
 
-FocalNodeProbMiSSE <- function(cache, pars, dat.tab, generations){
+FocalNodeProbMiSSE <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     FocalNode = NULL
