@@ -514,9 +514,12 @@ OrganizeData <- function(data, phy, f, hidden.states){
     colnames(tmp.df) <- c("RootwardAge", "TipwardAge", "BranchLength", "FocalNode", "DesNode", "comp", paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"))
     dat.tab <- as.data.table(tmp.df)
     setkey(dat.tab, DesNode)
+    cols <- names(dat.tab)
     for (j in 1:(dim(compD)[2])){
-        dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
-        dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
+        #dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
+        set(dat.tab, 1:nb.tip, cols[6+j], compD[,j])
+        #dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
+        set(dat.tab, 1:nb.tip, cols[38+j], compE[,j])
     }
     return(dat.tab)
 }
@@ -660,7 +663,6 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     FocalNode = NULL
     gens <- data.table(c(generations))
-
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
     if(cache$hidden.states == TRUE){
