@@ -567,9 +567,8 @@ OrganizeDataGeo <- function(data, phy, f, hidden.states){
 }
 
 
-SingleChildProbGeo <- function(cache, compD, compE, start.time, end.time, x){
+SingleChildProbGeo <- function(cache, pars, compD, compE, start.time, end.time, x){
     if(cache$hidden.states == TRUE){
-        pars <- c(cache$s00A, cache$s11A, cache$s01A, cache$x00A, cache$x11A, cache$d00A_11A, cache$d00A_01A, cache$d11A_00A, cache$d11A_01A, cache$d01A_00A, cache$d01A_11A, cache$d00A_00B, cache$d00A_00C, cache$d00A_00D, cache$d00A_00E, cache$d00A_00F, cache$d00A_00G, cache$d00A_00H, cache$d00A_00I, cache$d00A_00J, cache$d11A_11B, cache$d11A_11C, cache$d11A_11D, cache$d11A_11E, cache$d11A_11F, cache$d11A_11G, cache$d11A_11H, cache$d11A_11I, cache$d11A_11J, cache$d01A_01B, cache$d01A_01C, cache$d01A_01D, cache$d01A_01E, cache$d01A_01F, cache$d01A_01G, cache$d01A_01H, cache$d01A_01I, cache$d01A_01J, cache$s00B, cache$s11B, cache$s01B, cache$x00B, cache$x11B, cache$d00B_11B, cache$d00B_01B, cache$d11B_00B, cache$d11B_01B, cache$d01B_00B, cache$d01B_11B, cache$d00B_00A, cache$d00B_00C, cache$d00B_00D, cache$d00B_00E, cache$d00B_00F, cache$d00B_00G, cache$d00B_00H, cache$d00B_00I, cache$d00B_00J, cache$d11B_11A, cache$d11B_11C, cache$d11B_11D, cache$d11B_11E, cache$d11B_11F, cache$d11B_11G, cache$d11B_11H, cache$d11B_11I, cache$d11B_11J, cache$d01B_01A, cache$d01B_01C, cache$d01B_01D, cache$d01B_01E, cache$d01B_01F, cache$d01B_01G, cache$d01B_01H, cache$d01B_01I, cache$d01B_01J, cache$s00C, cache$s11C, cache$s01C, cache$x00C, cache$x11C, cache$d00C_11C, cache$d00C_01C, cache$d11C_00C, cache$d11C_01C, cache$d01C_00C, cache$d01C_11C, cache$d00C_00A, cache$d00C_00B, cache$d00C_00D, cache$d00C_00E, cache$d00C_00F, cache$d00C_00G, cache$d00C_00H, cache$d00C_00I, cache$d00C_00J, cache$d11C_11A, cache$d11C_11B, cache$d11C_11D, cache$d11C_11E, cache$d11C_11F, cache$d11C_11G, cache$d11C_11H, cache$d11C_11I, cache$d11C_11J, cache$d01C_01A, cache$d01C_01B, cache$d01C_01D, cache$d01C_01E, cache$d01C_01F, cache$d01C_01G, cache$d01C_01H, cache$d01C_01I, cache$d01C_01J, cache$s00D, cache$s11D, cache$s01D, cache$x00D, cache$x11D, cache$d00D_11D, cache$d00D_01D, cache$d11D_00D, cache$d11D_01D, cache$d01D_00D, cache$d01D_11D, cache$d00D_00A, cache$d00D_00B, cache$d00D_00C, cache$d00D_00E, cache$d00D_00F, cache$d00D_00G, cache$d00D_00H, cache$d00D_00I, cache$d00D_00J, cache$d11D_11A, cache$d11D_11B, cache$d11D_11C, cache$d11D_11E, cache$d11D_11F, cache$d11D_11G, cache$d11D_11H, cache$d11D_11I, cache$d11D_11J, cache$d01D_01A, cache$d01D_01B, cache$d01D_01C, cache$d01D_01E, cache$d01D_01F, cache$d01D_01G, cache$d01D_01H, cache$d01D_01I, cache$d01D_01J, cache$s00E, cache$s11E, cache$s01E, cache$x00E, cache$x11E, cache$d00E_11E, cache$d00E_01E, cache$d11E_00E, cache$d11E_01E, cache$d01E_00E, cache$d01E_11E, cache$d00E_00A, cache$d00E_00B, cache$d00E_00C, cache$d00E_00D, cache$d00E_00F, cache$d00E_00G, cache$d00E_00H, cache$d00E_00I, cache$d00E_00J, cache$d11E_11A, cache$d11E_11B, cache$d11E_11C, cache$d11E_11D, cache$d11E_11F, cache$d11E_11G, cache$d11E_11H, cache$d11E_11I, cache$d11E_11J, cache$d01E_01A, cache$d01E_01B, cache$d01E_01C, cache$d01E_01D, cache$d01E_01F, cache$d01E_01G, cache$d01E_01H, cache$d01E_01I, cache$d01E_01J, cache$s00F, cache$s11F, cache$s01F, cache$x00F, cache$x11F, cache$d00F_11F, cache$d00F_01F, cache$d11F_00F, cache$d11F_01F, cache$d01F_00F, cache$d01F_11F, cache$d00F_00A, cache$d00F_00B, cache$d00F_00C, cache$d00F_00D, cache$d00F_00E, cache$d00F_00G, cache$d00F_00H, cache$d00F_00I, cache$d00F_00J, cache$d11F_11A, cache$d11F_11B, cache$d11F_11C, cache$d11F_11D, cache$d11F_11E, cache$d11F_11G, cache$d11F_11H, cache$d11F_11I, cache$d11F_11J, cache$d01F_01A, cache$d01F_01B, cache$d01F_01C, cache$d01F_01D, cache$d01F_01E, cache$d01F_01G, cache$d01F_01H, cache$d01F_01I, cache$d01F_01J, cache$s00G, cache$s11G, cache$s01G, cache$x00G, cache$x11G, cache$d00G_11G, cache$d00G_01G, cache$d11G_00G, cache$d11G_01G, cache$d01G_00G, cache$d01G_11G, cache$d00G_00A, cache$d00G_00B, cache$d00G_00C, cache$d00G_00D, cache$d00G_00E, cache$d00G_00F, cache$d00G_00H, cache$d00G_00I, cache$d00G_00J, cache$d11G_11A, cache$d11G_11B, cache$d11G_11C, cache$d11G_11D, cache$d11G_11E, cache$d11G_11F, cache$d11G_11H, cache$d11G_11I, cache$d11G_11J, cache$d01G_01A, cache$d01G_01B, cache$d01G_01C, cache$d01G_01D, cache$d01G_01E, cache$d01G_01F, cache$d01G_01H, cache$d01G_01I, cache$d01G_01J, cache$s00H, cache$s11H, cache$s01H, cache$x00H, cache$x11H, cache$d00H_11H, cache$d00H_01H, cache$d11H_00H, cache$d11H_01H, cache$d01H_00H, cache$d01H_11H, cache$d00H_00A, cache$d00H_00B, cache$d00H_00C, cache$d00H_00D, cache$d00H_00E, cache$d00H_00F, cache$d00H_00G, cache$d00H_00I, cache$d00H_00J, cache$d11H_11A, cache$d11H_11B, cache$d11H_11C, cache$d11H_11D, cache$d11H_11E, cache$d11H_11F, cache$d11H_11G, cache$d11H_11I, cache$d11H_11J, cache$d01H_01A, cache$d01H_01B, cache$d01H_01C, cache$d01H_01D, cache$d01H_01E, cache$d01H_01F, cache$d01H_01G, cache$d01H_01I, cache$d01H_01J, cache$s00I, cache$s11I, cache$s01I, cache$x00I, cache$x11I, cache$d00I_11I, cache$d00I_01I, cache$d11I_00I, cache$d11I_01I, cache$d01I_00I, cache$d01I_11I, cache$d00I_00A, cache$d00I_00B, cache$d00I_00C, cache$d00I_00D, cache$d00I_00E, cache$d00I_00F, cache$d00I_00G, cache$d00I_00H, cache$d00I_00J, cache$d11I_11A, cache$d11I_11B, cache$d11I_11C, cache$d11I_11D, cache$d11I_11E, cache$d11I_11F, cache$d11I_11G, cache$d11I_11H, cache$d11I_11J, cache$d01I_01A, cache$d01I_01B, cache$d01I_01C, cache$d01I_01D, cache$d01I_01E, cache$d01I_01F, cache$d01I_01G, cache$d01I_01H, cache$d01I_01J, cache$s00J, cache$s11J, cache$s01J, cache$x00J, cache$x11J, cache$d00J_11J, cache$d00J_01J, cache$d11J_00J, cache$d11J_01J, cache$d01J_00J, cache$d01J_11J, cache$d00J_00A, cache$d00J_00B, cache$d00J_00C, cache$d00J_00D, cache$d00J_00E, cache$d00J_00F, cache$d00J_00G, cache$d00J_00H, cache$d00J_00I, cache$d11J_11A, cache$d11J_11B, cache$d11J_11C, cache$d11J_11D, cache$d11J_11E, cache$d11J_11F, cache$d11J_11G, cache$d11J_11H, cache$d11J_11I, cache$d01J_01A, cache$d01J_01B, cache$d01J_01C, cache$d01J_01D, cache$d01J_01E, cache$d01J_01F, cache$d01J_01G, cache$d01J_01H, cache$d01J_01I)
         yini <- c(E00A = compE[1], E11A = compE[2], E01A = compE[3], E00B = compE[4], E11B = compE[5], E01B = compE[6], E00C = compE[7], E11C = compE[8], E01C = compE[9], E00D = compE[10], E11D = compE[11], E01D = compE[12], E00E = compE[13], E11E = compE[14], E01E = compE[15], E00F = compE[16], E11F = compE[17], E01F = compE[18], E00G = compE[19], E11G = compE[20], E01G = compE[21], E00H = compE[22], E11H = compE[23], E01H = compE[24], E00I = compE[25], E11I = compE[26], E01I = compE[27], E00J = compE[28], E11J = compE[29], E01J = compE[30], D00A = compD[1], D11A = compD[2], D01A = compD[3], D00B = compD[4], D11B = compD[5], D01B = compD[6], D00C = compD[7], D11C = compD[8], D01C = compD[9], D00D = compD[10], D11D = compD[11], D01D = compD[12], D00E = compD[13], D11E = compD[14], D01E = compD[15], D00F = compD[16], D11F = compD[17], D01F = compD[18], D00G = compD[19], D11G = compD[20], D01G = compD[21], D00H = compD[22], D11H = compD[23], D01H = compD[24], D00I = compD[25], D11I = compD[26], D01I = compD[27], D00J = compD[28], D11J = compD[29], D01J = compD[30])
         times=c(start.time, end.time)
         if(cache$assume.cladogenetic == TRUE){
@@ -580,7 +579,6 @@ SingleChildProbGeo <- function(cache, compD, compE, start.time, end.time, x){
             prob.subtree.cal.full <- lsoda(yini, times, func = "fnotclasse_more_derivs", pars, initfunc="initmod_fhinoclass", dllname = "hisse", rtol=1e-8, atol=1e-8)
         }
     }else{
-        pars <- c(cache$s00A, cache$s11A, cache$s01A, cache$x00A, cache$x11A, cache$d00A_11A, cache$d00A_01A, cache$d11A_00A, cache$d11A_01A, cache$d01A_00A, cache$d01A_11A)
         yini <-c(E_0=compE[1], E_1=compE[2], E_01=compE[3], D_N0=compD[1], D_N1=compD[2], D_N2=compD[3])
         times=c(start.time, end.time)
         if(cache$assume.cladogenetic == TRUE){
@@ -639,19 +637,21 @@ SingleChildProbGeo <- function(cache, compD, compE, start.time, end.time, x){
 }
 
 
-FocalNodeProbGeo <- function(cache, dat.tab, generations){
+FocalNodeProbGeo <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     FocalNode = NULL
+    . = NULL
+
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[data.table(generations)]
     if(cache$hidden.states == TRUE){
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, z[7:36], z[37:66],  z[2], z[1])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, pars, z[7:36], z[37:66],  z[2], z[1])))
         if(cache$assume.cladogenetic == TRUE){
             #I imagine this is slower than it needs to be. But this is the best I can come up with
             DM <- matrix(tmp[seq(1,nrow(tmp)-1,2),31:60], length(unique(CurrentGenData$FocalNode)), 30)
             DN <- matrix(tmp[seq(2,nrow(tmp),2),31:60], length(unique(CurrentGenData$FocalNode)), 30)
-            Ss <- matrix(c(cache$s00A, cache$s11A, cache$s01A, cache$s00B, cache$s11B, cache$s01B, cache$s00C, cache$s11C, cache$s01C, cache$s00D, cache$s11D, cache$s01D, cache$s00E, cache$s11E, cache$s01E, cache$s00F, cache$s11F, cache$s01F, cache$s00G, cache$s11G, cache$s01G, cache$s00H, cache$s11H, cache$s01H, cache$s00I, cache$s11I, cache$s01I, cache$s00J, cache$s11J, cache$s01J), length(unique(CurrentGenData$FocalNode)), 30, byrow=TRUE)
+            Ss <- matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 30, byrow=TRUE)
             v.mat <- matrix(0,length(unique(CurrentGenData$FocalNode)), 30)
             for(i in 1:30){
                 if(i %% 3 != 0){
@@ -672,13 +672,26 @@ FocalNodeProbGeo <- function(cache, dat.tab, generations){
                 v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
             }
         }
+        tmp.comp <- rowSums(v.mat)
+        tmp.probs <- v.mat / tmp.comp
+        setkey(dat.tab, DesNode)
+        #gens <- data.table(c(generations))
+        rows <- dat.tab[.(generations), which=TRUE]
+        cols <- names(dat.tab)
+        for (j in 1:(dim(tmp.probs)[2])){
+            #dat.tab[data.table(c(generations)), paste("compD", j, sep="_") := tmp.probs[,j]]
+            set(dat.tab, rows, cols[6+j], tmp.probs[,j])
+            #dat.tab[data.table(c(generations)), paste("compE", j, sep="_") := phi.mat[,j]]
+            set(dat.tab, rows, cols[36+j], phi.mat[,j])
+        }
+        dat.tab[data.table(c(generations)), "comp" := tmp.comp]
     }else{
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, z[7:9], z[10:13],  z[2], z[1])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, pars, z[7:9], z[10:13],  z[2], z[1])))
         if(cache$assume.cladogenetic == TRUE){
             #I imagine this is slower than it needs to be. But this is the best I can come up with
             DM <- matrix(tmp[seq(1,nrow(tmp)-1,2),4:6], length(unique(CurrentGenData$FocalNode)), 3)
             DN <- matrix(tmp[seq(2,nrow(tmp),2),4:6], length(unique(CurrentGenData$FocalNode)), 3)
-            Ss <- matrix(c(cache$s00A, cache$s11A, cache$s01A), length(unique(CurrentGenData$FocalNode)), 3, byrow=TRUE)
+            Ss <- matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 3, byrow=TRUE)
             v.mat <- matrix(0,length(unique(CurrentGenData$FocalNode)), 3)
             for(i in 1:3){
                 if(i %% 3 != 0){
@@ -699,33 +712,40 @@ FocalNodeProbGeo <- function(cache, dat.tab, generations){
                 v.mat[which(generations == cache$node),] <- v.mat[which(generations == cache$node),] * fixer
             }
         }
+        tmp.comp <- rowSums(v.mat)
+        tmp.probs <- v.mat / tmp.comp
+        setkey(dat.tab, DesNode)
+        #gens <- data.table(c(generations))
+        rows <- dat.tab[.(generations), which=TRUE]
+        cols <- names(dat.tab)
+        for (j in 1:(dim(tmp.probs)[2])){
+            #dat.tab[data.table(c(generations)), paste("compD", j, sep="_") := tmp.probs[,j]]
+            set(dat.tab, rows, cols[6+j], tmp.probs[,j])
+            #dat.tab[data.table(c(generations)), paste("compE", j, sep="_") := phi.mat[,j]]
+            set(dat.tab, rows, cols[9+j], phi.mat[,j])
+        }
+        dat.tab[data.table(c(generations)), "comp" := tmp.comp]
     }
-    tmp.comp <- rowSums(v.mat)
-    tmp.probs <- v.mat / tmp.comp
-    setkey(dat.tab, DesNode)
-    for (j in 1:(dim(tmp.probs)[2])){
-        dat.tab[data.table(c(generations)), paste("compD", j, sep="_") := tmp.probs[,j]]
-        dat.tab[data.table(c(generations)), paste("compE", j, sep="_") := phi.mat[,j]]
-    }
-    dat.tab[data.table(c(generations)), "comp" := tmp.comp]
     return(dat.tab)
 }
 
 
 #Have to calculate root prob separately because it is not a descendant in our table. Could add it, but I worry about the NA that is required.
-GetRootProbGeo <- function(cache, dat.tab, generations){
+GetRootProbGeo <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     FocalNode = NULL
-    
+    . = NULL
+
+    gens <- data.table(c(generations))
     setkey(dat.tab, FocalNode)
-    CurrentGenData <- dat.tab[data.table(generations)]
+    CurrentGenData <- dat.tab[gens]
     if(cache$hidden.states == TRUE){
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, z[7:36], z[37:66],  z[2], z[1])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, pars, z[7:36], z[37:66],  z[2], z[1])))
         if(cache$assume.cladogenetic == TRUE){
             #I imagine this is slower than it needs to be. But this is the best I can come up with
             DM <- matrix(tmp[seq(1,nrow(tmp)-1,2),31:60], length(unique(CurrentGenData$FocalNode)), 30)
             DN <- matrix(tmp[seq(2,nrow(tmp),2),31:60], length(unique(CurrentGenData$FocalNode)), 30)
-            Ss <- matrix(c(cache$s00A, cache$s11A, cache$s01A, cache$s00B, cache$s11B, cache$s01B, cache$s00C, cache$s11C, cache$s01C, cache$s00D, cache$s11D, cache$s01D, cache$s00E, cache$s11E, cache$s01E, cache$s00F, cache$s11F, cache$s01F, cache$s00G, cache$s11G, cache$s01G, cache$s00H, cache$s11H, cache$s01H, cache$s00I, cache$s11I, cache$s01I, cache$s00J, cache$s11J, cache$s01J), length(unique(CurrentGenData$FocalNode)), 30, byrow=TRUE)
+            Ss <- matrix(lambdas), length(unique(CurrentGenData$FocalNode)), 30, byrow=TRUE)
             v.mat <- matrix(0,length(unique(CurrentGenData$FocalNode)), 30)
             for(i in 1:30){
                 if(i %% 3 != 0){
@@ -747,12 +767,12 @@ GetRootProbGeo <- function(cache, dat.tab, generations){
             }
         }
     }else{
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, z[7:9], z[10:13],  z[2], z[1])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, pars, z[7:9], z[10:13],  z[2], z[1])))
         if(cache$assume.cladogenetic == TRUE){
             #I imagine this is slower than it needs to be. But this is the best I can come up with
             DM <- matrix(tmp[seq(1,nrow(tmp)-1,2),4:6], length(unique(CurrentGenData$FocalNode)), 3)
             DN <- matrix(tmp[seq(2,nrow(tmp),2),4:6], length(unique(CurrentGenData$FocalNode)), 3)
-            Ss <- matrix(c(cache$s00A, cache$s11A, cache$s01A), length(unique(CurrentGenData$FocalNode)), 3, byrow=TRUE)
+            Ss <- matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 3, byrow=TRUE)
             v.mat <- matrix(0,length(unique(CurrentGenData$FocalNode)), 3)
             for(i in 1:3){
                 if(i %% 3 != 0){
@@ -793,6 +813,15 @@ DownPassGeoHissefast <- function(dat.tab, gen, cache, condition.on.survival, roo
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     compE = NULL
+    
+    if(cache$hidden.states == FALSE){
+        pars <- c(cache$s00A, cache$s11A, cache$s01A, cache$x00A, cache$x11A, cache$d00A_11A, cache$d00A_01A, cache$d11A_00A, cache$d11A_01A, cache$d01A_00A, cache$d01A_11A)
+        lambdas <- c(cache$s00A, cache$s11A, cache$s01A)
+    }else{
+        pars <- c(cache$s00A, cache$s11A, cache$s01A, cache$x00A, cache$x11A, cache$d00A_11A, cache$d00A_01A, cache$d11A_00A, cache$d11A_01A, cache$d01A_00A, cache$d01A_11A, cache$d00A_00B, cache$d00A_00C, cache$d00A_00D, cache$d00A_00E, cache$d00A_00F, cache$d00A_00G, cache$d00A_00H, cache$d00A_00I, cache$d00A_00J, cache$d11A_11B, cache$d11A_11C, cache$d11A_11D, cache$d11A_11E, cache$d11A_11F, cache$d11A_11G, cache$d11A_11H, cache$d11A_11I, cache$d11A_11J, cache$d01A_01B, cache$d01A_01C, cache$d01A_01D, cache$d01A_01E, cache$d01A_01F, cache$d01A_01G, cache$d01A_01H, cache$d01A_01I, cache$d01A_01J, cache$s00B, cache$s11B, cache$s01B, cache$x00B, cache$x11B, cache$d00B_11B, cache$d00B_01B, cache$d11B_00B, cache$d11B_01B, cache$d01B_00B, cache$d01B_11B, cache$d00B_00A, cache$d00B_00C, cache$d00B_00D, cache$d00B_00E, cache$d00B_00F, cache$d00B_00G, cache$d00B_00H, cache$d00B_00I, cache$d00B_00J, cache$d11B_11A, cache$d11B_11C, cache$d11B_11D, cache$d11B_11E, cache$d11B_11F, cache$d11B_11G, cache$d11B_11H, cache$d11B_11I, cache$d11B_11J, cache$d01B_01A, cache$d01B_01C, cache$d01B_01D, cache$d01B_01E, cache$d01B_01F, cache$d01B_01G, cache$d01B_01H, cache$d01B_01I, cache$d01B_01J, cache$s00C, cache$s11C, cache$s01C, cache$x00C, cache$x11C, cache$d00C_11C, cache$d00C_01C, cache$d11C_00C, cache$d11C_01C, cache$d01C_00C, cache$d01C_11C, cache$d00C_00A, cache$d00C_00B, cache$d00C_00D, cache$d00C_00E, cache$d00C_00F, cache$d00C_00G, cache$d00C_00H, cache$d00C_00I, cache$d00C_00J, cache$d11C_11A, cache$d11C_11B, cache$d11C_11D, cache$d11C_11E, cache$d11C_11F, cache$d11C_11G, cache$d11C_11H, cache$d11C_11I, cache$d11C_11J, cache$d01C_01A, cache$d01C_01B, cache$d01C_01D, cache$d01C_01E, cache$d01C_01F, cache$d01C_01G, cache$d01C_01H, cache$d01C_01I, cache$d01C_01J, cache$s00D, cache$s11D, cache$s01D, cache$x00D, cache$x11D, cache$d00D_11D, cache$d00D_01D, cache$d11D_00D, cache$d11D_01D, cache$d01D_00D, cache$d01D_11D, cache$d00D_00A, cache$d00D_00B, cache$d00D_00C, cache$d00D_00E, cache$d00D_00F, cache$d00D_00G, cache$d00D_00H, cache$d00D_00I, cache$d00D_00J, cache$d11D_11A, cache$d11D_11B, cache$d11D_11C, cache$d11D_11E, cache$d11D_11F, cache$d11D_11G, cache$d11D_11H, cache$d11D_11I, cache$d11D_11J, cache$d01D_01A, cache$d01D_01B, cache$d01D_01C, cache$d01D_01E, cache$d01D_01F, cache$d01D_01G, cache$d01D_01H, cache$d01D_01I, cache$d01D_01J, cache$s00E, cache$s11E, cache$s01E, cache$x00E, cache$x11E, cache$d00E_11E, cache$d00E_01E, cache$d11E_00E, cache$d11E_01E, cache$d01E_00E, cache$d01E_11E, cache$d00E_00A, cache$d00E_00B, cache$d00E_00C, cache$d00E_00D, cache$d00E_00F, cache$d00E_00G, cache$d00E_00H, cache$d00E_00I, cache$d00E_00J, cache$d11E_11A, cache$d11E_11B, cache$d11E_11C, cache$d11E_11D, cache$d11E_11F, cache$d11E_11G, cache$d11E_11H, cache$d11E_11I, cache$d11E_11J, cache$d01E_01A, cache$d01E_01B, cache$d01E_01C, cache$d01E_01D, cache$d01E_01F, cache$d01E_01G, cache$d01E_01H, cache$d01E_01I, cache$d01E_01J, cache$s00F, cache$s11F, cache$s01F, cache$x00F, cache$x11F, cache$d00F_11F, cache$d00F_01F, cache$d11F_00F, cache$d11F_01F, cache$d01F_00F, cache$d01F_11F, cache$d00F_00A, cache$d00F_00B, cache$d00F_00C, cache$d00F_00D, cache$d00F_00E, cache$d00F_00G, cache$d00F_00H, cache$d00F_00I, cache$d00F_00J, cache$d11F_11A, cache$d11F_11B, cache$d11F_11C, cache$d11F_11D, cache$d11F_11E, cache$d11F_11G, cache$d11F_11H, cache$d11F_11I, cache$d11F_11J, cache$d01F_01A, cache$d01F_01B, cache$d01F_01C, cache$d01F_01D, cache$d01F_01E, cache$d01F_01G, cache$d01F_01H, cache$d01F_01I, cache$d01F_01J, cache$s00G, cache$s11G, cache$s01G, cache$x00G, cache$x11G, cache$d00G_11G, cache$d00G_01G, cache$d11G_00G, cache$d11G_01G, cache$d01G_00G, cache$d01G_11G, cache$d00G_00A, cache$d00G_00B, cache$d00G_00C, cache$d00G_00D, cache$d00G_00E, cache$d00G_00F, cache$d00G_00H, cache$d00G_00I, cache$d00G_00J, cache$d11G_11A, cache$d11G_11B, cache$d11G_11C, cache$d11G_11D, cache$d11G_11E, cache$d11G_11F, cache$d11G_11H, cache$d11G_11I, cache$d11G_11J, cache$d01G_01A, cache$d01G_01B, cache$d01G_01C, cache$d01G_01D, cache$d01G_01E, cache$d01G_01F, cache$d01G_01H, cache$d01G_01I, cache$d01G_01J, cache$s00H, cache$s11H, cache$s01H, cache$x00H, cache$x11H, cache$d00H_11H, cache$d00H_01H, cache$d11H_00H, cache$d11H_01H, cache$d01H_00H, cache$d01H_11H, cache$d00H_00A, cache$d00H_00B, cache$d00H_00C, cache$d00H_00D, cache$d00H_00E, cache$d00H_00F, cache$d00H_00G, cache$d00H_00I, cache$d00H_00J, cache$d11H_11A, cache$d11H_11B, cache$d11H_11C, cache$d11H_11D, cache$d11H_11E, cache$d11H_11F, cache$d11H_11G, cache$d11H_11I, cache$d11H_11J, cache$d01H_01A, cache$d01H_01B, cache$d01H_01C, cache$d01H_01D, cache$d01H_01E, cache$d01H_01F, cache$d01H_01G, cache$d01H_01I, cache$d01H_01J, cache$s00I, cache$s11I, cache$s01I, cache$x00I, cache$x11I, cache$d00I_11I, cache$d00I_01I, cache$d11I_00I, cache$d11I_01I, cache$d01I_00I, cache$d01I_11I, cache$d00I_00A, cache$d00I_00B, cache$d00I_00C, cache$d00I_00D, cache$d00I_00E, cache$d00I_00F, cache$d00I_00G, cache$d00I_00H, cache$d00I_00J, cache$d11I_11A, cache$d11I_11B, cache$d11I_11C, cache$d11I_11D, cache$d11I_11E, cache$d11I_11F, cache$d11I_11G, cache$d11I_11H, cache$d11I_11J, cache$d01I_01A, cache$d01I_01B, cache$d01I_01C, cache$d01I_01D, cache$d01I_01E, cache$d01I_01F, cache$d01I_01G, cache$d01I_01H, cache$d01I_01J, cache$s00J, cache$s11J, cache$s01J, cache$x00J, cache$x11J, cache$d00J_11J, cache$d00J_01J, cache$d11J_00J, cache$d11J_01J, cache$d01J_00J, cache$d01J_11J, cache$d00J_00A, cache$d00J_00B, cache$d00J_00C, cache$d00J_00D, cache$d00J_00E, cache$d00J_00F, cache$d00J_00G, cache$d00J_00H, cache$d00J_00I, cache$d11J_11A, cache$d11J_11B, cache$d11J_11C, cache$d11J_11D, cache$d11J_11E, cache$d11J_11F, cache$d11J_11G, cache$d11J_11H, cache$d11J_11I, cache$d01J_01A, cache$d01J_01B, cache$d01J_01C, cache$d01J_01D, cache$d01J_01E, cache$d01J_01F, cache$d01J_01G, cache$d01J_01H, cache$d01J_01I)
+        lambdas <- c(cache$s00A, cache$s11A, cache$s01A, cache$s00B, cache$s11B, cache$s01B, cache$s00C, cache$s11C, cache$s01C, cache$s00D, cache$s11D, cache$s01D, cache$s00E, cache$s11E, cache$s01E, cache$s00F, cache$s11F, cache$s01F, cache$s00G, cache$s11G, cache$s01G, cache$s00H, cache$s11H, cache$s01H, cache$s00I, cache$s11I, cache$s01I, cache$s00J, cache$s11J, cache$s01J)
+    }
+    
     nb.tip <- cache$nb.tip
     nb.node <- cache$nb.node
     TIPS <- 1:nb.tip
@@ -802,14 +831,14 @@ DownPassGeoHissefast <- function(dat.tab, gen, cache, condition.on.survival, roo
                 if(node %in% gen[[i]]){
                     cache$node <- node
                     cache$state <- state
-                    res.tmp <- GetRootProbGeo(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
+                    res.tmp <- GetRootProbGeo(cache=cache, pars=pars, lambdas=lambdas, dat.tab=dat.tab, generations=gen[[i]])
                     cache$node <- NULL
                     cache$state <- NULL
                 }else{
-                    res.tmp <- GetRootProbGeo(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
+                    res.tmp <- GetRootProbGeo(cache=cache, pars=pars, lambdas=lambdas, dat.tab=dat.tab, generations=gen[[i]])
                 }
             }else{
-                res.tmp <- GetRootProbGeo(cache=cache, dat.tab=dat.tab, generations=gen[[i]])
+                res.tmp <- GetRootProbGeo(cache=cache, pars=pars, lambdas=lambdas, dat.tab=dat.tab, generations=gen[[i]])
             }
             if(cache$hidden.states == TRUE){
                 compD.root <- res.tmp[c(32:61)]
@@ -826,14 +855,14 @@ DownPassGeoHissefast <- function(dat.tab, gen, cache, condition.on.survival, roo
                 if(node %in% gen[[i]]){
                     cache$node <- node
                     cache$state <- state
-                    dat.tab <- FocalNodeProbGeo(cache, dat.tab, gen[[i]])
+                    dat.tab <- FocalNodeProbGeo(cache, pars=pars, lambdas=lambdas, dat.tab, gen[[i]])
                     cache$node <- NULL
                     cache$state <- NULL
                 }else{
-                    dat.tab <- FocalNodeProbGeo(cache, dat.tab, gen[[i]])
+                    dat.tab <- FocalNodeProbGeo(cache, pars=pars, lambdas=lambdas, dat.tab, gen[[i]])
                 }
             }else{
-                dat.tab <- FocalNodeProbGeo(cache, dat.tab, gen[[i]])
+                dat.tab <- FocalNodeProbGeo(cache, pars=pars, lambdas=lambdas, dat.tab, gen[[i]])
             }
         }
     }
