@@ -41,11 +41,11 @@ test_that("MuSSE_HiSSE_test1", {
 			  .05, 0,         # q12, q13
 			  .05, .05,       # q21, q23
 			  0,   .05)       # q31, q32
-        set.seed(2)
-        phy <- NULL
-        while( is.null( phy ) ){
-            phy <- tree.musse(pars, 30, x0=1)
-        }
+    set.seed(2)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.musse(pars, 30, x0=1)
+    }
 	states <- phy$tip.state
 	lik <- make.musse(phy, states, 3)
 	lik.base <- constrain(lik, lambda2 ~ lambda1, lambda3 ~ lambda1,
@@ -85,11 +85,11 @@ test_that("MuSSE_HiSSE_test2", {
 			  .05, 0,         # q12, q13
 			  .05, .05,       # q21, q23
 			  0,   .05)       # q31, q32
-        set.seed(2)
-        phy <- NULL
-        while( is.null( phy ) ){
-            phy <- tree.musse(pars, 30, x0=1)
-        }
+    set.seed(2)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.musse(pars, 30, x0=1)
+    }
 	states <- phy$tip.state
 	lik <- make.musse(phy, states, 3)
 	diversitree.full = lik(pars)
@@ -121,11 +121,11 @@ test_that("HiSSE_Null_Four_test", {
 
 	library(diversitree)
 	pars <- c(0.1, 0.1, 0.03, 0.03, 0.01, 0.01)
-        set.seed(4)
-        phy <- NULL
-        while( is.null( phy ) ){
-            phy <- tree.bisse(pars, max.t=30, x0=0)
-        }
+    set.seed(4)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.bisse(pars, max.t=30, x0=0)
+    }
 	lik <- make.bisse(phy, phy$tip.state)
 	diversitree.full <- lik(pars)
 	
