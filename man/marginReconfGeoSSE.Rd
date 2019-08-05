@@ -7,7 +7,7 @@
 MarginReconfGeoSSE(phy, data, f, pars, hidden.areas=2, 
 assume.cladogenetic=TRUE, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE,
-verbose=TRUE, n.cores=NULL)
+verbose=TRUE, n.cores=NULL, dt.threads=1)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -26,6 +26,7 @@ verbose=TRUE, n.cores=NULL)
 \item{get.tips.only}{a logical indicating whether just tip reconstructions should be output. The default is \code{FALSE}.}
 \item{verbose}{a logical indicating whether progress should be printed to screen. The default is \code{TRUE}.}
 \item{n.cores}{specifies the number of independent processors to conduct the analysis.. The default is \code{NULL}.}
+\item{dt.threads}{sets the number of threads available to data.table. In practice this need not change from the default of 1 thread, as we have not seen any speedup from allowing more threads.}
 }
 \details{
 In this implementation the marginal probability of area i for a focal node is simply the overall likelihood of the tree and data when the area of the focal node is fixed in area i. Note that the likeliest tip areas can also be estimated: we observe area 11, but the underlying area could either be area 11A or 11B. Thus, for any given node or tip we traverse the entire tree as many times as there are areas in the model. As the size of the tree grows, however, these repeated tree traversals can slow the calculation down considerably. For this reason, we allow the marginal calculation to be conducted in parallel across any number of independent computer processors.

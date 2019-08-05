@@ -6,7 +6,7 @@
 \usage{
 MarginReconMuHiSSE(phy, data, f, pars, hidden.states=2, 
 condition.on.survival=TRUE,  root.type="madfitz", root.p=NULL, 
-aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL)
+aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -29,6 +29,7 @@ aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL)
 \item{get.tips.only}{a logical indicating whether just tip reconstructions should be output. The default is \code{FALSE}.}
 \item{verbose}{a logical indicating whether progress should be printed to screen. The default is \code{TRUE}.}
 \item{n.cores}{specifies the number of independent processors to conduct the analysis.. The default is \code{NULL}.}
+\item{dt.threads}{sets the number of threads available to data.table. In practice this need not change from the default of 1 thread, as we have not seen any speedup from allowing more threads.}
 }
 \details{
 In this implementation the marginal probability of state combination i for a focal node is simply the overall likelihood of the tree and data when the state of the focal node is fixed in state combination i. Note that the likeliest tip states can also be estimated: we observe state 00, but the underlying state could either be 00A or 00B. Thus, for any given node or tip we traverse the entire tree as many times as there are states in the model. As the size of the tree grows, however, these repeated tree traversals can slow the calculation down considerably. For this reason, we allow the marginal calculation to be conducted in parallel across any number of independent computer processors.

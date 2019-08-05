@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-fGeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,2), hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, turnover.upper=1000, extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0){
+fGeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,2), hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, turnover.upper=1000, extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -30,6 +30,8 @@ fGeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1
         
     }
     
+    setDTthreads(threads=dt.threads)
+
     if(!root.type == "madfitz" & !root.type == "herr_als"){
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }

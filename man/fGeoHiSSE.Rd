@@ -9,7 +9,7 @@ hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE,
 condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE,
 sann.its=10000, bounded.search=TRUE,  max.tol=.Machine$double.eps^.50,
 mag.san.start=0.5, starting.vals=NULL, turnover.upper=1000, 
-extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0)
+extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
@@ -74,6 +74,7 @@ model.}
   then it assumes the results are unstable and discards them. The
   default is set to zero, but in testing a value of 1e-8 can sometimes
   produce stable solutions for both easy and very difficult optimization problems.}
+\item{dt.threads}{sets the number of threads available to data.table. In practice this need not change from the default of 1 thread, as we have not seen any speedup from allowing more threads.}
 }
 \details{
 This function sets up and executes a more complex and potentially faster version of the GeoHiSSE model. One of the main differences here is that the model allows up to 10 hidden categories, and implements a more efficient means of carrying out the branch calculation. Specifically, we break up the tree into carry out all descendent branch calculations simultaneously, combine the probabilities based on their shared ancestry, then repeat for the next set of descendent . In testing, we've found that as the number of taxa increases, the calculation becomes much more efficient. In future versions, we will likely allow for multicore processing of these calculations to further improve speed. Also, note this function will eventually completely replace the version of \code{GeoSSE} that is currently available.
