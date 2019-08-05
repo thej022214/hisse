@@ -173,8 +173,6 @@ print(trans.rate)
 Now, we can just plug these options into MuHiSSE:
 
 ```{r, eval=FALSE}
-turnover <- c(1,2,3,4)
-extinction.fraction <- c(1,1,1,1)
 MuHiSSE <- MuHiSSE(phy=phy, data=states.trans, f=f, turnover=turnover, 
                      eps=extinction.fraction, hidden.states=TRUE, 
                      trans.rate=trans.rate)

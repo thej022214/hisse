@@ -30,6 +30,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }
     }
     
+    setDTthreads(threads=1)
     
     if(any(f == 0)){
         f[which(f==0)] <- 1
