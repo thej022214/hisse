@@ -745,7 +745,7 @@ GetRootProbGeo <- function(cache, pars, lambdas, dat.tab, generations){
             #I imagine this is slower than it needs to be. But this is the best I can come up with
             DM <- matrix(tmp[seq(1,nrow(tmp)-1,2),31:60], length(unique(CurrentGenData$FocalNode)), 30)
             DN <- matrix(tmp[seq(2,nrow(tmp),2),31:60], length(unique(CurrentGenData$FocalNode)), 30)
-            Ss <- matrix(lambdas), length(unique(CurrentGenData$FocalNode)), 30, byrow=TRUE)
+            Ss <- matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 30, byrow=TRUE)
             v.mat <- matrix(0,length(unique(CurrentGenData$FocalNode)), 30)
             for(i in 1:30){
                 if(i %% 3 != 0){
