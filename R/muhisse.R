@@ -691,7 +691,7 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
             }
         }
     }else{
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, z[7:10], z[11:14],  z[2], z[1])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:10], z[11:14],  z[2], z[1])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),5:8] * tmp[seq(2,nrow(tmp),2),5:8], length(unique(CurrentGenData$FocalNode)), 4)
         v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 4, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
