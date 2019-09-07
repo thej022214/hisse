@@ -3,16 +3,18 @@
 \title{Transition Rate matrix generator for the MuHiSSE model}
 \description{Generates and manipulates the index of the transition rate parameters to be optimized.}
 \usage{
-TransMatMakerMuHiSSE(hidden.traits=0, make.null=FALSE, include.diagonals=FALSE)
+TransMatMakerMuHiSSE(hidden.traits=0, make.null=FALSE, include.diagonals=FALSE, 
+cat.trans.vary=FALSE)
 }       
 \arguments{
 \item{hidden.traits}{a numeric value with the number of hidden states in
-  the model. The cannonical MuSSE model has no hidden states, so
-  \code{'hidden.states=0'}. The default value is 0.} 
+  the model. The canonical MuSSE model has no hidden states, so
+  \code{'hidden.traits=0'}. The default value is 0.} 
 \item{make.null}{Sets the transition matrix to the null model such that (1)
   transition rates are the same across all hidden states and (2) the transition rates
   between hidden states (such as 00A <-> 01A) are the same.}
 \item{include.diagonals}{allows for dual transitions, e.g., 00->11 and 11->00 transitions.}
+\item{cat.trans.vary}{sets transition among hidden categories to vary.}
 }
 \details{
   Outputs the full index of the rate parameters that are to be optimized.
