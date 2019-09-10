@@ -5,7 +5,8 @@ Title: Hidden State Speciation and Extinction
 Authors@R: c(person("Jeremy", "Beaulieu", role=c("aut", "cre"),
                      email = "jbeaulieu@nimbios.org"),
                      person("Brian", "O'Meara", role=c("aut")),
-		      person("Daniel", "Caetano", role=c("aut")))
+		      person("Daniel", "Caetano", role=c("aut")),
+			person("James", "Boyko", role=c("aut")))
 Maintainer: Jeremy Beaulieu <jbeaulieu@nimbios.org>
 Depends: ape, deSolve, GenSA, subplex, nloptr
 Suggests: testthat, knitr

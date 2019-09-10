@@ -519,7 +519,7 @@ test_that("MiSSE_test2", {
 })
 
 
-test_that("BiSSE_fHiSSE_test1",{
+test_that("BiSSE_fHiSSE_test1", {
     
     skip_on_cran()
     
@@ -547,10 +547,11 @@ test_that("BiSSE_fHiSSE_test1",{
     comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
     
-}
+})
 
 
-test_that("BiSSE_fHiSSE_test2",{
+test_that("BiSSE_fHiSSE_test2", {
+    
     skip_on_cran()
     
     library(diversitree)
