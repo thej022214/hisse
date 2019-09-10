@@ -7,7 +7,7 @@
 SupportRegionfHiSSE <- function(fhisse.obj, n.points=1000, scale.int=0.1, desired.delta=2, min.number.points=10, verbose=TRUE){
     phy <- fhisse.obj$phy
     data <- fhisse.obj$data
-    data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
+    data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
 
     f <- fhisse.obj$f
