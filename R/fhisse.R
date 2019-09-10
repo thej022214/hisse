@@ -339,7 +339,7 @@ OrganizeDataHiSSE <- function(data, phy, f, hidden.states){
         compD <- matrix(0, nrow=nb.tip, ncol=8)
         compE <- matrix(0, nrow=nb.tip, ncol=8)
     }
-    
+
     #Initializes the tip sampling and sets internal nodes to be zero:
     ncols = dim(compD)[2]
     if(length(f) == 2){

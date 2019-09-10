@@ -517,3 +517,67 @@ test_that("MiSSE_test2", {
     comparison <- round(logl.three.rate,4) == round(right.logl,4)
     expect_true(comparison)
 })
+
+
+test_that("BiSSE_fHiSSE_test1",{
+    
+    skip_on_cran()
+    
+    library(diversitree)
+    pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
+    set.seed(4)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.bisse(pars, max.t=30, x0=0)
+    }
+    lik <- make.bisse(phy, phy$tip.state, sampling.f=c(.4,.6))
+    diversitree.full <- lik(pars)
+    
+    hidden.states=FALSE
+    states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
+    states <- states[phy$tip.label,]
+    gen <- hisse:::FindGenerations(phy)
+    dat.tab <- hisse:::OrganizeDataHiSSE(states, phy=phy, f=c(.4,.6), hidden.states=FALSE)
+    pars.bisse <- c(0.1+0.03, 0.2+0.03, 0.03/0.1, 0.03/0.2, 0.01, 0.01)
+    model.vec <- numeric(48)
+    model.vec[1:6] = pars.bisse
+    phy$node.label = NULL
+    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, ode.eps=0)
+    hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
+    comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
+    expect_true(comparison)
+    
+}
+
+
+test_that("BiSSE_fHiSSE_test2",{
+    skip_on_cran()
+    
+    library(diversitree)
+    pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
+    set.seed(4)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.bisse(pars, max.t=30, x0=0)
+    }
+    lik <- make.bisse(phy, phy$tip.state, sampling.f=c(.4,.6))
+    diversitree.full <- lik(pars)
+
+    hidden.states=TRUE
+    states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
+    states <- states[phy$tip.label,]
+    gen <- hisse:::FindGenerations(phy)
+    dat.tab <- hisse:::OrganizeDataHiSSE(states, phy=phy, f=c(.4,.6), hidden.states=hidden.states)
+    pars.hisse <- c(0.1+0.03, 0.2+0.03, 0.03/0.1, 0.03/0.2, 0.01, 0.01, 0.1, rep(0,5), 0.1+0.03, 0.2+0.03, 0.03/0.1, 0.03/0.2, 0.01, 0.01, 0.1, rep(0,5))
+    model.vec <- numeric(48)
+    model.vec[1:24] = pars.hisse
+    phy$node.label = NULL
+    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, ode.eps=0)
+    hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
+    comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
+    expect_true(comparison)
+})
+
+
+
+
