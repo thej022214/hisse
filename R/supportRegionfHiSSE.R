@@ -58,17 +58,17 @@ SupportRegionfHiSSE <- function(fhisse.obj, n.points=1000, scale.int=0.1, desire
 AdaptiveConfidenceIntervalSamplingfHiSSE <- function(par, lower, upper, desired.delta=2, n.points=5000, verbose=TRUE, phy, data, index.par, f, hidden.states, condition.on.survival, root.type, root.p, scale.int, min.number.points=10) {
     
     # Some new prerequisites #
-    gen <- FindGenerations(phy)
-    dat.tab <- OrganizeDataHiSSE(data=data, phy=phy, f=f, hidden.states=hidden.states)
+    gen <- hisse:::FindGenerations(phy)
+    dat.tab <- hisse:::OrganizeDataHiSSE(data=data, phy=phy, f=f, hidden.states=hidden.states)
     ##########################
 
     #Wrangle the data so that we can make use of DownPass easily:
     actual.params = which(index.par < max(index.par))
     model.vec <- numeric(length(index.par))
     model.vec[] <- c(par,0)[index.par]
-    cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
+    cache <- hisse:::ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
     phy$node.label <- NULL
-    starting <- -DownPassHiSSE(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+    starting <- -hisse:::DownPassHiSSE(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     #Generate the multipliers for feeling the boundaries:
     min.multipliers <- rep(1, length(par))
     max.multipliers <- rep(1, length(par))
@@ -77,14 +77,14 @@ AdaptiveConfidenceIntervalSamplingfHiSSE <- function(par, lower, upper, desired.
     for (i in sequence(n.points)) {
         sim.points <- NA
         while(is.na(sim.points[1])) {
-            sim.points <- GenerateValues(par, lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE))
+            sim.points <- hisse:::GenerateValues(par, lower=lower, upper=upper, scale.int=scale.int, examined.max=max.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, max, na.rm=TRUE), examined.min=min.multipliers*apply(results[which(results[,1]-min(results[,1], na.rm=TRUE)<=desired.delta),-1], 2, min, na.rm=TRUE))
         }
         par <- sim.points
         model.vec <- numeric(length(index.par))
         model.vec[] <- c(sim.points,0)[index.par]
-        cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
+        cache <- hisse:::ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
         phy$node.label <- NULL
-        starting <- -DownPassHiSSE(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+        second <- -hisse:::DownPassHiSSE(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
         results[i+1,] <- c(second, sim.points)
         if(i%%20==0) {
             for (j in sequence(length(par))) {
