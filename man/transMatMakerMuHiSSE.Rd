@@ -14,7 +14,7 @@ cat.trans.vary=FALSE)
   transition rates are the same across all hidden states and (2) the transition rates
   between hidden states (such as 00A <-> 01A) are the same.}
 \item{include.diagonals}{allows for dual transitions, e.g., 00->11 and 11->00 transitions.}
-\item{cat.trans.vary}{sets transition among hidden categories to vary.}
+\item{cat.trans.vary}{sets transitions among hidden categories to vary.}
 }
 \details{
   Outputs the full index of the rate parameters that are to be optimized.

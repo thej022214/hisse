@@ -35,7 +35,8 @@ ode.eps=0, dt.threads=1)
 \item{condition.on.survival}{a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
   speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
-\item{root.type}{indicates whether root summarization follow the procedure described by FitzJohn et al. 2009, \dQuote{madfitz} or Herrera-Alsina et al. 2018, \dQuote{herr_als}.}
+\item{root.type}{indicates whether root summarization follow the procedure described by 
+  FitzJohn et al. 2009, \dQuote{madfitz} or Herrera-Alsina et al. 2018, \dQuote{herr_als}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The
   default is \code{NULL}.}
 \item{sann}{a logical indicating whether a two-step optimization
@@ -65,27 +66,12 @@ ode.eps=0, dt.threads=1)
   allowing more threads.}
 }
 \details{
-This function sets up and executes a faster version of the HiSSE model. Note that this 
-that the four-state character-independent model can be called from this command in 
-addition to the two-state BiSSE model and the full character-dependent HiSSE model.
+This function sets up and executes a faster version of the HiSSE model. Note that the
+four-state character-independent model can be called from this command in addition to the 
+two-state BiSSE model and the full character-dependent HiSSE model. For details on the
+various options see \code{hisse}. 
 
-For the \dQuote{root.type} option, we are currently maintaining the previous default of 
-\dQuote{madfitz}. However, it was recently pointed out by Herrera-Alsina et al. (2018)
-that at the root, the individual likelihoods for each possible state should be conditioned
-prior to averaging the individual likelihoods across states. This can be set doing 
-\dQuote{herr_als}. It is unclear to us which is exactly correct, but it does seem that 
-both \dQuote{madfitz} and \dQuote{herr_als} behave exactly as they should in the case of 
-character-independent diversification (i.e., reduces to likelihood of tree + likelihood of
-trait model). We've also tested the behavior and the likelihood differences are very 
-subtle and the parameter estimates in simulation are nearly indistinguishable from the
-\dQuote{madfitz} conditioning scheme. We provide both options and encourage users to try 
-both and let us know conditions in which the result vary dramatically under the two root
-implementations. We suspect they do not. 
-
-Also, note, that in the case of \dQuote{root.type=user} and \dQuote{root.type=equal} are
-no longer explicit \dQuote{root.type} options. Instead, either \dQuote{madfitz} or 
-\dQuote{herr_als} are specified and the \dQuote{root.p} can be set to allow for custom
-root options.  
+Also note that this code will replace the original hisse function in the next version.
 }
 \value{
 \code{hisse.new} returns an object of class \code{fhisse.fit}. This is a list with 
