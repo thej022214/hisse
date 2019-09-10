@@ -315,7 +315,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconfHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconfHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -336,7 +336,7 @@ MarginReconfHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on.
     # Some new prerequisites #
     data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
-    gen <- hisse:::FindGenerations(phy)
+    gen <- FindGenerations(phy)
     dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode

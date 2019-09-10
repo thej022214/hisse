@@ -11,7 +11,7 @@
 #dyn.load("fbisse-ext-derivs.so")
 
 
-hisse.new <- function(phy, data, f=c(1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+hisse.new <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -187,9 +187,9 @@ hisse.new <- function(phy, data, f=c(1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), 
     }
     if(is.null(restart.obj)){
         if(sum(eps)==0){
-            init.pars <- hisse:::starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
+            init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
         }else{
-            init.pars <- hisse:::starting.point.generator(phy, 2, samp.freq.tree, yule=FALSE)
+            init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=FALSE)
             if(any(init.pars[3:4] == 0)){
                 init.pars[3:4] = 1e-6
             }
@@ -236,7 +236,7 @@ hisse.new <- function(phy, data, f=c(1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), 
     }
 
     # Some new prerequisites #
-    gen <- hisse:::FindGenerations(phy)
+    gen <- FindGenerations(phy)
     dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
@@ -439,6 +439,8 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     FocalNode = NULL
+    . = NULL
+
     gens <- data.table(c(generations))
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
@@ -510,7 +512,8 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
 GetRootProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     FocalNode = NULL
-    
+    . = NULL
+
     gens <- data.table(c(generations))
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]

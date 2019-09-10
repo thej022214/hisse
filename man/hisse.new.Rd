@@ -1,5 +1,6 @@
-\name{fHiSSE}
-\alias{hiSSE.new}
+\name{hisse.new}
+\alias{hisse.new}
+\alias{fhisse}
 \title{Hidden State Speciation and Extinction}
 \description{Sets up and executes a HiSSE model (Hidden State Speciation and Extinction) 
 on a phylogeny and character distribution.}
@@ -23,18 +24,10 @@ ode.eps=0, dt.threads=1)
   state 0 and 1 that are included in the phylogeny. A value of c(0.25, 0.5) means 
   that 25 percent of species in state 0 and 50 percent of species in state 1 are 
   included in the phylogeny. By default all species are assumed to be sampled.}
-\item{turnover}{a numeric vector of length equal to 4+(number of
-  \code{hidden.states} * 4). A MuSSE model has 4 speciation parameters:
-  lambda00, lambda01, lambda10, and lambda11. A MuHiSSE model with 
-  one hidden states has 8 speciation parameters: lambda0A, s1A, s01A, s0B, s1B, s01B. 
-  And so on. The length of the numeric vector needs to match the number of speciation 
-  parameters in the model. See 'Details'.}
-\item{eps}{a numeric vector of length equal to4+(number of
-  \code{hidden.states} * 4). A MuSSE model has 4 extinction parameters:
-  mu00, mu01, mu10, and mu11. A MuHiSSE model with one hidden state has 8 extinction 
-  parameters: mu00A, mu01A, mu10A, mu11A, mu00B, mu01B, mu10B, and mu11B. And so on. The 
-  length of the numeric vector needs to match the number of extinction parameters in the 
-  model. See 'Details'.}
+\item{turnover}{a numeric vector indicating the number of free turnover parameters in the
+  model.}
+\item{eps}{a numeric vector indicating the number of free extinction fraction parameters 
+  in the model.}
 \item{hidden.states}{a logical indicating whether the model includes a
   hidden states. The default is \code{FALSE}.} 
 \item{trans.rate}{provides the transition rate model. See function
@@ -67,59 +60,14 @@ ode.eps=0, dt.threads=1)
   then it assumes the results are unstable and discards them. The
   default is set to zero, but in testing a value of 1e-8 can sometimes
   produce stable solutions for both easy and very difficult optimization problems.}
-\item{dt.threads}{sets the number of threads available to data.table. In practice this need not change from the default of 1 thread, as we have not seen any speedup from allowing more threads.}
+\item{dt.threads}{sets the number of threads available to data.table. In practice this 
+  need not change from the default of 1 thread, as we have not seen any speedup from 
+  allowing more threads.}
 }
 \details{
-This function sets up and executes a multiple state HiSSE model. The model allows up to 8
-hidden categories (hidden states A-H), and implements a more efficient means of carrying 
-out the branch calculation. Specifically, we break up the tree into carry out all 
-descendent branch calculations simultaneously, combine the probabilities based on their 
-shared ancestry, then repeat for the next set of descendents. In testing, we've found that 
-as the number of taxa increases, the calculation becomes much more efficient. In future 
-versions, we will likely allow for multicore processing of these calculations to further 
-improve speed. We also note that there is vignette tha describes more details for running
-this particular function.
-
-As for data file format, \code{MuHiSSE} expects a three column matrix or data frame, with 
-the first column containing the species names and the second and third containing the 
-binary character information. Note that the order of the data file and the names in the 
-\dQuote{phylo} object need not be in the same order; \code{MuHiSSE} deals with this 
-internally. Also, the character information must be coded as 0 and 1, otherwise, the
-function will misbehave. However, if the state for a species is unknown for either 
-character, a user can specify this with a 2, and the state will be considered maximally 
-ambiguous for all relevant character combinations. For example, if character 1 is in state
-0, but character 2 is provided a 2, then the program provides a probability of 1 for 00 
-and a probability of for 01.
-
-As with \code{hisse}, we employ a modified optimization procedure. In other words, rather
-than optimizing birth and death separately, \code{MuHisse} optimizes orthogonal 
-transformations of these variables: we let tau = birth+death define "net turnover", and 
-we let eps = death/birth define the \dQuote{extinction fraction}. This reparameterization 
-alleviates problems associated with overfitting when birth and death are highly 
-correlated, but both matter in explaining the diversity pattern. 
-
-To setup a model, users input vectors containing values to indicate how
-many free parameters are to be estimated for each of the variables in
-the model. This is done using the \code{turnover} and
-\code{extinct.frac} parameters. One needs to specify a value for each of
-the parameters of the model, when two parameters show the same value,
-then the parameters are set to be linked during the estimation of the
-model. For example, a MuHiSSE model with 1 hidden state and all free
-parameters has \code{turnover = 1:8}. The same model with
-turnover rates constrained to be the same for all hidden states has
-\code{turnover = c(1,2,3,4,1,2,3,4)}. This same format applies to
-\code{extinct.frac}.
-
-The \dQuote{trans.rate} input is the transition model and has an entirely different setup 
-than speciation and extinction rates. See \code{TransMatMakerMuHiSSE} function for more 
-details. 
-
-For user-specified \dQuote{root.p}, you should specify the probability
-for each state combination. If you are doing a hidden model, there will be eight state 
-combinations: 00A, 01A, 10A, 11A, 00B, 01B, 10B, 11B. So if you wanted to say the root 
-had to be in state 00, and since you do not know the hidden state, you would specify 
-\dQuote{root.p = c(0.5, 0, 0, 0, 0.5, 0, 0, 0)}. In other words, the root has a 50\% 
-chance to be in one of the states to be 00A or 00B.
+This function sets up and executes a faster version of the HiSSE model. Note that this 
+that the four-state character-independent model can be called from this command in 
+addition to the two-state BiSSE model and the full character-dependent HiSSE model.
 
 For the \dQuote{root.type} option, we are currently maintaining the previous default of 
 \dQuote{madfitz}. However, it was recently pointed out by Herrera-Alsina et al. (2018)
@@ -140,7 +88,7 @@ no longer explicit \dQuote{root.type} options. Instead, either \dQuote{madfitz} 
 root options.  
 }
 \value{
-\code{MuHiSSE} returns an object of class \code{muhisse.fit}. This is a list with 
+\code{hisse.new} returns an object of class \code{fhisse.fit}. This is a list with 
 elements:
 \item{$loglik}{the maximum negative log-likelihood.}
 \item{$AIC}{Akaike information criterion.}
@@ -179,10 +127,6 @@ Biology In press.
 
 Maddison W.P., Midford P.E., and Otto S.P. 2007. Estimating a binary characters effect on 
 speciation and extinction. Syst. Biol. 56:701-710.
-
-Nakov, T., Beaulieu, J.M., and Alverson, A.J. 2018. Freshwater diatoms diversify faster 
-than marine in both planktonic and benthic habitats. bioRxiv, 
-doi: https://doi.org/10.1101/406165.
 
 Nee S., May R.M., and Harvey P.H. 1994. The reconstructed evolutionary process. Philos. 
 Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.
