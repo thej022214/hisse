@@ -174,16 +174,12 @@ of trait-dependent speciation and extinction. Syst. Biol. 65:583-601.
 FitzJohn R.G., Maddison W.P., and Otto S.P. 2009. Estimating trait-dependent speciation 
 and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
 
-Herrera-Alsina L., van Els P., and Etienne R.S. 2018. Detecting the dependence of 
-diversification on multiples traits from phylogenetic trees and trait data. Systematic 
-Biology In press.
+Herrera-Alsina, L., P. van Els, and R.S. Etienne. 2018. Detecting the dependence of diversification on multiples traits from phylogenetic trees and trait data. Systematic Biology, 68:317-328.
 
 Maddison W.P., Midford P.E., and Otto S.P. 2007. Estimating a binary characters effect on 
 speciation and extinction. Syst. Biol. 56:701-710.
 
-Nakov, T., Beaulieu, J.M., and Alverson, A.J. 2018. Freshwater diatoms diversify faster 
-than marine in both planktonic and benthic habitats. bioRxiv, 
-doi: https://doi.org/10.1101/406165.
+Nakov, T., Beaulieu, J.M., and Alverson, A.J. 2019. Diatoms diversify and turn over faster in freshwater than marine environments. Evolution, doi: https://doi.org/10.1111/evo.13832.
 
 Nee S., May R.M., and Harvey P.H. 1994. The reconstructed evolutionary process. Philos. 
 Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.

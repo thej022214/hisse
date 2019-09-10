@@ -228,6 +228,9 @@ for(i in sequence(length(files))){
 rm(pp.recon)
 ```
 
+## A brief note about the new fHiSSE functions in hisse.new()
+As of version 1.9.6, we now provide a new set of functions that execute more complex and potentially faster version of the HiSSE model described by Beaulieu and O'Meara (2016). One of the main differences here is that the model allows up to 8 hidden categories, which means that both the character-independent model (hisse.null4) is called from the same function as the BiSSE and HiSSE models. We also implements a more efficient means of carrying out branch calculations, so it is exceptionally faster than in previous. Specifically, we break up the tree into sets of branches whose branch calculations are independent of one another. We then carry out all descendent branch calculations simultaneously, combine the probabilities based on their shared ancestry, then repeat for the next set of descendent branches. In testing, we've found that as the number of taxa increases, the calculation becomes much more efficient. In the next version of `hisse`, the fast functions (e.g., `fGeoHiSSE`, `hisse.new`) will eventually completely replace their respective original alternatives currently available.
+
 ## References
 Beaulieu, J.M., and B.C. O'Meara. (2016). Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601.
 

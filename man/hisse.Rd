@@ -110,7 +110,7 @@ Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts i
 
 FitzJohn R.G., Maddison W.P., and Otto S.P. 2009. Estimating trait-dependent speciation and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
 
-Herrera-Alsina L., van Els P., and Etienne R.S. 2018. Detecting the dependence of diversification on multiples traits from phylogenetic trees and trait data. Systematic Biology In press.
+Herrera-Alsina, L., P. van Els, and R.S. Etienne. 2018. Detecting the dependence of diversification on multiples traits from phylogenetic trees and trait data. Systematic Biology, 68:317-328.
 
 Maddison W.P., Midford P.E., and Otto S.P. 2007. Estimating a binary characters effect on speciation and extinction. Syst. Biol. 56:701-710.
 

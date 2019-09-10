@@ -100,6 +100,25 @@ subtending them.}
   search.}
 \item{$ode.eps}{The ode.eps value used for the estimation.}
 }
+\examples{
+\donttest{
+library(diversitree)
+pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
+set.seed(4) 
+phy <- tree.bisse(pars, max.t=30, x0=0)
+sim.dat <- data.frame(names(phy$tip.state), phy$tip.state)
+
+## Fit BiSSE equivalent:
+trans.rates.bisse <-  TransMatMakerfHiSSE(hidden.traits=0)
+pp.bisse <- hisse.new(phy, sim.dat, hidden.states=FALSE, turnover=c(1,2), 
+eps=c(1,2), trans.rate=trans.rates.bisse)
+
+## Now fit HiSSE equivalent with a hidden state for state 1:
+trans.rates.hisse <- TransMatMakerfHiSSE(hidden.traits=1)
+pp.hisse <- hisse.new(phy, sim.dat, hidden.states=TRUE, turnover=c(1,2,1,2), 
+eps=c(1,2,1,2), trans.rate=trans.rates.hisse)
+}
+}
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models 
 of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
@@ -107,9 +126,7 @@ of trait-dependent speciation and extinction. Syst. Biol. 65:583-601.
 FitzJohn R.G., Maddison W.P., and Otto S.P. 2009. Estimating trait-dependent speciation 
 and extinction rates from incompletely resolved phylogenies. Syst. Biol. 58:595-611.
 
-Herrera-Alsina L., van Els P., and Etienne R.S. 2018. Detecting the dependence of 
-diversification on multiples traits from phylogenetic trees and trait data. Systematic 
-Biology In press.
+Herrera-Alsina, L., P. van Els, and R.S. Etienne. 2018. Detecting the dependence of diversification on multiples traits from phylogenetic trees and trait data. Systematic Biology, 68:317-328.
 
 Maddison W.P., Midford P.E., and Otto S.P. 2007. Estimating a binary characters effect on 
 speciation and extinction. Syst. Biol. 56:701-710.
