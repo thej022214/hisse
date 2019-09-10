@@ -76,7 +76,7 @@ static const R_CMethodDef CEntries[] = {
     {"fclasse_geosse_equivalent_derivs",(DL_FUNC) &fclasse_geosse_equivalent_derivs,6},
     {"fnotclasse_derivs",               (DL_FUNC) &fnotclasse_derivs,               6},
     {"misse_derivs",                    (DL_FUNC) &misse_derivs,                    6},
-    {"maddison_DE_fbisse",              (DL_FUNC) &maddison_DE_fhisse,              6},
+    {"maddison_DE_fbisse",              (DL_FUNC) &maddison_DE_fbisse,              6},
     {"maddison_DE_fhisse",              (DL_FUNC) &maddison_DE_fhisse,              6},
     {"set_birth_bisse_void",            (DL_FUNC) &set_birth_bisse_void,           29},
     {"set_birth_hisse_null_void",       (DL_FUNC) &set_birth_hisse_null_void,      54},
