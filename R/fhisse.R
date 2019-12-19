@@ -154,7 +154,8 @@ hisse.new <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.s
         pars.tmp <- c(turnover[1:2], eps.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, turnover[3:4], eps.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, turnover[5:6], eps.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, turnover[7:8], eps.tmp[7:8], trans.tmp[7:8], category.rate.shiftD)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
-
+    
+    print(pars)
     np <- max(pars)
     pars[pars==0] <- np+1
     
