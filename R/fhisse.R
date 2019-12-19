@@ -136,8 +136,8 @@ hisse.new <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.s
         eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, eps.tmp)
         for.late.adjust <- max(pars.tmp)
-        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)")
-        cols <- c("(1A)", "(0A)", "(1B)", "(0B)", "(1C)", "(0C)")
+        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)", "(0D)", "(1D)")
+        cols <- c("(1A)", "(0A)", "(1B)", "(0B)", "(1C)", "(0C)", "(1D)", "(0D)")
         trans.tmp <- trans.rate[cbind(rows,cols)]
         trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, trans.tmp)
