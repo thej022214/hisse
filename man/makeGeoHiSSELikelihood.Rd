@@ -17,7 +17,7 @@ makeGeoHiSSELikelihood(phy, data, hidden.areas=0, f=c(1,1,1), assume.cladogeneti
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
 \item{dt.threads}{Number of core threads to be used by the data.table function. Default is 1.}
 \item{ode.eps}{sets the tolerance for the integration at the end of a branch. Essentially if the sum of compD is less than this tolerance, then it assumes the results are unstable and discards them. The default is set to zero, but in testing a value of 1e-8 can sometimes produce stable solutions for both easy and very difficult optimization problems.}
-\item{bad.likelihood}Value returned when there is a problem in the computation of the likelihood value for the function.}
+\item{bad.likelihood}{Value returned when there is a problem in the computation of the likelihood value for the function.}
 }
 \details{
 This function sets up and returns the likelihood for the GeoHiSSE model

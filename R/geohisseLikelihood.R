@@ -71,7 +71,7 @@ makeGeoHiSSELikelihood <- function(phy, data, hidden.areas=0, f = c(1,1,1), assu
     
     ## Some new prerequisites ##
     gen <- FindGenerations(phy)
-    dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.areas)
+    dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.states)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     
@@ -101,7 +101,7 @@ makeGeoHiSSELikelihood <- function(phy, data, hidden.areas=0, f = c(1,1,1), assu
             }
         }
 
-        return( log.lik = loglik, pars = initial.pars )
+        return( list( log.lik = loglik, pars = initial.pars ) )
     }
 
     ## If here, then we have n hidden states.
@@ -141,6 +141,6 @@ makeGeoHiSSELikelihood <- function(phy, data, hidden.areas=0, f = c(1,1,1), assu
             }
         }
     
-    return( log.lik = loglik, pars = initial.pars )
+    return( list( log.lik = loglik, pars = initial.pars ) )
 }
 
