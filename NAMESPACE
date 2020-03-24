@@ -2,7 +2,7 @@ useDynLib(hisse, .registration = TRUE)
 
 export(hisse, hisse.null4, MarginRecon, MarginReconGeoSSE, SupportRegion, TransMatMaker, ParDrop, ParEqual, BisseToHisse, plot.hisse.states, SimulateHisse, SimToPhylo, GetModelAveRates, GetModelAveEqFreqs, GeoHiSSE, TransMatMakerGeoHiSSE, SimulateGeoHiSSE, TranslateParsMakerGeoHiSSE, plot.geohisse.states, SupportRegionGeoSSE, GetAICWeights, MuHiSSE, TransMatMakerMuHiSSE, MarginReconMuHiSSE, SupportRegionMuHiSSE, fGeoHiSSE, TransMatMakerfGeoHiSSE, MarginReconfGeoSSE, makeHiSSELikelihood, plot.muhisse.states, MiSSE, MiSSEGreedy, MarginReconMiSSE, SupportRegionMiSSE, plot.misse.states, hisse.new, TransMatMakerfHiSSE, MarginReconfHiSSE, SupportRegionfHiSSE, makeGeoHiSSELikelihood)
 import(ape, data.table, deSolve, GenSA, subplex, nloptr)
-importFrom("parallel", "mclapply")
+importFrom("parallel", "mclapply", "mcmapply")
 importFrom("phytools", "nodeHeights", "fastAnc", "anc.ML", "getDescendants")
 importFrom("grDevices", "colorRampPalette", "nclass.Sturges", "rainbow", "dev.flush", "dev.hold")
 importFrom("graphics", "hist", "par", "plot", "rect", "segments", "text", "lines", "plot.new", "plot.window", "points", "strwidth")

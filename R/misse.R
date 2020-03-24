@@ -17,10 +17,15 @@
 ######################################################################################################################################
 
 MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
-    
+    #This makes it easier to handle missegreedy with fixed values
+    if(length(fixed.eps)>0) {
+        if(is.na(fixed.eps)) {
+            fixed.eps <- NULL
+        }
+    }
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
+
     if(!is.null(root.p)) {
         root.p <- root.p / sum(root.p)
         if(hidden.states ==TRUE){
@@ -38,7 +43,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     if(!root.type == "madfitz" & !root.type == "herr_als"){
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
-    
+
     if(length(turnover) != length(eps)){
         stop("The number of turnover parameters need to match the number of extinction fraction parameters.", call.=FALSE)
     }
@@ -182,9 +187,66 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     return(obj)
 }
 
+generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequence(26), eps.tries=sequence(26), fixed.eps.tries=c(0, 0.9, NA), vary.both=TRUE) {
+    if(vary.both) {
+        combos <- expand.grid(turnover=turnover.tries, eps=eps.tries, fixed.eps=fixed.eps.tries)
+    } else {
+        combos <- rbind(
+            expand.grid(turnover=turnover.tries, eps=1, fixed.eps=fixed.eps.tries),
+            expand.grid(turnover=1, eps=eps.tries, fixed.eps=fixed.eps.tries)
+        )
+    }
+    combos <- subset(combos, eps==1 | is.na(fixed.eps)) # Don't estimate multiple eps while also fixing eps
+    combos <- combos[which(combos$turnover + ifelse(!is.na(combos$fixed.eps), 0, combos$eps) <= max.param),]
+    combos <- combos[order(combos$turnover + ifelse(!is.na(combos$fixed.eps), 0, combos$eps), decreasing=FALSE),]
 
-# Note it'd be tempting to make this parallel. Go for it, but note that MiSSE itself already sprawls parallel (could be data.table) so there might not be the speedups you want -- BCO
-MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
+    return(combos)
+}
+
+
+# a <- hisse:::MiSSEGreedyNew(rcoal(50), possible.combos=hisse:::generateMiSSEGreedyCombinations(4), n.cores=2)
+MiSSEGreedyNew <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, n.cores=NULL) {
+    misse.list <- list()
+    first.AICc <- Inf
+    chunk.size <- ifelse(is.null(n.cores),1,n.cores)
+    total.chunks <- ceiling(nrow(possible.combos)/chunk.size)
+    for (batch_index in sequence(total.chunks)) { # So, if we can do parallel, we do it in chunks so all cores are busy
+        local.combos <- possible.combos[(1+chunk.size*(batch_index-1)):min(nrow(possible.combos), chunk.size*batch_index) ,]
+
+        starting.time <- Sys.time()
+        cat("\nNow starting run with", paste(range(local.combos$turnover), collapse="-"), "turnover categories and", paste(range(local.combos$eps), collapse="-"), "extinction fraction categories", "\n")
+        cat("Starting at ", as.character(starting.time), "\n running on ", chunk.size, " cores.", sep="")
+
+        misse.list <- append(misse.list, parallel::mcmapply(
+            MiSSE,
+            eps=local.combos$eps,
+            turnover=local.combos$turnover,
+            fixed.eps=local.combos$fixed.eps,
+            MoreArgs=list(
+                phy=phy,
+                f=f,
+                condition.on.survival=condition.on.survival,
+                root.type=root.type,
+                root.p=root.p,
+                sann=sann,
+                sann.its=sann.its,
+                bounded.search=bounded.search,
+                max.tol=max.tol,
+                starting.vals=starting.vals,
+                turnover.upper=turnover.upper,
+                eps.upper=eps.upper,
+                trans.upper=trans.upper,
+                restart.obj=restart.obj,
+                ode.eps=ode.eps
+            ),
+            mc.cores=ifelse(is.null(n.cores),1,n.cores),
+            SIMPLIFY=FALSE
+        ))
+    }
+    return(misse.list)
+}
+
+MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, n.cores=NULL) {
     misse.list <- list()
     first.AICc <- Inf
     for (eps.index in seq_along(eps.constant)) {
@@ -204,7 +266,7 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TR
                 misse.list[[length(misse.list)+1]] <- current.run
                 ending.time <- Sys.time()
                 cat("Finished at ", as.character(ending.time),"; this model took ", round(difftime(ending.time,starting.time, units="mins"),2), " minutes\n",sep="")
-                
+
                 cat("Current AICc is ", current.run$AICc, "\n", sep="")
                 if(is.infinite(first.AICc)) {
                     first.AICc <- current.run$AICc # so when we reset, use the 1,1 AICc, not Inf
@@ -219,7 +281,7 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TR
                 } else {
                     times.since.close.enough <- times.since.close.enough + 1
                     cat("Found worse AICc by ",  current.run$AICc - best.AICc , ", it has been ", times.since.close.enough, " models since finding one within ", stop.deltaAICc, " of the best", "\n", sep="")
-                    
+
                     if(times.since.close.enough > stop.count) {
                         break()
                     }
@@ -342,7 +404,7 @@ FocalNodeProbMiSSE <- function(cache, pars, lambdas, dat.tab, generations){
     DesNode = NULL
     FocalNode = NULL
     . = NULL
-    
+
     gens <- data.table(c(generations))
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
@@ -414,7 +476,7 @@ DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type,
 
     pars <- c(cache$lambda0A, cache$mu0A, cache$lambda0B, cache$mu0B, cache$lambda0C, cache$mu0C, cache$lambda0D, cache$mu0D, cache$lambda0E, cache$mu0E, cache$lambda0F, cache$mu0F, cache$lambda0G, cache$mu0G, cache$lambda0H, cache$mu0H, cache$lambda0I, cache$mu0I, cache$lambda0J, cache$mu0J, cache$lambda0K, cache$mu0K, cache$lambda0L, cache$mu0L, cache$lambda0M, cache$mu0M, cache$lambda0N, cache$mu0N, cache$lambda0O, cache$mu0O, cache$lambda0P, cache$mu0P, cache$lambda0Q, cache$mu0Q, cache$lambda0R, cache$mu0R, cache$lambda0S, cache$mu0S, cache$lambda0T, cache$mu0T, cache$lambda0U, cache$mu0U, cache$lambda0V, cache$mu0V, cache$lambda0W, cache$mu0W, cache$lambda0X, cache$mu0X, cache$lambda0Y, cache$mu0Y, cache$lambda0Z, cache$mu0Z, cache$q0, cache$hidden.states)
     lambda <- c(cache$lambda0A, cache$lambda0B, cache$lambda0C, cache$lambda0D, cache$lambda0E, cache$lambda0F, cache$lambda0G, cache$lambda0H, cache$lambda0I, cache$lambda0J, cache$lambda0K, cache$lambda0L, cache$lambda0M, cache$lambda0N, cache$lambda0O, cache$lambda0P, cache$lambda0Q, cache$lambda0R, cache$lambda0S, cache$lambda0T, cache$lambda0U, cache$lambda0V, cache$lambda0W, cache$lambda0X, cache$lambda0Y, cache$lambda0Z)
-    
+
     nb.tip <- cache$nb.tip
     nb.node <- cache$nb.node
     TIPS <- 1:nb.tip
@@ -513,103 +575,103 @@ ParametersToPassMiSSE <- function(model.vec, hidden.states, fixed.eps, nb.tip, n
         ##Hidden State A
         obj$lambda0A = model.vec[1] / (1 + model.vec[2])
         obj$mu0A = (model.vec[2] * model.vec[1]) / (1 + model.vec[2])
-        
+
         ##Hidden State B
         obj$lambda0B = model.vec[3] / (1 + model.vec[4])
         obj$mu0B = (model.vec[4] * model.vec[3]) / (1 + model.vec[4])
-        
+
         ##Hidden State C
         obj$lambda0C = model.vec[5] / (1 + model.vec[6])
         obj$mu0C = (model.vec[6] * model.vec[5]) / (1 + model.vec[6])
-        
+
         ##Hidden State D
         obj$lambda0D = model.vec[7] / (1 + model.vec[8])
         obj$mu0D = (model.vec[8] * model.vec[7]) / (1 + model.vec[8])
-        
+
         ##Hidden State E
         obj$lambda0E = model.vec[9] / (1 + model.vec[10])
         obj$mu0E = (model.vec[10] * model.vec[9]) / (1 + model.vec[10])
-        
+
         ##Hidden State F
         obj$lambda0F = model.vec[11] / (1 + model.vec[12])
         obj$mu0F = (model.vec[12] * model.vec[11]) / (1 + model.vec[12])
-        
+
         ##Hidden State G
         obj$lambda0G = model.vec[13] / (1 + model.vec[14])
         obj$mu0G = (model.vec[14] * model.vec[13]) / (1 + model.vec[14])
-        
+
         ##Hidden State H
         obj$lambda0H = model.vec[15] / (1 + model.vec[16])
         obj$mu0H = (model.vec[16] * model.vec[15]) / (1 + model.vec[16])
-        
+
         ##Hidden State I
         obj$lambda0I = model.vec[17] / (1 + model.vec[18])
         obj$mu0I = (model.vec[18] * model.vec[17]) / (1 + model.vec[18])
-        
+
         ##Hidden State J
         obj$lambda0J = model.vec[19] / (1 + model.vec[20])
         obj$mu0J = (model.vec[20] * model.vec[19]) / (1 + model.vec[20])
-        
+
         ##Hidden State K
         obj$lambda0K = model.vec[21] / (1 + model.vec[22])
         obj$mu0K = (model.vec[22] * model.vec[21]) / (1 + model.vec[22])
-        
+
         ##Hidden State L
         obj$lambda0L = model.vec[23] / (1 + model.vec[24])
         obj$mu0L = (model.vec[24] * model.vec[23]) / (1 + model.vec[24])
-        
+
         ##Hidden State M
         obj$lambda0M = model.vec[25] / (1 + model.vec[26])
         obj$mu0M = (model.vec[26] * model.vec[25]) / (1 + model.vec[26])
-        
+
         ##Hidden State N
         obj$lambda0N = model.vec[27] / (1 + model.vec[28])
         obj$mu0N = (model.vec[28] * model.vec[27]) / (1 + model.vec[28])
-        
+
         ##Hidden State O
         obj$lambda0O = model.vec[29] / (1 + model.vec[30])
         obj$mu0O = (model.vec[30] * model.vec[29]) / (1 + model.vec[30])
-        
+
         ##Hidden State P
         obj$lambda0P = model.vec[31] / (1 + model.vec[32])
         obj$mu0P = (model.vec[32] * model.vec[31]) / (1 + model.vec[32])
-        
+
         ##Hidden State Q
         obj$lambda0Q = model.vec[33] / (1 + model.vec[34])
         obj$mu0Q = (model.vec[34] * model.vec[33]) / (1 + model.vec[34])
-        
+
         ##Hidden State R
         obj$lambda0R = model.vec[35] / (1 + model.vec[36])
         obj$mu0R = (model.vec[36] * model.vec[35]) / (1 + model.vec[36])
-        
+
         ##Hidden State S
         obj$lambda0S = model.vec[37] / (1 + model.vec[38])
         obj$mu0S = (model.vec[38] * model.vec[37]) / (1 + model.vec[38])
-        
+
         ##Hidden State T
         obj$lambda0T = model.vec[39] / (1 + model.vec[40])
         obj$mu0T = (model.vec[40] * model.vec[39]) / (1 + model.vec[40])
-        
+
         ##Hidden State U
         obj$lambda0U = model.vec[41] / (1 + model.vec[42])
         obj$mu0U = (model.vec[42] * model.vec[41]) / (1 + model.vec[42])
-        
+
         ##Hidden State V
         obj$lambda0V = model.vec[43] / (1 + model.vec[44])
         obj$mu0V = (model.vec[44] * model.vec[43]) / (1 + model.vec[44])
-        
+
         ##Hidden State W
         obj$lambda0W = model.vec[45] / (1 + model.vec[46])
         obj$mu0W = (model.vec[46] * model.vec[45]) / (1 + model.vec[46])
-        
+
         ##Hidden State X
         obj$lambda0X = model.vec[47] / (1 + model.vec[48])
         obj$mu0X = (model.vec[48] * model.vec[47]) / (1 + model.vec[48])
-        
+
         ##Hidden State Y
         obj$lambda0Y = model.vec[49] / (1 + model.vec[50])
         obj$mu0Y = (model.vec[50] * model.vec[49]) / (1 + model.vec[50])
-        
+
         ##Hidden State Z
         obj$lambda0Z = model.vec[51] / (1 + model.vec[52])
         obj$mu0Z = (model.vec[52] * model.vec[51]) / (1 + model.vec[52])
@@ -617,103 +679,103 @@ ParametersToPassMiSSE <- function(model.vec, hidden.states, fixed.eps, nb.tip, n
         ##Hidden State A
         obj$lambda0A = model.vec[1] / (1 + fixed.eps)
         obj$mu0A = (fixed.eps * model.vec[1]) / (1 + fixed.eps)
-        
+
         ##Hidden State B
         obj$lambda0B = model.vec[3] / (1 + fixed.eps)
         obj$mu0B = (fixed.eps * model.vec[3]) / (1 + fixed.eps)
-        
+
         ##Hidden State C
         obj$lambda0C = model.vec[5] / (1 + fixed.eps)
         obj$mu0C = (fixed.eps * model.vec[5]) / (1 + fixed.eps)
-        
+
         ##Hidden State D
         obj$lambda0D = model.vec[7] / (1 + fixed.eps)
         obj$mu0D = (fixed.eps * model.vec[7]) / (1 + fixed.eps)
-        
+
         ##Hidden State E
         obj$lambda0E = model.vec[9] / (1 + fixed.eps)
         obj$mu0E = (fixed.eps * model.vec[9]) / (1 + fixed.eps)
-        
+
         ##Hidden State F
         obj$lambda0F = model.vec[11] / (1 + fixed.eps)
         obj$mu0F = (fixed.eps * model.vec[11]) / (1 + fixed.eps)
-        
+
         ##Hidden State G
         obj$lambda0G = model.vec[13] / (1 + fixed.eps)
         obj$mu0G = (fixed.eps * model.vec[13]) / (1 + fixed.eps)
-        
+
         ##Hidden State H
         obj$lambda0H = model.vec[15] / (1 + fixed.eps)
         obj$mu0H = (fixed.eps * model.vec[15]) / (1 + fixed.eps)
-        
+
         ##Hidden State I
         obj$lambda0I = model.vec[17] / (1 + fixed.eps)
         obj$mu0I = (fixed.eps * model.vec[17]) / (1 + fixed.eps)
-        
+
         ##Hidden State J
         obj$lambda0J = model.vec[19] / (1 + fixed.eps)
         obj$mu0J = (fixed.eps * model.vec[19]) / (1 + fixed.eps)
-        
+
         ##Hidden State K
         obj$lambda0K = model.vec[21] / (1 + fixed.eps)
         obj$mu0K = (fixed.eps * model.vec[21]) / (1 + fixed.eps)
-        
+
         ##Hidden State L
         obj$lambda0L = model.vec[23] / (1 + fixed.eps)
         obj$mu0L = (fixed.eps * model.vec[23]) / (1 + fixed.eps)
-        
+
         ##Hidden State M
         obj$lambda0M = model.vec[25] / (1 + fixed.eps)
         obj$mu0M = (fixed.eps * model.vec[25]) / (1 + fixed.eps)
-        
+
         ##Hidden State N
         obj$lambda0N = model.vec[27] / (1 + fixed.eps)
         obj$mu0N = (fixed.eps * model.vec[27]) / (1 + fixed.eps)
-        
+
         ##Hidden State O
         obj$lambda0O = model.vec[29] / (1 + fixed.eps)
         obj$mu0O = (fixed.eps * model.vec[29]) / (1 + fixed.eps)
-        
+
         ##Hidden State P
         obj$lambda0P = model.vec[31] / (1 + fixed.eps)
         obj$mu0P = (fixed.eps * model.vec[31]) / (1 + fixed.eps)
-        
+
         ##Hidden State Q
         obj$lambda0Q = model.vec[33] / (1 + fixed.eps)
         obj$mu0Q = (fixed.eps * model.vec[33]) / (1 + fixed.eps)
-        
+
         ##Hidden State R
         obj$lambda0R = model.vec[35] / (1 + fixed.eps)
         obj$mu0R = (fixed.eps * model.vec[35]) / (1 + fixed.eps)
-        
+
         ##Hidden State S
         obj$lambda0S = model.vec[37] / (1 + fixed.eps)
         obj$mu0S = (fixed.eps * model.vec[37]) / (1 + fixed.eps)
-        
+
         ##Hidden State T
         obj$lambda0T = model.vec[39] / (1 + fixed.eps)
         obj$mu0T = (fixed.eps * model.vec[39]) / (1 + fixed.eps)
-        
+
         ##Hidden State U
         obj$lambda0U = model.vec[41] / (1 + fixed.eps)
         obj$mu0U = (fixed.eps * model.vec[41]) / (1 + fixed.eps)
-        
+
         ##Hidden State V
         obj$lambda0V = model.vec[43] / (1 + fixed.eps)
         obj$mu0V = (fixed.eps * model.vec[43]) / (1 + fixed.eps)
-        
+
         ##Hidden State W
         obj$lambda0W = model.vec[45] / (1 + fixed.eps)
         obj$mu0W = (fixed.eps * model.vec[45]) / (1 + fixed.eps)
-        
+
         ##Hidden State X
         obj$lambda0X = model.vec[47] / (1 + fixed.eps)
         obj$mu0X = (fixed.eps * model.vec[47]) / (1 + fixed.eps)
-        
+
         ##Hidden State Y
         obj$lambda0Y = model.vec[49] / (1 + fixed.eps)
         obj$mu0Y = (fixed.eps * model.vec[49]) / (1 + fixed.eps)
-        
+
         ##Hidden State Z
         obj$lambda0Z = model.vec[51] / (1 + fixed.eps)
         obj$mu0Z = (fixed.eps * model.vec[51]) / (1 + fixed.eps)
