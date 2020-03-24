@@ -4,7 +4,7 @@
   the MiSSE models.}
 \description{Estimates the likeliest states for both internal nodes and tips of a phylogeny using the marginal reconstruction algorithm.}
 \usage{
-MarginReconMiSSE(phy, f, pars, hidden.states=2, 
+MarginReconMiSSE(phy, f, pars, hidden.states=2, fixed.eps=NULL,
 condition.on.survival=TRUE,  root.type="madfitz", root.p=NULL, 
 aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
 }       
@@ -15,6 +15,7 @@ aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
   to be sampled.}
 \item{pars}{vector containing the MLE of the parameters.}
 \item{hidden.states}{a numeric indicating the number of shifts. The default is \code{2}.} 
+\item{fixed.eps}{a value to be used to fix extinction fraction during search. Default is \code{NULL} meaning that it is freely estimated.}
 \item{condition.on.survival}{a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
 \item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}

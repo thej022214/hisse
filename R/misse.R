@@ -16,7 +16,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -42,7 +42,6 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
     if(length(turnover) != length(eps)){
         stop("The number of turnover parameters need to match the number of extinction fraction parameters.", call.=FALSE)
     }
-
 
     ntips <- Ntip(phy)
     param.count <- sum(c(length(unique(turnover)), length(unique(eps)), 1))
@@ -151,23 +150,23 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = nloptr(x0=ip, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeMiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = subplex(ip, fn=DevOptimizeMiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann = GenSA(ip, fn=DevOptimizeMiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out.sann = GenSA(ip, fn=DevOptimizeMiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
 
@@ -178,7 +177,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=T
 
     cat("Finished. Summarizing results...", "\n")
 
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, turnover=turnover, eps=eps)
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, fixed.eps=fixed.eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, turnover=turnover, eps=eps)
     class(obj) <- append(class(obj), "misse.fit")
     return(obj)
 }
@@ -239,12 +238,12 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TR
 ######################################################################################################################################
 
 
-DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, ode.eps) {
+DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, fixed.eps, nb.tip, nb.node, condition.on.survival, root.type, root.p, np, ode.eps) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
+    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
     logl <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     return(-logl)
 }
@@ -501,7 +500,7 @@ DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type,
 ######################################################################################################################################
 ######################################################################################################################################
 
-ParametersToPassMiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, bad.likelihood, ode.eps){
+ParametersToPassMiSSE <- function(model.vec, hidden.states, fixed.eps, nb.tip, nb.node, bad.likelihood, ode.eps){
     #Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
     obj <- NULL
 
@@ -510,111 +509,215 @@ ParametersToPassMiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, bad
     obj$nb.node <- nb.node
     obj$bad.likelihood <- bad.likelihood
     obj$ode.eps <- ode.eps
-
-    ##Hidden State A
-    obj$lambda0A = model.vec[1] / (1 + model.vec[2])
-    obj$mu0A = (model.vec[2] * model.vec[1]) / (1 + model.vec[2])
-
-    ##Hidden State B
-    obj$lambda0B = model.vec[3] / (1 + model.vec[4])
-    obj$mu0B = (model.vec[4] * model.vec[3]) / (1 + model.vec[4])
-
-    ##Hidden State C
-    obj$lambda0C = model.vec[5] / (1 + model.vec[6])
-    obj$mu0C = (model.vec[6] * model.vec[5]) / (1 + model.vec[6])
-
-    ##Hidden State D
-    obj$lambda0D = model.vec[7] / (1 + model.vec[8])
-    obj$mu0D = (model.vec[8] * model.vec[7]) / (1 + model.vec[8])
-
-    ##Hidden State E
-    obj$lambda0E = model.vec[9] / (1 + model.vec[10])
-    obj$mu0E = (model.vec[10] * model.vec[9]) / (1 + model.vec[10])
-
-    ##Hidden State F
-    obj$lambda0F = model.vec[11] / (1 + model.vec[12])
-    obj$mu0F = (model.vec[12] * model.vec[11]) / (1 + model.vec[12])
-
-    ##Hidden State G
-    obj$lambda0G = model.vec[13] / (1 + model.vec[14])
-    obj$mu0G = (model.vec[14] * model.vec[13]) / (1 + model.vec[14])
-
-    ##Hidden State H
-    obj$lambda0H = model.vec[15] / (1 + model.vec[16])
-    obj$mu0H = (model.vec[16] * model.vec[15]) / (1 + model.vec[16])
-
-    ##Hidden State I
-    obj$lambda0I = model.vec[17] / (1 + model.vec[18])
-    obj$mu0I = (model.vec[18] * model.vec[17]) / (1 + model.vec[18])
-
-    ##Hidden State J
-    obj$lambda0J = model.vec[19] / (1 + model.vec[20])
-    obj$mu0J = (model.vec[20] * model.vec[19]) / (1 + model.vec[20])
-
-    ##Hidden State K
-    obj$lambda0K = model.vec[21] / (1 + model.vec[22])
-    obj$mu0K = (model.vec[22] * model.vec[21]) / (1 + model.vec[22])
-
-    ##Hidden State L
-    obj$lambda0L = model.vec[23] / (1 + model.vec[24])
-    obj$mu0L = (model.vec[24] * model.vec[23]) / (1 + model.vec[24])
-
-    ##Hidden State M
-    obj$lambda0M = model.vec[25] / (1 + model.vec[26])
-    obj$mu0M = (model.vec[26] * model.vec[25]) / (1 + model.vec[26])
-
-    ##Hidden State N
-    obj$lambda0N = model.vec[27] / (1 + model.vec[28])
-    obj$mu0N = (model.vec[28] * model.vec[27]) / (1 + model.vec[28])
-
-    ##Hidden State O
-    obj$lambda0O = model.vec[29] / (1 + model.vec[30])
-    obj$mu0O = (model.vec[30] * model.vec[29]) / (1 + model.vec[30])
-
-    ##Hidden State P
-    obj$lambda0P = model.vec[31] / (1 + model.vec[32])
-    obj$mu0P = (model.vec[32] * model.vec[31]) / (1 + model.vec[32])
-
-    ##Hidden State Q
-    obj$lambda0Q = model.vec[33] / (1 + model.vec[34])
-    obj$mu0Q = (model.vec[34] * model.vec[33]) / (1 + model.vec[34])
-
-    ##Hidden State R
-    obj$lambda0R = model.vec[35] / (1 + model.vec[36])
-    obj$mu0R = (model.vec[36] * model.vec[35]) / (1 + model.vec[36])
-
-    ##Hidden State S
-    obj$lambda0S = model.vec[37] / (1 + model.vec[38])
-    obj$mu0S = (model.vec[38] * model.vec[37]) / (1 + model.vec[38])
-
-    ##Hidden State T
-    obj$lambda0T = model.vec[39] / (1 + model.vec[40])
-    obj$mu0T = (model.vec[40] * model.vec[39]) / (1 + model.vec[40])
-
-    ##Hidden State U
-    obj$lambda0U = model.vec[41] / (1 + model.vec[42])
-    obj$mu0U = (model.vec[42] * model.vec[41]) / (1 + model.vec[42])
-
-    ##Hidden State V
-    obj$lambda0V = model.vec[43] / (1 + model.vec[44])
-    obj$mu0V = (model.vec[44] * model.vec[43]) / (1 + model.vec[44])
-
-    ##Hidden State W
-    obj$lambda0W = model.vec[45] / (1 + model.vec[46])
-    obj$mu0W = (model.vec[46] * model.vec[45]) / (1 + model.vec[46])
-
-    ##Hidden State X
-    obj$lambda0X = model.vec[47] / (1 + model.vec[48])
-    obj$mu0X = (model.vec[48] * model.vec[47]) / (1 + model.vec[48])
-
-    ##Hidden State Y
-    obj$lambda0Y = model.vec[49] / (1 + model.vec[50])
-    obj$mu0Y = (model.vec[50] * model.vec[49]) / (1 + model.vec[50])
-
-    ##Hidden State Z
-    obj$lambda0Z = model.vec[51] / (1 + model.vec[52])
-    obj$mu0Z = (model.vec[52] * model.vec[51]) / (1 + model.vec[52])
-
+    if(is.null(fixed.eps)){
+        ##Hidden State A
+        obj$lambda0A = model.vec[1] / (1 + model.vec[2])
+        obj$mu0A = (model.vec[2] * model.vec[1]) / (1 + model.vec[2])
+        
+        ##Hidden State B
+        obj$lambda0B = model.vec[3] / (1 + model.vec[4])
+        obj$mu0B = (model.vec[4] * model.vec[3]) / (1 + model.vec[4])
+        
+        ##Hidden State C
+        obj$lambda0C = model.vec[5] / (1 + model.vec[6])
+        obj$mu0C = (model.vec[6] * model.vec[5]) / (1 + model.vec[6])
+        
+        ##Hidden State D
+        obj$lambda0D = model.vec[7] / (1 + model.vec[8])
+        obj$mu0D = (model.vec[8] * model.vec[7]) / (1 + model.vec[8])
+        
+        ##Hidden State E
+        obj$lambda0E = model.vec[9] / (1 + model.vec[10])
+        obj$mu0E = (model.vec[10] * model.vec[9]) / (1 + model.vec[10])
+        
+        ##Hidden State F
+        obj$lambda0F = model.vec[11] / (1 + model.vec[12])
+        obj$mu0F = (model.vec[12] * model.vec[11]) / (1 + model.vec[12])
+        
+        ##Hidden State G
+        obj$lambda0G = model.vec[13] / (1 + model.vec[14])
+        obj$mu0G = (model.vec[14] * model.vec[13]) / (1 + model.vec[14])
+        
+        ##Hidden State H
+        obj$lambda0H = model.vec[15] / (1 + model.vec[16])
+        obj$mu0H = (model.vec[16] * model.vec[15]) / (1 + model.vec[16])
+        
+        ##Hidden State I
+        obj$lambda0I = model.vec[17] / (1 + model.vec[18])
+        obj$mu0I = (model.vec[18] * model.vec[17]) / (1 + model.vec[18])
+        
+        ##Hidden State J
+        obj$lambda0J = model.vec[19] / (1 + model.vec[20])
+        obj$mu0J = (model.vec[20] * model.vec[19]) / (1 + model.vec[20])
+        
+        ##Hidden State K
+        obj$lambda0K = model.vec[21] / (1 + model.vec[22])
+        obj$mu0K = (model.vec[22] * model.vec[21]) / (1 + model.vec[22])
+        
+        ##Hidden State L
+        obj$lambda0L = model.vec[23] / (1 + model.vec[24])
+        obj$mu0L = (model.vec[24] * model.vec[23]) / (1 + model.vec[24])
+        
+        ##Hidden State M
+        obj$lambda0M = model.vec[25] / (1 + model.vec[26])
+        obj$mu0M = (model.vec[26] * model.vec[25]) / (1 + model.vec[26])
+        
+        ##Hidden State N
+        obj$lambda0N = model.vec[27] / (1 + model.vec[28])
+        obj$mu0N = (model.vec[28] * model.vec[27]) / (1 + model.vec[28])
+        
+        ##Hidden State O
+        obj$lambda0O = model.vec[29] / (1 + model.vec[30])
+        obj$mu0O = (model.vec[30] * model.vec[29]) / (1 + model.vec[30])
+        
+        ##Hidden State P
+        obj$lambda0P = model.vec[31] / (1 + model.vec[32])
+        obj$mu0P = (model.vec[32] * model.vec[31]) / (1 + model.vec[32])
+        
+        ##Hidden State Q
+        obj$lambda0Q = model.vec[33] / (1 + model.vec[34])
+        obj$mu0Q = (model.vec[34] * model.vec[33]) / (1 + model.vec[34])
+        
+        ##Hidden State R
+        obj$lambda0R = model.vec[35] / (1 + model.vec[36])
+        obj$mu0R = (model.vec[36] * model.vec[35]) / (1 + model.vec[36])
+        
+        ##Hidden State S
+        obj$lambda0S = model.vec[37] / (1 + model.vec[38])
+        obj$mu0S = (model.vec[38] * model.vec[37]) / (1 + model.vec[38])
+        
+        ##Hidden State T
+        obj$lambda0T = model.vec[39] / (1 + model.vec[40])
+        obj$mu0T = (model.vec[40] * model.vec[39]) / (1 + model.vec[40])
+        
+        ##Hidden State U
+        obj$lambda0U = model.vec[41] / (1 + model.vec[42])
+        obj$mu0U = (model.vec[42] * model.vec[41]) / (1 + model.vec[42])
+        
+        ##Hidden State V
+        obj$lambda0V = model.vec[43] / (1 + model.vec[44])
+        obj$mu0V = (model.vec[44] * model.vec[43]) / (1 + model.vec[44])
+        
+        ##Hidden State W
+        obj$lambda0W = model.vec[45] / (1 + model.vec[46])
+        obj$mu0W = (model.vec[46] * model.vec[45]) / (1 + model.vec[46])
+        
+        ##Hidden State X
+        obj$lambda0X = model.vec[47] / (1 + model.vec[48])
+        obj$mu0X = (model.vec[48] * model.vec[47]) / (1 + model.vec[48])
+        
+        ##Hidden State Y
+        obj$lambda0Y = model.vec[49] / (1 + model.vec[50])
+        obj$mu0Y = (model.vec[50] * model.vec[49]) / (1 + model.vec[50])
+        
+        ##Hidden State Z
+        obj$lambda0Z = model.vec[51] / (1 + model.vec[52])
+        obj$mu0Z = (model.vec[52] * model.vec[51]) / (1 + model.vec[52])
+    }else{
+        ##Hidden State A
+        obj$lambda0A = model.vec[1] / (1 + fixed.eps)
+        obj$mu0A = (fixed.eps * model.vec[1]) / (1 + fixed.eps)
+        
+        ##Hidden State B
+        obj$lambda0B = model.vec[3] / (1 + fixed.eps)
+        obj$mu0B = (fixed.eps * model.vec[3]) / (1 + fixed.eps)
+        
+        ##Hidden State C
+        obj$lambda0C = model.vec[5] / (1 + fixed.eps)
+        obj$mu0C = (fixed.eps * model.vec[5]) / (1 + fixed.eps)
+        
+        ##Hidden State D
+        obj$lambda0D = model.vec[7] / (1 + fixed.eps)
+        obj$mu0D = (fixed.eps * model.vec[7]) / (1 + fixed.eps)
+        
+        ##Hidden State E
+        obj$lambda0E = model.vec[9] / (1 + fixed.eps)
+        obj$mu0E = (fixed.eps * model.vec[9]) / (1 + fixed.eps)
+        
+        ##Hidden State F
+        obj$lambda0F = model.vec[11] / (1 + fixed.eps)
+        obj$mu0F = (fixed.eps * model.vec[11]) / (1 + fixed.eps)
+        
+        ##Hidden State G
+        obj$lambda0G = model.vec[13] / (1 + fixed.eps)
+        obj$mu0G = (fixed.eps * model.vec[13]) / (1 + fixed.eps)
+        
+        ##Hidden State H
+        obj$lambda0H = model.vec[15] / (1 + fixed.eps)
+        obj$mu0H = (fixed.eps * model.vec[15]) / (1 + fixed.eps)
+        
+        ##Hidden State I
+        obj$lambda0I = model.vec[17] / (1 + fixed.eps)
+        obj$mu0I = (fixed.eps * model.vec[17]) / (1 + fixed.eps)
+        
+        ##Hidden State J
+        obj$lambda0J = model.vec[19] / (1 + fixed.eps)
+        obj$mu0J = (fixed.eps * model.vec[19]) / (1 + fixed.eps)
+        
+        ##Hidden State K
+        obj$lambda0K = model.vec[21] / (1 + fixed.eps)
+        obj$mu0K = (fixed.eps * model.vec[21]) / (1 + fixed.eps)
+        
+        ##Hidden State L
+        obj$lambda0L = model.vec[23] / (1 + fixed.eps)
+        obj$mu0L = (fixed.eps * model.vec[23]) / (1 + fixed.eps)
+        
+        ##Hidden State M
+        obj$lambda0M = model.vec[25] / (1 + fixed.eps)
+        obj$mu0M = (fixed.eps * model.vec[25]) / (1 + fixed.eps)
+        
+        ##Hidden State N
+        obj$lambda0N = model.vec[27] / (1 + fixed.eps)
+        obj$mu0N = (fixed.eps * model.vec[27]) / (1 + fixed.eps)
+        
+        ##Hidden State O
+        obj$lambda0O = model.vec[29] / (1 + fixed.eps)
+        obj$mu0O = (fixed.eps * model.vec[29]) / (1 + fixed.eps)
+        
+        ##Hidden State P
+        obj$lambda0P = model.vec[31] / (1 + fixed.eps)
+        obj$mu0P = (fixed.eps * model.vec[31]) / (1 + fixed.eps)
+        
+        ##Hidden State Q
+        obj$lambda0Q = model.vec[33] / (1 + fixed.eps)
+        obj$mu0Q = (fixed.eps * model.vec[33]) / (1 + fixed.eps)
+        
+        ##Hidden State R
+        obj$lambda0R = model.vec[35] / (1 + fixed.eps)
+        obj$mu0R = (fixed.eps * model.vec[35]) / (1 + fixed.eps)
+        
+        ##Hidden State S
+        obj$lambda0S = model.vec[37] / (1 + fixed.eps)
+        obj$mu0S = (fixed.eps * model.vec[37]) / (1 + fixed.eps)
+        
+        ##Hidden State T
+        obj$lambda0T = model.vec[39] / (1 + fixed.eps)
+        obj$mu0T = (fixed.eps * model.vec[39]) / (1 + fixed.eps)
+        
+        ##Hidden State U
+        obj$lambda0U = model.vec[41] / (1 + fixed.eps)
+        obj$mu0U = (fixed.eps * model.vec[41]) / (1 + fixed.eps)
+        
+        ##Hidden State V
+        obj$lambda0V = model.vec[43] / (1 + fixed.eps)
+        obj$mu0V = (fixed.eps * model.vec[43]) / (1 + fixed.eps)
+        
+        ##Hidden State W
+        obj$lambda0W = model.vec[45] / (1 + fixed.eps)
+        obj$mu0W = (fixed.eps * model.vec[45]) / (1 + fixed.eps)
+        
+        ##Hidden State X
+        obj$lambda0X = model.vec[47] / (1 + fixed.eps)
+        obj$mu0X = (fixed.eps * model.vec[47]) / (1 + fixed.eps)
+        
+        ##Hidden State Y
+        obj$lambda0Y = model.vec[49] / (1 + fixed.eps)
+        obj$mu0Y = (fixed.eps * model.vec[49]) / (1 + fixed.eps)
+        
+        ##Hidden State Z
+        obj$lambda0Z = model.vec[51] / (1 + fixed.eps)
+        obj$mu0Z = (fixed.eps * model.vec[51]) / (1 + fixed.eps)
+    }
     obj$q0 = model.vec[53]
     return(obj)
 }
@@ -637,6 +740,12 @@ print.misse.fit <- function(x,...){
     cat("\n")
     print(par.list)
     cat("\n")
+    if(!is.null(x$fixed.eps)){
+        cat("Fixed eps used: \n")
+        cat("\n")
+        print(x$fixed.eps)
+        cat("\n")
+    }
 }
 
 

@@ -4,7 +4,7 @@
 \description{Sets up and executes a MiSSE model (Missing State Speciation
  and Extinction) on a phylogeny.}
 \usage{
-MiSSE(phy, f=1, turnover=c(1,2), eps=c(1,2), condition.on.survival=TRUE,
+MiSSE(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE,
 root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000,
 bounded.search=TRUE,  max.tol=.Machine$double.eps^.50, starting.vals=NULL,
 turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL,
@@ -20,6 +20,7 @@ ode.eps=0, dt.threads=1)
   in turnover. See 'Details'.}
 \item{eps}{a numeric vector of length equal to the number of suspected rates
   in extinction fraction. See 'Details'.}
+\item{fixed.eps}{a value to be used to fix extinction fraction during search. Default is \code{NULL} meaning that it is freely estimated.}
 \item{condition.on.survival}{a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
   speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}

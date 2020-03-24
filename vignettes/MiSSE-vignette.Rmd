@@ -33,7 +33,6 @@ one.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 ```
 
 Pretty simple. Now to fit a model that contains two rate classes, we will simply expand out the turnover vector:
-
 ```{r, eval=FALSE}
 turnover <- c(1,2)
 eps <- c(1,1)
@@ -41,7 +40,6 @@ two.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 ```
 
 Overall, `MiSSE` allows up to 26 possible hidden states in diversification (denoted by A-Z), and in this example since we fit two rate classes, we have two hidden states, A and B, impacting turnover rates. Here is the rest of the model set applied to the whale data set:
-
 ```{r, eval=FALSE}
 #rate classes A:C
 turnover <- c(1,2,3)
@@ -130,6 +128,21 @@ plot.misse.states(misse.results.list, rate.param="net.div", show.tip.label=TRUE,
                   fsize=.25, legend="none")
 ```
 
+
+## Fixing extinction fraction
+
+There may be circumstances where rather than estimating extinction fraction from the data, perhaps one may want to test reasonable bounds of the relative extinction rate (i.e., Magallón & Sanderson 2001). We have made this straightforward to do. The first step is to setup a Yule-based `MiSSE()` run by supplying a vector of zeros for `eps` that is of equal length to the number of turnover rate classes:
+```{r, eval=FALSE}
+turnover <- c(1,2)
+eps <- c(0,0)
+```
+
+In the function call, there is an option called `fixed.eps`. Normally, this is set to `NULL`, which indicates that extinction fraction is to be estimated. When a value is supplied to `fixed.eps` this will be the value used throughout the parameter search. Here we assume there are two rate classes and a fixed extinction fraction of 0.90:
+```{r, eval=FALSE}
+two.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps, fixed.eps=0.9)
+```
+
+
 ## Other considerations
 
 Like with `hisse`, `GeoHiSSE`, and `MuHiSSE`, there are functions available for generating estimates of the uncertainty in the parameter estimates (i.e., `SupportRegionMiSSE()`), and to obtain model averages (i.e., `GetModelAveRates()`) for nodes, for tips, or for both to be used in post-hoc tests. Users are encouraged to read other vignettes and help pages provided for more information. For more conceptual discussions of these functions and ideas, readers are also encouraged to read Caetano et al. (2018). 
@@ -137,14 +150,12 @@ Like with `hisse`, `GeoHiSSE`, and `MuHiSSE`, there are functions available for 
 There are two additional items that are worth mentioning. First, like with `MuHiSSE`, I would recommend users try multiple random starting points when optimizing any given model with `MiSSE`. In Nakov et al. (2018), we found that the default starting values often did not return the highest log likelihood. To alleviate this issue, we performed $\ge$ 50 maximum likelihood optimizations for each model, each initiated from a distinct starting point. All functions within `hisse` are provided with `starting.vals` option for these purposes. 
 
 Second, we note that `MiSSE` may seem slower than most other functions within `hisse`. This is somewhat intentional. Underneath the hood we have implemented a lot of checks to the integration for calculating probabilities along branches. This will mean that often times weird messages will spit out to the screen. For now, ignore them, the optimization "feels" these issues and takes necessary action. But this also means that users must pay particular attention to the complexity of the models they are fitting and critically think whether or not the parameters make sense. For example, in cetacean tree used above, I attemped to fit a model with three, four, and five hidden states, A, B, and C, but the reconstructions indicated a rather complicated, and highly uncertain, diversification history:
-
 ```{r, eval=TRUE}
 two.rate
 three.rate
 ```
 
 Note that the likelihood was a significant improvement from the two rate model, but the transition rate, $q$, is roughly two orders of magnitude higher ($q=0.131$) relative to the two-rate model estimate ($q=0.004$). The same is true for the four and five rate class models. What does this mean? Well, we can convert this into the expected number of transitions by multiplying the rate by the sum of the branch lengths in the cetacean phylogeny:
-
 ```{r, eval=TRUE}
 expected.transitions.two <- 0.004 * sum(two.rate$phy$edge.length)
 expected.transitions.two
@@ -153,7 +164,6 @@ expected.transitions.three
 ```
 
 At first glance, this might seem that something is off with the three-rate class model -- e.g., 3 vs. 107 number of shifts among the different classes? However, examining the support region around the parameters can give an indication as to the overall reliability of these estimates:
-
 ```{r, eval=TRUE}
 load("misse.support.Rsave")
 two.rate.support$ci[,"q0"]
@@ -162,16 +172,47 @@ three.rate.support$ci[,"q0"]
 
 In the case of the two rate class model, even though the MLE indicates very few transitions among the rate classes, there is a model within 2 log likelihood units that suggests as many as 17 expected transitions. In other words, the $q$ estimate even under the two rate class model is fairly certain. We suspect that what is being picked up by these models is something that is both clade-specific (i.e., implied by the two rate class model) and time-dependent (i.e., implied by the three, four, and five rate class models), with the latter exerting the strongest influence on the overall fit. 
 
+
+## MiSSE Greedy
+
+Here is a very straightforward `MiSSEGreedy()` run:
+```{r, eval=FALSE}
+model.set <- MiSSEGreedy(tree, f=1)
+```
+
+From there you can do the reconstruction across each model in the set.
+```{r, eval=FALSE}
+model.recons <- as.list(1:length(model.set))
+for (model_index in 1:length(model.set)) {
+    nturnover <- length(unique(model.set[[model_index]]$turnover))
+    neps <- length(unique(model.set[[model_index]]$eps))
+    misse_recon <- MarginReconMiSSE(phy = model.set[[model_index]]$phy, f = 1, 
+                                    hidden.states = nturnover, 
+                                    pars = model.set[[model_index]]$solution, 
+                                    aic = model.set[[model_index]]$AIC)
+    model.recons[[model_index]] <- misse_recon
+}
+```
+
+Gets tip rates.
+```{r, eval=FALSE}
+tip.rates <- GetModelAveRates(model.recons, type = c("tips"))
+```
+
+
+
 ## References
 
 Beaulieu, J.M., and B.C. O'Meara. (2016). Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601.
 
-Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, 72:2308-2324.
+Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. (2018). Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, 72:2308-2324.
 
-Nakov, T., Beaulieu, J.M., and Alverson, A.J. 2018. Freshwater diatoms diversify faster than marine in both planktonic and benthic habitats. bioRxiv, doi: https://doi.org/10.1101/406165.
+Magallón, S, and M.J. Sanderson. (2001). Absolute diversification rates in angiosperm clades. Evolution 55:1762-1780.
+
+Nakov, T., J.M. Beaulieu, and A.J. Alverson. (2018). Freshwater diatoms diversify faster than marine in both planktonic and benthic habitats. bioRxiv, doi: https://doi.org/10.1101/406165.
 
 Rabosky, D.L., and E.E. Goldberg. (2015). Model inadequacy and mistaken inferences of trait-dependent speciation. Syst. Biol. 64:340-355.
 
-Steeman, M.E., B. M.B. Hebsgaard, E. Fordyce, S.Y.W. Ho, D.L. Rabosky, R. Nielsen, C. Rahbek, H. Glenner, M.V. Sorensen, and E. Willerslev. 2009. Radiation of extant cetaceans driven by restructuring of the oceans. Syst. Biol. 58:573-585. 
+Steeman, M.E., B.M.B. Hebsgaard, E. Fordyce, S.Y.W. Ho, D.L. Rabosky, R. Nielsen, C. Rahbek, H. Glenner, M.V. Sorensen, and E. Willerslev. 2009. Radiation of extant cetaceans driven by restructuring of the oceans. Syst. Biol. 58:573-585. 
 
 
