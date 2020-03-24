@@ -4,7 +4,9 @@
 \description{Exports a likelihood function conditioned on the data and a
   named vector with the parameters for each of the models.}
 \usage{
-makeGeoHiSSELikelihood(phy, data, hidden.areas=0, f=c(1,1,1), assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, dt.threads=1, ode.eps = 0, bad.likelihood = exp(-500))
+makeGeoHiSSELikelihood(phy, data, hidden.areas=0, f=c(1,1,1), assume.cladogenetic=TRUE, 
+condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, dt.threads=1, ode.eps = 0, 
+bad.likelihood = exp(-500))
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
