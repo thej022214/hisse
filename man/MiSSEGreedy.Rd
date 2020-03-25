@@ -1,14 +1,11 @@
 \name{MiSSEGreedy}
 \alias{MiSSEGreedy}
-\title{Character-free State Speciation and Extinction searching greedily}
-\description{Sets up and executes a set of MiSSE models (Missing State Speciation
+\title{Character-free State Speciation and Extinction Searching Greedily}
+\description{Executes a set of MiSSE models (Missing State Speciation
  and Extinction) on a phylogeny, varying the number of parameters for turnover and extinction fraction and stopping when models stop being very good.}
 \usage{
-MiSSEGreedy(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TRUE,FALSE),
-stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz",
-root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE,
-max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3,
-trans.upper=100, restart.obj=NULL, ode.eps=0, n.cores=NULL)
+MiSSEGreedy(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(), stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
+)
 }
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
@@ -16,10 +13,11 @@ trans.upper=100, restart.obj=NULL, ode.eps=0, n.cores=NULL)
 \item{f}{the estimated proportion of extant species included in the phylogeny. A value of
   0.50 means that 50 percent of species are contained in the. By default all species are assumed
   to be sampled.}
-\item{turnover.tries}{a numeric vector of how many turnover categories to try. See 'Details'.}
-\item{eps.constant}{a boolean vector of whether to have eps be constant (one parameter if TRUE) or equal in complexity to the number of turnover categories. See 'Details'.}
-\item{stop.count}{how many steps to take of models that have a delta AICc worse than stop.deltaAICc}
+\item{possible.combos}{data.frame of parameter combinations to try. See 'Details'.}
 \item{stop.deltaAICc}{how bad compared to the best does a model have to be to far enough outside we stop looking at even more complex ones?}
+\item{save.file}{file to use to save results while the code is running}
+\item{n.cores}{how many cores to run this on in parallel}
+\item{chunk.size}{how many models to run before checking to make sure there are no improvements. See 'Details'.}
 \item{condition.on.survival}{a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
   speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
@@ -50,20 +48,27 @@ trans.upper=100, restart.obj=NULL, ode.eps=0, n.cores=NULL)
   produce stable solutions for both easy and very difficult optimization problems.}
 }
 \details{
-See the \code{MiSSE} function for description of the method overall. It requires a set number of hidden state categories, but finding the best number of categories can be hard. For example, one could 1 to 26 different turnover categories and 1 to 26 possible extinction fraction categories. For most cases, we suspect that it makes sense to have the number of extinction fraction categories either equal to the number of turnover categories or set to the same category over the tree, but there are actually a lot of possibilities: have turnover=c(1,2,3) and eps=c(1,2,1), for example, or turnover=c(1,1,1) and eps=c(1,2,3). As a shortcut, this function tries working up in complexity. By default, it starts with one turnover rate and one extinction fraction. Then, it tries two of each, then three of each, and so forth. Then it starts over with increasing number of turnover rates but just keeping one extinction fraction. This is 52 possible models, which, even with MiSSE's speed [that's a joke] can take a fair bit of time. It's thus possible to set a stopping criterion so that once models are complex enough they're not going to have a lot of AICc weight, the analysis stops. This is NOT where the models stop being significant (if you're looking for significance, note you don't get that from AICc), but where they probably will not contribute much to the model averaged parameter estimates and so may not be worth the bother of searching further. However, there's no guarantee that this is a wise decision: you could stop with 10 turnover rates, and 11 and 12 are far worse for AICc, but it could be that 13 turnover rates are much better than anything else (for that matter, the best number of turnover rates could be 42, even though MiSSe's current code can only go up to 26). It could be that turnover only needs five hidden states but extinction fraction works best with nine. And of course, in reality, the truth is that there is an infinite set of hidden rate parameters: a passing cloud blocks a tiny bit of energy for photosynthesis, so for that moment the rate of extinction for plants underneath the shadow is a tiny bit higher. You should not be using this to test hypotheses about how many hidden factors there are, but rather as a way to get a good enough model to estimate rates on a tree. Note that if allowed to use both eps settings (same number of parameters as turnover or one parameter) it concatenates all the models it examines but it stops separately for each eps setting, allowing the number of free parameters to increase smoothly.
+See the \code{MiSSE} function for description of the method overall. It requires a set number of hidden state categories, but finding the best number of categories can be hard. For example, one could 1 to 26 different turnover categories and 1 to 26 possible extinction fraction categories. For most cases, we suspect that it makes sense to have the number of extinction fraction categories either equal to the number of turnover categories or set to the same category over the tree, but there are actually a lot of possibilities: have turnover=c(1,2,3) and eps=c(1,2,1), for example, or turnover=c(1,1,1) and eps=c(1,2,3). This uses the generateMiSSEGreedyCombinations function to generate a very large set of these possible models, then runs them in increasing complexity. By default, it stops when the models stop getting being reasonable in AICc. This is NOT where the models stop being significant (if you're looking for significance, note you don't get that from AICc), but where they probably will not contribute much to the model averaged parameter estimates and so may not be worth the bother of searching further. However, there's no guarantee that this is a wise decision: you could stop with 10 turnover rates, and 11 and 12 are far worse for AICc, but it could be that 13 turnover rates are much better than anything else (for that matter, the best number of turnover rates could be 42, even though MiSSe's current code can only go up to 26). And of course, in reality, the truth is that there is an infinite set of hidden rate parameters: a passing cloud blocks a tiny bit of energy for photosynthesis, so for that moment the rate of extinction for plants underneath the shadow is a tiny bit higher. You should not be using this to test hypotheses about how many hidden factors there are, but rather as a way to get a good enough model to estimate rates on a tree.
 
-By default, this will try from 1 to 26 different turnover states, with either 1 or n different extinction fractions. If you just want to try up to five states, then turnover.tries=c(1:5). If you want to try 1:5, 10, 15, 20, 25, then turnover.tries=c(1:5, 10, 15, 20, 25). You can change the order in which models are tried, too: turnover.tries=c(16, 14, 12, 20) is possible. If you always want the complexity of the extinction fraction to match that of turnover, eps.constant=FALSE; if you want to have it always one parameter, eps.constant=TRUE; if you want to try both, eps.constant=c(TRUE, FALSE).
+You can change how quickly the function stops trying new models with stop.deltaAICc. Once it runs a chunk of models where the best gets a model that is at least stop.deltaAICc worse than the *current* best model, it stops running new models. Since this is based on current best AICc, and we start with simple models, there's an asymmetry: a terrible model with no rate variation is always included, but a slightly less terrible model with 26 turnover rates might never be run.
 
-You can change how quickly the function stops trying new models with stop.count and stop.deltaAICc. Once it gets a model that is at least stop.deltaAICc worse than the *current* best model, it starts counting; once it gets stop.count of these in a row, it stops. Since this is based on current best AICc, and we start with simple models, there's an asymmetry: a terrible model with no rate variation is always included, but a slightly less terrible model with 26 turnover rates might never be run.
+This works MUCH faster when run in parallel. To do so, set n.cores to the number of available cores on your machine (for example, for a modern Mac laptop, this would be 4). An easy way to do this automatically is to use n.cores=parallel::detectCores(). The default is one core; if running this function on a cluster, a default of parallel::detectCores() might take over an entire compute node when you're supposed to be using just one core, and get you in trouble. Since we run many models, the most natural approach is to run one model per core, see if at least one of the models are still ok, then send out the next models out to all the cores. Setting n.cores to the number of parallel jobs you want, and leaving chunk.size set to NULL, will do this. However, this is slightly inefficient -- the odds are that some cores will finish earlier than others, and will be waiting until all finish. So a different approach is to set a chunk.size greater than n.cores -- it will still use no more than n.cores at a time, but once one model in the set finishes it will send off the next until all models in the chunk are run. This keeps the computer even busier, but then it won't stop to check to make sure the models are still feasible as often, and it only saves intermediate results after each chunk of models finishes. Our recommendation is to use n.cores=parallel::detectCores() if you're on a machine where you can use all the cores and leave chunk.size unspecified (so it will also default to n.cores), but it's up to you.
+
+After every chunk of models are done, this function will display the status: what models have been run, what the likelihoods and AICs are, etc. It will also predict how long future runs will check (based on a linear regression between the number of free parameters and log(minutes to run)). These are just estimates based on the runs so far, but it's a stochastic search and can take more or less time.
+
+Saving output while this goes is highly recommended -- you can see how things are going and salvage something if a run fails (then, start again, deleting the models that worked from possible.combos and USING A DIFFERENT FILE TO SAVE TO SO YOU DON'T OVERWRITE THE OLD ONE. You can so this by giving a file name (including path, if you want) as the save.file argument. This will save the list of finished models (misse.list) and the possible.combos data.frame with additional information.
 }
 \value{
-\code{MiSSE} returns a list of class \code{misse.fit} objects.
+\code{MiSSEGreedy} returns a list of class \code{misse.fit} objects.
 }
 \examples{
 \donttest{
   library(ape)
-  phy <- rcoal(30)
-  result <- MiSSEGreedy(phy)
+  phy <- rcoal(50)
+  potential.combos <- generateMiSSEGreedyCombinations(max.param=4, vary.both=TRUE)
+  result <- MiSSEGreedy(phy, potential.combos, n.cores=parallel::detectCores())
+  AICc <- unlist(lapply(result, "[[", "AICc")) # Yes, [[ is a function you can lapply, and the name of elements within each list object can be arguments. Life is awesome.
+  deltaAICc <- AICc-min(AICc)
   print(length(result))
 }
 }
