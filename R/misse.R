@@ -199,12 +199,12 @@ generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequenc
     combos <- subset(combos, eps==1 | is.na(fixed.eps)) # Don't estimate multiple eps while also fixing eps
     combos <- combos[which(combos$turnover + ifelse(!is.na(combos$fixed.eps), 0, combos$eps) <= max.param),]
     combos <- combos[order(combos$turnover + ifelse(!is.na(combos$fixed.eps), 0, combos$eps), decreasing=FALSE),]
-
+    rownames(combos) <- NULL
     return(combos)
 }
 
-
-# a <- hisse:::MiSSEGreedyNew(rcoal(50), possible.combos=hisse:::generateMiSSEGreedyCombinations(4), n.cores=2)
+# options(error = utils::recover)
+# a <- hisse:::MiSSEGreedyNew(ape::rcoal(50), possible.combos=hisse:::generateMiSSEGreedyCombinations(4), n.cores=2)
 MiSSEGreedyNew <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, n.cores=NULL) {
     misse.list <- list()
     first.AICc <- Inf
@@ -242,6 +242,29 @@ MiSSEGreedyNew <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombin
             mc.cores=ifelse(is.null(n.cores),1,n.cores),
             SIMPLIFY=FALSE
         ))
+        # print("\n")
+        # print(local.combos)
+        # misse.list <- append(misse.list, MiSSE(
+        #     eps=local.combos$eps[1],
+        #     turnover=local.combos$turnover[1],
+        #     fixed.eps=local.combos$fixed.eps[1],
+        #
+        #         phy=phy,
+        #         f=f,
+        #         condition.on.survival=condition.on.survival,
+        #         root.type=root.type,
+        #         root.p=root.p,
+        #         sann=sann,
+        #         sann.its=sann.its,
+        #         bounded.search=bounded.search,
+        #         max.tol=max.tol,
+        #         starting.vals=starting.vals,
+        #         turnover.upper=turnover.upper,
+        #         eps.upper=eps.upper,
+        #         trans.upper=trans.upper,
+        #         restart.obj=restart.obj,
+        #         ode.eps=ode.eps
+        # ))
     }
     return(misse.list)
 }
