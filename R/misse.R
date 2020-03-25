@@ -115,7 +115,13 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         names(init.pars) <- NULL
 
         if(is.null(starting.vals)){
-            def.set.pars <- rep(c(log(init.pars[1]+init.pars[2]), log(init.pars[2]/init.pars[1])), rate.cats)
+            def.set.pars <- rep(NA, 2*rate.cats)
+            scaling=seq(from=1.2, to=0.8, length.out=rate.cats)
+            for(cat.index in sequence(rate.cats)) {
+                def.set.pars[1+(cat.index-1)*2] <- log((init.pars[1]+init.pars[2]) * ifelse(length(unique(turnover))==1, 1, scaling[cat.index]))
+                def.set.pars[2+(cat.index-1)*2] <- log(ifelse(length(unique(eps))==1, 1, scaling[cat.index])*init.pars[2]/init.pars[1])
+            }
+            #def.set.pars <- rep(c(log(init.pars[1]+init.pars[2]), log(init.pars[2]/init.pars[1])), rate.cats)
             trans.start <- log(rate.cats/sum(phy$edge.length))
         }else{
             ## Check the length of the stating vector:
