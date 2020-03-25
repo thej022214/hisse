@@ -16,19 +16,28 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1, expand.mode=FALSE){
+    misse_start_time <- Sys.time()
     #This makes it easier to handle missegreedy with fixed values
     if(length(fixed.eps)>0) {
         if(is.na(fixed.eps)) {
             fixed.eps <- NULL
         }
     }
-    if(length(turnover)==1) {
-        turnover <- sequence(turnover)
-    }
+    if(expand.mode) {
+        if(length(turnover)==1) {
+            turnover <- sequence(turnover)
+        }
 
-    if(length(eps)==1 & eps[1]!=0) {
-        eps <- sequence(eps)
+        if(length(eps)==1 & eps[1]!=0) {
+            eps <- sequence(eps)
+        }
+        if(length(eps)<length(turnover)) {
+            eps <- rep(eps, length(turnover))[sequence(length(turnover))] # i.e., c(1,2,1,2,1)
+        }
+        if(length(turnover)<length(eps)) {
+            turnover <- rep(turnover, length(eps))[sequence(length(eps))]
+        }
     }
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -188,8 +197,8 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     names(solution) <- c("turnover0A","eps0A", "turnover0B","eps0B", "turnover0C","eps0C", "turnover0D","eps0D", "turnover0E","eps0E", "turnover0F","eps0F", "turnover0G","eps0G", "turnover0H","eps0H", "turnover0I","eps0I", "turnover0J","eps0J", "turnover0K","eps0K", "turnover0L","eps0L", "turnover0M","eps0M", "turnover0N","eps0N", "turnover0O","eps0O", "turnover0P","eps0P", "turnover0Q","eps0Q", "turnover0R","eps0R", "turnover0S","eps0S", "turnover0T","eps0T", "turnover0U","eps0U", "turnover0V","eps0V","turnover0W","eps0W","turnover0X","eps0X", "turnover0Y","eps0Y", "turnover0Z","eps0Z", "q0")
 
     cat("Finished. Summarizing results...", "\n")
-
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, fixed.eps=fixed.eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, turnover=turnover, eps=eps)
+    misse_end_time <- Sys.time()
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, fixed.eps=fixed.eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, turnover=turnover, eps=eps, elapsed.minutes=difftime(misse_end_time, misse_start_time, units="min"))
     class(obj) <- append(class(obj), "misse.fit")
     return(obj)
 }
@@ -209,55 +218,40 @@ generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequenc
     combos <- combos[!duplicated(combos),]
     combos <- combos[which(combos$turnover + combos$eps <= max.param),]
     combos <- combos[order(combos$turnover + combos$eps, decreasing=FALSE),]
+    rownames(combos) <- NULL
     return(combos)
 }
 
 # options(error = utils::recover)
-# a <- hisse:::MiSSEGreedyNew(ape::rcoal(50), possible.combos=hisse:::generateMiSSEGreedyCombinations(4), n.cores=2)
-MiSSEGreedyNew <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, n.cores=NULL) {
+# a <- hisse:::MiSSEGreedyNew(ape::rcoal(50), possible.combos=hisse:::generateMiSSEGreedyCombinations(4), n.cores=4, save.file='~/Downloads/greedy.rda')
+MiSSEGreedyNew <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(), stop.deltaAICc=10, save.file=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, n.cores=NULL) {
     misse.list <- list()
-    first.AICc <- Inf
     chunk.size <- ifelse(is.null(n.cores),1,n.cores)
     total.chunks <- ceiling(nrow(possible.combos)/chunk.size)
+    possible.combos$lnL <- NA
+    possible.combos$AIC <- NA
+    possible.combos$AICc <- NA
+    possible.combos$deltaAICc <- NA
+    possible.combos$elapsedMinutes <- NA
+    possible.combos$predictedMinutes <- NA
+
+
     for (batch_index in sequence(total.chunks)) { # So, if we can do parallel, we do it in chunks so all cores are busy
+        starting.time <- Sys.time()
         local.combos <- possible.combos[(1+chunk.size*(batch_index-1)):min(nrow(possible.combos), chunk.size*batch_index) ,]
 
-        starting.time <- Sys.time()
-        cat("\nNow starting run with", paste(range(local.combos$turnover), collapse="-"), "turnover categories and", paste(range(local.combos$eps), collapse="-"), "extinction fraction categories", "\n")
+        #cat("\nNow starting run with", paste(range(local.combos$turnover), collapse="-"), "turnover categories and", paste(range(local.combos$eps), collapse="-"), "extinction fraction categories", "\n")
         cat("Starting at ", as.character(starting.time), "\n running on ", chunk.size, " cores.", sep="")
+        cat("\n")
+        print(local.combos[,1:3])
+        cat("\n")
 
-        # misse.list <- append(misse.list, parallel::mcmapply(
-        #     MiSSE,
-        #     eps=local.combos$eps,
-        #     turnover=local.combos$turnover,
-        #     fixed.eps=local.combos$fixed.eps,
-        #     MoreArgs=list(
-        #         phy=phy,
-        #         f=f,
-        #         condition.on.survival=condition.on.survival,
-        #         root.type=root.type,
-        #         root.p=root.p,
-        #         sann=sann,
-        #         sann.its=sann.its,
-        #         bounded.search=bounded.search,
-        #         max.tol=max.tol,
-        #         starting.vals=starting.vals,
-        #         turnover.upper=turnover.upper,
-        #         eps.upper=eps.upper,
-        #         trans.upper=trans.upper,
-        #         restart.obj=restart.obj,
-        #         ode.eps=ode.eps
-        #     ),
-        #     mc.cores=ifelse(is.null(n.cores),1,n.cores),
-        #     SIMPLIFY=FALSE
-        # ))
-        print("\n")
-        print(local.combos)
-        misse.list <- append(misse.list, MiSSE(
-            eps=local.combos$eps[1],
-            turnover=local.combos$turnover[1],
-            fixed.eps=local.combos$fixed.eps[1],
-
+        misse.list <- append(misse.list, parallel::mcmapply(
+            MiSSE,
+            eps=local.combos$eps,
+            turnover=local.combos$turnover,
+            fixed.eps=local.combos$fixed.eps,
+            MoreArgs=list(
                 phy=phy,
                 f=f,
                 condition.on.survival=condition.on.survival,
@@ -272,8 +266,68 @@ MiSSEGreedyNew <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombin
                 eps.upper=eps.upper,
                 trans.upper=trans.upper,
                 restart.obj=restart.obj,
-                ode.eps=ode.eps
+                ode.eps=ode.eps,
+                expand.mode=TRUE
+            ),
+            mc.cores=ifelse(is.null(n.cores),1,n.cores),
+            SIMPLIFY=FALSE
         ))
+
+        AICc <- unlist(lapply(misse.list, "[[", "AICc"))
+        deltaAICc <- AICc-min(AICc)
+        min.deltaAICc.this.chunk <- min(deltaAICc[(1+chunk.size*(batch_index-1)):min(nrow(possible.combos), chunk.size*batch_index)])
+
+        possible.combos$lnL[1:min(nrow(possible.combos), chunk.size*batch_index)] <- unlist(lapply(misse.list, "[[", "loglik"))
+        possible.combos$AIC[1:min(nrow(possible.combos), chunk.size*batch_index)] <- unlist(lapply(misse.list, "[[", "AIC"))
+        possible.combos$AICc[1:min(nrow(possible.combos), chunk.size*batch_index)] <- AICc
+        possible.combos$deltaAICc[1:min(nrow(possible.combos), chunk.size*batch_index)] <- deltaAICc
+        possible.combos$elapsedMinutes[1:min(nrow(possible.combos), chunk.size*batch_index)] <- unlist(lapply(misse.list, "[[", "elapsed.minutes"))
+
+        data.for.fit <- data.frame(nparam=(possible.combos$eps+possible.combos$turnover)[1:min(nrow(possible.combos), chunk.size*batch_index)], logmin=log(possible.combos$elapsedMinutes[1:min(nrow(possible.combos), chunk.size*batch_index)]))
+        data.for.prediction <- data.frame(nparam=(possible.combos$eps+possible.combos$turnover))
+        possible.combos$predictedMinutes <- exp(predict(lm(logmin ~ nparam, data=data.for.fit), newdata=data.for.prediction))
+
+        cat("\nResults so far\n")
+        print(round(possible.combos,2))
+
+        if(!is.null(save.file)) {
+            save(misse.list, possible.combos, file=save.file)
+        }
+
+
+        if(batch_index<total.chunks) {
+            if(stop.deltaAICc>min.deltaAICc.this.chunk) {
+                print(paste0("Best AICc in this set of parallel runs was ", round(min.deltaAICc.this.chunk,2), " which is less than the cutoff to stop running (",stop.deltaAICc,"), so starting another set of parallel runs"))
+            } else {
+                print(paste0("Best AICc in this set of parallel runs was ", round(min.deltaAICc.this.chunk,2), " which is greater than the cutoff to stop running (",stop.deltaAICc,"), so stopping here"))
+                break()
+            }
+        }
+
+        # print("\n")
+        # print(local.combos)
+        # misse.list <- append(misse.list, MiSSE(
+        #     eps=local.combos$eps[1],
+        #     turnover=local.combos$turnover[1],
+        #     fixed.eps=local.combos$fixed.eps[1],
+        #
+        #         phy=phy,
+        #         f=f,
+        #         condition.on.survival=condition.on.survival,
+        #         root.type=root.type,
+        #         root.p=root.p,
+        #         sann=sann,
+        #         sann.its=sann.its,
+        #         bounded.search=bounded.search,
+        #         max.tol=max.tol,
+        #         starting.vals=starting.vals,
+        #         turnover.upper=turnover.upper,
+        #         eps.upper=eps.upper,
+        #         trans.upper=trans.upper,
+        #         restart.obj=restart.obj,
+        #         ode.eps=ode.eps,
+        #         expand.mode=TRUE
+        # ))
     }
     return(misse.list)
 }
@@ -291,7 +345,6 @@ MiSSEGreedy <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TR
                 if(eps.constant[eps.index]) {
                     eps <- rep(1, length(turnover))
                 }
-                starting.time <- Sys.time()
                 cat("\nNow starting run with", turnover.tries[turnover.index], "turnover categories and", length(unique(eps)), "extinction fraction categories", "\n")
                 cat("Starting at ", as.character(starting.time), "\n", sep="")
                 current.run <- MiSSE(phy, f=f, turnover=turnover, eps=eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, sann=sann, sann.its=sann.its, bounded.search=bounded.search, max.tol=max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, ode.eps=ode.eps)

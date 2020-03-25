@@ -50,6 +50,7 @@ ode.eps=0, dt.threads=1)
   default is set to zero, but in testing a value of 1e-8 can sometimes
   produce stable solutions for both easy and very difficult optimization problems.}
 \item{dt.threads}{sets the number of threads available to data.table. In practice this need not change from the default of 1 thread, as we have not seen any speedup from allowing more threads.}
+\item{expand.mode}{allows passing in the number of free parameters for turnover and eps and creates vectors to permit this}
 }
 \details{
 One thing pointed out in the original HiSSE paper (Beaulieu & O'Meara, 2016) is
