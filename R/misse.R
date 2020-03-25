@@ -23,6 +23,13 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             fixed.eps <- NULL
         }
     }
+    if(length(turnover)==1) {
+        turnover <- sequence(turnover)
+    }
+
+    if(length(eps)==1 & eps[1]!=0) {
+        eps <- sequence(eps)
+    }
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
 
@@ -196,10 +203,12 @@ generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequenc
             expand.grid(turnover=1, eps=eps.tries, fixed.eps=fixed.eps.tries)
         )
     }
-    combos <- subset(combos, eps==1 | is.na(fixed.eps)) # Don't estimate multiple eps while also fixing eps
-    combos <- combos[which(combos$turnover + ifelse(!is.na(combos$fixed.eps), 0, combos$eps) <= max.param),]
-    combos <- combos[order(combos$turnover + ifelse(!is.na(combos$fixed.eps), 0, combos$eps), decreasing=FALSE),]
+    combos$eps[which(!is.na(combos$fixed.eps))] <- 0
     rownames(combos) <- NULL
+    combos <- subset(combos, eps==0 | is.na(fixed.eps)) # Don't estimate multiple eps while also fixing eps
+    combos <- combos[!duplicated(combos),]
+    combos <- combos[which(combos$turnover + combos$eps <= max.param),]
+    combos <- combos[order(combos$turnover + combos$eps, decreasing=FALSE),]
     return(combos)
 }
 
@@ -217,38 +226,12 @@ MiSSEGreedyNew <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombin
         cat("\nNow starting run with", paste(range(local.combos$turnover), collapse="-"), "turnover categories and", paste(range(local.combos$eps), collapse="-"), "extinction fraction categories", "\n")
         cat("Starting at ", as.character(starting.time), "\n running on ", chunk.size, " cores.", sep="")
 
-        misse.list <- append(misse.list, parallel::mcmapply(
-            MiSSE,
-            eps=local.combos$eps,
-            turnover=local.combos$turnover,
-            fixed.eps=local.combos$fixed.eps,
-            MoreArgs=list(
-                phy=phy,
-                f=f,
-                condition.on.survival=condition.on.survival,
-                root.type=root.type,
-                root.p=root.p,
-                sann=sann,
-                sann.its=sann.its,
-                bounded.search=bounded.search,
-                max.tol=max.tol,
-                starting.vals=starting.vals,
-                turnover.upper=turnover.upper,
-                eps.upper=eps.upper,
-                trans.upper=trans.upper,
-                restart.obj=restart.obj,
-                ode.eps=ode.eps
-            ),
-            mc.cores=ifelse(is.null(n.cores),1,n.cores),
-            SIMPLIFY=FALSE
-        ))
-        # print("\n")
-        # print(local.combos)
-        # misse.list <- append(misse.list, MiSSE(
-        #     eps=local.combos$eps[1],
-        #     turnover=local.combos$turnover[1],
-        #     fixed.eps=local.combos$fixed.eps[1],
-        #
+        # misse.list <- append(misse.list, parallel::mcmapply(
+        #     MiSSE,
+        #     eps=local.combos$eps,
+        #     turnover=local.combos$turnover,
+        #     fixed.eps=local.combos$fixed.eps,
+        #     MoreArgs=list(
         #         phy=phy,
         #         f=f,
         #         condition.on.survival=condition.on.survival,
@@ -264,7 +247,33 @@ MiSSEGreedyNew <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombin
         #         trans.upper=trans.upper,
         #         restart.obj=restart.obj,
         #         ode.eps=ode.eps
+        #     ),
+        #     mc.cores=ifelse(is.null(n.cores),1,n.cores),
+        #     SIMPLIFY=FALSE
         # ))
+        print("\n")
+        print(local.combos)
+        misse.list <- append(misse.list, MiSSE(
+            eps=local.combos$eps[1],
+            turnover=local.combos$turnover[1],
+            fixed.eps=local.combos$fixed.eps[1],
+
+                phy=phy,
+                f=f,
+                condition.on.survival=condition.on.survival,
+                root.type=root.type,
+                root.p=root.p,
+                sann=sann,
+                sann.its=sann.its,
+                bounded.search=bounded.search,
+                max.tol=max.tol,
+                starting.vals=starting.vals,
+                turnover.upper=turnover.upper,
+                eps.upper=eps.upper,
+                trans.upper=trans.upper,
+                restart.obj=restart.obj,
+                ode.eps=ode.eps
+        ))
     }
     return(misse.list)
 }
