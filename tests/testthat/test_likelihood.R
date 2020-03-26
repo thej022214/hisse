@@ -1,6 +1,6 @@
 test_that("BiSSE_HiSSE_test",{
 	skip_on_cran()
-    
+
     library(diversitree)
 	pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
 	set.seed(4)
@@ -10,7 +10,7 @@ test_that("BiSSE_HiSSE_test",{
         }
 	lik <- make.bisse(phy, phy$tip.state, sampling.f=c(.4,.6))
 	diversitree.full <- lik(pars)
-	
+
 	hidden.states=FALSE
 	states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
 	states <- states[phy$tip.label,]
@@ -53,7 +53,7 @@ test_that("MuSSE_HiSSE_test1", {
 						  q13 ~ 0, q21 ~ q12, q23 ~ q12, q31 ~ 0, q32 ~ q12)
 	diversitree.constrained = lik.base(c(.1, .03, .05))
 	diversitree.full = lik(pars)
-	
+
 	hidden.states="TEST"
 	states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
 	states <- states[phy$tip.label,]
@@ -93,7 +93,7 @@ test_that("MuSSE_HiSSE_test2", {
 	states <- phy$tip.state
 	lik <- make.musse(phy, states, 3)
 	diversitree.full = lik(pars)
-	
+
 	hidden.states="TEST"
 	states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
 	states <- states[phy$tip.label,]
@@ -128,7 +128,7 @@ test_that("HiSSE_Null_Four_test", {
     }
 	lik <- make.bisse(phy, phy$tip.state)
 	diversitree.full <- lik(pars)
-	
+
 	states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
 	states <- states[phy$tip.label,]
 	pars.hisse.null <- c(rep(0.1+0.03,8), rep(0.03/.1, 8), rep(0.01, 32))
@@ -143,7 +143,7 @@ test_that("HiSSE_Null_Four_test", {
 
 test_that("GeoHiSSE_test1", {
     skip_on_cran()
-    
+
     library(diversitree)
     pars <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
     names(pars) <- diversitree:::default.argnames.geosse()
@@ -154,7 +154,7 @@ test_that("GeoHiSSE_test1", {
     }
     lik <- make.geosse(phy, phy$tip.state)
     diversitree.full <- lik(pars)
-    
+
     states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
     states <- states[phy$tip.label,]
     names(pars) <- NULL
@@ -170,7 +170,7 @@ test_that("GeoHiSSE_test1", {
 
 test_that("GeoHiSSE_test2", {
     skip_on_cran()
-    
+
     library(diversitree)
     pars <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
     names(pars) <- diversitree:::default.argnames.geosse()
@@ -181,7 +181,7 @@ test_that("GeoHiSSE_test2", {
     }
     lik <- make.geosse(phy, phy$tip.state)
     diversitree.full <- lik(pars)
-    
+
     states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
     states <- states[phy$tip.label,]
     names(pars) <- NULL
@@ -197,7 +197,7 @@ test_that("GeoHiSSE_test2", {
 
 test_that("GeoHiSSE_test3", {
     skip_on_cran()
-    
+
     library(diversitree)
     pars <- c(1.5, 0.5, 1.0, 0.7, 0.4, 2.5, 0.5)
     names(pars) <- diversitree:::default.argnames.geosse()
@@ -208,7 +208,7 @@ test_that("GeoHiSSE_test3", {
     }
     lik <- make.geosse(phy, phy$tip.state)
     diversitree.full <- lik(pars)
-    
+
     states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
     states <- states[phy$tip.label,]
     names(pars) <- NULL
@@ -224,7 +224,7 @@ test_that("GeoHiSSE_test3", {
 
 test_that("GeoHiSSE_test4", {
     skip_on_cran()
-    
+
     library(diversitree)
     pars <- c(1.5, 0.5, 1.0, 0.7, 0.4, 2.5, 0.5)
     names(pars) <- diversitree:::default.argnames.geosse()
@@ -235,7 +235,7 @@ test_that("GeoHiSSE_test4", {
     }
     lik <- make.geosse(phy, phy$tip.state)
     diversitree.full <- lik(pars)
-    
+
     states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
     states <- states[phy$tip.label,]
     names(pars) <- NULL
@@ -250,15 +250,15 @@ test_that("GeoHiSSE_test4", {
 
 #test_that("GeoHiSSE_test5", {
 #    skip_on_cran()
-    
+
 #    library(diversitree)
-    
+
     ## Define some parameters:
     ##         s01,  s0,  s1,  x0,  x1,  d0,  d1
 #    pars1 <- c(1.5, 0.5, 1.0, 0.7, 0.7, 2.5, 0.5)
 #    pars2 <- c(1.1, 1.6, 0.4, 0.6, 0.5, 0.6, 2.7)
 #    rates.q <- 0.1 ## Transition between hidden rates.
-    
+
     ## Check the likelihood for the hidden null model.
 #    sim.pars <- SimulateGeoHiSSE(hidden.areas = 1, return.GeoHiSSE_pars = TRUE)
 #    sim.pars$model.pars[,1] <- pars1
@@ -274,13 +274,13 @@ test_that("GeoHiSSE_test4", {
 #    classe.pars <- sim.get.par$classe.pars
 #    sim.data <- NULL
 #    while( is.null(sim.data) ) sim.data <- tree.classe(pars=classe.pars, max.taxa = 500)
-   
+
     ## Get the likelihood for the ClaSSE model:
     ## Here we assume root value is EQUAL
 #    sim.data$node.label <- NULL
 #    lik.classe <- make.classe(tree=sim.data, states=sim.data$tip.state, k=6)
 #    classe.full <- lik.classe(pars=classe.pars, root=ROOT.FLAT, condition.surv = TRUE, root.p = NULL)
-    
+
     ## Now the lik for the GeoHiSSE model.
     ## Our function starts from 0.
 #    states <- sim.data$tip.state - 1
@@ -294,7 +294,7 @@ test_that("GeoHiSSE_test4", {
 #                   , rates.q,0,0,0)
 #    order.pars <- c(order.pars1, order.pars2)
 #    model.vec[1:46] <- order.pars
-    
+
 #    cache <- hisse:::ParametersToPassGeoHiSSE(sim.data, states.mat[,1], f=c(1,1,1), model.vec, hidden.states="TEST")
 #    geohisse.full <- hisse:::DownPassGeoHisse(phy=sim.data, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000
 #                                   , condition.on.survival=TRUE, root.type="madfitz", root.p=c(1/3,1/3,1/3))
@@ -304,7 +304,7 @@ test_that("GeoHiSSE_test4", {
 
 test_that("MuSSE_test1", {
     skip_on_cran()
-    
+
     library(diversitree)
     pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
     .03, .045, .06, # mu 1, 2, 3
@@ -323,7 +323,7 @@ test_that("MuSSE_test1", {
     q13 ~ 0, q21 ~ q12, q23 ~ q12, q31 ~ 0.03, q32 ~ q12)
     diversitree.constrained = lik.base(c(.1, .03, .05))
     diversitree.full = lik(pars)
-    
+
     states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
     states <- states[phy$tip.label,]
     states[states[,1]==3,] = 4
@@ -351,14 +351,14 @@ test_that("MuSSE_test2", {
     phy <- NULL
     while( is.null( phy ) ){
         phy <- tree.musse(pars, 30, x0=1)
-    }    
+    }
     states <- phy$tip.state
     lik <- make.musse(phy, states, 3)
     lik.base <- constrain(lik,
     q13 ~ 0, q21 ~ q12, q23 ~ q12, q31 ~ 0.04, q32 ~ q12)
     diversitree.constrained = lik.base(c(.1, .2, .3, .03,.04,.05, .05))
     #diversitree.full = lik(pars)
-    
+
     states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
     states <- states[phy$tip.label,]
     states[states[,1]==3,] = 4
@@ -433,7 +433,7 @@ test_that("MuHiSSE_test1", {
 
 test_that("MuHiSSE_test2", {
     skip_on_cran()
-    
+
     library(diversitree)
     pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
     .03, .045, .06, # mu 1, 2, 3
@@ -494,7 +494,7 @@ test_that("MiSSE_test1", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(0.103624, 5.207178e-09, rep(0,52), 1)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
     logl.one.rate <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     right.logl <- -277.6942
     comparison <- round(logl.one.rate,4) == round(right.logl,4)
@@ -504,14 +504,14 @@ test_that("MiSSE_test1", {
 
 test_that("MiSSE_test2", {
     skip_on_cran()
-    
+
     phy <- read.tree("whales_Steemanetal2009.tre")
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=3)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(0.103624, 5.207178e-09, 0.103624, 5.207178e-09, 0.103624, 5.207178e-09, rep(0,46), 1)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=3, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=3, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
     logl.three.rate <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     right.logl <- -277.6942
     comparison <- round(logl.three.rate,4) == round(right.logl,4)
@@ -520,9 +520,9 @@ test_that("MiSSE_test2", {
 
 
 test_that("BiSSE_fHiSSE_test1", {
-    
+
     skip_on_cran()
-    
+
     library(diversitree)
     pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
     set.seed(4)
@@ -532,7 +532,7 @@ test_that("BiSSE_fHiSSE_test1", {
     }
     lik <- make.bisse(phy, phy$tip.state, sampling.f=c(.4,.6))
     diversitree.full <- lik(pars)
-    
+
     hidden.states=FALSE
     states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
     states <- states[phy$tip.label,]
@@ -546,14 +546,14 @@ test_that("BiSSE_fHiSSE_test1", {
     hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
-    
+
 })
 
 
 test_that("BiSSE_fHiSSE_test2", {
-    
+
     skip_on_cran()
-    
+
     library(diversitree)
     pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
     set.seed(4)
@@ -578,7 +578,3 @@ test_that("BiSSE_fHiSSE_test2", {
     comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
-
-
-
-
