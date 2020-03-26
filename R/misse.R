@@ -209,25 +209,13 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     return(obj)
 }
 
-generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequence(26), eps.tries=sequence(26), fixed.eps.tries=c(0, 0.9, NA), vary.both=TRUE) {
-    fixed.eps <- eps <- "CRAN wants this declared somehow"
-    if(vary.both) {
-        combos <- expand.grid(turnover=turnover.tries, eps=eps.tries, fixed.eps=fixed.eps.tries)
-    } else {
-        combos <- rbind(
-            expand.grid(turnover=turnover.tries, eps=1, fixed.eps=fixed.eps.tries),
-            expand.grid(turnover=1, eps=eps.tries, fixed.eps=fixed.eps.tries)
-        )
-    }
-    combos$eps[which(!is.na(combos$fixed.eps))] <- 0
-    rownames(combos) <- NULL
-    combos <- subset(combos, eps==0 | is.na(fixed.eps)) # Don't estimate multiple eps while also fixing eps
-    combos <- combos[!duplicated(combos),]
-    combos <- combos[which(combos$turnover + combos$eps <= max.param),]
-    combos <- combos[order(combos$turnover + combos$eps, decreasing=FALSE),]
-    rownames(combos) <- NULL
-    return(combos)
-}
+
+
+######################################################################################################################################
+######################################################################################################################################
+### MiSSEGreedy -- Automated algorithm for running MiSSE of varying complexity
+######################################################################################################################################
+######################################################################################################################################
 
 # options(error = utils::recover)
 # a <- hisse:::MiSSEGreedyNew(ape::rcoal(50), possible.combos=hisse:::generateMiSSEGreedyCombinations(4), n.cores=4, save.file='~/Downloads/greedy.rda')
@@ -339,6 +327,29 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
     return(misse.list)
 }
 
+
+generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequence(26), eps.tries=sequence(26), fixed.eps.tries=c(0, 0.9, NA), vary.both=TRUE) {
+    fixed.eps <- eps <- "CRAN wants this declared somehow"
+    if(vary.both) {
+        combos <- expand.grid(turnover=turnover.tries, eps=eps.tries, fixed.eps=fixed.eps.tries)
+    } else {
+        combos <- rbind(
+        expand.grid(turnover=turnover.tries, eps=1, fixed.eps=fixed.eps.tries),
+        expand.grid(turnover=1, eps=eps.tries, fixed.eps=fixed.eps.tries)
+        )
+    }
+    combos$eps[which(!is.na(combos$fixed.eps))] <- 0
+    rownames(combos) <- NULL
+    combos <- subset(combos, eps==0 | is.na(fixed.eps)) # Don't estimate multiple eps while also fixing eps
+    combos <- combos[!duplicated(combos),]
+    combos <- combos[which(combos$turnover + combos$eps <= max.param),]
+    combos <- combos[order(combos$turnover + combos$eps, decreasing=FALSE),]
+    rownames(combos) <- NULL
+    return(combos)
+}
+
+
+#Original version -- now defunct but kept for posterity.
 MiSSEGreedyOLD <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c(TRUE,FALSE), stop.count=2, stop.deltaAICc=10, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, n.cores=NULL) {
     misse.list <- list()
     first.AICc <- Inf
@@ -347,6 +358,7 @@ MiSSEGreedyOLD <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c
         times.since.close.enough <- 0
         for (turnover.index in seq_along(turnover.tries)) {
             if(turnover.index>1 | eps.index==1) { # don't do the 1 turnover, 1 eps model twice -- overcounts it
+                starting.time <- Sys.time()
                 turnover <- sequence(turnover.tries[turnover.index])
                 eps <- turnover
                 if(eps.constant[eps.index]) {
