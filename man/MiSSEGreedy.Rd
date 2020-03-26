@@ -4,10 +4,10 @@
 \description{Executes a set of MiSSE models (Missing State Speciation
  and Extinction) on a phylogeny, varying the number of parameters for turnover and extinction fraction and stopping when models stop being very good.}
 \usage{
-MiSSEGreedy(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(), 
-stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=NULL, 
-condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE, 
-sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, 
+MiSSEGreedy(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(),
+stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=NULL,
+condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE,
+sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL,
 turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0)
 }
 \arguments{
@@ -49,7 +49,14 @@ turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0)
   then it assumes the results are unstable and discards them. The
   default is set to zero, but in testing a value of 1e-8 can sometimes
   produce stable solutions for both easy and very difficult optimization problems.}
-}See the \code{MiSSE} function for description of the method overall. It requires a set number of hidden state categories, but finding the best number of categories can be hard. For example, one could 1 to 26 different turnover categories and 1 to 26 possible extinction fraction categories. For most cases, we suspect that it makes sense to have the number of extinction fraction categories either equal to the number of turnover categories or set to the same category over the tree, but there are actually a lot of possibilities: have turnover=c(1,2,3) and eps=c(1,2,1), for example, or turnover=c(1,1,1) and eps=c(1,2,3). This uses the generateMiSSEGreedyCombinations function to generate a very large set of these possible models, then runs them in increasing complexity. By default, it stops when the models stop getting being reasonable in AICc. This is NOT where the models stop being significant (if you're looking for significance, note you don't get that from AICc), but where they probably will not contribute much to the model averaged parameter estimates and so may not be worth the bother of searching further. However, there's no guarantee that this is a wise decision: you could stop with 10 turnover rates, and 11 and 12 are far worse for AICc, but it could be that 13 turnover rates are much better than anything else (for that matter, the best number of turnover rates could be 42, even though MiSSe's current code can only go up to 26). And of course, in reality, the truth is that there is an infinite set of hidden rate parameters: a passing cloud blocks a tiny bit of energy for photosynthesis, so for that moment the rate of extinction for plants underneath the shadow is a tiny bit higher. You should not be using this to test hypotheses about how many hidden factors there are, but rather as a way to get a good enough model to estimate rates on a tree.
+}
+
+\value{
+\code{MiSSEGreedy} returns a list of class \code{misse.fit} objects.
+}
+
+\details{
+See the \code{MiSSE} function for description of the method overall. It requires a set number of hidden state categories, but finding the best number of categories can be hard. For example, one could 1 to 26 different turnover categories and 1 to 26 possible extinction fraction categories. For most cases, we suspect that it makes sense to have the number of extinction fraction categories either equal to the number of turnover categories or set to the same category over the tree, but there are actually a lot of possibilities: have turnover=c(1,2,3) and eps=c(1,2,1), for example, or turnover=c(1,1,1) and eps=c(1,2,3). This uses the generateMiSSEGreedyCombinations function to generate a very large set of these possible models, then runs them in increasing complexity. By default, it stops when the models stop getting being reasonable in AICc. This is NOT where the models stop being significant (if you're looking for significance, note you don't get that from AICc), but where they probably will not contribute much to the model averaged parameter estimates and so may not be worth the bother of searching further. However, there's no guarantee that this is a wise decision: you could stop with 10 turnover rates, and 11 and 12 are far worse for AICc, but it could be that 13 turnover rates are much better than anything else (for that matter, the best number of turnover rates could be 42, even though MiSSe's current code can only go up to 26). And of course, in reality, the truth is that there is an infinite set of hidden rate parameters: a passing cloud blocks a tiny bit of energy for photosynthesis, so for that moment the rate of extinction for plants underneath the shadow is a tiny bit higher. You should not be using this to test hypotheses about how many hidden factors there are, but rather as a way to get a good enough model to estimate rates on a tree.
 
 You can change how quickly the function stops trying new models with stop.deltaAICc. Once it runs a chunk of models where the best gets a model that is at least stop.deltaAICc worse than the *current* best model, it stops running new models. Since this is based on current best AICc, and we start with simple models, there's an asymmetry: a terrible model with no rate variation is always included, but a slightly less terrible model with 26 turnover rates might never be run.
 
@@ -60,17 +67,15 @@ After every chunk of models are done, this function will display the status: wha
 Saving output while this goes is highly recommended -- you can see how things are going and salvage something if a run fails (then, start again, deleting the models that worked from possible.combos and USING A DIFFERENT FILE TO SAVE TO SO YOU DON'T OVERWRITE THE OLD ONE. You can so this by giving a file name (including path, if you want) as the save.file argument. This will save the list of finished models (misse.list) and the possible.combos data.frame with additional information.
 }
 
-\details{
-\value{
-\code{MiSSEGreedy} returns a list of class \code{misse.fit} objects.
-}
+
+
 \examples{
 \donttest{
   library(ape)
   phy <- rcoal(50)
   potential.combos <- generateMiSSEGreedyCombinations(max.param=4, vary.both=TRUE)
   result <- MiSSEGreedy(phy, potential.combos, n.cores=parallel::detectCores())
-  # Yes, [[ is a function you can lapply, and the name of elements within each list 
+  # Yes, [[ is a function you can lapply, and the name of elements within each list
   # object can be arguments. Life is awesome.
   AICc <- unlist(lapply(result, "[[", "AICc"))
   deltaAICc <- AICc-min(AICc)
