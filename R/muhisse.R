@@ -651,8 +651,11 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
                         #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
                         print("before")
                         print(v.mat[which(generations == cache$node[fix.index]),])
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas
+                        lambdas.check <- lambdas
+                        lambdas.check[which(lambdas==0)] <- 1
+                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
                         print("after")
+                        v.mat[which(generations == cache$node[fix.index]),]
                         print(v.mat[which(generations == cache$node[fix.index]),])
                     }else{
                         fixer = numeric(4)
@@ -725,10 +728,9 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
-                        fixer = numeric(4)
-                        fixer[cache$state[fix.index]] = 1
-                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas
+                        lambdas.check <- lambdas
+                        lambdas.check[which(lambdas==0)] <- 1
+                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
                     }else{
                         fixer = numeric(4)
                         fixer[cache$state[fix.index]] = 1
