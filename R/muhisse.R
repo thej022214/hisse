@@ -615,9 +615,6 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
                         #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                        fixer.tmp = numeric(4)
-                        fixer.tmp[cache$state[fix.index]] = 1
-                        fixer = rep(fixer.tmp, 8)
                         v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas
                     }else{
                         #Fixes the state at the node nothing needs to be done other than fix the node
@@ -651,10 +648,12 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
-                        fixer = numeric(4)
-                        fixer[cache$state[fix.index]] = 1
                         #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                        print("before")
+                        print(v.mat[which(generations == cache$node[fix.index]),])
                         v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas
+                        print("after")
+                        print(v.mat[which(generations == cache$node[fix.index]),])
                     }else{
                         fixer = numeric(4)
                         fixer[cache$state[fix.index]] = 1
