@@ -516,11 +516,20 @@ OrganizeData <- function(data, phy, f, hidden.states){
     dat.tab <- as.data.table(tmp.df)
     setkey(dat.tab, DesNode)
     cols <- names(dat.tab)
-    for (j in 1:(dim(compD)[2])){
-        #dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
-        set(dat.tab, 1:nb.tip, cols[6+j], compD[,j])
-        #dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
-        set(dat.tab, 1:nb.tip, cols[38+j], compE[,j])
+    if(hidden.states == TRUE | hidden.states == "TEST1"){
+        for (j in 1:(dim(compD)[2])){
+            #dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
+            set(dat.tab, 1:nb.tip, cols[6+j], compD[,j])
+            #dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
+            set(dat.tab, 1:nb.tip, cols[38+j], compE[,j])
+        }
+    }else{
+        for (j in 1:(dim(compD)[2])){
+            #dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
+            set(dat.tab, 1:nb.tip, cols[6+j], compD[,j])
+            #dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
+            set(dat.tab, 1:nb.tip, cols[10+j], compE[,j])
+        }
     }
     return(dat.tab)
 }
@@ -605,14 +614,18 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
+                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
                         fixer.tmp = numeric(4)
                         fixer.tmp[cache$state[fix.index]] = 1
                         fixer = rep(fixer.tmp, 8)
+                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas
                     }else{
-                        fixer = numeric(32)
-                        fixer[cache$state[fix.index]] = 1
+                        #Fixes the state at the node nothing needs to be done other than fix the node
+                        fixer.tmp = numeric(4)
+                        fixer.tmp[cache$state[fix.index]] = 1
+                        fixer = rep(fixer.tmp, 8)
+                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / fixer
                     }
-                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                 }
             }
         }
@@ -637,9 +650,17 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
-                    fixer = numeric(4)
-                    fixer[cache$state[fix.index]] = 1
-                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                    if(cache$fix.type[fix.index] == "event"){
+                        fixer = numeric(4)
+                        fixer[cache$state[fix.index]] = 1
+                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas
+                    }else{
+                        fixer = numeric(4)
+                        fixer[cache$state[fix.index]] = 1
+                        #Fixes the state at the node
+                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                    }
                 }
             }
         }
@@ -678,15 +699,21 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
-                    if(cache$fix.type[fix.index] == "event"){
-                        fixer.tmp = numeric(4)
-                        fixer.tmp[cache$state[fix.index]] = 1
-                        fixer = rep(fixer.tmp, 8)
-                    }else{
-                        fixer = numeric(32)
-                        fixer[cache$state[fix.index]] = 1
+                    for(fix.index in 1:length(cache$node)){
+                        if(cache$fix.type[fix.index] == "event"){
+                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                            fixer.tmp = numeric(4)
+                            fixer.tmp[cache$state[fix.index]] = 1
+                            fixer = rep(fixer.tmp, 8)
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas
+                        }else{
+                            #Fixes the state at the node nothing needs to be done other than fix the node
+                            fixer.tmp = numeric(4)
+                            fixer.tmp[cache$state[fix.index]] = 1
+                            fixer = rep(fixer.tmp, 8)
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / fixer
+                        }
                     }
-                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                 }
             }
         }
@@ -698,9 +725,17 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
         if(!is.null(cache$node)){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
-                    fixer = numeric(4)
-                    fixer[cache$state[fix.index]] = 1
-                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                    if(cache$fix.type[fix.index] == "event"){
+                        fixer = numeric(4)
+                        fixer[cache$state[fix.index]] = 1
+                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas
+                    }else{
+                        fixer = numeric(4)
+                        fixer[cache$state[fix.index]] = 1
+                        #Fixes the state at the node
+                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                    }
                 }
             }
         }
