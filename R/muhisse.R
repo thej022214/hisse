@@ -622,7 +622,7 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
                         #Fixes the state at the node nothing needs to be done other than fix the node
                         fixer = numeric(32)
                         fixer[cache$state[fix.index]] = 1
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / fixer
+                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                     }
                 }
             }
@@ -707,7 +707,7 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
                             #Fixes the state at the node nothing needs to be done other than fix the node
                             fixer = numeric(32)
                             fixer[cache$state[fix.index]] = 1
-                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / fixer
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                         }
                     }
                 }
