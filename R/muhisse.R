@@ -539,13 +539,14 @@ SingleChildProb <- function(cache, pars, compD, compE, start.time, end.time){
     if(cache$hidden.states == TRUE){
         yini <- c(E00A = compE[1], E01A = compE[2], E10A = compE[3], E11A = compE[4], E00B = compE[5], E01B = compE[6], E10B = compE[7], E11B = compE[8], E00C = compE[9], E01C = compE[10], E10C = compE[11], E11C = compE[12], E00D = compE[13], E01D = compE[14], E10D = compE[15], E11D = compE[16], E00E = compE[17], E01E = compE[18], E10E = compE[19], E11E = compE[20], E00F = compE[21], E01F = compE[22], E10F = compE[23], E11F = compE[24], E00G = compE[25], E01G = compE[26], E10G = compE[27], E11G = compE[28], E00H = compE[29], E01H = compE[30], E10H = compE[31], E11H = compE[32], D00A = compD[1], D01A = compD[2], D10A = compD[3], D11A = compD[4], D00B = compD[5], D01B = compD[6], D10B = compD[7], D11B = compD[8], D00C = compD[9], D01C = compD[10], D10C = compD[11], D11C = compD[12], D00D = compD[13], D01D = compD[14], D10D = compD[15], D11D = compD[16], D00E = compD[17], D01E = compD[18], D10E = compD[19], D11E = compD[20], D00F = compD[21], D01F = compD[22], D10F = compD[23], D11F = compD[24], D00G = compD[25], D01G = compD[26], D10G = compD[27], D11G = compD[28], D00H = compD[29], D01H = compD[30], D10H = compD[31], D11H = compD[32])
         times=c(start.time, end.time)
-        #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8)
-        prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
     }else{
         yini <-c(E00=compE[1], E01=compE[2], E10=compE[3], E11=compE[4], D00=compD[1], D01=compD[2], D10=compD[3], D11=compD[4])
+        print(yini)
         times=c(start.time, end.time)
-        #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
-        prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
     }
     ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
     if(attributes(prob.subtree.cal.full)$istate[1] < 0){
@@ -615,9 +616,13 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
                         #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                        print("before")
+                        print(v.mat[which(generations == cache$node[fix.index]),])
                         lambdas.check <- lambdas
                         lambdas.check[which(lambdas==0)] <- 1
                         v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
+                        print("after")
+                        print(v.mat[which(generations == cache$node[fix.index]),])
                     }else{
                         #Fixes the state at the node nothing needs to be done other than fix the node
                         fixer = numeric(32)
@@ -650,9 +655,13 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
                         #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                        print("before")
+                        print(v.mat[which(generations == cache$node[fix.index]),])
                         lambdas.check <- lambdas
                         lambdas.check[which(lambdas==0)] <- 1
                         v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
+                        print("after")
+                        print(v.mat[which(generations == cache$node[fix.index]),])
                      }else{
                         fixer = numeric(4)
                         fixer[cache$state[fix.index]] = 1
@@ -764,6 +773,24 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
         pars <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$mu00A, cache$mu01A, cache$mu10A, cache$mu11A, cache$q00A_01A, cache$q00A_10A, cache$q00A_11A, cache$q01A_00A, cache$q01A_10A, cache$q01A_11A, cache$q10A_00A, cache$q10A_01A, cache$q10A_11A, cache$q11A_00A, cache$q11A_01A, cache$q11A_10A, cache$q00A_00B, cache$q00A_00C, cache$q00A_00D, cache$q00A_00E, cache$q00A_00F, cache$q00A_00G, cache$q00A_00H, cache$q01A_01B, cache$q01A_01C, cache$q01A_01D, cache$q01A_01E, cache$q01A_01F, cache$q01A_01G, cache$q01A_01H, cache$q10A_10B, cache$q10A_10C, cache$q10A_10D, cache$q10A_10E, cache$q10A_10F, cache$q10A_10G, cache$q10A_10H, cache$q11A_11B, cache$q11A_11C, cache$q11A_11D, cache$q11A_11E, cache$q11A_11F, cache$q11A_11G, cache$q11A_11H, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$mu00B, cache$mu01B, cache$mu10B, cache$mu11B, cache$q00B_01B, cache$q00B_10B, cache$q00B_11B, cache$q01B_00B, cache$q01B_10B, cache$q01B_11B, cache$q10B_00B, cache$q10B_01B, cache$q10B_11B, cache$q11B_00B, cache$q11B_01B, cache$q11B_10B, cache$q00B_00A, cache$q00B_00C, cache$q00B_00D, cache$q00B_00E, cache$q00B_00F, cache$q00B_00G, cache$q00B_00H, cache$q01B_01A, cache$q01B_01C, cache$q01B_01D, cache$q01B_01E, cache$q01B_01F, cache$q01B_01G, cache$q01B_01H, cache$q10B_10A, cache$q10B_10C, cache$q10B_10D, cache$q10B_10E, cache$q10B_10F, cache$q10B_10G, cache$q10B_10H, cache$q11B_11A, cache$q11B_11C, cache$q11B_11D, cache$q11B_11E, cache$q11B_11F, cache$q11B_11G, cache$q11B_11H, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$mu00C, cache$mu01C, cache$mu10C, cache$mu11C, cache$q00C_01C, cache$q00C_10C, cache$q00C_11C, cache$q01C_00C, cache$q01C_10C, cache$q01C_11C, cache$q10C_00C, cache$q10C_01C, cache$q10C_11C, cache$q11C_00C, cache$q11C_01C, cache$q11C_10C, cache$q00C_00A, cache$q00C_00B, cache$q00C_00D, cache$q00C_00E, cache$q00C_00F, cache$q00C_00G, cache$q00C_00H, cache$q01C_01A, cache$q01C_01B, cache$q01C_01D, cache$q01C_01E, cache$q01C_01F, cache$q01C_01G, cache$q01C_01H, cache$q10C_10A, cache$q10C_10B, cache$q10C_10D, cache$q10C_10E, cache$q10C_10F, cache$q10C_10G, cache$q10C_10H, cache$q11C_11A, cache$q11C_11B, cache$q11C_11D, cache$q11C_11E, cache$q11C_11F, cache$q11C_11G, cache$q11C_11H, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$mu00D, cache$mu01D, cache$mu10D, cache$mu11D, cache$q00D_01D, cache$q00D_10D, cache$q00D_11D, cache$q01D_00D, cache$q01D_10D, cache$q01D_11D, cache$q10D_00D, cache$q10D_01D, cache$q10D_11D, cache$q11D_00D, cache$q11D_01D, cache$q11D_10D, cache$q00D_00A, cache$q00D_00B, cache$q00D_00C, cache$q00D_00E, cache$q00D_00F, cache$q00D_00G, cache$q00D_00H, cache$q01D_01A, cache$q01D_01B, cache$q01D_01C, cache$q01D_01E, cache$q01D_01F, cache$q01D_01G, cache$q01D_01H, cache$q10D_10A, cache$q10D_10B, cache$q10D_10C, cache$q10D_10E, cache$q10D_10F, cache$q10D_10G, cache$q10D_10H, cache$q11D_11A, cache$q11D_11B, cache$q11D_11C, cache$q11D_11E, cache$q11D_11F, cache$q11D_11G, cache$q11D_11H, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$mu00E, cache$mu01E, cache$mu10E, cache$mu11E, cache$q00E_01E, cache$q00E_10E, cache$q00E_11E, cache$q01E_00E, cache$q01E_10E, cache$q01E_11E, cache$q10E_00E, cache$q10E_01E, cache$q10E_11E, cache$q11E_00E, cache$q11E_01E, cache$q11E_10E, cache$q00E_00A, cache$q00E_00B, cache$q00E_00C, cache$q00E_00D, cache$q00E_00F, cache$q00E_00G, cache$q00E_00H, cache$q01E_01A, cache$q01E_01B, cache$q01E_01C, cache$q01E_01D, cache$q01E_01F, cache$q01E_01G, cache$q01E_01H, cache$q10E_10A, cache$q10E_10B, cache$q10E_10C, cache$q10E_10D, cache$q10E_10F, cache$q10E_10G, cache$q10E_10H, cache$q11E_11A, cache$q11E_11B, cache$q11E_11C, cache$q11E_11D, cache$q11E_11F, cache$q11E_11G, cache$q11E_11H, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$mu00F, cache$mu01F, cache$mu10F, cache$mu11F, cache$q00F_01F, cache$q00F_10F, cache$q00F_11F, cache$q01F_00F, cache$q01F_10F, cache$q01F_11F, cache$q10F_00F, cache$q10F_01F, cache$q10F_11F, cache$q11F_00F, cache$q11F_01F, cache$q11F_10F, cache$q00F_00A, cache$q00F_00B, cache$q00F_00C, cache$q00F_00D, cache$q00F_00E, cache$q00F_00G, cache$q00F_00H, cache$q01F_01A, cache$q01F_01B, cache$q01F_01C, cache$q01F_01D, cache$q01F_01E, cache$q01F_01G, cache$q01F_01H, cache$q10F_10A, cache$q10F_10B, cache$q10F_10C, cache$q10F_10D, cache$q10F_10E, cache$q10F_10G, cache$q10F_10H, cache$q11F_11A, cache$q11F_11B, cache$q11F_11C, cache$q11F_11D, cache$q11F_11E, cache$q11F_11G, cache$q11F_11H, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$mu00G, cache$mu01G, cache$mu10G, cache$mu11G, cache$q00G_01G, cache$q00G_10G, cache$q00G_11G, cache$q01G_00G, cache$q01G_10G, cache$q01G_11G, cache$q10G_00G, cache$q10G_01G, cache$q10G_11G, cache$q11G_00G, cache$q11G_01G, cache$q11G_10G, cache$q00G_00A, cache$q00G_00B, cache$q00G_00C, cache$q00G_00D, cache$q00G_00E, cache$q00G_00F, cache$q00G_00H, cache$q01G_01A, cache$q01G_01B, cache$q01G_01C, cache$q01G_01D, cache$q01G_01E, cache$q01G_01F, cache$q01G_01H, cache$q10G_10A, cache$q10G_10B, cache$q10G_10C, cache$q10G_10D, cache$q10G_10E, cache$q10G_10F, cache$q10G_10H, cache$q11G_11A, cache$q11G_11B, cache$q11G_11C, cache$q11G_11D, cache$q11G_11E, cache$q11G_11F, cache$q11G_11H, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H, cache$mu00H, cache$mu01H, cache$mu10H, cache$mu11H, cache$q00H_01H, cache$q00H_10H, cache$q00H_11H, cache$q01H_00H, cache$q01H_10H, cache$q01H_11H, cache$q10H_00H, cache$q10H_01H, cache$q10H_11H, cache$q11H_00H, cache$q11H_01H, cache$q11H_10H, cache$q00H_00A, cache$q00H_00B, cache$q00H_00C, cache$q00H_00D, cache$q00H_00E, cache$q00H_00F, cache$q00H_00G, cache$q01H_01A, cache$q01H_01B, cache$q01H_01C, cache$q01H_01D, cache$q01H_01E, cache$q01H_01F, cache$q01H_01G, cache$q10H_10A, cache$q10H_10B, cache$q10H_10C, cache$q10H_10D, cache$q10H_10E, cache$q10H_10F, cache$q10H_10G, cache$q11H_11A, cache$q11H_11B, cache$q11H_11C, cache$q11H_11D, cache$q11H_11E, cache$q11H_11F, cache$q11H_11G)
         lambda <- c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H)
     }
+    
+    ## Update fossil tips initial condition -- for use by DEBaTE function only ##
+    if(any(fix.type == "event")){
+        rows <- dat.tab[BranchLength==0, which=TRUE]
+        CurrentGenData <- dat.tab[rows]
+        if(hidden.state==TRUE){
+            tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:38], z[39:70],  0, z[1])))
+            phi.mat <- matrix(tmp[,1:4], nrow=length(unique(CurrentGenData$FocalNode)), ncol=4)
+        }else{
+            tmp <- t(apply(CurrentGenData, 1, function(z) hisse:::SingleChildProb(cache, pars, z[7:10], z[11:14],  0, z[1])))
+            phi.mat <- matrix(tmp[,1:4], nrow=length(unique(CurrentGenData$FocalNode)), ncol=4)
+        }
+        cols <- names(dat.tab)
+        for (j in 1:dim(phi.mat)[2]){
+            set(dat.tab, rows, cols[10+j], phi.mat[,j])
+        }
+    }
+    ##########################################
     
     nb.tip <- cache$nb.tip
     nb.node <- cache$nb.node
