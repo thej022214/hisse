@@ -12,7 +12,6 @@ importFrom("stats", "dbeta", "density", "quantile", "reorder", "rexp", "runif", 
 importFrom("diversitree", "tree.classe")
 importFrom("plotrix", "draw.arc")
 importFrom("stats", "lm", "predict")
-exportClasses('hisse.fit', 'hisse.null4.fit', 'geohisse.fit', 'hisse.states', 'hisse.support', 'geohisse.support', 'hisse.geosse.states', 'muhisse.fit', 'muhisse.states', 'misse.fit', 'misse.states')
 S3method(print, hisse.fit)
 S3method(print, hisse.null4.fit)
 S3method(print, hisse.states)

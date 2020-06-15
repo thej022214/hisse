@@ -1,13 +1,13 @@
 Package: hisse
 Version: 1.9.8
-Date: 2020-03-26
+Date: 2020-06-14
 Title: Hidden State Speciation and Extinction
 Authors@R: c(person("Jeremy", "Beaulieu", role=c("aut", "cre"),
-                     email = "jbeaulieu@nimbios.org"),
+                     email = "jmbeauli@uark.edu"),
                      person("Brian", "O'Meara", role=c("aut")),
 		      person("Daniel", "Caetano", role=c("aut")),
 			person("James", "Boyko", role=c("aut")))
-Maintainer: Jeremy Beaulieu <jbeaulieu@nimbios.org>
+Maintainer: Jeremy Beaulieu <jmbeauli@uark.edu>
 Depends: ape, deSolve, GenSA, subplex, nloptr
 Suggests: testthat, knitr
 Imports: parallel, phytools, data.table, methods, diversitree, plotrix
