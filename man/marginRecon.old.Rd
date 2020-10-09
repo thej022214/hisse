@@ -1,9 +1,9 @@
-\name{MarginRecon}
-\alias{MarginRecon}
-\title{Ancestral State Estimation based on Marginal Reconstruction}
+\name{MarginRecon.old}
+\alias{MarginRecon.old}
+\title{Original Ancestral State Estimation based on Marginal Reconstruction}
 \description{Estimates the likeliest states for both internal nodes and tips of a phylogeny using the marginal reconstruction algorithm.}
 \usage{
-MarginRecon(phy, data, f, pars, hidden.states=TRUE, four.state.null=FALSE, 
+MarginRecon.old(phy, data, f, pars, hidden.states=TRUE, four.state.null=FALSE, 
 timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, 
 aic=NULL, verbose=TRUE, n.cores=NULL)
 }       
@@ -23,11 +23,11 @@ aic=NULL, verbose=TRUE, n.cores=NULL)
 \item{n.cores}{specifies the number of independent processors to conduct the analysis.. The default is \code{NULL}.}
 }
 \details{
-In this implementation the marginal probability of state i for a focal node is simply the overall likelihood of the tree and data when the state of the focal node is fixed in state i. Note that the likeliest tip states can also be estimated: we observe state 1, but the underlying state could either be state 1A or 1B. Thus, for any given node or tip we traverse the entire tree as many times as there are states in the model. As the size of the tree grows, however, these repeated tree traversals can slow the calculation down considerably. For this reason, we allow the marginal calculation to be conducted in parallel across any number of independent computer processors.
+Conducts ancestral state reconstruction on the original \code{hisse.old} and \code{hisseNull4.old} functions. In this implementation the marginal probability of state i for a focal node is simply the overall likelihood of the tree and data when the state of the focal node is fixed in state i. Note that the likeliest tip states can also be estimated: we observe state 1, but the underlying state could either be state 1A or 1B. Thus, for any given node or tip we traverse the entire tree as many times as there are states in the model. As the size of the tree grows, however, these repeated tree traversals can slow the calculation down considerably. For this reason, we allow the marginal calculation to be conducted in parallel across any number of independent computer processors.
 
 For user-specified \dQuote{root.p}, you should specify the probability for each state. If you are doing a hidden model, there will be four states: 0A, 1A, 0B, 1B. So if you wanted to say the root had to be state 0, you would specify \dQuote{root.p = c(0.5, 0, 0.5, 0)}. 
 
-See help for \dQuote{hisse} for more on other parameters for this function.
+See help for \dQuote{hisse.old} for more on other parameters for this function.
 
 }
 \value{

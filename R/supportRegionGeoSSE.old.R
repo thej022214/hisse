@@ -4,27 +4,27 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-SupportRegionGeoSSE <- function(geohisse.obj, n.points=1000, scale.int=0.1, desired.delta=2, min.number.points=10, verbose=TRUE){
-    phy <- geohisse.obj$phy
-    data <- geohisse.obj$data
+SupportRegionGeoSSE.old <- function(geohisse.old.obj, n.points=1000, scale.int=0.1, desired.delta=2, min.number.points=10, verbose=TRUE){
+    phy <- geohisse.old.obj$phy
+    data <- geohisse.old.obj$data
     data.new<-data.frame(data[,2], data[,2], row.names=data[,1])
     data.new<-data.new[phy$tip.label,]
-    f <- geohisse.obj$f
-    assume.cladogenetic <- geohisse.obj$assume.cladogenetic
-    np <- max(geohisse.obj$index.par) - 1
+    f <- geohisse.old.obj$f
+    assume.cladogenetic <- geohisse.old.obj$assume.cladogenetic
+    np <- max(geohisse.old.obj$index.par) - 1
     par <- numeric(np)
-    free.parameters <- which(geohisse.obj$index.par < max(geohisse.obj$index.par))
+    free.parameters <- which(geohisse.old.obj$index.par < max(geohisse.old.obj$index.par))
     np.sequence <- 1:np
     for(i in np.sequence){
-        par[i] <- geohisse.obj$solution[which(geohisse.obj$index.par == np.sequence[i])[1]]
+        par[i] <- geohisse.old.obj$solution[which(geohisse.old.obj$index.par == np.sequence[i])[1]]
     }
-    hidden.states=geohisse.obj$hidden.areas
-    condition.on.survival=geohisse.obj$condition.on.survival
-    root.type=geohisse.obj$root.type
-    root.p=geohisse.obj$root.p
+    hidden.states=geohisse.old.obj$hidden.areas
+    condition.on.survival=geohisse.old.obj$condition.on.survival
+    root.type=geohisse.old.obj$root.type
+    root.p=geohisse.old.obj$root.p
 
-    lower <- exp(geohisse.obj$lower.bounds)
-    upper <- exp(geohisse.obj$upper.bounds)
+    lower <- exp(geohisse.old.obj$lower.bounds)
+    upper <- exp(geohisse.old.obj$upper.bounds)
 
     #Bad Jeremy! Hard-coded column headers...
     if(assume.cladogenetic==TRUE){
@@ -33,11 +33,11 @@ SupportRegionGeoSSE <- function(geohisse.obj, n.points=1000, scale.int=0.1, desi
         interval.names <- c("lnLik", "s0A", "s1A", "s01A", "x0A", "x1A", "x01A", "d0A_1A ", "d0A_01A", "d1A_0A", "d1A_01A", "d01A_0A", "d01A_1A", "d0A_0B", "d0A_0C", "d0A_0D", "d0A_0E", "d1A_1B", "d1A_1C", "d1A_1D", "d1A_1E", "d01A_01B", "d01A_01C", "d01A_01D", "d01A_01E", "s0B", "s1B", "s01B", "x0B", "x1B", "x01B", "d0B_1B ", "d0B_01B", "d1B_0B", "d1B_01B", "d01B_0B", "d01B_1B", "d0B_0A", "d0B_0C", "d0B_0D", "d0B_0E", "d1B_1A", "d1B_1C", "d1B_1D", "d1B_1E", "d01B_01A", "d01B_01C", "d01B_01D", "d01B_01E", "s0C", "s1C", "s01C", "x0C", "x1C", "x01C", "d0C_1C ", "d0C_01C", "d1C_0C", "d1C_01C", "d01C_0C", "d01C_1C", "d0C_0A", "d0C_0B", "d0C_0D", "d0C_0E", "d1C_1A", "d1C_1B", "d1C_1D", "d1C_1E", "d01C_01A", "d01C_01B", "d01C_01D", "d01C_01E", "s0D", "s1D", "s01D", "x0D", "x1D", "x01D", "d0D_1D ", "d0D_01D", "d1D_0D", "d1D_01D", "d01D_0D", "d01D_1D", "d0D_0A", "d0D_0B", "d0D_0C", "d0D_0E", "d1D_1A", "d1D_1B", "d1D_1C", "d1D_1E", "d01D_01A", "d01D_01B", "d01D_01C", "d01D_01E", "s0E", "s1E", "s01E", "x0E", "x1E", "x01E", "d0E_1E ", "d0E_01E", "d1E_0E", "d1E_01E", "d01E_0E", "d01E_1E", "d0E_0A", "d0E_0B", "d0E_0C", "d0E_0D", "d1E_1A", "d1E_1B", "d1E_1C", "d1E_1D", "d01E_01A", "d01E_01B", "d01E_01C", "d01E_01D")
     }
 
-    interval.results <- AdaptiveConfidenceIntervalSamplingGeoHiSSE(par, lower=lower, upper=upper, desired.delta = desired.delta, n.points=n.points, verbose=verbose, phy=phy, data=data.new, index.par=geohisse.obj$index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, assume.cladogenetic=assume.cladogenetic, min.number.points=min.number.points)
-    interval.results.final <- matrix(0, n.points+1, length(geohisse.obj$index.par))
+    interval.results <- AdaptiveConfidenceIntervalSamplingGeoHiSSE.old(par, lower=lower, upper=upper, desired.delta = desired.delta, n.points=n.points, verbose=verbose, phy=phy, data=data.new, index.par=geohisse.old.obj$index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, assume.cladogenetic=assume.cladogenetic, min.number.points=min.number.points)
+    interval.results.final <- matrix(0, n.points+1, length(geohisse.old.obj$index.par))
     for(i in 1:(n.points+1)){
         par.rep <- unlist(interval.results[i,-1],use.names=FALSE)
-        interval.results.final[i,] <- c(par.rep,0)[geohisse.obj$index.par]
+        interval.results.final[i,] <- c(par.rep,0)[geohisse.old.obj$index.par]
     }
     interval.results.final <- cbind(interval.results[,1], interval.results.final)
     interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
@@ -58,7 +58,7 @@ SupportRegionGeoSSE <- function(geohisse.obj, n.points=1000, scale.int=0.1, desi
 
 
 
-AdaptiveConfidenceIntervalSamplingGeoHiSSE <- function(par, lower, upper, desired.delta=2, n.points=5000, verbose=TRUE, phy, data, index.par, f, hidden.states, condition.on.survival, root.type, root.p, scale.int, assume.cladogenetic=TRUE, min.number.points=10) {
+AdaptiveConfidenceIntervalSamplingGeoHiSSE.old <- function(par, lower, upper, desired.delta=2, n.points=5000, verbose=TRUE, phy, data, index.par, f, hidden.states, condition.on.survival, root.type, root.p, scale.int, assume.cladogenetic=TRUE, min.number.points=10) {
     #Wrangle the data so that we can make use of DownPass easily:
     actual.params = which(index.par < max(index.par))
     model.vec <- numeric(length(index.par))
@@ -124,7 +124,7 @@ AdaptiveConfidenceIntervalSamplingGeoHiSSE <- function(par, lower, upper, desire
     while(length(which((results[,1]-min(results[,1], na.rm=TRUE))<desired.delta))<min.number.points) {
         warning("Did not generate enough points in the region; restarting to create additional points")
         print(paste("Now doing an additional", 2+round(n.points/4), "points to the", dim(results)[1], "ones already done because not enough points in the good enough region were sampled"))
-        new.results <- AdaptiveConfidenceIntervalSamplingGeoHiSSE(par, lower=lower, upper=upper, desired.delta = desired.delta, n.points=n.points, verbose=verbose, phy=phy, data=data, index.par=index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, assume.cladogenetic=assume.cladogenetic, min.number.points=0)
+        new.results <- AdaptiveConfidenceIntervalSamplingGeoHiSSE.old(par, lower=lower, upper=upper, desired.delta = desired.delta, n.points=n.points, verbose=verbose, phy=phy, data=data, index.par=index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, assume.cladogenetic=assume.cladogenetic, min.number.points=0)
         results <- rbind(results, new.results[-1,])
     }
     return(results)

@@ -4,7 +4,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=FALSE, timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
+MarginRecon.old <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=FALSE, timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
@@ -183,7 +183,7 @@ MarginRecon <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
+MarginReconGeoSSE.old <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -315,7 +315,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=TRUE, assume.clad
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconfHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -579,7 +579,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconfGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     

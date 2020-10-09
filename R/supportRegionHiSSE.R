@@ -4,37 +4,37 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-SupportRegionfHiSSE <- function(fhisse.obj, n.points=1000, scale.int=0.1, desired.delta=2, min.number.points=10, verbose=TRUE){
-    phy <- fhisse.obj$phy
-    data <- fhisse.obj$data
+SupportRegionHiSSE <- function(hisse.obj, n.points=1000, scale.int=0.1, desired.delta=2, min.number.points=10, verbose=TRUE){
+    phy <- hisse.obj$phy
+    data <- hisse.obj$data
     data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
     data.new <- data.new[phy$tip.label,]
 
-    f <- fhisse.obj$f
-    np <- max(fhisse.obj$index.par) - 1
+    f <- hisse.obj$f
+    np <- max(hisse.obj$index.par) - 1
     par <- numeric(np)
-    free.parameters <- which(fhisse.obj$index.par < max(fhisse.obj$index.par))
+    free.parameters <- which(hisse.obj$index.par < max(hisse.obj$index.par))
     np.sequence <- 1:np
     
     for(i in np.sequence){
-        par[i] <- fhisse.obj$solution[which(fhisse.obj$index.par == np.sequence[i])[1]]
+        par[i] <- hisse.obj$solution[which(hisse.obj$index.par == np.sequence[i])[1]]
     }
-    hidden.states=fhisse.obj$hidden.states
-    condition.on.survival=fhisse.obj$condition.on.survival
-    root.type=fhisse.obj$root.type
-    root.p=fhisse.obj$root.p
+    hidden.states=hisse.obj$hidden.states
+    condition.on.survival=hisse.obj$condition.on.survival
+    root.type=hisse.obj$root.type
+    root.p=hisse.obj$root.p
     
-    lower <- exp(fhisse.obj$lower.bounds)
-    upper <- exp(fhisse.obj$upper.bounds)
+    lower <- exp(hisse.obj$lower.bounds)
+    upper <- exp(hisse.obj$upper.bounds)
     
     #Bad Jeremy! Hard-coded column headers...
     interval.names <- c("lnLik", "turnover0A","turnover1A","eps0A","eps1A","q0A1A","q1A0A","q0A0B","q0A0C","q0A0D","q1A1B","q1A1C","q1A1D","turnover0B","turnover1B","eps0B","eps1B","q0B1B","q1B0B","q0B0A","q0B0C","q0B0D","q1B1A","q1B1C","q1B1D","turnover0C","turnover1C","eps0C","eps1C","q0C1C","q1C0C","q0C0A","q0C0B","q0C0D","q1C1A","q1C1B","q1C1D","turnover0D","turnover1D","eps0D","eps1D","q0D1D","q1D0D","q0D0A","q0D0B","q0D0C","q1D1A","q1D1B","q1D1C")
 
-    interval.results <- AdaptiveConfidenceIntervalSamplingfHiSSE(par, lower=lower, upper=upper, desired.delta = desired.delta, n.points=n.points, verbose=verbose, phy=phy, data=data.new, index.par=fhisse.obj$index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, min.number.points=min.number.points)
-    interval.results.final <- matrix(0, n.points+1, length(fhisse.obj$index.par))
+    interval.results <- AdaptiveConfidenceIntervalSamplingfHiSSE(par, lower=lower, upper=upper, desired.delta = desired.delta, n.points=n.points, verbose=verbose, phy=phy, data=data.new, index.par=hisse.obj$index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, min.number.points=min.number.points)
+    interval.results.final <- matrix(0, n.points+1, length(hisse.obj$index.par))
     for(i in 1:(n.points+1)){
         par.rep <- unlist(interval.results[i,-1],use.names=FALSE)
-        interval.results.final[i,] <- c(par.rep,0)[fhisse.obj$index.par]
+        interval.results.final[i,] <- c(par.rep,0)[hisse.obj$index.par]
     }
     interval.results.final <- cbind(interval.results[,1], interval.results.final)
     interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
@@ -47,7 +47,7 @@ SupportRegionfHiSSE <- function(fhisse.obj, n.points=1000, scale.int=0.1, desire
         obj$ci <- ci.interval
         obj$points.within.region = interval.results.in
         obj$all.points = interval.results.final
-        class(obj) = "fhisse.support"
+        class(obj) = "hisse.support"
         return(obj)
     }
 }
@@ -122,7 +122,7 @@ AdaptiveConfidenceIntervalSamplingfHiSSE <- function(par, lower, upper, desired.
 }
 
 
-print.fhisse.support <- function(x,...){
+print.hisse.support <- function(x,...){
     
     cat("\nSupport Region\n")
     print(x$ci[,-1])

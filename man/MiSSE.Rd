@@ -5,7 +5,7 @@
  and Extinction) on a phylogeny.}
 \usage{
 MiSSE(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE,
-root.type="madfitz", root.p=NULL, sann=FALSE, sann.its=10000,
+root.type="madfitz", root.p=NULL, sann=TRUE, sann.its=1000,
 bounded.search=TRUE,  max.tol=.Machine$double.eps^.50, starting.vals=NULL,
 turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL,
 ode.eps=0, dt.threads=1,expand.mode=FALSE)

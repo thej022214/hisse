@@ -1,12 +1,12 @@
-\name{hisse.null4}
-\alias{hisse.null4}
-\title{Four state trait-independent Hidden State Speciation and Extinction}
-\description{Sets up and executes a four state trait-independent HiSSE model (Hidden State Speciation and Extinction) on a phylogeny and character set.}
+\name{hisse.null4.old}
+\alias{hisse.null4.old}
+\title{Original Four state trait-independent Hidden State Speciation and Extinction}
+\description{Sets up and executes the original four state trait-independent HiSSE model (Hidden State Speciation and Extinction) on a phylogeny and character set.}
 \usage{
-hisse.null4(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), 
+hisse.null4.old(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), 
 eps.anc=rep(c(1,2,3,4),2), trans.type="equal", condition.on.survival=TRUE, 
-root.type="madfitz", root.p=NULL,  output.type="turnover", sann=FALSE, 
-sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25,
+root.type="madfitz", root.p=NULL,  output.type="turnover", sann=TRUE, 
+sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50,
 starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100,
 ode.eps=0)
 }       
@@ -21,7 +21,7 @@ ode.eps=0)
 \item{root.type}{indicates whether root summarization follow the procedure described by FitzJohn et al. 2009, \dQuote{madfitz} or Herrera-Alsina et al. 2018, \dQuote{herr_als}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
 \item{output.type}{indicates whether the rates should be printed onscreen as the optimized variables, \dQuote{turnover}, transformed to reflect net diversification, \dQuote{net.div}, or transformed to reflect \eqn{\lambda}{lambda} and \eqn{\mu}{mu}, \dQuote{raw}.}
-\item{sann}{a logical indicating whether a two-step optimization procedure is to be used. The first includes a simulate annealing approach, with the second involving a refinement using \code{subplex}. The default is \code{FALSE}.}
+\item{sann}{a logical indicating whether a two-step optimization procedure is to be used. The first includes a simulate annealing approach, with the second involving a refinement using \code{subplex}. The default is \code{TRUE}.}
 \item{sann.its}{a numeric indicating the number of times the simulated annealing algorithm should call the objective function.}
 \item{bounded.search}{a logical indicating whether or not bounds should be enforced during optimization. The default is is \code{TRUE}.}
 \item{max.tol}{supplies the relative optimization tolerance to \code{subplex}.}
@@ -32,11 +32,11 @@ ode.eps=0)
 \item{ode.eps}{sets the tolerance for the integration at the end of a branch. Essentially if the sum of compD is less than this tolerance, then it assumes the results are unstable and discards them. The default is set to zero, but in testing a value of 1e-8 can sometimes produce stable solutions for both easy and very difficult optimization problems.}
 }
 \details{
-This function sets up and executes a four-state trait independent HiSSE model. The model closely follows \code{hisse}.
+This function sets up and executes a four-state trait independent HiSSE model. The model closely follows \code{hisse.old}. However, note that this function is no longer necessary and can be called and evaluated directly using the new \code{hisse} function.
 
-Like \code{hisse}, users input vectors containing values to indicate how many free parameters are to be estimated for each of the variables in the model. However, the null-four model assumes that \dQuote{turnover.anc} and \dQuote{eps.anc} are linked between the two observed states. Thus, users are unlikely to alter the inputs much, aside from perhaps fixing \dQuote{turnover.anc} or \dQuote{eps.anc} to be equal across the four hidden states, where the \dQuote{turnover.anc} input vector is set as rep(c(1,1,1,1),2). For a Yule equivalent, the input vector for \dQuote{eps.anc} would be rep(c(0,0,0,0),2). For how to setup a null-two model see the example code below.
+Like \code{hisse.old}, users input vectors containing values to indicate how many free parameters are to be estimated for each of the variables in the model. However, the null-four model assumes that \dQuote{turnover.anc} and \dQuote{eps.anc} are linked between the two observed states. Thus, users are unlikely to alter the inputs much, aside from perhaps fixing \dQuote{turnover.anc} or \dQuote{eps.anc} to be equal across the four hidden states, where the \dQuote{turnover.anc} input vector is set as rep(c(1,1,1,1),2). For a Yule equivalent, the input vector for \dQuote{eps.anc} would be rep(c(0,0,0,0),2). For how to setup a null-two model see the example code below.
 
-For user-specified \dQuote{root.p}, you should specify the probability for each state. See help for \dQuote{hisse} for more on other parameters for this function.
+For user-specified \dQuote{root.p}, you should specify the probability for each state. See help for \dQuote{hisse.old} for more on other parameters for this function.
 
 For the \dQuote{root.type} option, we are currently maintaining the previous default of 
 \dQuote{madfitz}. However, it was recently pointed out by Herrera-Alsina et al. (2018)
@@ -58,7 +58,7 @@ root options.
 
 }
 \value{
-\code{hisse} returns an object of class \code{hisse.fit}. This is a list with elements:
+\code{hisse.null4.old} returns an object of class \code{hisse.fit}. This is a list with elements:
 \item{$loglik}{the maximum negative log-likelihood.}
 \item{$AIC}{Akaike information criterion.}
 \item{$AICc}{Akaike information criterion corrected for sample-size.}
@@ -87,14 +87,14 @@ phy <- tree.bisse(pars, max.t=30, x0=0)
 sim.dat <- data.frame(names(phy$tip.state), phy$tip.state)
 
 ## Fit null-four HiSSE:
-pp.hisse.null <- hisse.null4(phy, sim.dat, turnover.anc=rep(c(1,2,3,4),2), 
+pp.hisse.null <- hisse.null4.old(phy, sim.dat, turnover.anc=rep(c(1,2,3,4),2), 
 eps.anc=rep(c(1,2,3,4),2), trans.type="equal")
 
 ## Fit null-two HiSSE model:
-trans.rates.hisse <- TransMatMaker(hidden.states=TRUE)
+trans.rates.hisse <- TransMatMaker.old(hidden.states=TRUE)
 trans.rates.hisse <- ParDrop(trans.rates.hisse, c(3,5,8,10))
 trans.rates.hisse[!is.na(trans.rates.hisse) & !trans.rates.hisse == 0] = 1
-pp.hisse <- hisse(phy, sim.dat, hidden.states=TRUE, turnover.anc=c(1,1,2,2), 
+pp.hisse <- hisse.old(phy, sim.dat, hidden.states=TRUE, turnover.anc=c(1,1,2,2), 
 eps.anc=c(1,1,2,2), trans.rate=trans.rates.hisse)
 }
 }

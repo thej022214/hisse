@@ -1,6 +1,6 @@
 \name{TransMatMakerGeoHiSSE}
 \alias{TransMatMakerGeoHiSSE}
-\alias{TransMatMakerfGeoHiSSE}
+\alias{TransMatMakerGeoHiSSE.old}
 \title{Transition Rate matrix generator for the GeoHiSSE model}
 \description{Generates and manipulates the index of the transition rate parameters to be optimized.}
 \usage{

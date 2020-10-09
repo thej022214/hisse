@@ -1,10 +1,10 @@
-\name{MarginReconfHiSSE}
-\alias{MarginReconfHiSSE}
-\title{fast Ancestral State Estimation based on Marginal Reconstruction for
+\name{MarginReconHiSSE}
+\alias{MarginReconHiSSE}
+\title{Ancestral State Estimation based on Marginal Reconstruction for
   the HiSSE model.}
 \description{Estimates the likeliest states for both internal nodes and tips of a phylogeny using the marginal reconstruction algorithm.}
 \usage{
-MarginReconfHiSSE(phy, data, f, pars, hidden.states=1, 
+MarginReconHiSSE(phy, data, f, pars, hidden.states=1, 
 condition.on.survival=TRUE,  root.type="madfitz", root.p=NULL, 
 aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
 }       
@@ -31,13 +31,13 @@ aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
 \item{dt.threads}{sets the number of threads available to data.table. In practice this need not change from the default of 1 thread, as we have not seen any speedup from allowing more threads.}
 }
 \details{
-This is the marginal reconstruction algorithm for the new faster version of HiSSE. 
+This is the marginal reconstruction algorithm for the newer, faster version of HiSSE. In this implementation the marginal probability of state i for a focal node is simply the overall likelihood of the tree and data when the state of the focal node is fixed in state i. Note that the likeliest tip states can also be estimated: we observe state 1, but the underlying state could either be state 1A or 1B. Thus, for any given node or tip we traverse the entire tree as many times as there are states in the model. As the size of the tree grows, however, these repeated tree traversals can slow the calculation down considerably. For this reason, we allow the marginal calculation to be conducted in parallel across any number of independent computer processors.
 
-See help for \dQuote{hisse.new} for more on other parameters for this function.
+See help for \dQuote{hisse} for more on other parameters for this function.
 
 }
 \value{
-\code{MarginRecon} returns an object of class \code{hisse.states}. This is a list with elements:
+\code{MarginReconHiSSE} returns an object of class \code{hisse.states}. This is a list with elements:
 \item{$node.mat}{the marginal probabilities calculated for each node. They are ordered based on the elements in the edge matrix in \dQuote{phylo} format.}
 \item{$tip.mat}{the marginal probabilities calculated for each tip. They are ordered based on the order of tip labels in the tree.}
 \item{$rate.mat}{a matrix that details the rates for each state combination. This is used by the plotting function.}

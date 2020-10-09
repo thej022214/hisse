@@ -6,7 +6,7 @@
 ######################################################################################################################################
 
 
-TransMatMakerfHiSSE <- function(hidden.traits=0, make.null=FALSE, cat.trans.vary=FALSE){
+TransMatMakerHiSSE <- function(hidden.traits=0, make.null=FALSE, cat.trans.vary=FALSE){
     
     if(hidden.traits == 0){
         trans.mat <- matrix(0, 2, 2)

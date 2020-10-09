@@ -578,3 +578,44 @@ test_that("BiSSE_fHiSSE_test2", {
     comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
 })
+
+
+test_that("HiSSE_Null_Four_fHiSSE_test", {
+    skip_on_cran()
+    
+    library(diversitree)
+    pars <- c(0.1, 0.1, 0.03, 0.03, 0.01, 0.01)
+    set.seed(4)
+    phy <- NULL
+    while( is.null( phy ) ){
+        phy <- tree.bisse(pars, max.t=30, x0=0)
+    }
+    lik <- make.bisse(phy, phy$tip.state)
+    diversitree.full <- lik(pars)
+    
+    states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
+    states <- states[phy$tip.label,]
+    pars.hisse.null <- c(0.1+0.03, 0.2+0.03, 0.1+0.05, 0.2+0.05, 0.1+0.03, 0.2+0.03, 0.1+0.05, 0.2+0.05, 0.03/.1, 0.03/.2, 0.05/.1, 0.05/.2, 0.03/.1, 0.03/.2, 0.05/.1, 0.05/.2, rep(0.01, 32))
+    model.vec = pars.hisse.null
+    phy$node.label = NULL
+    cache <- hisse:::ParametersToPassNull(phy, states[,1], model.vec, f=c(1,1))
+    hisse.nullOG.full <- hisse:::DownPassNull(phy, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
+    
+    hidden.states=TRUE
+    states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
+    states <- states[phy$tip.label,]
+    gen <- hisse:::FindGenerations(phy)
+    dat.tab <- hisse:::OrganizeDataHiSSE(states, phy=phy, f=c(1,1), hidden.states=hidden.states)
+    pars.hisse <- c(0.1+0.03, 0.1+0.03, 0.03/0.1, 0.03/0.1, 0.01, 0.01, 0.01, rep(0.01,5), 0.2+0.03, 0.2+0.03, 0.03/.2, 0.03/.2, 0.01, 0.01, 0.01, rep(0.01,5), 0.1+0.05, 0.1+0.05, 0.05/.1, 0.05/.1, 0.01, 0.01, 0.01, rep(0.01,5), 0.2+0.05, 0.2+0.05, 0.05/.2, 0.05/.2, 0.01, 0.01, 0.01, rep(0.01,5))
+    model.vec <- numeric(48)
+    model.vec[1:48] = pars.hisse
+    phy$node.label = NULL
+    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, ode.eps=0)
+    hisse.null.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
+    comparison <- identical(round(hisse.nullOG.full,4), round(hisse.null.full,4))
+    
+    expect_true(comparison)
+})
+
+
+

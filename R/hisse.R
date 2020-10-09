@@ -1,20 +1,29 @@
 
 ######################################################################################################################################
 ######################################################################################################################################
-### HiSSE -- BiSSE with hidden states
+### HiSSE -- a faster version assumes four possible hidden states, associated with or withouth particular character states
 ######################################################################################################################################
 ######################################################################################################################################
+#library(data.table)
+#library(ape)
+#library(deSolve)
+#dyn.load("fhisse-ext-derivs.so")
+#dyn.load("fbisse-ext-derivs.so")
 
-hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,0), eps.anc=c(1,1,0,0), trans.rate=NULL, turnover.beta=c(0,0,0,0), eps.beta=c(0,0,0,0), timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
+
+hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+    
+    ## Temporary fix for the current BUG:
+    if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
     if(!is.null(root.p)) {
         if(hidden.states ==TRUE){
             if( length( root.p ) == 2 ){
-                root.p <- rep(root.p, 2)
+                root.p <- rep(root.p, 4)
                 root.p <- root.p / sum(root.p)
                 warning("For hidden states, you need to specify the root.p for all hidden states. We have adjusted it so that there's equal chance for among all hidden states.")
             } else{
-                root.p.new <- numeric(4)
+                root.p.new <- numeric(8)
                 root.p.new[1:length(root.p)] <- root.p
                 root.p <- root.p.new
                 root.p <- root.p / sum(root.p)
@@ -22,200 +31,256 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
         }else{
             ## All good:
             root.p <- root.p / sum(root.p)
+            
         }
-        
     }
-    
+
+    setDTthreads(threads=dt.threads)
+
     if(!root.type == "madfitz" & !root.type == "herr_als"){
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
-    
+
     if(is.null(trans.rate)){
-        stop("Rate matrix needed. See TransMatMaker() to create one.")
+        stop("Rate matrix needed. See TransMatMakerMuHiSSE() to create one.")
     }
-    
+
     if(hidden.states == TRUE & dim(trans.rate)[1]<4){
         stop("You chose a hidden state but this is not reflected in the transition matrix")
     }
-    
-    if(sum(turnover.beta) > 0 | sum(eps.beta) > 0){
-        warning("You chose a time dependent model. This is currently untested -- Good luck.")
+
+    ## Return error message if the data is not in the correct format.
+    if( !inherits(data, what = c("matrix", "data.frame")) ){
+        stop("'data' needs to be a matrix or data.frame with 2 columns. See help.")
+    }
+    if( !ncol( data ) == 2 ){
+        stop("'data' needs to be a matrix or data.frame with 2 columns. See help.")
+    }
+
+    ## Check if 'hidden.states' parameter is congruent with the turnover vector:
+    if( length(turnover) > 2 & !hidden.states ){
+        stop("Turnover has more than 2 elements but 'hidden.states' was set to FALSE. Please set 'hidden.states' to TRUE if the model include more than one rate class.")
+    }
+    if( length(turnover) == 2 & hidden.states ){
+        stop("Turnover has only 2 elements but 'hidden.states' was set to TRUE. Please set 'hidden.states' to FALSE if the model does not include hidden rate classes.")
+    }
+
+    pars <- numeric(48)
+
+    if(dim(trans.rate)[2]==2){
+        rate.cats <- 1
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
+        trans.tmp <- c(trans.rate["(0)", "(1)"], trans.rate["(1)", "(0)"])
+        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+        category.rates.unique <- 0
+        pars.tmp <- c(pars.tmp, trans.tmp)
+        pars[1:6] <- pars.tmp
+    }
+
+    if(dim(trans.rate)[2]==4){
+        rate.cats <- 2
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
+        for.late.adjust <- max(pars.tmp)
+        rows <- c("(0A)", "(1A)", "(0B)", "(1B)")
+        cols <- c("(1A)", "(0A)", "(1B)", "(0B)")
+        trans.tmp <- trans.rate[cbind(rows,cols)]
+        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, trans.tmp)
+        rows <- c("(0A)", "(1A)", "(0B)", "(1B)")
+        cols <- c("(0B)", "(1B)", "(0A)", "(1A)")
+        category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
+        category.rate.shift <- category.tmp + for.late.adjust
+        category.rate.shift[is.na(category.rate.shift)] <- 0
+        category.rate.shiftA <- c(category.rate.shift[1], rep(0,2), category.rate.shift[2], rep(0,2))
+        category.rate.shiftB <- c(category.rate.shift[3], rep(0,2), category.rate.shift[4], rep(0,2))
+        pars.tmp <- c(turnover[1:2], eps.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, turnover[3:4], eps.tmp[3:4], trans.tmp[3:4], category.rate.shiftB)
+        pars[1:length(pars.tmp)] <- pars.tmp
+    }
+
+    if(dim(trans.rate)[2]==6){
+        rate.cats <- 3
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
+        for.late.adjust <- max(pars.tmp)
+        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)")
+        cols <- c("(1A)", "(0A)", "(1B)", "(0B)", "(1C)", "(0C)")
+        trans.tmp <- trans.rate[cbind(rows,cols)]
+        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, trans.tmp)
+        rows <- c("(0A)", "(0A)", "(1A)", "(1A)", "(0B)", "(0B)", "(1B)", "(1B)", "(0C)", "(0C)", "(1C)", "(1C)")
+        cols <- c("(0B)", "(0C)", "(1B)", "(1C)", "(0A)", "(0C)", "(1A)", "(1C)", "(0A)", "(0B)", "(1A)", "(1B)")
+        category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
+        category.rate.shift <- category.tmp + for.late.adjust
+        category.rate.shift[is.na(category.rate.shift)] <- 0
+        category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,1), category.rate.shift[3:4], rep(0,1))
+        category.rate.shiftB <- c(category.rate.shift[5:6], rep(0,1), category.rate.shift[7:8], rep(0,1))
+        category.rate.shiftC <- c(category.rate.shift[9:10], rep(0,1), category.rate.shift[11:12], rep(0,1))
+        pars.tmp <- c(turnover[1:2], eps.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, turnover[3:4], eps.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, turnover[5:6], eps.tmp[5:6], trans.tmp[5:6], category.rate.shiftC)
+        pars[1:length(pars.tmp)] <- pars.tmp
+    }
+
+    if(dim(trans.rate)[2]==8){
+        rate.cats <- 4
+        pars.tmp <- turnover
+        eps.tmp <- eps
+        eps.tmp[which(eps.tmp > 0)] = (eps.tmp[which( eps.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, eps.tmp)
+        for.late.adjust <- max(pars.tmp)
+        rows <- c("(0A)", "(1A)", "(0B)", "(1B)", "(0C)", "(1C)", "(0D)", "(1D)")
+        cols <- c("(1A)", "(0A)", "(1B)", "(0B)", "(1C)", "(0C)", "(1D)", "(0D)")
+        trans.tmp <- trans.rate[cbind(rows,cols)]
+        trans.tmp[which(trans.tmp > 0)] = (trans.tmp[which(trans.tmp > 0)] + max(pars.tmp))
+        pars.tmp <- c(pars.tmp, trans.tmp)
+        rows <- c("(0A)", "(0A)", "(0A)", "(1A)", "(1A)", "(1A)", "(0B)", "(0B)", "(0B)", "(1B)", "(1B)", "(1B)", "(0C)", "(0C)", "(0C)", "(1C)", "(1C)", "(1C)", "(0D)", "(0D)", "(0D)", "(1D)", "(1D)", "(1D)")
+        cols <- c("(0B)", "(0C)", "(0D)", "(1B)", "(1C)", "(1D)", "(0A)", "(0C)", "(0D)", "(1A)", "(1C)", "(1D)", "(0A)", "(0B)", "(0D)", "(1A)", "(1B)", "(1D)", "(0A)", "(0B)", "(0C)", "(1A)", "(1B)", "(1C)")
+        category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
+        category.rate.shift <- category.tmp + for.late.adjust
+        category.rate.shift[is.na(category.rate.shift)] <- 0
+        category.rate.shiftA <- c(category.rate.shift[1:3], category.rate.shift[4:6])
+        category.rate.shiftB <- c(category.rate.shift[7:9], category.rate.shift[10:12])
+        category.rate.shiftC <- c(category.rate.shift[13:15], category.rate.shift[16:18])
+        category.rate.shiftD <- c(category.rate.shift[19:21], category.rate.shift[22:24])
+        pars.tmp <- c(turnover[1:2], eps.tmp[1:2], trans.tmp[1:2], category.rate.shiftA, turnover[3:4], eps.tmp[3:4], trans.tmp[3:4], category.rate.shiftB, turnover[5:6], eps.tmp[5:6], trans.tmp[5:6], category.rate.shiftC, turnover[7:8], eps.tmp[7:8], trans.tmp[7:8], category.rate.shiftD)
+        pars[1:length(pars.tmp)] <- pars.tmp
     }
     
-	if(!is.null(timeslice)){
-		stop("You chose a time slice model. This is currently unavailable.")
-	}
-
-	#Some basic checks:
-	if(!length(turnover.anc) == 4){
-		turnover.anc<-c(turnover.anc,0,0)
-	}
-	if(!length(eps.anc) == 4){
-		eps.anc<-c(eps.anc,0,0)
-	}
-	if(!length(turnover.beta) == 4){
-		eps.anc<-c(eps.anc,0,0)
-	}
-	if(!length(eps.beta) == 4){
-		eps.anc<-c(eps.anc,0,0)
-	}
-	phy$node.label <- NULL
-	#Sets the main parameters to be used in the model:
-	if(sum(eps.anc)==0){
-		eps.anc=c(0,0,0,0)
-		eps.beta=c(0,0,0,0)
-	}
-
-	#Initialize our pars vector and build from there:
-	pars = c(turnover.anc)
-	#Add in extinction fraction:
-	eps.anc.tmp = eps.anc
-	eps.anc.tmp[which(eps.anc.tmp>0)] = (eps.anc.tmp[which(eps.anc.tmp>0)] + max(pars))
-	pars = c(pars, eps.anc.tmp)
-	#Add in transition rates:
-	if(hidden.states == FALSE){
-		trans.rate.tmp = c(trans.rate[!is.na(trans.rate)][1], 0, 0, trans.rate[!is.na(trans.rate)][2], rep(0, 8))
-	}else{
-		trans.rate.tmp = trans.rate[!is.na(trans.rate)]
-	}
-	trans.rate.tmp[which(trans.rate.tmp > 0)] = (trans.rate.tmp[which(trans.rate.tmp > 0)] + max(pars))
-	pars = c(pars, trans.rate.tmp)
-	#Add in turnover trend parameters
-	turnover.beta.alpha = turnover.beta
-	turnover.beta.beta = turnover.beta
- 	turnover.beta.beta[turnover.beta.beta>0] = turnover.beta.beta[turnover.beta.beta > 0] + max(turnover.beta.beta)
-	turnover.beta.tmp <- c(turnover.beta.alpha, turnover.beta.beta)
-	turnover.beta.tmp[which(turnover.beta.tmp > 0)] = (turnover.beta.tmp[which(turnover.beta.tmp > 0)] + max(pars))
-	pars = c(pars, turnover.beta.tmp)
-	#Add in eps trend parameters:
-	eps.beta.alpha = eps.beta
-	eps.beta.beta = eps.beta
- 	eps.beta.beta[eps.beta.beta>0] = eps.beta.beta[eps.beta.beta > 0] + max(eps.beta.beta)
-	eps.beta.tmp <- c(eps.beta.alpha, eps.beta.beta)
-	eps.beta.tmp[which(eps.beta.tmp > 0)] = (eps.beta.tmp[which(eps.beta.tmp > 0)] + max(pars))
-	pars = c(pars, eps.beta.tmp)
-	if(is.null(timeslice)){
-		turnover.slice = c(0,0,0,0)
-		eps.slice = c(0,0,0,0)
-		trans.rate.slice = rep(0, 12)
-	}else{
-		turnover.slice = turnover.anc
-		eps.slice = eps.anc
-		trans.rate.slice = trans.rate
-	}
-	#Add in turnover slice factors:
-	turnover.slice.tmp = turnover.slice
-	turnover.slice.tmp[which(turnover.slice.tmp > 0)] = (turnover.slice.tmp[which(turnover.slice.tmp > 0)] + max(pars))
-	pars = c(pars, turnover.slice.tmp)
-	#Add in eps slice factors:
-	eps.slice.tmp = eps.slice
-	eps.slice.tmp[which(eps.slice.tmp > 0)] = (eps.slice.tmp[which(eps.slice.tmp > 0)] + max(pars))
-	pars = c(pars, eps.slice.tmp)
-	#Add in transition rate slice factors:
-	trans.rate.slice.tmp = trans.rate.slice
-	trans.rate.slice.tmp[which(trans.rate.slice.tmp > 0)] = (trans.rate.slice.tmp[which(trans.rate.slice.tmp > 0)] + max(pars))
-	pars = c(pars, trans.rate.slice.tmp)
-
-	np <- max(pars)
-	pars[pars==0] <- np+1
-
-	cat("Initializing...", "\n")
-
-	data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
-	data.new <- data.new[phy$tip.label,]
+    np <- max(pars)
+    pars[pars==0] <- np+1
+    
+    cat("Initializing...", "\n")
+    
+    data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+    data.new <- data.new[phy$tip.label,]
 
     #This is used to scale starting values to account for sampling:
-	if(length(f) == 2){
-		samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / f)
-	}else{
-        #if(length(f) == Ntip(phy)){
-        #	samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f))
-        #}else{
-			stop("This is functionality has been temporarily removed.")
-        #}
-	}
-
-	if(sum(eps.anc)==0){
-		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
-		names(init.pars) <- NULL
+    if(length(f) == 2){
+        freqs <- table(apply(data.new, 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "11" = 2, "22"=1)))
+        ## if(length(freqs == 4)){
+        ##     freqs[which(!c(1:4) %in% names(freqs))] <- 0
+        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
+        ## }else{
+        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
+        ## }
+        
+        ## Fixing the structure of the freqs vector.
+        freqs.vec <- rep(0, times = 2)
+        freqs.vec[as.numeric(names(freqs))] <- as.numeric( freqs )
+        samp.freq.tree <- Ntip(phy) / sum(freqs.vec / f)
+    }else{
+        if(length(f) == Ntip(phy)){
+            stop("This functionality has been temporarily removed.")
+            #samp.freq.tree <- Ntip(phy) / sum(table(data.new[,1]) / mean(f[as.numeric(names(freqs))+1]))
+        }else{
+            stop("The vector of sampling frequencies does not match the number of tips in the tree.")
+        }
+    }
+    if(is.null(restart.obj)){
+        if(sum(eps)==0){
+            init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=TRUE)
+        }else{
+            init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=FALSE)
+            if(any(init.pars[3:4] == 0)){
+                init.pars[3:4] = 1e-6
+            }
+        }
+        names(init.pars) <- NULL
+        
         if(is.null(starting.vals)){
-            def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.pars[3]/init.pars[1]),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
+            def.set.pars <- rep(c(log(init.pars[1:2]+init.pars[3:4]), log(init.pars[3:4]/init.pars[1:2]), rep(log(init.pars[5]),8)), rate.cats)
         }else{
-            def.set.pars <- c(rep(log(starting.vals[1]), 4), rep(log(starting.vals[2]),4), rep(log(starting.vals[3]), 12), rep(log(1), 36))
+            ## Check if 'starting.vals' has the correct format.
+            if( !length(starting.vals) %in% c(3,12) ){
+                stop("Wrong length of starting.vals")
+            }
+            if( length(starting.vals) == 5 ){
+                cat("Using developer mode for starting.vals.", "\n")
+                def.set.pars <- rep(c(log(starting.vals[1:2]), log(starting.vals[3:4]), rep(log(starting.vals[5]), 8)), rate.cats)
+            } else{
+                def.set.pars <- rep(c(log( rep(starting.vals[1],2) ), log( rep(starting.vals[2],2) ), log( rep(starting.vals[3],8))), rate.cats)
+            }
         }
+        
         if(bounded.search == TRUE){
-            upper.full <- c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper), 12), rep(log(10),36))
+            upper.full <- rep(c(rep(log(turnover.upper),2), rep(log(eps.upper),2), rep(log(trans.upper),8)), rate.cats)
         }else{
-            upper.full <- c(rep(21,4), rep(21,4), rep(21, 12), rep(21, 36))
+            upper.full <- rep(21,length(def.set.pars))
         }
-	}else{
-		init.pars <- starting.point.generator(phy, 2, samp.freq.tree, yule=FALSE)
-		names(init.pars) <- NULL
-		init.eps = init.pars[3]/init.pars[1]
-		if(init.eps == 0){
-			init.eps = 1e-6
-		}
-        if(is.null(starting.vals)){
-            def.set.pars <- c(rep(log(init.pars[1]+init.pars[3]), 4), rep(log(init.eps),4), rep(log(init.pars[5]), 12), rep(log(1), 36))
-        }else{
-            def.set.pars <- c(rep(log(starting.vals[1]), 4), rep(log(starting.vals[2]),4), rep(log(starting.vals[3]), 12), rep(log(1), 36))
+        
+        np.sequence <- 1:np
+        ip <- numeric(np)
+        upper <- numeric(np)
+        for(i in np.sequence){
+            ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
+            upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
         }
-        if(bounded.search == TRUE){
-            upper.full <- c(rep(log(turnover.upper),4), rep(log(eps.upper),4), rep(log(trans.upper), 12), rep(log(10),36))
-        }else{
-            upper.full <- c(rep(21,4), rep(21,4), rep(21, 12), rep(21, 36))
+        lower <- rep(-20, length(ip))
+    }else{
+        upper <- restart.obj$upper.bounds
+        lower <- restart.obj$lower.bounds
+        pars <- restart.obj$index.par
+        ip <- numeric(length(unique(restart.obj$index.par))-1)
+        for(k in 1:length(ip)){
+            ip[k] <- log(restart.obj$solution[which(restart.obj$index.par==k)][1])
         }
-	}
-	#Set initials using estimates from constant bd model:
-	np.sequence <- 1:np
-	ip <- numeric(np)
-	upper <- numeric(np)
-	for(i in np.sequence){
-		ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
-		upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
-	}
-	lower <- rep(-20, length(ip))
+    }
 
+    # Some new prerequisites #
+    gen <- FindGenerations(phy)
+    dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
+    nb.tip <- Ntip(phy)
+    nb.node <- phy$Nnode
+    ##########################
+    
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimize, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np, ode.eps=ode.eps)
+            out = nloptr(x0=ip, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimize, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np, ode.eps=ode.eps)
+            out = subplex(ip, fn=DevOptimizefHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
         }
-	}else{
-		cat("Finished. Beginning simulated annealing...", "\n")
-		out.sann = GenSA(ip, fn=DevOptimize, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np, ode.eps=ode.eps)
-		cat("Finished. Refining using subplex routine...", "\n")
-                opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out = nloptr(x0=out.sann$par, eval_f=DevOptimize, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np, ode.eps=ode.eps)
+    }else{
+        cat("Finished. Beginning simulated annealing...", "\n")
+        opts <- list("algorithm"="NLOPT_GD_STOGO", "maxeval" = 100000, "ftol_rel" = max.tol)
+        out.sann = GenSA(ip, fn=DevOptimizefHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        #out.sann <- stogo(x0=ip, fn=DevOptimizeMuHiSSE, gr=NULL, upper=upper, lower=lower, pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        cat("Finished. Refining using subplex routine...", "\n")
+        opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
+        
         loglik = -out$objective
-	}
-
-	cat("Finished. Summarizing results...", "\n")
-
-	#Some cleanup to make the output look pretty:
-	solution.tmp = solution[21:56]
-	solution.tmp[solution.tmp==0] = 1
-	solution[21:56] = solution.tmp
-    names(solution) = c("turn.0A", "turn.1A", "turn.0B", "turn.1B", "eps.0A", "eps.1A", "eps.0B", "eps.1B","q1A0A","q0B0A","q1B0A","q0A1A","q0B1A","q1B1A","q0A0B","q1A0B","q1B0B","q0A1B","q1A1B","q0B1B","turn.alpha.0A","turn.alpha.1A", "turn.alpha.0B", "turn.alpha.1B", "turn.beta.0A","turn.beta.1A", "turn.beta.0B", "turn.beta.1B", "eps.alpha.0A","eps.alpha.1A", "eps.alpha.0B", "eps.alpha.1B", "eps.beta.0A","eps.beta.1A", "eps.beta.0B", "eps.beta.1B", "turn.slice.0A","turn.slice.1A", "turn.slice.0B", "turn.slice.1B", "eps.slice.0A","eps.slice.1A", "eps.slice.0B", "eps.slice.1B", "q0A1A.slice","q1A0A.slice","q0A0B.slice","q0B0A.slice","q1A1B.slice","q1B1A.slice","q0A1B.slice","q1B0A.slice","q1A0B.slice","q0B1A.slice","q1B0B.slice","q0B1B.slice")
-
- 	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, phy=phy, data=data, trans.matrix=trans.rate, output.type=output.type, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
-	class(obj) = "hisse.fit"
+    }
+    
+    names(solution) <- c("turnover0A","turnover1A","eps0A","eps1A","q0A1A","q1A0A","q0A0B","q0A0C","q0A0D","q1A1B","q1A1C","q1A1D","turnover0B","turnover1B","eps0B","eps1B","q0B1B","q1B0B","q0B0A","q0B0C","q0B0D","q1B1A","q1B1C","q1B1D","turnover0C","turnover1C","eps0C","eps1C","q0C1C","q1C0C","q0C0A","q0C0B","q0C0D","q1C1A","q1C1B","q1C1D","turnover0D","turnover1D","eps0D","eps1D","q0D1D","q1D0D","q0D0A","q0D0B","q0D0C","q1D1A","q1D1B","q1D1C")
+    
+    cat("Finished. Summarizing results...", "\n")
+    
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
+    class(obj) <- append(class(obj), "hisse.fit")
+    return(obj)
 
 	return(obj)
 }
-
 
 
 ######################################################################################################################################
@@ -225,536 +290,493 @@ hisse <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,1,0,
 ######################################################################################################################################
 
 #Function used for optimizing parameters:
-DevOptimize <- function(p, pars, phy, data, f, hidden.states, condition.on.survival, root.type, root.p, timeslice, np, ode.eps) {
-	#Generates the final vector with the appropriate parameter estimates in the right place:
-	p.new <- exp(p)
-	model.vec <- numeric(length(pars))
-	model.vec[] <- c(p.new, 0)[pars]
-	model.vec.tmp = model.vec[21:56]
-	model.vec.tmp[model.vec.tmp==0] = 1
-	model.vec[21:56] = model.vec.tmp
-
-	cache = ParametersToPass(phy, data, model.vec, f=f, timeslice=timeslice, hidden.states=hidden.states)
-	cache$turnover.beta.factor0 = 1 / dbeta(0.1, model.vec[21], model.vec[25])
-	cache$turnover.beta.factor1 = 1 / dbeta(0.1, model.vec[22], model.vec[26])
-	cache$turnover.beta.factorA = 1 / dbeta(0.1, model.vec[23], model.vec[27])
-	cache$turnover.beta.factorB = 1 / dbeta(0.1, model.vec[24], model.vec[28])
-
-	cache$eps.beta.factor0 = 1 / dbeta(0.1, model.vec[29], model.vec[33])
-	cache$eps.beta.factor1 = 1 / dbeta(0.1, model.vec[30], model.vec[34])
-	cache$eps.beta.factorA = 1 / dbeta(0.1, model.vec[31], model.vec[35])
-	cache$eps.beta.factorB = 1 / dbeta(0.1, model.vec[32], model.vec[36])
-
-	logl <- DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, ode.eps=ode.eps)
-	return(-logl)
-}
-
-
-#Taken from the BiSSE code -- credit goes to Rich FitzJohn:
-starting.point.tree <- function(phy, yule=FALSE) {
-  if(!ape::is.binary(phy)) {
-    phy <- ape::multi2di(phy)
-  }
-	p.yule <- c(yule(phy)$lambda, 0)
-	if(yule){
-		p.yule
-	}else{
-		suppressWarnings(c(birthdeath(phy)$para[2] / (1-birthdeath(phy)$para[1]), ((birthdeath(phy)$para[1] * birthdeath(phy)$para[2]) / (1-birthdeath(phy)$para[1]))))
-	}
-}
-
-
-starting.point.generator <- function(phy, k, samp.freq.tree, q.div=5, yule=FALSE) {
-  if(!ape::is.binary(phy)) {
-    cat("Tree has polytomies:\n  Resolving randomly for initial parameter guesses only (hisse will use the tree with polytomies as given when optmizing).\n  Note that correctness of solutions with polytomies has not been established.\n")
-  }
-	pars.bd <- suppressWarnings(starting.point.tree(phy, yule))
-	#Rescale parameters to account for sampling, if necessary, using Stadler 2013:
-	pars.bd[1] = pars.bd[1] / samp.freq.tree
-	pars.bd[2] = pars.bd[2] - ((pars.bd[1]*samp.freq.tree) * (1 - 1/samp.freq.tree))
-	r <- if  ( pars.bd[1] > pars.bd[2] )
-    (pars.bd[1] - pars.bd[2]) else pars.bd[1]
-	p <- rep(c(pars.bd, r / q.div), c(k, k, k * (k-1)))
-	names(p) <- NULL
-	p
+DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, ode.eps) {
+    #Generates the final vector with the appropriate parameter estimates in the right place:
+    p.new <- exp(p)
+    ## print(p.new)
+    model.vec <- numeric(length(pars))
+    model.vec[] <- c(p.new, 0)[pars]
+    cache = ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
+    logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
+    
+    return(-logl)
 }
 
 
 ######################################################################################################################################
 ######################################################################################################################################
-### The down pass that carries out the integration and returns the likelihood:
+### The various utility functions used
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, ode.eps=0) {
-	#Some preliminaries:
-	nb.tip <- length(phy$tip.label)
-	nb.node <- phy$Nnode
-	phy <- reorder(phy, "pruningwise")
-	anc <- unique(phy$edge[,1])
-	TIPS <- 1:nb.tip
+OrganizeDataHiSSE <- function(data, phy, f, hidden.states){
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
+    
+    nb.tip <- length(phy$tip.label)
+    nb.node <- phy$Nnode
+    
+    if(hidden.states == FALSE){
+        states = matrix(0,Ntip(phy),2)
+        x <- data[,1]
+        for(i in 1:Ntip(phy)){
+            if(x[i]==0){states[i,1]=1}
+            if(x[i]==1){states[i,2]=1}
+            if(x[i]==2){states[i,c(1,2)]=1}
+        }
+        compD <- matrix(0, nrow=nb.tip, ncol=2)
+        compE <- matrix(0, nrow=nb.tip, ncol=2)
+    }
+    
+    if(hidden.states == TRUE){
+        states = matrix(0,Ntip(phy),8)
+        x <- data[,1]
+        for(i in 1:Ntip(phy)){
+            if(x[i]==0){states[i,c(1,3,5,7)]=1}
+            if(x[i]==1){states[i,c(2,4,6,8)]=1}
+            if(x[i]==2){states[i,c(1,3,5,7, 2,4,6,8)]=1}
+        }
+        compD <- matrix(0, nrow=nb.tip, ncol=8)
+        compE <- matrix(0, nrow=nb.tip, ncol=8)
+    }
 
-	if(hidden.states == FALSE){
-		compD <- matrix(0, nrow=nb.tip + nb.node, ncol=2)
-		compE <- matrix(0, nrow=nb.tip + nb.node, ncol=2)
-	}else{
-		compD <- matrix(0, nrow=nb.tip + nb.node, ncol=4)
-		compE <- matrix(0, nrow=nb.tip + nb.node, ncol=4)
-	}
-	#Initializes the tip sampling and sets internal nodes to be zero:
-	ncols = dim(compD)[2]
-	if(length(cache$f) == 2){
-		for(i in 1:(nb.tip)){
-			compD[i,] <- cache$f * cache$states[i,]
-			compE[i,] <- rep((1-cache$f), ncols/2)
-		}
-	}else{
-		for(i in 1:(nb.tip)){
-			compD[i,] <- cache$f[i] * cache$states[i,]
-			compE[i,] <- rep((1-cache$f[i]), ncols/2)
-		}
-	}
-	logcomp <- c()
-	#Start the postorder traversal indexing lists by node number:
-	for (i in seq(from = 1, length.out = nb.node)) {
-		#A vector of all the internal nodes:
-		focal <- anc[i]
-		desRows <- which(phy$edge[,1]==focal)
-		desNodes <- phy$edge[desRows,2]
-		#Note: when the tree has been reordered branching.times are no longer valid. Fortunately, we extract this information in the initial cache setup. Also focal is the rootward node, whereas desNodes represent a vector of all descendant nodes:
-		cache$rootward.age <- cache$split.times[which(names(cache$split.times)==focal)]
+    #Initializes the tip sampling and sets internal nodes to be zero:
+    ncols = dim(compD)[2]
+    if(length(f) == 2){
+        for(i in 1:(nb.tip)){
+            compD[i,] <- f * states[i,]
+            compE[i,] <- rep((1-f), ncols/2)
+        }
+    }else{
+        for(i in 1:(nb.tip)){
+            compD[i,] <- f[i] * states[i,]
+            compE[i,] <- rep((1-f[i]), ncols/2)
+        }
+    }
+    
+    node.ages <- c(rep(0, Ntip(phy)), branching.times(phy))
+    table.ages <- matrix(0, dim(phy$edge)[1], 2)
+    for(row.index in 1:dim(phy$edge)[1]){
+        table.ages[row.index,1] <- node.ages[phy$edge[row.index,1]]
+        table.ages[row.index,2] <- node.ages[phy$edge[row.index,2]]
+    }
+    tmp.df <- cbind(table.ages, phy$edge.length, phy$edge[,1], phy$edge[,2], 0, matrix(0, nrow(table.ages), ncol(compD)), matrix(0, nrow(table.ages), ncol(compE)))
+    colnames(tmp.df) <- c("RootwardAge", "TipwardAge", "BranchLength", "FocalNode", "DesNode", "comp", paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"))
+    dat.tab <- as.data.table(tmp.df)
+    setkey(dat.tab, DesNode)
+    cols <- names(dat.tab)
+    for (j in 1:(dim(compD)[2])){
+        dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
+        #set(dat.tab, 1:nb.tip, cols[6+j], compD[,j])
+        dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
+        #set(dat.tab, 1:nb.tip, cols[38+j], compE[,j])
+    }
+    return(dat.tab)
+}
 
-		if(hidden.states == FALSE){
-			v = c(1,1)
-		}else{
-			v = c(1,1,1,1)
-		}
-		phi <- c()
-		for (desIndex in sequence(length(desRows))){
-			cache$focal.edge.length <- phy$edge.length[desRows[desIndex]]
-			cache$tipward.age <- cache$rootward.age - cache$focal.edge.length
-			#Strange rounding errors. A tip age should be zero. This ensures that:
-			if(cache$tipward.age < .Machine$double.eps^0.5){
-				cache$tipward.age = 0
-			}
-			cache$node.D <- compD[desNodes[desIndex],]
-			cache$node.E <- compE[desNodes[desIndex],]
-			##Call to lsoda that utilizes C code. Requires a lot of inputs. Note that for now we hardcode the NUMELEMENTS arguments. The reason for this is because with lsoda we can only pass a vector of parameters.
-			if(hidden.states == FALSE){
-				pars <- list(cache$tot_time, cache$timeslice, cache$turnover.trend.alpha0, cache$turnover.trend.beta0, cache$turnover.beta.factor0, cache$turnover.slice.factor0, cache$eps.trend.alpha0, cache$eps.trend.beta0, cache$eps.beta.factor0, cache$eps.slice.factor0, cache$turnover.trend.alpha1, cache$turnover.trend.beta1, cache$turnover.beta.factor1, cache$turnover.slice.factor1, cache$eps.trend.alpha1, cache$eps.trend.beta1, cache$eps.beta.factor1, cache$eps.slice.factor1, cache$x_turnover0, cache$x_eps0, cache$x_turnover1, cache$x_eps1, cache$q01, cache$q10, cache$q01_slice.factor, cache$q10_slice.factor, cache$focal.edge.length, cache$tipward.age)
-				NUMELEMENTS <- 28 #needed for passing in vector to C
-				padded.pars <- rep(0, NUMELEMENTS)
-				pars <- c(unlist(pars))
-				stopifnot(length(padded.pars)<=NUMELEMENTS)
-				padded.pars[sequence(length(pars))]<-pars
-				yini <-c(E0=cache$node.E[1], E1=cache$node.E[2], D0=cache$node.D[1], D1=cache$node.D[2])
-				times=c(cache$tipward.age, cache$rootward.age)
-				prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-			}else{
-				pars <- list(cache$tot_time, cache$timeslice, cache$turnover.trend.alpha0, cache$turnover.trend.beta0, cache$turnover.beta.factor0, cache$turnover.slice.factor0, cache$eps.trend.alpha0, cache$eps.trend.beta0, cache$eps.beta.factor0, cache$eps.slice.factor0, cache$turnover.trend.alpha1, cache$turnover.trend.beta1, cache$turnover.beta.factor1, cache$turnover.slice.factor1, cache$eps.trend.alpha1, cache$eps.trend.beta1, cache$eps.beta.factor1, cache$eps.slice.factor1, cache$turnover.trend.alphaA, cache$turnover.trend.betaA, cache$turnover.beta.factorA, cache$turnover.slice.factorA, cache$eps.trend.alphaA, cache$eps.trend.betaA, cache$eps.beta.factorA, cache$eps.slice.factorA, cache$turnover.trend.alphaB, cache$turnover.trend.betaB, cache$turnover.beta.factorB, cache$turnover.slice.factorB, cache$eps.trend.alphaB, cache$eps.trend.betaB, cache$eps.beta.factorB, cache$eps.slice.factorB, cache$x_turnover0, cache$x_eps0, cache$x_turnover1, cache$x_eps1, cache$x_turnoverA, cache$x_epsA, cache$x_turnoverB, cache$x_epsB, cache$q01, cache$q10, cache$q0A, cache$qA0, cache$q1B, cache$qB1, cache$q0B, cache$qB0, cache$q1A, cache$qA1, cache$qBA, cache$qAB, cache$q01_slice.factor, cache$q10_slice.factor, cache$q0A_slice.factor, cache$qA0_slice.factor, cache$q1B_slice.factor, cache$qB1_slice.factor, cache$q0B_slice.factor, cache$qB0_slice.factor, cache$q1A_slice.factor, cache$qA1_slice.factor, cache$qBA_slice.factor, cache$qAB_slice.factor, cache$focal_edge_length, cache$tipward_age)
-				NUMELEMENTS <- 68 #needed for passing in vector to C
-				padded.pars <- rep(0, NUMELEMENTS)
-				pars <- c(unlist(pars))
-				stopifnot(length(padded.pars)<=NUMELEMENTS)
-				padded.pars[sequence(length(pars))]<-pars
-				yini <-c(E0=cache$node.E[1], E1=cache$node.E[2], EA=cache$node.E[3], EB=cache$node.E[4], D0=cache$node.D[1], D1=cache$node.D[2], DA=cache$node.D[3], DB=cache$node.D[4])
-				times=c(cache$tipward.age, cache$rootward.age)
-                prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_hisse", padded.pars, initfunc="initmod_hisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-			}
-			######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
-            if(attributes(prob.subtree.cal.full)$istate[1] < 0){
-				return(bad.likelihood)
-			}else{
-				prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-			}
-			##############################################################################
 
-            if(hidden.states == FALSE){
-				if(is.nan(prob.subtree.cal[3]) | is.nan(prob.subtree.cal[4])){
-					return(bad.likelihood)
-				}
-                #This is default and cannot change, but if we get a negative probability, discard the results:
-				if(prob.subtree.cal[3]<0 | prob.subtree.cal[4]<0){
-					return(bad.likelihood)
-				}
-                #This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-                if(sum(prob.subtree.cal[3:4]) < ode.eps){
-                    return(bad.likelihood)
+SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time){
+    if(cache$hidden.states == TRUE){
+        yini <-c(E0A=compE[1], E1A=compE[2], E0B=compE[3], E1B=compE[4], E0C=compE[5], E1C=compE[6], E0D=compE[7], E1D=compE[8], D0A=compD[1], D1A=compD[2], D0B=compD[3], D1B=compD[4], D0C=compD[5], D1C=compD[6], D0D=compD[7], D1D=compD[8])
+        times=c(start.time, end.time)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dll = "fhisse-ext-derivs", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+    }else{
+        yini <-c(E0=compE[1], E1=compE[2], D0=compD[1], D1=compD[2])
+        times=c(start.time, end.time)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dll = "fbisse-ext-derivs", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+    }
+    ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
+    if(attributes(prob.subtree.cal.full)$istate[1] < 0){
+        prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+        if(cache$hidden.states == TRUE){
+            prob.subtree.cal[9:16] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }else{
+            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }else{
+        prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+    }
+    ##############################################################################
+    
+    if(cache$hidden.states == TRUE){
+        if(any(is.nan(prob.subtree.cal[9:16]))){
+            prob.subtree.cal[9:16] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        #This is default and cannot change, but if we get a negative probability, discard the results:
+        if(any(prob.subtree.cal[9:16] < 0)){
+            prob.subtree.cal[9:16] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        if(sum(prob.subtree.cal[9:16]) < cache$ode.eps){
+            prob.subtree.cal[9:16] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }else{
+        if(any(is.nan(prob.subtree.cal[3:4]))){
+            prob.subtree.cal[3:4] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        #This is default and cannot change, but if we get a negative probability, discard the results:
+        if(any(prob.subtree.cal[3:4] < 0)){
+            prob.subtree.cal[3:4] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        if(sum(prob.subtree.cal[3:4]) < cache$ode.eps){
+            prob.subtree.cal[3:4] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }
+    return(prob.subtree.cal)
+}
+
+
+FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
+    FocalNode = NULL
+    . = NULL
+
+    gens <- data.table(c(generations))
+    setkey(dat.tab, FocalNode)
+    CurrentGenData <- dat.tab[gens]
+    if(cache$hidden.states == TRUE){
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:14], z[15:22],  z[2], z[1])))
+        v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),9:16] * tmp[seq(2,nrow(tmp),2),9:16], length(unique(CurrentGenData$FocalNode)), 8)
+        v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 8, byrow=TRUE)
+        phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:8], length(unique(CurrentGenData$FocalNode)), 8)
+        if(!is.null(cache$node)){
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(cache$node)){
+                    if(cache$fix.type[fix.index] == "event"){
+                        fixer.tmp = numeric(2)
+                        fixer.tmp[cache$state[fix.index]] = 1
+                        fixer = rep(fixer.tmp, 4)
+                    }else{
+                        fixer = numeric(8)
+                        fixer[cache$state[fix.index]] = 1
+                    }
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                 }
+            }
+        }
+        tmp.comp <- rowSums(v.mat)
+        tmp.probs <- v.mat / tmp.comp
+        setkey(dat.tab, DesNode)
+        rows <- dat.tab[.(generations), which=TRUE]
+        cols <- names(dat.tab)
+        for (j in 1:(dim(tmp.probs)[2])){
+            #dat.tab[gens, cols[6+j] := tmp.probs[,j]]
+            set(dat.tab, rows, cols[6+j], tmp.probs[,j])
+            #dat.tab[gens, cols[38+j] := phi.mat[,j]]
+            set(dat.tab, rows, cols[14+j], phi.mat[,j])
+        }
+        dat.tab[gens, "comp" := tmp.comp]
+    }else{
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:8], z[9:10],  z[2], z[1])))
+        v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),3:4] * tmp[seq(2,nrow(tmp),2),3:4], length(unique(CurrentGenData$FocalNode)), 2)
+        v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 2, byrow=TRUE)
+        phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:2], length(unique(CurrentGenData$FocalNode)), 2)
+        if(!is.null(cache$node)){
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(cache$node)){
+                    fixer = numeric(2)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                }
+            }
+        }
+        tmp.comp <- rowSums(v.mat)
+        tmp.probs <- v.mat / tmp.comp
+        setkey(dat.tab, DesNode)
+        #gens <- data.table(c(generations))
+        rows <- dat.tab[.(generations), which=TRUE]
+        cols <- names(dat.tab)
+        for (j in 1:(dim(tmp.probs)[2])){
+            #dat.tab[gens, cols[6+j] := tmp.probs[,j]]
+            set(dat.tab, rows, cols[6+j], tmp.probs[,j])
+            #dat.tab[gens, cols[10+j] := phi.mat[,j]]
+            set(dat.tab, rows, cols[8+j], phi.mat[,j])
+        }
+        dat.tab[gens, "comp" := tmp.comp]
+    }
+    return(dat.tab)
+}
 
-				#Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
-				phi <- c(phi, prob.subtree.cal[1:2])
-				v <- v * prob.subtree.cal[3:4]
-			}else{
-				if(is.nan(prob.subtree.cal[5]) | is.nan(prob.subtree.cal[6]) | is.nan(prob.subtree.cal[7]) | is.nan(prob.subtree.cal[8])){
-					return(bad.likelihood)
-				}
-                #This is default and cannot change, but if we get a negative probability, discard the results:
-				if(prob.subtree.cal[5]<0 | prob.subtree.cal[6]<0 | prob.subtree.cal[7]<0 | prob.subtree.cal[8]<0){
-					return(bad.likelihood)
-				}
-                #This can be modified at the input, but if the sum of the D's at the end of a branch are less than some value, then discard the results. A little more stringent than diversitree, but with difficult problems, this stabilizes things immensely.
-                if(sum(prob.subtree.cal[5:8]) < ode.eps){
-                    return(bad.likelihood)
-                }
 
-				#Designating phi here because of its relation to Morlon et al (2011) and using "e" would be confusing:
-				phi <- c(phi, prob.subtree.cal[1:4])
-				v <- v * prob.subtree.cal[5:8]
-			}
-		}
-		#C call to set_birth_void -- NOTE: The first input is zero as we need to declare the birth_rate. It gets written over and is now the first element in the list that is returned. Everything else should be self explanatory.
-		if(hidden.states == TRUE){
-			lambda0 <- .C("set_birth_hisse_void", as.double(0.0), as.double(cache$rootward.age), as.double(cache$tot_time), as.double(cache$timeslice), as.double(cache$turnover.trend.alpha0), as.double(cache$turnover.trend.beta0), as.double(cache$turnover.beta.factor0), as.double(cache$turnover.slice.factor0), as.double(cache$eps.trend.alpha0), as.double(cache$eps.trend.beta0), as.double(cache$eps.beta.factor0), as.double(cache$eps.slice.factor0), as.double(cache$turnover.trend.alpha1), as.double(cache$turnover.trend.beta1), as.double(cache$turnover.beta.factor1), as.double(cache$turnover.slice.factor1), as.double(cache$eps.trend.alpha1), as.double(cache$eps.trend.beta1), as.double(cache$eps.beta.factor1), as.double(cache$eps.slice.factor1), as.double(cache$turnover.trend.alphaA), as.double(cache$turnover.trend.betaA), as.double(cache$turnover.beta.factorA), as.double(cache$turnover.slice.factorA), as.double(cache$eps.trend.alphaA), as.double(cache$eps.trend.betaA), as.double(cache$eps.beta.factorA), as.double(cache$eps.slice.factorA), as.double(cache$turnover.trend.alphaB), as.double(cache$turnover.trend.betaB), as.double(cache$turnover.beta.factorB), as.double(cache$turnover.slice.factorB), as.double(cache$eps.trend.alphaB), as.double(cache$eps.trend.betaB), as.double(cache$eps.beta.factorB), as.double(cache$eps.slice.factorB), as.double(cache$x_turnover0), as.double(cache$x_eps0), as.double(cache$x_turnover1), as.double(cache$x_eps1), as.double(cache$x_turnoverA), as.double(cache$x_epsA), as.double(cache$x_turnoverB), as.double(cache$x_epsB), as.double(cache$q01), as.double(cache$q10), as.double(cache$q0A), as.double(cache$qA0), as.double(cache$q1B), as.double(cache$qB1), as.double(cache$q0B), as.double(cache$qB0), as.double(cache$q1A), as.double(cache$qA1), as.double(cache$qBA), as.double(cache$qAB), as.double(cache$focal.edge.length), as.double(cache$tipward.age), as.integer(0))
-			lambda1 <- .C("set_birth_hisse_void", as.double(0.0), as.double(cache$rootward.age), as.double(cache$tot_time), as.double(cache$timeslice), as.double(cache$turnover.trend.alpha0), as.double(cache$turnover.trend.beta0), as.double(cache$turnover.beta.factor0), as.double(cache$turnover.slice.factor0), as.double(cache$eps.trend.alpha0), as.double(cache$eps.trend.beta0), as.double(cache$eps.beta.factor0), as.double(cache$eps.slice.factor0), as.double(cache$turnover.trend.alpha1), as.double(cache$turnover.trend.beta1), as.double(cache$turnover.beta.factor1), as.double(cache$turnover.slice.factor1), as.double(cache$eps.trend.alpha1), as.double(cache$eps.trend.beta1), as.double(cache$eps.beta.factor1), as.double(cache$eps.slice.factor1), as.double(cache$turnover.trend.alphaA), as.double(cache$turnover.trend.betaA), as.double(cache$turnover.beta.factorA), as.double(cache$turnover.slice.factorA), as.double(cache$eps.trend.alphaA), as.double(cache$eps.trend.betaA), as.double(cache$eps.beta.factorA), as.double(cache$eps.slice.factorA), as.double(cache$turnover.trend.alphaB), as.double(cache$turnover.trend.betaB), as.double(cache$turnover.beta.factorB), as.double(cache$turnover.slice.factorB), as.double(cache$eps.trend.alphaB), as.double(cache$eps.trend.betaB), as.double(cache$eps.beta.factorB), as.double(cache$eps.slice.factorB), as.double(cache$x_turnover0), as.double(cache$x_eps0), as.double(cache$x_turnover1), as.double(cache$x_eps1), as.double(cache$x_turnoverA), as.double(cache$x_epsA), as.double(cache$x_turnoverB), as.double(cache$x_epsB), as.double(cache$q01), as.double(cache$q10), as.double(cache$q0A), as.double(cache$qA0), as.double(cache$q1B), as.double(cache$qB1), as.double(cache$q0B), as.double(cache$qB0), as.double(cache$q1A), as.double(cache$qA1), as.double(cache$qBA), as.double(cache$qAB), as.double(cache$focal.edge.length), as.double(cache$tipward.age), as.integer(1))
-			lambdaA <- .C("set_birth_hisse_void", as.double(0.0), as.double(cache$rootward.age), as.double(cache$tot_time), as.double(cache$timeslice), as.double(cache$turnover.trend.alpha0), as.double(cache$turnover.trend.beta0), as.double(cache$turnover.beta.factor0), as.double(cache$turnover.slice.factor0), as.double(cache$eps.trend.alpha0), as.double(cache$eps.trend.beta0), as.double(cache$eps.beta.factor0), as.double(cache$eps.slice.factor0), as.double(cache$turnover.trend.alpha1), as.double(cache$turnover.trend.beta1), as.double(cache$turnover.beta.factor1), as.double(cache$turnover.slice.factor1), as.double(cache$eps.trend.alpha1), as.double(cache$eps.trend.beta1), as.double(cache$eps.beta.factor1), as.double(cache$eps.slice.factor1), as.double(cache$turnover.trend.alphaA), as.double(cache$turnover.trend.betaA), as.double(cache$turnover.beta.factorA), as.double(cache$turnover.slice.factorA), as.double(cache$eps.trend.alphaA), as.double(cache$eps.trend.betaA), as.double(cache$eps.beta.factorA), as.double(cache$eps.slice.factorA), as.double(cache$turnover.trend.alphaB), as.double(cache$turnover.trend.betaB), as.double(cache$turnover.beta.factorB), as.double(cache$turnover.slice.factorB), as.double(cache$eps.trend.alphaB), as.double(cache$eps.trend.betaB), as.double(cache$eps.beta.factorB), as.double(cache$eps.slice.factorB), as.double(cache$x_turnover0), as.double(cache$x_eps0), as.double(cache$x_turnover1), as.double(cache$x_eps1), as.double(cache$x_turnoverA), as.double(cache$x_epsA), as.double(cache$x_turnoverB), as.double(cache$x_epsB), as.double(cache$q01), as.double(cache$q10), as.double(cache$q0A), as.double(cache$qA0), as.double(cache$q1B), as.double(cache$qB1), as.double(cache$q0B), as.double(cache$qB0), as.double(cache$q1A), as.double(cache$qA1), as.double(cache$qBA), as.double(cache$qAB), as.double(cache$focal.edge.length), as.double(cache$tipward.age), as.integer(2))
-			lambdaB <- .C("set_birth_hisse_void", as.double(0.0), as.double(cache$rootward.age), as.double(cache$tot_time), as.double(cache$timeslice), as.double(cache$turnover.trend.alpha0), as.double(cache$turnover.trend.beta0), as.double(cache$turnover.beta.factor0), as.double(cache$turnover.slice.factor0), as.double(cache$eps.trend.alpha0), as.double(cache$eps.trend.beta0), as.double(cache$eps.beta.factor0), as.double(cache$eps.slice.factor0), as.double(cache$turnover.trend.alpha1), as.double(cache$turnover.trend.beta1), as.double(cache$turnover.beta.factor1), as.double(cache$turnover.slice.factor1), as.double(cache$eps.trend.alpha1), as.double(cache$eps.trend.beta1), as.double(cache$eps.beta.factor1), as.double(cache$eps.slice.factor1), as.double(cache$turnover.trend.alphaA), as.double(cache$turnover.trend.betaA), as.double(cache$turnover.beta.factorA), as.double(cache$turnover.slice.factorA), as.double(cache$eps.trend.alphaA), as.double(cache$eps.trend.betaA), as.double(cache$eps.beta.factorA), as.double(cache$eps.slice.factorA), as.double(cache$turnover.trend.alphaB), as.double(cache$turnover.trend.betaB), as.double(cache$turnover.beta.factorB), as.double(cache$turnover.slice.factorB), as.double(cache$eps.trend.alphaB), as.double(cache$eps.trend.betaB), as.double(cache$eps.beta.factorB), as.double(cache$eps.slice.factorB), as.double(cache$x_turnover0), as.double(cache$x_eps0), as.double(cache$x_turnover1), as.double(cache$x_eps1), as.double(cache$x_turnoverA), as.double(cache$x_epsA), as.double(cache$x_turnoverB), as.double(cache$x_epsB), as.double(cache$q01), as.double(cache$q10), as.double(cache$q0A), as.double(cache$qA0), as.double(cache$q1B), as.double(cache$qB1), as.double(cache$q0B), as.double(cache$qB0), as.double(cache$q1A), as.double(cache$qA1), as.double(cache$qBA), as.double(cache$qAB), as.double(cache$focal.edge.length), as.double(cache$tipward.age), as.integer(3))
-			compD[focal,] <- c(v * c(lambda0[[1]], lambda1[[1]],lambdaA[[1]], lambdaB[[1]]))
-			compE[focal,] <- phi[1:4]
-			if(!is.null(node)){
-				fixer = c(0,0,0,0)
-				fixer[state] = 1
-				if(node == focal){
-					compD[focal,] <- compD[focal,] * fixer
-				}
-				#compE[focal,] <- compE[focal,] * fixer
-			}
-		}else{
-			lambda0 <- .C("set_birth_bisse_void", as.double(0.0), as.double(cache$rootward.age), as.double(cache$tot_time), as.double(cache$timeslice), as.double(cache$turnover.trend.alpha0), as.double(cache$turnover.trend.beta0), as.double(cache$turnover.beta.factor0), as.double(cache$turnover.slice.factor0), as.double(cache$eps.trend.alpha0), as.double(cache$eps.trend.beta0), as.double(cache$eps.beta.factor0), as.double(cache$eps.slice.factor0), as.double(cache$turnover.trend.alpha1), as.double(cache$turnover.trend.beta1), as.double(cache$turnover.beta.factor1), as.double(cache$turnover.slice.factor1), as.double(cache$eps.trend.alpha1), as.double(cache$eps.trend.beta1), as.double(cache$eps.beta.factor1), as.double(cache$eps.slice.factor1), as.double(cache$x_turnover0), as.double(cache$x_eps0), as.double(cache$x_turnover1), as.double(cache$x_eps1), as.double(cache$q01), as.double(cache$q10), as.double(cache$focal.edge.length), as.double(cache$tipward.age), as.integer(0))
-			lambda1 <- .C("set_birth_bisse_void", as.double(0.0), as.double(cache$rootward.age), as.double(cache$tot_time), as.double(cache$timeslice), as.double(cache$turnover.trend.alpha0), as.double(cache$turnover.trend.beta0), as.double(cache$turnover.beta.factor0), as.double(cache$turnover.slice.factor0), as.double(cache$eps.trend.alpha0), as.double(cache$eps.trend.beta0), as.double(cache$eps.beta.factor0), as.double(cache$eps.slice.factor0), as.double(cache$turnover.trend.alpha1), as.double(cache$turnover.trend.beta1), as.double(cache$turnover.beta.factor1), as.double(cache$turnover.slice.factor1), as.double(cache$eps.trend.alpha1), as.double(cache$eps.trend.beta1), as.double(cache$eps.beta.factor1), as.double(cache$eps.slice.factor1), as.double(cache$x_turnover0), as.double(cache$x_eps0), as.double(cache$x_turnover1), as.double(cache$x_eps1), as.double(cache$q01), as.double(cache$q10), as.double(cache$focal.edge.length), as.double(cache$tipward.age), as.integer(1))
-			compD[focal,] <- c(v * c(lambda0[[1]], lambda1[[1]]))
-			compE[focal,] <- phi[1:2]
-			if(!is.null(node)){
-				if(node == focal){
-					fixer = c(0,0)
-					fixer[state] = 1
-					compD[focal,] <- compD[focal,] * fixer
-				}
-			}
-		}
-		###########################
-		#Logcompensation bit for dealing with underflow issues. Need to give a necessary shoutout to Rich FitzJohn -- we follow his diversitree approach. VERIFIED that it works properly:
-        tmp <- sum(compD[focal,])
-        compD[focal,] <- compD[focal,] / tmp
-        logcomp <- c(logcomp, log(tmp))
-	}
-	root.node <- nb.tip + 1L
-	if (is.na(sum(log(compD[root.node,]))) || is.na(log(sum(1-compE[root.node,])))){
-		return(bad.likelihood)
-	}else{
-		if(root.type == "madfitz" | root.type == "herr_als"){
-			if(hidden.states == FALSE){
-                if(is.null(root.p)){
-                    root.p = c(compD[root.node,1] / sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]))
+#Have to calculate root prob separately because it is not a descendant in our table. Could add it, but I worry about the NA that is required.
+GetRootProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    FocalNode = NULL
+    . = NULL
+
+    gens <- data.table(c(generations))
+    setkey(dat.tab, FocalNode)
+    CurrentGenData <- dat.tab[gens]
+    if(cache$hidden.states == TRUE){
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:14], z[15:22], z[2], z[1])))
+        v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),9:16] * tmp[seq(2,nrow(tmp),2),9:16], length(unique(CurrentGenData$FocalNode)), 8)
+        v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 8, byrow=TRUE)
+        phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:8], length(unique(CurrentGenData$FocalNode)), 8)
+        if(!is.null(cache$node)){
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(cache$node)){
+                    if(cache$fix.type[fix.index] == "event"){
+                        fixer.tmp = numeric(2)
+                        fixer.tmp[cache$state[fix.index]] = 1
+                        fixer = rep(fixer.tmp, 4)
+                    }else{
+                        fixer = numeric(8)
+                        fixer[cache$state[fix.index]] = 1
+                    }
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                 }
-			}else{
-                if(is.null(root.p)){
-                    root.p = c(compD[root.node,1] / sum(compD[root.node,]), compD[root.node,2]/sum(compD[root.node,]), compD[root.node,3]/sum(compD[root.node,]), compD[root.node,4]/sum(compD[root.node,]))
-                    root.p[which(is.na(root.p))] = 0
+            }
+        }
+    }else{
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:8], z[9:10], z[2], z[1])))
+        v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),3:4] * tmp[seq(2,nrow(tmp),2),3:4], length(unique(CurrentGenData$FocalNode)), 2)
+        v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 2, byrow=TRUE)
+        phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:2], length(unique(CurrentGenData$FocalNode)), 2)
+        if(!is.null(cache$node)){
+            if(any(cache$node %in% generations)){
+                for(fix.index in 1:length(cache$node)){
+                    fixer = numeric(2)
+                    fixer[cache$state[fix.index]] = 1
+                    v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                 }
-			}
-		}
-		if(condition.on.survival == TRUE){
-			if(hidden.states == FALSE){
-                if(root.type == "madfitz"){
-                    compD[root.node,] <- compD[root.node,] / sum(root.p * c(lambda0[[1]], lambda1[[1]]) * (1 - compE[root.node,])^2)
-                    #Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] = 0
-                    loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
+            }
+        }
+    }
+    
+    tmp.comp <- rowSums(v.mat)
+    tmp.probs <- v.mat / tmp.comp
+    
+    return(cbind(tmp.comp, phi.mat, tmp.probs))
+}
+
+
+######################################################################################################################################
+######################################################################################################################################
+### The fast HiSSE type down pass that carries out the integration and returns the likelihood:
+######################################################################################################################################
+######################################################################################################################################
+
+DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, fix.type=NULL) {
+    
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
+    compE = NULL
+    
+    ## Moved this here instead of above because it actually significantly improved the speed.
+    if(cache$hidden.states == FALSE){
+        pars <- c(cache$lambda0A,cache$lambda1A,cache$mu0A,cache$mu1A,cache$q0A1A,cache$q1A0A)
+        lambda <- c(cache$lambda0A, cache$lambda1A)
+    }else{
+        pars <- c(cache$lambda0A,cache$lambda1A,cache$mu0A,cache$mu1A,cache$q0A1A,cache$q1A0A,cache$q0A0B,cache$q0A0C,cache$q0A0D,cache$q1A1B,cache$q1A1C,cache$q1A1D,cache$lambda0B,cache$lambda1B ,cache$mu0B,cache$mu1B,cache$q0B1B,cache$q1B0B,cache$q0B0A,cache$q0B0C,cache$q0B0D,cache$q1B1A,cache$q1B1C,cache$q1B1D,cache$lambda0C ,cache$lambda1C ,cache$mu0C,cache$mu1C,cache$q0C1C,cache$q1C0C,cache$q0C0A,cache$q0C0B,cache$q0C0D,cache$q1C1A,cache$q1C1B,cache$q1C1D,cache$lambda0D,cache$lambda1D,cache$mu0D,cache$mu1D,cache$q0D1D,cache$q1D0D,cache$q0D0A,cache$q0D0B,cache$q0D0C,cache$q1D1A,cache$q1D1B,cache$q1D1C)
+        lambda <- c(cache$lambda0A,cache$lambda1A,cache$lambda0B,cache$lambda1B, cache$lambda0C,cache$lambda1C, cache$lambda0D,cache$lambda1D)
+    }
+    
+    nb.tip <- cache$nb.tip
+    nb.node <- cache$nb.node
+    TIPS <- 1:nb.tip
+    for(i in 1:length(gen)){
+        if(i == length(gen)){
+            if(!is.null(node)){
+                if(any(node %in% gen[[i]])){
+                    cache$node <- node
+                    cache$state <- state
+                    cache$fix.type <- fix.type
+                    res.tmp <- GetRootProbHiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab, generations=gen[[i]])
+                    cache$node <- NULL
+                    cache$state <- NULL
+                    cache$fix.type <- NULL
                 }else{
-                    compD[root.node,] <- (compD[root.node,]*root.p) / (c(lambda0[[1]], lambda1[[1]]) * (1 - compE[root.node,])^2)
-                    #Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] = 0
-                    loglik <- log(sum(compD[root.node,])) + sum(logcomp)
+                    res.tmp <- GetRootProbHiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab, generations=gen[[i]])
                 }
-			}else{
-                if(root.type == "madfitz"){
-                    compD[root.node,] <- compD[root.node,] / sum(root.p * c(lambda0[[1]], lambda1[[1]], lambdaA[[1]], lambdaB[[1]]) * (1 - compE[root.node,])^2)
-                    #Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] = 0
-                    loglik <- log(sum(compD[root.node,] * root.p)) + sum(logcomp)
+            }else{
+                res.tmp <- GetRootProbHiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab, generations=gen[[i]])
+            }
+            if(cache$hidden.states == TRUE){
+                compD.root <- res.tmp[c(10:17)]
+                compE.root <- res.tmp[c(2:9)]
+            }else{
+                compD.root <- res.tmp[c(4:5)]
+                compE.root <- res.tmp[c(2:3)]
+            }
+            setkey(dat.tab, DesNode)
+            comp <- dat.tab[["comp"]]
+            comp <- c(comp[-TIPS], res.tmp[1])
+        }else{
+            if(!is.null(node)){
+                if(any(node %in% gen[[i]])){
+                    cache$node <- node
+                    cache$state <- state
+                    cache$fix.type <- fix.type
+                    dat.tab <- FocalNodeProbHiSSE(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                    cache$node <- NULL
+                    cache$state <- NULL
+                    cache$fix.type <- NULL
                 }else{
-                    compD[root.node,] <- (compD[root.node,]*root.p) / (c(lambda0[[1]], lambda1[[1]], lambdaA[[1]], lambdaB[[1]]) * (1 - compE[root.node,])^2)
-                    #Corrects for possibility that you have 0/0:
-                    compD[root.node,which(is.na(compD[root.node,]))] = 0
-                    loglik <- log(sum(compD[root.node,])) + sum(logcomp)
+                    dat.tab <- FocalNodeProbHiSSE(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
                 }
-			}
-		}
-	}
-	if(get.phi==TRUE){
-		obj = NULL
-		obj$compD.root = compD[root.node,]
-		obj$compE = compE
-		return(obj)
-	}else{
-		return(loglik)
-	}
+            }else{
+                dat.tab <- FocalNodeProbHiSSE(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+            }
+        }
+    }
+    if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
+        return(log(cache$bad.likelihood)^13)
+    }else{
+        if(root.type == "madfitz" | root.type == "herr_als"){
+            if(is.null(root.p)){
+                root.p = compD.root/sum(compD.root)
+                root.p[which(is.na(root.p))] = 0
+            }
+        }
+        if(condition.on.survival == TRUE){
+            if(cache$hidden.states == FALSE){
+                if(root.type == "madfitz"){
+                    compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
+                }else{
+                    compD.root <- (compD.root * root.p) / (lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root)) + sum(log(comp))
+                }
+            }else{
+                if(root.type == "madfitz"){
+                    compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
+                }else{
+                    compD.root <- (compD.root * root.p) / (lambda * (1 - compE.root)^2)
+                    #Corrects for possibility that you have 0/0:
+                    compD.root[which(is.na(compD.root))] = 0
+                    loglik <- log(sum(compD.root)) + sum(log(comp))
+                }
+            }
+        }
+        if(!is.finite(loglik)){
+            return(log(cache$bad.likelihood)^7)
+        }
+    }
+    if(get.phi==TRUE){
+        obj = NULL
+        obj$compD.root = compD.root/sum(compD.root)
+        obj$compE = compE
+        obj$root.p = root.p
+        return(obj)
+    }else{
+        return(loglik)
+    }
 }
 
 
 ######################################################################################################################################
 ######################################################################################################################################
-### Function for ascertainment bias filter -- WORK IN PROGRESS
+### Cache object for storing parameters that are used throughout MuHiSSE:
 ######################################################################################################################################
 ######################################################################################################################################
 
-#Rationale:
-#Ascertainment bias is a common issue in biological systems. For example, for transcriptomes, shorter seqs might be easier to detect (Gao et al. 2011). Here, the clades
-#selected for use in diversification analyses are biased. The bias of having to exist is already part of the model. However, we actually use more stringent filters: no one
-#does a diversification analysis of a clade of Gingko: there is one species, so there is no point. The clades selected for analysis are larger than clades
-#evolving for the same time with the same birth and death rates, and so rate estimates are biased towards greater net diversification. As a first attempt to deal with this
-#we have allowed an ascertainment filter to be implemented. We assume that the true parameters of evolution make the examined clade exceptionally diverse in some way, and
-#thus only allow parameter values that make it exceptional enough. For example, by default we assume that clades of the observed number of taxa or greater should have a
-#probability of being used of 5% or less. There is room for future improvements in dealing with this, but the effect size of this bias is large enough that it must be
-#attempted to be dealt with. By changing max.probability to 1.0, the traditional approach that ignores the reality of ascertainment bias may be used.
-#One possibility for this probability may be the number of taxa in the focal group divided by the number of taxa in the overall larger set of "similar" things
-#For example, are whales diverse mammals? There are other mammal groups (platypus, hippos) you have chosen not to analyze, so you have to take into account your choice
-#to do a moderately diverse, fairly young group. If the parameters pass this filter this, a TRUE is passed.
-
-PassAscertainmentFilter <- function(max.probability=NULL, k, birth.rate, death.rate, time, comparison.clade.diversity=NULL, comparison.clade.age=NULL) {
-	if(is.null(max.probability) && !is.null(comparison.clade.diversity)) {
-		comparison.clade.rate = log(comparison.clade.diversity / 2) / comparison.clade.age
-		#Magallon and Sanderson 2001 -- Eq. 4 -- we want to calculate how many lineages we expect to be around at the age of origin of the focal clade. We have only looked at our special one:
-		comparison.clade.expected.lineages = 2 * exp(comparison.clade.rate * (comparison.clade.age-time))
-		#Out of all the lineages alive at time t, we chose this one, presumably because it is diverse:
-		max.probability = 1/comparison.clade.expected.lineages
-	}
-	net.diver.rate <- birth.rate - death.rate
-	#Magallon and Sanderson 2001 -- Eq. 2a:
-	exprt <- exp(net.diver.rate * time)
-	beta <- (exprt - 1) / (exprt - death.rate/birth.rate)
-	#Magallon and Sanderson 2001 -- Eq. 2b:
-	alpha <- (death.rate/birth.rate) * beta
-	#Magallon and Sanderson 2001 -- Eq. 11a:
-	probNgeNtax <- ((beta^(k-2)) * ((net.diver.rate * (1 - alpha - beta + (alpha*beta)) + alpha + (2*beta) - 1))) / (1+alpha)
-	return(ifelse((probNgeNtax <= max.probability) , TRUE, FALSE))
+ParametersToPassfHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, bad.likelihood, ode.eps){
+    #Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
+    obj <- NULL
+    
+    obj$hidden.states <- hidden.states
+    obj$nb.tip <- nb.tip
+    obj$nb.node <- nb.node
+    obj$bad.likelihood <- bad.likelihood
+    obj$ode.eps <- ode.eps
+    
+    ##Hidden State A
+    obj$lambda0A <- model.vec[1] / (1 + model.vec[3])
+    obj$lambda1A <- model.vec[2] / (1 + model.vec[4])
+    obj$mu0A <- (model.vec[3] * model.vec[1]) / (1 + model.vec[3])
+    obj$mu1A <- (model.vec[4] * model.vec[2]) / (1 + model.vec[4])
+    obj$q0A1A <- model.vec[5]
+    obj$q1A0A <- model.vec[6]
+    
+    obj$q0A0B <- model.vec[7]
+    obj$q0A0C <- model.vec[8]
+    obj$q0A0D <- model.vec[9]
+    obj$q1A1B <- model.vec[10]
+    obj$q1A1C <- model.vec[11]
+    obj$q1A1D <- model.vec[12]
+    
+    ##Hidden State B
+    obj$lambda0B <- model.vec[13] / (1 + model.vec[15])
+    obj$lambda1B <- model.vec[14] / (1 + model.vec[16])
+    obj$mu0B <- (model.vec[15] * model.vec[13]) / (1 + model.vec[15])
+    obj$mu1B <- (model.vec[16] * model.vec[14]) / (1 + model.vec[16])
+    obj$q0B1B <- model.vec[17]
+    obj$q1B0B <- model.vec[18]
+    
+    obj$q0B0A <- model.vec[19]
+    obj$q0B0C <- model.vec[20]
+    obj$q0B0D <- model.vec[21]
+    obj$q1B1A <- model.vec[22]
+    obj$q1B1C <- model.vec[23]
+    obj$q1B1D <- model.vec[24]
+    
+    ##Hidden State C
+    obj$lambda0C <- model.vec[25] / (1 + model.vec[27])
+    obj$lambda1C <- model.vec[26] / (1 + model.vec[28])
+    obj$mu0C <- (model.vec[27] * model.vec[25]) / (1 + model.vec[27])
+    obj$mu1C <- (model.vec[28] * model.vec[26]) / (1 + model.vec[28])
+    obj$q0C1C <- model.vec[29]
+    obj$q1C0C <- model.vec[30]
+    obj$q0C0A <- model.vec[31]
+    
+    obj$q0C0B <- model.vec[32]
+    obj$q0C0D <- model.vec[33]
+    obj$q1C1A <- model.vec[34]
+    obj$q1C1B <- model.vec[35]
+    obj$q1C1D <- model.vec[36]
+    
+    ##Hidden State D
+    obj$lambda0D <- model.vec[37] / (1 + model.vec[39])
+    obj$lambda1D <- model.vec[38] / (1 + model.vec[40])
+    obj$mu0D <- (model.vec[39] * model.vec[37]) / (1 + model.vec[39])
+    obj$mu1D <- (model.vec[40] * model.vec[38]) / (1 + model.vec[40])
+    obj$q0D1D <- model.vec[41]
+    obj$q1D0D <- model.vec[42]
+    
+    obj$q0D0A <- model.vec[43]
+    obj$q0D0B <- model.vec[44]
+    obj$q0D0C <- model.vec[45]
+    obj$q1D1A <- model.vec[46]
+    obj$q1D1B <- model.vec[47]
+    obj$q1D1C <- model.vec[48]
+    
+    return(obj)
 }
 
 
-######################################################################################################################################
-######################################################################################################################################
-### Cache object for storing parameters that are used throughout hisse:
-######################################################################################################################################
-######################################################################################################################################
-
-ParametersToPass <- function(phy, data, f, model.vec, timeslice, hidden.states){
-	#Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPass):
-	obj <- NULL
-	obj$phy = phy
-
-	if(hidden.states == FALSE){
-		states = matrix(0,Ntip(phy),2)
-		for(i in 1:Ntip(phy)){
-			if(data[i]==0){states[i,1]=1}
-			if(data[i]==1){states[i,2]=1}
-			if(data[i]==2){states[i,1:2]=1}
-		}
-	}
-	if(hidden.states == TRUE){
-		states = matrix(0,Ntip(phy),4)
-		for(i in 1:Ntip(phy)){
-            if(data[i]==0){states[i,c(1,3)]=1}
-			if(data[i]==1){states[i,c(2,4)]=1}
-			if(data[i]==2){states[i,1:4]=1}
-		}
-	}
-	if(hidden.states == "TEST"){
-		states = matrix(0,Ntip(phy),4)
-		for(i in 1:Ntip(phy)){
-			if(data[i]==1){states[i,1]=1}
-			if(data[i]==2){states[i,2]=1}
-			if(data[i]==3){states[i,3]=1}
-			if(data[i]==4){states[i,4]=1}
-		}
-	}
-	obj$states = states
-	obj$tot_time = max(branching.times(phy))
-	obj$f = f
-	if(is.null(timeslice)){
-		obj$timeslice = 0
-	}else{
-		obj$timeslice = timeslice
-	}
-	obj$x_turnover0 = model.vec[1]
-	obj$x_turnover1 = model.vec[2]
-	obj$x_turnoverA = model.vec[3]
-	obj$x_turnoverB = model.vec[4]
-
-	obj$x_eps0 = model.vec[5]
-	obj$x_eps1 = model.vec[6]
-	obj$x_epsA = model.vec[7]
-	obj$x_epsB = model.vec[8]
-
-	obj$q10 = model.vec[9]
-	obj$qA0 = model.vec[10]
-	obj$qB0 = model.vec[11]
-	obj$q01 = model.vec[12]
-	obj$qA1 = model.vec[13]
-	obj$qB1 = model.vec[14]
-	obj$q0A = model.vec[15]
-	obj$q1A = model.vec[16]
-	obj$qBA = model.vec[17]
-	obj$q0B = model.vec[18]
-	obj$q1B = model.vec[19]
-	obj$qAB = model.vec[20]
-
-	obj$turnover.trend.alpha0 = model.vec[21]
-	obj$turnover.trend.alpha1 = model.vec[22]
-	obj$turnover.trend.alphaA = model.vec[23]
-	obj$turnover.trend.alphaB = model.vec[24]
-
-	obj$turnover.trend.beta0 = model.vec[25]
-	obj$turnover.trend.beta1 = model.vec[26]
-	obj$turnover.trend.betaA = model.vec[27]
-	obj$turnover.trend.betaB = model.vec[28]
-
-	obj$eps.trend.alpha0 = model.vec[29]
-	obj$eps.trend.alpha1 = model.vec[30]
-	obj$eps.trend.alphaA = model.vec[31]
-	obj$eps.trend.alphaB = model.vec[32]
-
-	obj$eps.trend.beta0 = model.vec[33]
-	obj$eps.trend.beta1 = model.vec[34]
-	obj$eps.trend.betaA = model.vec[35]
-	obj$eps.trend.betaB = model.vec[36]
-
-	obj$turnover.slice.factor0 = model.vec[37]
-	obj$turnover.slice.factor1 = model.vec[38]
-	obj$turnover.slice.factorA = model.vec[39]
-	obj$turnover.slice.factorB = model.vec[40]
-
-	obj$eps.slice.factor0 = model.vec[41]
-	obj$eps.slice.factor1 = model.vec[42]
-	obj$eps.slice.factorA = model.vec[43]
-	obj$eps.slice.factorB = model.vec[44]
-
-	obj$q10_slice.factor = model.vec[45]
-	obj$qA0_slice.factor = model.vec[46]
-	obj$qB0_slice.factor = model.vec[47]
-	obj$q01_slice.factor = model.vec[48]
-	obj$qA1_slice.factor = model.vec[49]
-	obj$qB1_slice.factor = model.vec[50]
-	obj$q0A_slice.factor = model.vec[51]
-	obj$q1A_slice.factor = model.vec[52]
-	obj$qBA_slice.factor = model.vec[53]
-	obj$q0B_slice.factor = model.vec[54]
-	obj$q1B_slice.factor = model.vec[55]
-	obj$qAB_slice.factor = model.vec[56]
-
-	obj$split.times = sort(branching.times(phy), decreasing=TRUE)
-
-	return(obj)
-}
-
-######################################################################################################################################
-######################################################################################################################################
-### Print function for our diversity class:
-######################################################################################################################################
-######################################################################################################################################
-
-##Work on this more
 print.hisse.fit <- function(x,...){
-	ntips=Ntip(x$phy)
-	output<-data.frame(x$loglik,x$AIC,x$AICc,ntips,row.names="")
-	names(output)<-c("lnL","AIC","AICc","ntax")
-	cat("\nFit\n")
-	print(output)
-	cat("\n")
-	cat("Probability of extinction:", x$phi, "\n")
-	cat("\n")
-	param.est0 <- matrix(0,4,2)
-	param.est0[,1] <- x$solution[c(1,21,25,37)]
-	param.est0[,2] <- x$solution[c(5,29,33,41)]
-	if(x$hidden.states == TRUE){
-		param.est0 <- data.frame(param.est0, row.names=c("rate0A", "alpha0A", "beta0A", "timeslice.factor0A"))
-	}else{
-		param.est0 <- data.frame(param.est0, row.names=c("rate0", "alpha0", "beta0", "timeslice.factor0"))
-
-	}
-	param.est1 <- matrix(0,4,2)
-	param.est1[,1] <- x$solution[c(2,22,26,38)]
-	param.est1[,2] <- x$solution[c(6,30,34,42)]
-	if(x$hidden.states == TRUE){
-		param.est1 <- data.frame(param.est1, row.names=c("rate1A", "alpha1A", "beta1A", "timeslice.factor1A"))
-	}else{
-		param.est1 <- data.frame(param.est1, row.names=c("rate1", "alpha1", "beta1", "timeslice.factor1"))
-	}
-
-	names(param.est0) <- names(param.est1) <- c("turnover", "ext.frac")
-
-	param.est.sp.0 <- param.est0[1,1] / (1 + param.est0[1,2])
-	param.est.mu.0 <- (param.est0[1,1] * param.est0[1,2]) / (1 + param.est0[1,2])
-	param.est.sp.1 <- param.est1[1,1] / (1 + param.est1[1,2])
-	param.est.mu.1 <- (param.est1[1,1] * param.est1[1,2]) / (1 + param.est1[1,2])
-
-	if(x$output.type == "net.div"){
-		param.est0[1,1] <- param.est.sp.0 - param.est.mu.0
-		param.est1[1,1] <- param.est.sp.1 - param.est.mu.1
-		names(param.est0) <- names(param.est1) <- c("net.div", "ext.frac")
-	}
-
-	if(x$output.type == "raw"){
-		param.est0[1,1:2] <- c(param.est.sp.0, param.est.mu.0)
-		param.est1[1,1:2] <- c(param.est.sp.1, param.est.mu.1)
-		names(param.est0) <- names(param.est1) <- c("lambda", "mu")
-	}
-
-	cat("Diversification Rates\n")
-	print(param.est0)
-	cat("\n")
-	print(param.est1)
-	cat("\n")
-	if(x$hidden.states == TRUE){
-		param.estA <- matrix(0,4,2)
-		param.estA[,1] <- x$solution[c(3,23,27,39)]
-		param.estA[,2] <- x$solution[c(7,31,35,43)]
-		param.estA <- data.frame(param.estA, row.names=c("rate0B", "alpha0B", "beta0B", "timeslice.factor0B"))
-		param.estB <- matrix(0,4,2)
-		param.estB[,1] <- x$solution[c(4,24,28,49)]
-		param.estB[,2] <- x$solution[c(8,32,36,44)]
-		param.estB <- data.frame(param.estB, row.names=c("rate1B", "alpha1B", "beta1B", "timeslice.factor1B"))
-		names(param.estA) <- names(param.estB) <- c("turnover", "ext.frac")
-
-		param.est.sp.A <- param.estA[1,1] / (1 + param.estA[1,2])
-		param.est.mu.A <- (param.estA[1,1] * param.estA[1,2]) / (1 + param.estA[1,2])
-		param.est.sp.B <- param.estB[1,1] / (1 + param.estB[1,2])
-		param.est.mu.B <- (param.estB[1,1] * param.estB[1,2]) / (1 + param.estB[1,2])
-
-		if(x$output.type == "net.div"){
-			param.estA[1,1] <- param.est.sp.A - param.est.mu.A
-			param.estB[1,1] <- param.est.sp.B - param.est.mu.B
-			names(param.estA) <- names(param.estB) <- c("net.div", "ext.frac")
-		}
-
-		if(x$output.type == "raw"){
-			param.estA[1,1:2] <- c(param.est.sp.A, param.est.mu.A)
-			param.estB[1,1:2] <- c(param.est.sp.B, param.est.mu.B)
-			names(param.estA) <- names(param.estB) <- c("lambda", "mu")
-		}
-
-		print(param.estA)
-		cat("\n")
-		print(param.estB)
-		cat("\n")
-		index.mat<-matrix(NA,4,4)
-		diag(index.mat)<-13
-		index.mat[is.na(index.mat)]<-1:12
-		t.rates <- x$solution[c(9:20)]
-		q.mat <- matrix(t.rates[index.mat],dim(index.mat))
-		rownames(q.mat) <- c("(0A)","(1A)","(0B)","(1B)")
-		colnames(q.mat) <- c("(0A)","(1A)","(0B)","(1B)")
-		cat("Transition Rates\n")
-		print(q.mat)
-		cat("\n")
-	}else{
-		q.mat <- matrix(0,2,2)
-		q.mat[2,1] <- x$solution[9]
-		q.mat[1,2] <- x$solution[12]
-		rownames(q.mat) <- c("(0)","(1)")
-		colnames(q.mat) <- c("(0)","(1)")
-		cat("Transition Rates\n")
-		print(q.mat)
-		cat("\n")
-	}
+    ## Function to print a "muhisse.fit" object.
+    set.zero <- max( x$index.par )
+    ## Keep only the parameters estimated:
+    par.list <- x$solution[ !x$index.par == set.zero ]
+    ntips <- Ntip( x$phy )
+    nstates <- ncol( x$trans.matrix )/2
+    output <- c(x$loglik, x$AIC, x$AICc, ntips, nstates)
+    names(output) <- c("lnL", "AIC", "AICc", "n.taxa", "n.hidden.states")
+    cat("\n")
+    cat("Fit \n")
+    print(output)
+    cat("\n")
+    cat("Model parameters: \n")
+    cat("\n")
+    print(par.list)
+    cat("\n")
 }
+

@@ -5,11 +5,11 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps.anc=rep(c(1,2,3,4),2), trans.type = "equal", condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=FALSE, sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.25, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
+hisse.null4.old <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps.anc=rep(c(1,2,3,4),2), trans.type = "equal", condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, output.type="turnover", sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, ode.eps=0){
 
 	#Some basic formatting of parameters:
 	phy$node.label <- NULL
-	sub.mat1 <- sub.mat2 <- TransMatMaker(hidden.states=TRUE)
+	sub.mat1 <- sub.mat2 <- TransMatMaker.old(hidden.states=TRUE)
 	sub.mat3 <- sub.mat4 <- matrix(NA, 4,4)
 	if(trans.type == "equal"){
 		diag(sub.mat3) <- diag(sub.mat4) <- 1
@@ -18,8 +18,8 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 		rownames(trans.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")
 		colnames(trans.mat) <- c("(0A)","(0B)","(0C)","(0D)","(1A)","(1B)","(1C)","(1D)")
 	}else{
-		sub.mat1 <- TransMatMaker(hidden.states=TRUE)
-		sub.mat2 <- TransMatMaker(hidden.states=TRUE)
+		sub.mat1 <- TransMatMaker.old(hidden.states=TRUE)
+		sub.mat2 <- TransMatMaker.old(hidden.states=TRUE)
 		sub.mat1[!is.na(sub.mat1)] <- sub.mat2[!is.na(sub.mat2)] <- 1
 		diag(sub.mat4) <- 2
 		diag(sub.mat3) <- 3
@@ -130,7 +130,7 @@ hisse.null4 <- function(phy, data, f=c(1,1), turnover.anc=rep(c(1,2,3,4),2), eps
 	cat("Finished. Summarizing results...", "\n")
 
 	obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, output.type=output.type, trans.type=trans.type, trans.mat=trans.mat, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
-	class(obj) = "hisse.null4.fit"
+	class(obj) = "hisse.null4.old.fit"
 
 	return(obj)
 }
@@ -420,7 +420,7 @@ ParametersToPassNull <- function(phy, data, f, model.vec){
 ######################################################################################################################################
 ######################################################################################################################################
 
-print.hisse.null4.fit <- function(x,...){
+print.hisse.null4.old.fit <- function(x,...){
 	ntips=Ntip(x$phy)
 	output<-data.frame(x$loglik,x$AIC,x$AICc,ntips,row.names="")
 	names(output)<-c("lnL","AIC","AICc","ntax")

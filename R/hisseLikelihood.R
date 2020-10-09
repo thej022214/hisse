@@ -127,7 +127,7 @@ makeHiSSELikelihood <- function(phy, data, hidden.states = TRUE, null4 = FALSE, 
         ## This is special for the Null 4 model. This is the null model for the full HiSSE model.
 
         ## This model has a special format for the transition matrix. Need to inform the user what is the order for the parameters. For this I will return a guide matrix. This matrix is the same as used in the null.4 model and will serve only for reference. This need to be clear in the help page of the function.
-        sub.mat1 <- sub.mat2 <- TransMatMaker(hidden.states=TRUE)
+        sub.mat1 <- sub.mat2 <- TransMatMaker.old(hidden.states=TRUE)
         sub.mat3 <- sub.mat4 <- matrix(NA, 4,4)
         diag(sub.mat3) <- diag(sub.mat4) <- 0.0
         trans.mat <-rbind(cbind(sub.mat1, sub.mat3),cbind(sub.mat4,sub.mat2))

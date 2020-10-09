@@ -20,7 +20,7 @@ This function provides a means for sampling the likelihood surface quickly to es
 Note the scale.int option. This roughly sets the variance for sampling points. If this seems to take a long while to find enough points within the desired likelihood region consider reducing scale.int to either 0.05 or, in some cases, 0.01. 
 }
 \value{
-\code{SupportRegion} returns an object of class \code{muhisse.support}. This is a list with elements:
+\code{SupportRegionMuHiSSE} returns an object of class \code{muhisse.support}. This is a list with elements:
 \item{$ci}{the sampled confidence interval.}
 \item{$points.within.region}{the sampled points that within 2lnL units from the MLE.}
 \item{$all.points}{all points sampled by the adaptive sampler.}

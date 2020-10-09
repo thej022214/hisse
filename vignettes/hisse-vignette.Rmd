@@ -1,18 +1,18 @@
 ---
-title: "Running HiSSE"
+title: "Running the old HiSSE function"
 author: "Jeremy M. Beaulieu"
 output:
   pdf_document:
     fig_caption: yes
 vignette: >
    %\VignetteEngine{knitr::rmarkdown}
-   %\VignetteIndexEntry{Running hisse}
+   %\VignetteIndexEntry{Running the old HiSSE function}
    \usepackage[utf8]{inputenc}
 ---
 
 ## Getting started
 
-This tutorial gives some basic information on how to set up and execute a model using [hisse](https://cran.r-project.org/package=hisse/) (Beaulieu & O'Meara 2016). While our hidden state speciation and extinction model (HiSSE) is a natural extension of the models contained within [diversitree](https://cran.r-project.org/package=diversitree/) (FitzJohn 2012), our implementation has a very different set up.
+As of version 1.9.6, we now provide a new set of functions that execute more complex and potentially faster version of the HiSSE model described by Beaulieu and O'Meara (2016). One of the main differences here is that the model allows up to 8 hidden categories, which means that both the character-independent model (hisse.null4) is called from the same function as the BiSSE and HiSSE models. We also implement a more efficient means of carrying out branch calculations, so it is exceptionally faster than in previous versions. Nevertheless, we have maintained the original implementation of the hisse model, and we have kept this tutorial to gives some basic information on how to set up and execute the original hisse function. For information about how to use the new `hisse()` function see the *A newer, faster HiSSE function* vignette.
 
 Before getting started, be sure to load the hisse package:
 ```{r, eval=TRUE}
@@ -67,7 +67,7 @@ The transition rate matrix is set up separate from the diversification rate para
 
 To generate the index matrix describing the free parameters in the transition model, we use the `TransMatMaker()` function:
 ```{r, eval=TRUE}
-trans.rates = TransMatMaker(hidden.states=TRUE)
+trans.rates = TransMatMaker.old(hidden.states=TRUE)
 trans.rates
 ```
 Note that the default matrix contains 12 free parameters, which includes dual transitions between both the observed trait and the hidden trait (e.g., q0A<->q1B). Personally, I'm skeptical about such transitions and always remove them from the model entirely. I accomplish this by using the internal function `ParDrop()`:
@@ -94,13 +94,13 @@ trans.rates.nodual.allequal
 ```
 Also note that in order to run a BiSSE model in HiSSE, the matrix set up would look like this:
 ```{r, eval=TRUE}
-trans.rates.bisse = TransMatMaker(hidden.states=FALSE)
+trans.rates.bisse = TransMatMaker.old(hidden.states=FALSE)
 trans.rates.bisse
 ```
 Whatever transition matrix is designed, it is supplied to the `trans.rate=` argument in the `hisse()` call:
 ```{r, eval=FALSE}
-pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
-           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal)
+pp = hisse.old(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
+           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal, sann=FALSE)
 ```
 
 ## A common mistake
@@ -111,7 +111,7 @@ eps.anc = c(1,2,0,3)
 ```
 The 0 in the 3rd entry for state 0B designates that the parameter is removed entirely from the model. A common mistake is that the transitions to and from 0B are not removed from the transition matrix. This needs to be done manually:
 ```{r, eval=TRUE}
-trans.rates <- TransMatMaker(hidden.states=TRUE)
+trans.rates <- TransMatMaker.old(hidden.states=TRUE)
 trans.rates.nodual.no0B <- ParDrop(trans.rates, c(2,3,5,7,8,9,10,12))
 trans.rates.nodual.no0B
 ```
@@ -119,8 +119,8 @@ trans.rates.nodual.no0B
 ## Changing the output
 By default, hisse outputs turnover and extinction fraction. I recognize, of course, that this defies the convention of seeking to estimate and interpretation differences in net diversification ($r_i = \lambda_i-\mu_i$). Therefore, users can alter how the final parameters are printed to the screen using the `output.type=` argument in the call `hisse()`. We've included three options: "turnover", "net.div", and "raw", which outputs the results as estimates of speciation ($\lambda_i$) and exinction ($\mu_i$). Thus, to output net diversification:
 ```{r, eval=FALSE}
-pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
-           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal, output.type="net.div")
+pp = hisse.old(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
+           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal, output.type="net.div", sann=FALSE)
 ```
 
 ## Setting up the 2-state character-independent (CID-2) model
@@ -135,7 +135,7 @@ In other words, we are specifying that both 0A and 1A have one set of diversific
 
 In regards to the transition rates, there are various ways in which they can be set up. We could also assume all rates are equal:
 ```{r, eval=TRUE}
-trans.rates = TransMatMaker(hidden.states=TRUE)
+trans.rates = TransMatMaker.old(hidden.states=TRUE)
 trans.rates.nodual = ParDrop(trans.rates, c(3,5,8,10))
 trans.rates.nodual.allequal = ParEqual(trans.rates.nodual, c(1,2,1,3,1,4,1,5,1,6,1,7,1,8))
 trans.rates.nodual.allequal
@@ -158,8 +158,8 @@ trans.rates.nodual.threerates
 ```
 As before, turnover.anc, eps.anc, and the transition rate matrix are supplied as arguments to `hisse()`:
 ```{r, eval=FALSE}
-pp = hisse(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
-           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal)
+pp = hisse.old(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
+           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal, sann=FALSE)
 ```
 and the results can be compared against any model in the hisse set, including BiSSE.
 
@@ -228,8 +228,6 @@ for(i in sequence(length(files))){
 rm(pp.recon)
 ```
 
-## A brief note about the new HiSSE functions in hisse.new()
-As of version 1.9.6, we now provide a new set of functions that execute more complex and potentially faster version of the HiSSE model described by Beaulieu and O'Meara (2016). One of the main differences here is that the model allows up to 8 hidden categories, which means that both the character-independent model (hisse.null4) is called from the same function as the BiSSE and HiSSE models. We also implement a more efficient means of carrying out branch calculations, so it is exceptionally faster than in previous versions. Specifically, we break up the tree into sets of branches whose branch calculations are independent of one another. We then carry out all descendent branch calculations simultaneously, combine the probabilities based on their shared ancestry, then repeat for the next set of descendent branches. In testing, we've found that as the number of taxa increases, the calculation becomes much more efficient. In the next version of `hisse`, the fast functions (e.g., `fGeoHiSSE`, `hisse.new`) will eventually completely replace their respective original alternatives.
 
 ## References
 Beaulieu, J.M., and B.C. O'Meara. (2016). Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601.
