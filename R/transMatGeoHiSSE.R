@@ -5,11 +5,11 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-TransMatMakerGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps=FALSE, separate.extirpation=FALSE){
-    if(hidden.areas == 0){
+TransMatMakerGeoHiSSE <- function(hidden.traits=0, make.null=FALSE, include.jumps=FALSE, separate.extirpation=FALSE){
+    if(hidden.traits == 0){
         trans.mat <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
     }else{
-        if(hidden.areas == 1){
+        if(hidden.traits == 1){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 sub.mat2 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
@@ -28,7 +28,7 @@ TransMatMakerGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)")
         }
 
-        if(hidden.areas == 2){
+        if(hidden.traits == 2){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -47,7 +47,7 @@ TransMatMakerGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)")
         }
 
-        if(hidden.areas == 3){
+        if(hidden.traits == 3){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -67,7 +67,7 @@ TransMatMakerGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
             rownames(trans.mat) <- colnames(trans.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)")
         }
         
-        if(hidden.areas == 4){
+        if(hidden.traits == 4){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -88,7 +88,7 @@ TransMatMakerGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
             rownames(trans.mat)  <- colnames(trans.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)")
         }
         
-        if(hidden.areas == 5){
+        if(hidden.traits == 5){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -110,7 +110,7 @@ TransMatMakerGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
             rownames(trans.mat)  <- colnames(trans.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)")
         }
         
-        if(hidden.areas == 6){
+        if(hidden.traits == 6){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -133,7 +133,7 @@ TransMatMakerGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
             rownames(trans.mat)  <- colnames(trans.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)")
         }
         
-        if(hidden.areas == 7){
+        if(hidden.traits == 7){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -157,7 +157,7 @@ TransMatMakerGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
             rownames(trans.mat)  <- colnames(trans.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)")
         }
 
-        if(hidden.areas == 8){
+        if(hidden.traits == 8){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)
@@ -182,7 +182,7 @@ TransMatMakerGeoHiSSE <- function(hidden.areas=0, make.null=FALSE, include.jumps
             rownames(trans.mat)  <- colnames(trans.mat) <- c("(00A)","(11A)","(01A)", "(00B)","(11B)","(01B)", "(00C)","(11C)","(01C)", "(00D)","(11D)","(01D)", "(00E)","(11E)","(01E)", "(00F)","(11F)","(01F)", "(00G)","(11G)","(01G)", "(00H)","(11H)","(01H)", "(00I)","(11I)","(01I)")
         }
         
-        if(hidden.areas == 9){
+        if(hidden.traits == 9){
             if(make.null == TRUE){
                 sub.mat1 <- TransMatGeoSSEsingle(cat.number=1, include.jumps=include.jumps, separate.extirpation=separate.extirpation)
                 max.par <- max(sub.mat1, na.rm=TRUE)

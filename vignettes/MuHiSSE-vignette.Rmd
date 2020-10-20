@@ -332,7 +332,7 @@ trans.rate <- TransMatMakerMuHiSSE(hidden.traits=0)
 print(trans.rate)
 ```
 
-We can use the `ParDrop()` function to remove transitions to and from thr fourth state in the model:
+We can use the `ParDrop()` function to remove transitions to and from the fourth state in the model:
 
 ```{r, eval=TRUE}
 trans.rate.mod <- ParDrop(trans.rate, c(4,6,7,8))

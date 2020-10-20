@@ -373,7 +373,6 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        opts <- list("algorithm"="NLOPT_GD_STOGO", "maxeval" = 100000, "ftol_rel" = max.tol)
         out.sann = GenSA(ip, fn=DevOptimizeMuHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         #out.sann <- stogo(x0=ip, fn=DevOptimizeMuHiSSE, gr=NULL, upper=upper, lower=lower, pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         cat("Finished. Refining using subplex routine...", "\n")
@@ -541,15 +540,29 @@ SingleChildProb <- function(cache, pars, compD, compE, start.time, end.time, bra
         if(cache$hidden.states == TRUE){
             yini <- c(E00A = compE[1], E01A = compE[2], E10A = compE[3], E11A = compE[4], E00B = compE[5], E01B = compE[6], E10B = compE[7], E11B = compE[8], E00C = compE[9], E01C = compE[10], E10C = compE[11], E11C = compE[12], E00D = compE[13], E01D = compE[14], E10D = compE[15], E11D = compE[16], E00E = compE[17], E01E = compE[18], E10E = compE[19], E11E = compE[20], E00F = compE[21], E01F = compE[22], E10F = compE[23], E11F = compE[24], E00G = compE[25], E01G = compE[26], E10G = compE[27], E11G = compE[28], E00H = compE[29], E01H = compE[30], E10H = compE[31], E11H = compE[32], D00A = compD[1], D01A = compD[2], D10A = compD[3], D11A = compD[4], D00B = compD[5], D01B = compD[6], D10B = compD[7], D11B = compD[8], D00C = compD[9], D01C = compD[10], D10C = compD[11], D11C = compD[12], D00D = compD[13], D01D = compD[14], D10D = compD[15], D11D = compD[16], D00E = compD[17], D01E = compD[18], D10E = compD[19], D11E = compD[20], D00F = compD[21], D01F = compD[22], D10F = compD[23], D11F = compD[24], D00G = compD[25], D01G = compD[26], D10G = compD[27], D11G = compD[28], D00H = compD[29], D01H = compD[30], D10H = compD[31], D11H = compD[32])
             times <- c(0, end.time)
+            runSilent <- function() {
+                options(warn = -1)
+                on.exit(options(warn = 0))
+                capture.output(res <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                res
+            }
             #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8, hini=10)
-            prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            prob.subtree.cal.full <- runSilent()
             prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
             prob.subtree.cal[33:64] <- compD
         }else{
             yini <-c(E00=compE[1], E01=compE[2], E10=compE[3], E11=compE[4], D00=compD[1], D01=compD[2], D10=compD[3], D11=compD[4])
             times <- c(0, end.time)
+            runSilent <- function() {
+                options(warn = -1)
+                on.exit(options(warn = 0))
+                capture.output(res <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                res
+            }
             #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            prob.subtree.cal.full <- runSilent()
             prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
             prob.subtree.cal[5:8] <- compD
         }
@@ -558,13 +571,27 @@ SingleChildProb <- function(cache, pars, compD, compE, start.time, end.time, bra
         if(cache$hidden.states == TRUE){
             yini <- c(E00A = compE[1], E01A = compE[2], E10A = compE[3], E11A = compE[4], E00B = compE[5], E01B = compE[6], E10B = compE[7], E11B = compE[8], E00C = compE[9], E01C = compE[10], E10C = compE[11], E11C = compE[12], E00D = compE[13], E01D = compE[14], E10D = compE[15], E11D = compE[16], E00E = compE[17], E01E = compE[18], E10E = compE[19], E11E = compE[20], E00F = compE[21], E01F = compE[22], E10F = compE[23], E11F = compE[24], E00G = compE[25], E01G = compE[26], E10G = compE[27], E11G = compE[28], E00H = compE[29], E01H = compE[30], E10H = compE[31], E11H = compE[32], D00A = compD[1], D01A = compD[2], D10A = compD[3], D11A = compD[4], D00B = compD[5], D01B = compD[6], D10B = compD[7], D11B = compD[8], D00C = compD[9], D01C = compD[10], D10C = compD[11], D11C = compD[12], D00D = compD[13], D01D = compD[14], D10D = compD[15], D11D = compD[16], D00E = compD[17], D01E = compD[18], D10E = compD[19], D11E = compD[20], D00F = compD[21], D01F = compD[22], D10F = compD[23], D11F = compD[24], D00G = compD[25], D01G = compD[26], D10G = compD[27], D11G = compD[28], D00H = compD[29], D01H = compD[30], D10H = compD[31], D11H = compD[32])
             times=c(start.time, end.time)
+            runSilent <- function() {
+                options(warn = -1)
+                on.exit(options(warn = 0))
+                capture.output(res <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                res
+            }
             #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8, hini=10)
-            prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            prob.subtree.cal.full <- runSilent()
         }else{
             yini <- c(E00=compE[1], E01=compE[2], E10=compE[3], E11=compE[4], D00=compD[1], D01=compD[2], D10=compD[3], D11=compD[4])
             times=c(start.time, end.time)
+            runSilent <- function() {
+                options(warn = -1)
+                on.exit(options(warn = 0))
+                capture.output(res <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                res
+            }
             #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            prob.subtree.cal.full <- runSilent()
         }
         ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
         if(attributes(prob.subtree.cal.full)$istate[1] < 0){

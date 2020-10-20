@@ -4,7 +4,7 @@
   the GeoSSE and GeoHiSSE models.}
 \description{Estimates the likeliest states for both internal nodes and tips of a phylogeny using the marginal reconstruction algorithm.}
 \usage{
-MarginReconGeoSSE(phy, data, f, pars, hidden.areas=2, 
+MarginReconGeoSSE(phy, data, f, pars, hidden.states=1, 
 assume.cladogenetic=TRUE, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE,
 verbose=TRUE, n.cores=NULL, dt.threads=1)
@@ -14,7 +14,7 @@ verbose=TRUE, n.cores=NULL, dt.threads=1)
 \item{data}{a data matrix containing species information (see Details).}
 \item{f}{vector of length 3 with the estimated proportion of extant species in area 00, 11, and 01 that are included in the phylogeny. A value of c(0.25, 0.5, 0.25) means that 25 percent of species in state 00 and 01 and 50 percent of species in state 11 are included in the phylogeny. By default all species are assumed to be known.}
 \item{pars}{vector containing the MLE of the parameters.}
-\item{hidden.areas}{a numeric indicating the number of shifts. The default is \code{2}.} 
+\item{hidden.states}{a numeric indicating the number of shifts. The default is \code{1}.} 
 \item{assume.cladogenetic}{a logical indicating whether the model
   assumes that changes occurr at the nodes. The default is
   \code{TRUE}. Setting this to \code{FALSE} will result in a different
@@ -33,11 +33,11 @@ In this implementation the marginal probability of area i for a focal node is si
 
 For user-specified \dQuote{root.p}, you should specify the probability
 for each area. If you are doing a hidden model, the number of parameters
-will depend on the number of hidden areas included. For a two classes
+will depend on the number of hidden states included. For a two classes
 model there are six areas: 00A, 11A, 01A, 00B, 11B, 01B. So if you wanted to
 say the root had to be area A, you would specify \dQuote{root.p = c(0.5,
   0, 0, 0.5, 0, 0)}. The root area is 00, but there is an equal
-chance for hidden area A or B.
+chance for hidden states A or B.
 
 See help for \dQuote{GeoHiSSE} for more on other parameters for this function.
 

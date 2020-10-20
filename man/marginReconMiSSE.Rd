@@ -4,7 +4,7 @@
   the MiSSE models.}
 \description{Estimates the likeliest states for both internal nodes and tips of a phylogeny using the marginal reconstruction algorithm.}
 \usage{
-MarginReconMiSSE(phy, f, pars, hidden.states=2, fixed.eps=NULL,
+MarginReconMiSSE(phy, f, pars, hidden.states=1, fixed.eps=NULL,
 condition.on.survival=TRUE,  root.type="madfitz", root.p=NULL, 
 aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
 }       

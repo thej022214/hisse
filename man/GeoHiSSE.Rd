@@ -4,12 +4,12 @@
 \description{Sets up and executes a GeoHiSSE model (Hidden Geographic State Speciation
  and Extinction) on a very large phylogeny and character distribution.}
 \usage{
-GeoHiSSE(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,2), 
-hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, 
+GeoHiSSE(phy, data, f=c(1,1,1), turnover=c(1,2,3), eps=c(1,2), 
+hidden.states=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, 
 condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=TRUE,
 sann.its=1000, bounded.search=TRUE,  max.tol=.Machine$double.eps^.50,
 mag.san.start=0.5, starting.vals=NULL, turnover.upper=1000, 
-extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1)
+eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
@@ -25,17 +25,17 @@ extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.thread
   included in the phylogeny. By default all species are assumed to be
   sampled.}
 \item{turnover}{a numeric vector of length equal to 3+(number of
-  \code{hidden.areas} * 3). A GeoSSE model has 3 turnover parameters:
+  \code{hidden.states} * 3). A GeoSSE model has 3 turnover parameters:
   tau00, tau11 and tau01. A GeoHiSSE model with one hidden area has 6 speciation
 parameters: tau00A, tau11A, tau01A, tau00B, tau11B, and tau01B, and so on. The length of the numeric vector needs to match the number of speciation parameters in the model.}
-\item{extinct.frac}{a numeric vector of length equal to 2+(number of
-  \code{hidden.areas} * 2). A GeoSSE model has 2 extinct fraction parameters:
+\item{eps}{a numeric vector of length equal to 2+(number of
+  \code{hidden.states} * 2). A GeoSSE model has 2 extinct fraction parameters:
   ef00 and ef11. A GeoHiSSE model with one hidden area has 4 extinct.frac
 parameters: ef00A, ef11A, ef00B, and ef11B, and so on. The length of the numeric
 vector needs to match the number of extinct.frac parameters in the
 model.}
-\item{hidden.areas}{a logical indicating whether the model includes a
-  hidden area. The default is \code{FALSE}.} 
+\item{hidden.states}{a logical indicating whether the model includes hidden.states.
+ The default is \code{FALSE}.} 
 \item{trans.rate}{provides the transition rate model. See function
   \code{TransMatMakerGeoHiSSE}.}
 \item{assume.cladogenetic}{assumes that cladogenetic events occur at nodes. The 
@@ -66,7 +66,7 @@ model.}
   model for all areas and hidden states. Position [1] sets turnover, [2]
   sets extinction fraction, and [3] dispersal rates.}
 \item{turnover.upper}{sets the upper bound for the speciation parameters.}
-\item{extinct.frac.upper}{sets the upper bound for the extirpation parameters.}
+\item{eps.upper}{sets the upper bound for the extirpation parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
 \item{restart.obj}{an object that contains everything to restart an optimization.}
 \item{ode.eps}{sets the tolerance for the integration at the end of a
@@ -89,7 +89,7 @@ the parameters of the model, when two parameters show the same value,
 then the parameters are set to be linked during the estimation of the
 model. For example, a GeoHiSSE model with 1 hidden area and all free
 parameters has \code{turnover = 1:6}. The same model with
-speciation rates constrained to be the same for all hidden areas has
+speciation rates constrained to be the same for all hidden states has
 \code{turnover = c(1,2,3,1,2,3)}. This same format applies to
 \code{extinct.frac}.
 
@@ -137,7 +137,7 @@ elements:
 parameters.}
 \item{$index.par}{an index matrix of the parameters being estimated.}
 \item{$f}{user-supplied sampling frequencies.}
-\item{$hidden.areas}{a logical indicating whether hidden areas were included in the 
+\item{$hidden.states}{a logical indicating whether hidden states were included in the 
 model.}
 \item{$assume.cladogenetic}{a logical indicating whether cladogenetic events were allowed
 at nodes.}

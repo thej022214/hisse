@@ -25,7 +25,7 @@ suppressWarnings(library(diversitree))
 ## Simulating a practice data set
 
 I will first simulate data using the multistate (MuSSE) model that can be used to create a binary character that has a relation to a "hidden" state:
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 suppressWarnings(library(diversitree))
 set.seed(4)
 # Essentially we are setting up a model that models the evolution of two binary characters

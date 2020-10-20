@@ -4,7 +4,7 @@
   the MuSSE and MuHiSSE models.}
 \description{Estimates the likeliest states for both internal nodes and tips of a phylogeny using the marginal reconstruction algorithm.}
 \usage{
-MarginReconMuHiSSE(phy, data, f, pars, hidden.states=2, 
+MarginReconMuHiSSE(phy, data, f, pars, hidden.states=1, 
 condition.on.survival=TRUE,  root.type="madfitz", root.p=NULL, 
 aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
 }       

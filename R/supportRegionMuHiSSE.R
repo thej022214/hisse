@@ -54,7 +54,6 @@ SupportRegionMuHiSSE <- function(muhisse.obj, n.points=1000, scale.int=0.1, desi
 
 
 
-
 AdaptiveConfidenceIntervalSamplingMuHiSSE <- function(par, lower, upper, desired.delta=2, n.points=5000, verbose=TRUE, phy, data, index.par, f, hidden.states, condition.on.survival, root.type, root.p, scale.int, min.number.points=10) {
     
     # Some new prerequisites #

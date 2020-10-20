@@ -1,6 +1,6 @@
 ## Functions associated with simulation of a Hidden areas GeoSSE model using the ClaSSE model. GeoSSE is a subset of a ClaSSE model.
 
-SimulateGeoHiSSE <- function(pars, hidden.areas=1, x0="0A", max.taxa=Inf, max.time=Inf, add.jumps=FALSE, add.extinction=FALSE, include.extinct=FALSE, return.GeoHiSSE_pars=FALSE, override.safeties=FALSE){
+SimulateGeoHiSSE <- function(pars, hidden.traits=1, x0="0A", max.taxa=Inf, max.time=Inf, add.jumps=FALSE, add.extinction=FALSE, include.extinct=FALSE, return.GeoHiSSE_pars=FALSE, override.safeties=FALSE){
     if(return.GeoHiSSE_pars){
         if( !add.jumps & !add.extinction ){
             row.names.mod.matrix <- c("s01", "s0", "s1", "x0", "x1", "d0", "d1")
@@ -14,22 +14,22 @@ SimulateGeoHiSSE <- function(pars, hidden.areas=1, x0="0A", max.taxa=Inf, max.ti
         if( add.jumps & add.extinction ){
             row.names.mod.matrix <- c("s01", "s0", "s1", "x0", "x1", "d0", "d1", "jd0", "jd1", "x*0", "x*1")
         }
-        mod.matrix <- matrix(data=0, nrow=length(row.names.mod.matrix), ncol=hidden.areas+1)
+        mod.matrix <- matrix(data=0, nrow=length(row.names.mod.matrix), ncol=hidden.traits+1)
         rownames( mod.matrix ) <- row.names.mod.matrix
-        colnames( mod.matrix ) <- LETTERS[1:(hidden.areas+1)]
-        qmat01 <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
+        colnames( mod.matrix ) <- LETTERS[1:(hidden.traits+1)]
+        qmat01 <- matrix(data=0, ncol=hidden.traits+1, nrow=hidden.traits+1)
         diag(qmat01) <- NA
-        trans.names <- paste0("01", LETTERS[1:(hidden.areas+1)])
+        trans.names <- paste0("01", LETTERS[1:(hidden.traits+1)])
         rownames(qmat01) <- trans.names
         colnames(qmat01) <- trans.names
-        qmat0 <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
+        qmat0 <- matrix(data=0, ncol=hidden.traits+1, nrow=hidden.traits+1)
         diag(qmat0) <- NA
-        trans.names <- paste0("0", LETTERS[1:(hidden.areas+1)])
+        trans.names <- paste0("0", LETTERS[1:(hidden.traits+1)])
         rownames(qmat0) <- trans.names
         colnames(qmat0) <- trans.names
-        qmat1 <- matrix(data=0, ncol=hidden.areas+1, nrow=hidden.areas+1)
+        qmat1 <- matrix(data=0, ncol=hidden.traits+1, nrow=hidden.traits+1)
         diag(qmat1) <- NA
-        trans.names <- paste0("1", LETTERS[1:(hidden.areas+1)])
+        trans.names <- paste0("1", LETTERS[1:(hidden.traits+1)])
         rownames(qmat1) <- trans.names
         colnames(qmat1) <- trans.names
         par.list <- list( model.pars = mod.matrix, q.01 = qmat01, q.0 = qmat0, q.1 = qmat1 )
@@ -58,7 +58,7 @@ SimulateGeoHiSSE <- function(pars, hidden.areas=1, x0="0A", max.taxa=Inf, max.ti
 
     ## Get the transtions for the hidden areas.
     ## Have a feeling this could be more elegant. But, well...
-    tr.size <- ((hidden.areas+1)^2)-(hidden.areas+1)
+    tr.size <- ((hidden.traits+1)^2)-(hidden.traits+1)
     vec.01 <- vector("numeric", length=tr.size)
     vec.0 <- vector("numeric", length=tr.size)
     vec.1 <- vector("numeric", length=tr.size)
@@ -66,9 +66,9 @@ SimulateGeoHiSSE <- function(pars, hidden.areas=1, x0="0A", max.taxa=Inf, max.ti
     nm.0 <- vector("character", length=tr.size)
     nm.1 <- vector("character", length=tr.size)
     count <- 1 ## keep the count for the loop.
-    areas.letters <- LETTERS[1:(hidden.areas+1)]
-    for( i in 1:(hidden.areas+1) ){
-        for( j in 1:(hidden.areas+1) ){
+    areas.letters <- LETTERS[1:(hidden.traits+1)]
+    for( i in 1:(hidden.traits+1) ){
+        for( j in 1:(hidden.traits+1) ){
             if( i == j ) next
             vec.01[count] <- pars$q.01[i,j]
             nm.01[count] <- paste0("q01", areas.letters[i], areas.letters[j])
@@ -85,7 +85,7 @@ SimulateGeoHiSSE <- function(pars, hidden.areas=1, x0="0A", max.taxa=Inf, max.ti
 
     ## Translate from GeoHiSSE par names to ClaSSE.
     ## Need to update 'TranslateParsMakerGeoHiSSE' for the simulations.
-    parkey <- TranslateParsMakerGeoHiSSE(k=hidden.areas, add.extinction=add.extinction, add.jumps=add.jumps)
+    parkey <- TranslateParsMakerGeoHiSSE(k=hidden.traits, add.extinction=add.extinction, add.jumps=add.jumps)
     geohisse.pars <- c(model.pars.vec, vec.01, vec.0, vec.1)
     classe.pars <- vector("numeric", length=nrow(parkey))
     names(classe.pars) <- parkey[,1]
@@ -94,13 +94,13 @@ SimulateGeoHiSSE <- function(pars, hidden.areas=1, x0="0A", max.taxa=Inf, max.ti
     }
 
     ## Get a vector of parameters in the correct format for ClaSSE.
-    full.classe.pars <- GetArgnamesClasse(k=(hidden.areas+1)*3)
+    full.classe.pars <- GetArgnamesClasse(k=(hidden.traits+1)*3)
     full.classe.pars <- setNames(rep(0, times=length(full.classe.pars)), full.classe.pars)
     mm <- match(names(classe.pars), table=names(full.classe.pars))
     full.classe.pars[mm] <- classe.pars
 
     ## Translate x0 to ClaSSE format.
-    par.areas <- paste0(c("01", "0", "1"), rep(LETTERS[1:(hidden.areas+1)], each=3))
+    par.areas <- paste0(c("01", "0", "1"), rep(LETTERS[1:(hidden.traits+1)], each=3))
     if( !x0 %in% par.areas ) stop(paste0("x0 needs to be one of ", paste(par.areas, sep="", collapse=", "), " .", collapse=""))
     classe.x0 <- which( par.areas %in% x0 )
 
@@ -122,14 +122,14 @@ SimulateGeoHiSSE <- function(pars, hidden.areas=1, x0="0A", max.taxa=Inf, max.ti
     sims$node.state <- sapply(sims$node.state, function(x) par.areas[x])
 
     ## Return a vector with the true ranges at the tips and a data matrix in the correct format for a call to the GeoHiSSE function.
-    geohisse.par.areas <- rep(0:2, times=hidden.areas+1) ## Code in the order for the GeoHiSSE function.
+    geohisse.par.areas <- rep(0:2, times=hidden.traits+1) ## Code in the order for the GeoHiSSE function.
     geohisse.tip.state <- sapply(sims$tip.state, function(x) geohisse.par.areas[x])
     geohisse.mat <- matrix(NA, ncol = 2, nrow = length(geohisse.tip.state) )
     geohisse.mat[,1] <- names( geohisse.tip.state )
     geohisse.mat[,2] <- as.numeric( geohisse.tip.state )
     colnames( geohisse.mat ) <- c("Species", "Range")
     
-    return( list(phy=sims, data=geohisse.mat, hidden.areas=tip.state, sim.attempts=attempt, pars=pars, classe.pars=full.classe.pars) )
+    return( list(phy=sims, data=geohisse.mat, hidden.traits=tip.state, sim.attempts=attempt, pars=pars, classe.pars=full.classe.pars) )
 }
 
 GetArgnamesClasse <- function(k){

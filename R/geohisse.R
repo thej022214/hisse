@@ -5,14 +5,14 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,2), hidden.areas=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, turnover.upper=1000, extinct.frac.upper=1000, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), eps=c(1,2), hidden.states=FALSE, trans.rate=NULL, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, mag.san.start=0.5, starting.vals=NULL, turnover.upper=1000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
     if(!is.null(root.p)) {
         ## The vector of the root.p need to be as long as the speciation vector.
-        if(hidden.areas == TRUE){
+        if(hidden.states == TRUE){
             if( length( root.p ) == 3 ){
                 root.p <- rep(root.p, 10)
                 root.p <- root.p / sum(root.p)
@@ -40,7 +40,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         stop("Rate matrix needed. See TransMatMakerGeoHiSSE() to create one.")
     }
     
-    if(hidden.areas == TRUE & dim(trans.rate)[1]<3){
+    if(hidden.states == TRUE & dim(trans.rate)[1]<3){
         stop("You chose a hidden state but this is not reflected in the transition matrix")
     }
         
@@ -57,12 +57,12 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         stop("states need to be one of 0, 1, or 2. See help.")
     }
     
-    ## Check if 'hidden.areas' parameter is congruent with the turnover vector:
-    if( length(turnover) > 3 & !hidden.areas ){
-        stop("Turnover has more than 3 elements but 'hidden.areas' was set to FALSE. Please set 'hidden.areas' to TRUE if the model include more than one rate class.")
+    ## Check if 'hidden.states' parameter is congruent with the turnover vector:
+    if( length(turnover) > 3 & !hidden.states ){
+        stop("Turnover has more than 3 elements but 'hidden.states' was set to FALSE. Please set 'hidden.states' to TRUE if the model include more than one rate class.")
     }
-    if( length(turnover) == 3 & hidden.areas ){
-        stop("Turnover has only 3 elements but 'hidden.areas' was set to TRUE. Please set 'hidden.areas' to FALSE if the model does not include hidden rate classes.")
+    if( length(turnover) == 3 & hidden.states ){
+        stop("Turnover has only 3 elements but 'hidden.states' was set to TRUE. Please set 'hidden.states' to FALSE if the model does not include hidden rate classes.")
     }
     
     pars <- numeric(380)
@@ -70,7 +70,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==3){
         rate.cats <- 1
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         trans.tmp <- c(trans.rate["(00)", "(11)"], trans.rate["(00)", "(01)"], trans.rate["(11)", "(00)"], trans.rate["(11)", "(01)"],  trans.rate["(01)", "(00)"],  trans.rate["(01)", "(11)"])
@@ -83,7 +83,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==6){
         rate.cats <- 2
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
@@ -95,6 +95,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         rows <- c(rep("(00A)", 1), rep("(11A)", 1), rep("(01A)", 1), rep("(00B)", 1), rep("(11B)", 1), rep("(01B)", 1))
         cols <- c("(00B)", "(11B)", "(01B)", "(00A)", "(11A)", "(01A)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1], rep(0,8), category.rate.shift[2], rep(0,8), category.rate.shift[3], rep(0,8))
@@ -108,7 +109,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==9){
         rate.cats <- 3
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
@@ -120,6 +121,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         rows <- c(rep("(00A)", 2), rep("(11A)", 2), rep("(01A)", 2), rep("(00B)", 2), rep("(11B)", 2), rep("(01B)", 2), rep("(00C)", 2), rep("(11C)", 2), rep("(01C)", 2))
         cols <- c("(00B)", "(00C)", "(11B)", "(11C)", "(01B)", "(01C)", "(00A)", "(00C)", "(11A)", "(11C)", "(01A)", "(01C)", "(00A)", "(00B)", "(11A)", "(11B)", "(01A)", "(01B)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:2], rep(0,7), category.rate.shift[3:4], rep(0,7), category.rate.shift[5:6], rep(0,7))
@@ -134,7 +136,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==12){
         rate.cats <- 4
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
@@ -146,6 +148,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         rows <- c(rep("(00A)", 3), rep("(11A)", 3), rep("(01A)", 3), rep("(00B)", 3), rep("(11B)", 3), rep("(01B)", 3), rep("(00C)", 3), rep("(11C)", 3), rep("(01C)", 3), rep("(00D)", 3), rep("(11D)", 3), rep("(01D)", 3))
         cols <- c("(00B)", "(00C)", "(00D)", "(11B)", "(11C)", "(11D)", "(01B)", "(01C)", "(01D)", "(00A)", "(00C)", "(00D)", "(11A)", "(11C)", "(11D)", "(01A)", "(01C)", "(01D)", "(00A)", "(00B)", "(00D)", "(11A)", "(11B)", "(11D)", "(01A)", "(01B)", "(01D)", "(00A)", "(00B)", "(00C)", "(11A)", "(11B)", "(11C)", "(01A)", "(01B)", "(01C)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:3], rep(0,6), category.rate.shift[4:6], rep(0,6), category.rate.shift[7:9], rep(0,6))
@@ -161,7 +164,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==15){
         rate.cats <- 5
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
@@ -173,6 +176,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         rows <- c(rep("(00A)", 4), rep("(11A)", 4), rep("(01A)", 4), rep("(00B)", 4), rep("(11B)", 4), rep("(01B)", 4), rep("(00C)", 4), rep("(11C)", 4), rep("(01C)", 4), rep("(00D)", 4), rep("(11D)", 4), rep("(01D)", 4), rep("(00E)", 4), rep("(11E)", 4), rep("(01E)", 4))
         cols <- c("(00B)", "(00C)", "(00D)", "(00E)", "(11B)", "(11C)", "(11D)", "(11E)", "(01B)", "(01C)", "(01D)", "(01E)", "(00A)", "(00C)", "(00D)", "(00E)", "(11A)", "(11C)", "(11D)", "(11E)", "(01A)", "(01C)", "(01D)", "(01E)", "(00A)", "(00B)", "(00D)", "(00E)", "(11A)", "(11B)", "(11D)", "(11E)", "(01A)", "(01B)", "(01D)", "(01E)", "(00A)", "(00B)", "(00C)", "(00E)", "(11A)", "(11B)", "(11C)", "(11E)", "(01A)", "(01B)", "(01C)", "(01E)", "(00A)", "(00B)", "(00C)", "(00D)", "(11A)", "(11B)", "(11C)", "(11D)", "(01A)", "(01B)", "(01C)", "(01D)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:4], rep(0,5), category.rate.shift[5:8], rep(0,5), category.rate.shift[9:12], rep(0,5))
@@ -189,7 +193,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==18){
         rate.cats <- 6
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
@@ -201,6 +205,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         rows <- c(rep("(00A)", 5), rep("(11A)", 5), rep("(01A)", 5), rep("(00B)", 5), rep("(11B)", 5), rep("(01B)", 5), rep("(00C)", 5), rep("(11C)", 5), rep("(01C)", 5), rep("(00D)", 5), rep("(11D)", 5), rep("(01D)", 5), rep("(00E)", 5), rep("(11E)", 5), rep("(01E)", 5), rep("(00F)", 5), rep("(11F)", 5), rep("(01F)", 5))
         cols <- c("(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(00A)", "(00C)", "(00D)", "(00E)", "(00F)", "(11A)", "(11C)", "(11D)", "(11E)", "(11F)", "(01A)", "(01C)", "(01D)", "(01E)", "(01F)", "(00A)", "(00B)", "(00D)", "(00E)", "(00F)", "(11A)", "(11B)", "(11D)", "(11E)", "(11F)", "(01A)", "(01B)", "(01D)", "(01E)", "(01F)", "(00A)", "(00B)", "(00C)", "(00E)", "(00F)", "(11A)", "(11B)", "(11C)", "(11E)", "(11F)", "(01A)", "(01B)", "(01C)", "(01E)", "(01F)", "(00A)", "(00B)", "(00C)", "(00D)", "(00F)", "(11A)", "(11B)", "(11C)", "(11D)", "(11F)", "(01A)", "(01B)", "(01C)", "(01D)", "(01F)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:5], rep(0,4), category.rate.shift[6:10], rep(0,4), category.rate.shift[11:15], rep(0,4))
@@ -219,7 +224,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==21){
         rate.cats <- 7
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
@@ -231,6 +236,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         rows <- c(rep("(00A)", 6), rep("(11A)", 6), rep("(01A)", 6), rep("(00B)", 6), rep("(11B)", 6), rep("(01B)", 6), rep("(00C)", 6), rep("(11C)", 6), rep("(01C)", 6), rep("(00D)", 6), rep("(11D)", 6), rep("(01D)", 6), rep("(00E)", 6), rep("(11E)", 6), rep("(01E)", 6), rep("(00F)", 6), rep("(11F)", 6), rep("(01F)", 6), rep("(00G)", 6), rep("(11G)", 6), rep("(01G)", 6))
         cols <- c("(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(00A)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(11A)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(01A)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(00A)", "(00B)", "(00D)", "(00E)", "(00F)", "(00G)", "(11A)", "(11B)", "(11D)", "(11E)", "(11F)", "(11G)", "(01A)", "(01B)", "(01D)", "(01E)", "(01F)", "(01G)", "(00A)", "(00B)", "(00C)", "(00E)", "(00F)", "(00G)", "(11A)", "(11B)", "(11C)", "(11E)", "(11F)", "(11G)", "(01A)", "(01B)", "(01C)", "(01E)", "(01F)", "(01G)", "(00A)", "(00B)", "(00C)", "(00D)", "(00F)", "(00G)", "(11A)", "(11B)", "(11C)", "(11D)", "(11F)", "(11G)", "(01A)", "(01B)", "(01C)", "(01D)", "(01F)", "(01G)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00G)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11G)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01G)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:6], rep(0,3), category.rate.shift[7:12], rep(0,3), category.rate.shift[13:18], rep(0,3))
@@ -250,7 +256,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==24){
         rate.cats <- 8
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
@@ -262,6 +268,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         rows <- c(rep("(00A)", 7), rep("(11A)", 7), rep("(01A)", 7), rep("(00B)", 7), rep("(11B)", 7), rep("(01B)", 7), rep("(00C)", 7), rep("(11C)", 7), rep("(01C)", 7), rep("(00D)", 7), rep("(11D)", 7), rep("(01D)", 7), rep("(00E)", 7), rep("(11E)", 7), rep("(01E)", 7), rep("(00F)", 7), rep("(11F)", 7), rep("(01F)", 7), rep("(00G)", 7), rep("(11G)", 7), rep("(01G)", 7), rep("(00H)", 7), rep("(11H)", 7), rep("(01H)", 7))
         cols <- c("(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(00A)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(11A)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(01A)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(00A)", "(00B)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(11A)", "(11B)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(01A)", "(01B)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(00A)", "(00B)", "(00C)", "(00E)", "(00F)", "(00G)", "(00H)", "(11A)", "(11B)", "(11C)", "(11E)", "(11F)", "(11G)", "(11H)", "(01A)", "(01B)", "(01C)", "(01E)", "(01F)", "(01G)", "(01H)", "(00A)", "(00B)", "(00C)", "(00D)", "(00F)", "(00G)", "(00H)", "(11A)", "(11B)", "(11C)", "(11D)", "(11F)", "(11G)", "(11H)", "(01A)", "(01B)", "(01C)", "(01D)", "(01F)", "(01G)", "(01H)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00G)", "(00H)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11G)", "(11H)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01G)", "(01H)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00H)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11H)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01H)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:7], rep(0,2), category.rate.shift[8:14], rep(0,2), category.rate.shift[15:21], rep(0,2))
@@ -282,7 +289,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==27){
         rate.cats <- 9
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
@@ -294,6 +301,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         rows <- c(rep("(00A)", 8), rep("(11A)", 8), rep("(01A)", 8), rep("(00B)", 8), rep("(11B)", 8), rep("(01B)", 8), rep("(00C)", 8), rep("(11C)", 8), rep("(01C)", 8), rep("(00D)", 8), rep("(11D)", 8), rep("(01D)", 8), rep("(00E)", 8), rep("(11E)", 8), rep("(01E)", 8), rep("(00F)", 8), rep("(11F)", 8), rep("(01F)", 8), rep("(00G)", 8), rep("(11G)", 8), rep("(01G)", 8), rep("(00H)", 8), rep("(11H)", 8), rep("(01H)", 8), rep("(00I)", 8), rep("(11I)", 8), rep("(01I)", 8))
         cols <- c("(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(00I)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(11I)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(01I)", "(00A)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(00I)", "(11A)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(11I)", "(01A)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(01I)", "(00A)", "(00B)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(00I)", "(11A)", "(11B)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(11I)", "(01A)", "(01B)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(01I)", "(00A)", "(00B)", "(00C)", "(00E)", "(00F)", "(00G)", "(00H)", "(00I)", "(11A)", "(11B)", "(11C)", "(11E)", "(11F)", "(11G)", "(11H)", "(11I)", "(01A)", "(01B)", "(01C)", "(01E)", "(01F)", "(01G)", "(01H)", "(01I)", "(00A)", "(00B)", "(00C)", "(00D)", "(00F)", "(00G)", "(00H)", "(00I)", "(11A)", "(11B)", "(11C)", "(11D)", "(11F)", "(11G)", "(11H)", "(11I)", "(01A)", "(01B)", "(01C)", "(01D)", "(01F)", "(01G)", "(01H)", "(01I)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00G)", "(00H)", "(00I)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11G)", "(11H)", "(11I)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01G)", "(01H)", "(01I)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00H)", "(00I)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11H)", "(11I)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01H)", "(01I)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00I)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11I)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01I)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- c(category.rate.shift[1:8], rep(0,1), category.rate.shift[9:16], rep(0,1), category.rate.shift[17:24], rep(0,1))
@@ -314,7 +322,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     if(dim(trans.rate)[2]==30){
         rate.cats <- 10
         pars.tmp <- turnover
-        extinct.frac.tmp <- extinct.frac
+        extinct.frac.tmp <- eps
         extinct.frac.tmp[which(extinct.frac.tmp > 0)] = (extinct.frac.tmp[which( extinct.frac.tmp > 0)] + max(pars.tmp))
         pars.tmp <- c(pars.tmp, extinct.frac.tmp)
         for.late.adjust <- max(pars.tmp)
@@ -326,6 +334,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         rows <- c(rep("(00A)", 9), rep("(11A)", 9), rep("(01A)", 9), rep("(00B)", 9), rep("(11B)", 9), rep("(01B)", 9), rep("(00C)", 9), rep("(11C)", 9), rep("(01C)", 9), rep("(00D)", 9), rep("(11D)", 9), rep("(01D)", 9), rep("(00E)", 9), rep("(11E)", 9), rep("(01E)", 9), rep("(00F)", 9), rep("(11F)", 9), rep("(01F)", 9), rep("(00G)", 9), rep("(11G)", 9), rep("(01G)", 9), rep("(00H)", 9), rep("(11H)", 9), rep("(01H)", 9), rep("(00I)", 9), rep("(11I)", 9), rep("(01I)", 9), rep("(00J)", 9), rep("(11J)", 9), rep("(01J)", 9))
         cols <- c("(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(00I)", "(00J)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(11I)", "(11J)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(01I)", "(01J)", "(00A)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(00I)", "(00J)", "(11A)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(11I)", "(11J)", "(01A)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(01I)", "(01J)", "(00A)", "(00B)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(00I)", "(00J)", "(11A)", "(11B)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(11I)", "(11J)", "(01A)", "(01B)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(01I)", "(01J)", "(00A)", "(00B)", "(00C)", "(00E)", "(00F)", "(00G)", "(00H)", "(00I)", "(00J)", "(11A)", "(11B)", "(11C)", "(11E)", "(11F)", "(11G)", "(11H)", "(11I)", "(11J)", "(01A)", "(01B)", "(01C)", "(01E)", "(01F)", "(01G)", "(01H)", "(01I)", "(01J)", "(00A)", "(00B)", "(00C)", "(00D)", "(00F)", "(00G)", "(00H)", "(00I)", "(00J)", "(11A)", "(11B)", "(11C)", "(11D)", "(11F)", "(11G)", "(11H)", "(11I)", "(11J)", "(01A)", "(01B)", "(01C)", "(01D)", "(01F)", "(01G)", "(01H)", "(01I)", "(01J)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00G)", "(00H)", "(00I)", "(00J)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11G)", "(11H)", "(11I)", "(11J)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01G)", "(01H)", "(01I)", "(01J)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00H)", "(00I)", "(00J)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11H)", "(11I)", "(11J)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01H)", "(01I)", "(01J)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00I)", "(00J)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11I)", "(11J)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01I)", "(01J)",  "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(00J)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(11J)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(01J)", "(00A)", "(00B)", "(00C)", "(00D)", "(00E)", "(00F)", "(00G)", "(00H)", "(00I)", "(11A)", "(11B)", "(11C)", "(11D)", "(11E)", "(11F)", "(11G)", "(11H)", "(11I)", "(01A)", "(01B)", "(01C)", "(01D)", "(01E)", "(01F)", "(01G)", "(01H)", "(01I)")
         category.tmp <- trans.rate[cbind(rows,cols)]
+        category.tmp[category.tmp==0] <- NA
         category.rate.shift <- category.tmp + for.late.adjust
         category.rate.shift[is.na(category.rate.shift)] <- 0
         category.rate.shiftA <- category.rate.shift[1:27]
@@ -370,18 +379,18 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     }
     
     if(is.null(restart.obj)){
-        if(sum(extinct.frac)==0){
+        if(sum(eps)==0){
             init.pars <- starting.point.geosse(phy, eps=0, samp.freq.tree=samp.freq.tree)
         }else{
-            #init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
-            init.pars <- starting.point.generator(phy, k=3, samp.freq.tree=samp.freq.tree, q.div=5, yule=FALSE)
+            init.pars <- starting.point.geosse(phy, eps=mag.san.start, samp.freq.tree=samp.freq.tree)
+            #init.pars <- starting.point.generator(phy, k=3, samp.freq.tree=samp.freq.tree, q.div=5, yule=FALSE)
         }
         names(init.pars) <- NULL
         
         if(is.null(starting.vals)){
             #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]*.1),3), rep(log(.01), 27)), rate.cats)
             #def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[7:8]*.1),3), rep(log(.01), 27)), rate.cats)
-            def.set.pars <- rep(c(log(init.pars[1]+init.pars[4]), log(init.pars[2]+init.pars[5]), log(sum(init.pars[1:3])), log(init.pars[4]/init.pars[1]),  log(init.pars[5]/init.pars[2]), rep(log(init.pars[7:8]),3), rep(log(0.001), 27)), rate.cats)
+            def.set.pars <- rep(c(log(init.pars[1]+init.pars[4]), log(init.pars[2]+init.pars[5]), log(sum(init.pars[1:3])), log(init.pars[4]/init.pars[1]),  log(init.pars[5]/init.pars[2]), rep(log(init.pars[6:7]),3), rep(log(0.01), 27)), rate.cats)
         }else{
             ## Check the format for the starting.vals and accepts legacy mode if necessary.
             if( !length(starting.vals) %in% c(3,7) ){
@@ -389,14 +398,14 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
             }
             if( length(starting.vals) == 7 ){
                 cat("Using developer mode for starting.vals.", "\n")
-                def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(starting.vals[6:7]),3), rep(log(0.001), 27)), rate.cats)
+                def.set.pars <- rep(c(log(starting.vals[1:3]), log(starting.vals[4:5]), rep(log(starting.vals[6:7]),3), rep(log(0.01), 27)), rate.cats)
             } else{
-                def.set.pars <- rep(c(log( rep(starting.vals[1],3) ), log( rep(starting.vals[2],2) ), rep(log(starting.vals[3]),6), rep(log(0.001), 27)), rate.cats)
+                def.set.pars <- rep(c(log( rep(starting.vals[1],3) ), log( rep(starting.vals[2],2) ), rep(log(starting.vals[3]),6), rep(log(0.01), 27)), rate.cats)
             }
         }
         if(bounded.search == TRUE){
-            #upper.full <- rep(c(rep(log(turnover.upper),3), rep(log(extinct.frac.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
-            upper.full <- rep(c(rep(log(10000),3), rep(log(3),2), rep(log(trans.upper), 2*3), rep(log(10), 27)), rate.cats)
+            upper.full <- rep(c(rep(log(turnover.upper),3), rep(log(eps.upper),2), rep(log(trans.upper),2*3), rep(log(10), 27)), rate.cats)
+            #upper.full <- rep(c(rep(log(10000),3), rep(log(3),2), rep(log(trans.upper), 2*3), rep(log(10), 27)), rate.cats)
         }else{
             upper.full <- rep(21,length(def.set.pars))
         }
@@ -420,7 +429,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
     
     # Some new prerequisites #
     gen <- FindGenerations(phy)
-    dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.areas)
+    dat.tab <- OrganizeDataGeo(data=data.new[,1], phy=phy, f=f, hidden.states=hidden.states)
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ##########################
@@ -429,22 +438,23 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeGeoHiSSEfast, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = nloptr(x0=ip, eval_f=DevOptimizeGeoHiSSEfast, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeGeoHiSSEfast, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = subplex(ip, fn=DevOptimizeGeoHiSSEfast, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann = GenSA(ip, fn=DevOptimizeGeoHiSSEfast, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out.sann = GenSA(ip, fn=DevOptimizeGeoHiSSEfast, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         cat("Finished. Refining using subplex routine...", "\n")
-        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeGeoHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
+        out = nloptr(x0=out.sann$par, eval_f=DevOptimizeGeoHiSSEfast, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         
@@ -455,7 +465,7 @@ GeoHiSSE <- function(phy, data, f=c(1,1,1), turnover=c(1,2,3), extinct.frac=c(1,
 
     cat("Finished. Summarizing results...", "\n")
     
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.areas=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
     class(obj) <- append(class(obj), "geohisse.fit")
     return(obj)
 }
@@ -572,21 +582,49 @@ SingleChildProbGeo <- function(cache, pars, compD, compE, start.time, end.time, 
         yini <- c(E00A = compE[1], E11A = compE[2], E01A = compE[3], E00B = compE[4], E11B = compE[5], E01B = compE[6], E00C = compE[7], E11C = compE[8], E01C = compE[9], E00D = compE[10], E11D = compE[11], E01D = compE[12], E00E = compE[13], E11E = compE[14], E01E = compE[15], E00F = compE[16], E11F = compE[17], E01F = compE[18], E00G = compE[19], E11G = compE[20], E01G = compE[21], E00H = compE[22], E11H = compE[23], E01H = compE[24], E00I = compE[25], E11I = compE[26], E01I = compE[27], E00J = compE[28], E11J = compE[29], E01J = compE[30], D00A = compD[1], D11A = compD[2], D01A = compD[3], D00B = compD[4], D11B = compD[5], D01B = compD[6], D00C = compD[7], D11C = compD[8], D01C = compD[9], D00D = compD[10], D11D = compD[11], D01D = compD[12], D00E = compD[13], D11E = compD[14], D01E = compD[15], D00F = compD[16], D11F = compD[17], D01F = compD[18], D00G = compD[19], D11G = compD[20], D01G = compD[21], D00H = compD[22], D11H = compD[23], D01H = compD[24], D00I = compD[25], D11I = compD[26], D01I = compD[27], D00J = compD[28], D11J = compD[29], D01J = compD[30])
         times=c(start.time, end.time)
         if(cache$assume.cladogenetic == TRUE){
-            #prob.subtree.cal.full <-lsoda(yini, times, func = "fgeohisse_derivs", pars, initfunc="initmod_fgeohisse", dll = "fgeohisse-ext-derivs", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- lsoda(yini, times, func = "fgeohisse_derivs", pars, initfunc="initmod_fgeohisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            runSilent <- function() {
+                options(warn = -1)
+                on.exit(options(warn = 0))
+                capture.output(res <- lsoda(yini, times, func = "fgeohisse_derivs", pars, initfunc="initmod_fgeohisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                res
+            }
+            #prob.subtree.cal.full <- lsoda(yini, times, func = "fgeohisse_derivs", pars, initfunc="initmod_fgeohisse", dll = "fgeohisse-ext-derivs", rtol=1e-8, atol=1e-8)
+            #prob.subtree.cal.full <- lsoda(yini, times, func = "fgeohisse_derivs", pars, initfunc="initmod_fgeohisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            prob.subtree.cal.full <- runSilent()
         }else{
+            runSilent <- function() {
+                options(warn = -1)
+                on.exit(options(warn = 0))
+                capture.output(res <- lsoda(yini, times, func = "fnotclasse_more_derivs", pars, initfunc="initmod_fhinoclass", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                res
+            }
             #prob.subtree.cal.full <- lsoda(yini, times, func = "fnotclasse_more_derivs", pars, initfunc="initmod_fhinoclass", dll = "fnotclasse-more-ext-derivs", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- lsoda(yini, times, func = "fnotclasse_more_derivs", pars, initfunc="initmod_fhinoclass", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            #prob.subtree.cal.full <- lsoda(yini, times, func = "fnotclasse_more_derivs", pars, initfunc="initmod_fhinoclass", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            prob.subtree.cal.full <- runSilent()
         }
     }else{
         yini <-c(E_0=compE[1], E_1=compE[2], E_01=compE[3], D_N0=compD[1], D_N1=compD[2], D_N2=compD[3])
         times=c(start.time, end.time)
         if(cache$assume.cladogenetic == TRUE){
+            runSilent <- function() {
+                options(warn = -1)
+                on.exit(options(warn = 0))
+                capture.output(res <- lsoda(yini, times, func = "fclasse_geosse_equivalent_derivs", pars, initfunc="initmod_fgeosse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                res
+            }
             #prob.subtree.cal.full <- lsoda(yini, times, func = "fclasse_geosse_equivalent_derivs", pars, initfunc="initmod_fgeosse", dll = "fcanonical_geosse-ext-derivs", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- lsoda(yini, times, func = "fclasse_geosse_equivalent_derivs", pars, initfunc="initmod_fgeosse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            #prob.subtree.cal.full <- lsoda(yini, times, func = "fclasse_geosse_equivalent_derivs", pars, initfunc="initmod_fgeosse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            prob.subtree.cal.full <- runSilent()
         }else{
+            runSilent <- function() {
+                options(warn = -1)
+                on.exit(options(warn = 0))
+                capture.output(res <- lsoda(yini, times, func = "fnotclasse_derivs", pars, initfunc="initmod_fnoclass", dllname = "hisse", rtol=1e-8, atol=1e-8))
+                res
+            }
             #prob.subtree.cal.full <-lsoda(yini, times, func = "fnotclasse_derivs", pars, initfunc="initmod_fnoclass", dll = "fnotclasse-ext-derivs", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- lsoda(yini, times, func = "fnotclasse_derivs", pars, initfunc="initmod_fnoclass", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            #prob.subtree.cal.full <- lsoda(yini, times, func = "fnotclasse_derivs", pars, initfunc="initmod_fnoclass", dllname = "hisse", rtol=1e-8, atol=1e-8)
+            prob.subtree.cal.full <- runSilent()
         }
     }
     ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
@@ -965,12 +1003,22 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11A = model.vec[5]
     obj$s00A = model.vec[1] / (1 + model.vec[4])
     obj$s11A = model.vec[2] / (1 + model.vec[5])
-    if(model.vec[3] == 0 & assume.cladogenetic==TRUE){
-        #For the independent models
-        obj$s01A = obj$s00A
+    
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[3] == 0){
+            #For the independent models
+            obj$s01A = obj$s00A
+        }else{
+            obj$s01A = model.vec[3] - obj$s00A - obj$s11A
+        }
     }else{
-        obj$s01A = model.vec[3] - obj$s00A - obj$s11A
+        if(model.vec[3] == 0){
+            obj$s01A = 0
+        }else{
+            obj$s01A = model.vec[3]
+        }
     }
+    
     obj$x00A = (model.vec[4] * model.vec[1]) / (1 + model.vec[4])
     obj$x11A = (model.vec[5] * model.vec[2]) / (1 + model.vec[5])
     
@@ -1029,11 +1077,27 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11B = model.vec[43]
     obj$s00B = model.vec[39] / (1 + model.vec[42])
     obj$s11B = model.vec[40] / (1 + model.vec[43])
-    if(model.vec[41] == 0 & assume.cladogenetic==TRUE){
-        obj$s01B = obj$s00B
+    
+    #if(model.vec[41] == 0 & assume.cladogenetic==TRUE){
+    #    obj$s01B = obj$s00B
+    #}else{
+    #    obj$s01B = model.vec[41] - obj$s00B - obj$s11B
+    #}
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[41] == 0){
+            #For the independent models
+            obj$s01B = obj$s00B
+        }else{
+            obj$s01B = model.vec[41] - obj$s00B - obj$s11B
+        }
     }else{
-        obj$s01B = model.vec[41] - obj$s00B - obj$s11B
+        if(model.vec[41] == 0){
+            obj$s01B = 0
+        }else{
+            obj$s01B = model.vec[41]
+        }
     }
+
     obj$x00B = (model.vec[42] * model.vec[39]) / (1 + model.vec[42])
     obj$x11B = (model.vec[43] * model.vec[40]) / (1 + model.vec[43])
 
@@ -1092,11 +1156,27 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11C = model.vec[81]
     obj$s00C = model.vec[77] / (1 + model.vec[80])
     obj$s11C = model.vec[78] / (1 + model.vec[81])
-    if(model.vec[79] == 0 & assume.cladogenetic==TRUE){
-        obj$s01C = obj$s00C
+    
+    #if(model.vec[79] == 0 & assume.cladogenetic==TRUE){
+    #    obj$s01C = obj$s00C
+    #}else{
+    #    obj$s01C = model.vec[79] - obj$s00C - obj$s11C
+    #}
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[79] == 0){
+            #For the independent models
+            obj$s01C = obj$s00C
+        }else{
+            obj$s01C = model.vec[79] - obj$s00C - obj$s11C
+        }
     }else{
-        obj$s01C = model.vec[79] - obj$s00C - obj$s11C
+        if(model.vec[79] == 0){
+            obj$s01C = 0
+        }else{
+            obj$s01C = model.vec[79]
+        }
     }
+    
     obj$x00C = (model.vec[80] * model.vec[77]) / (1 + model.vec[80])
     obj$x11C = (model.vec[81] * model.vec[78]) / (1 + model.vec[81])
 
@@ -1155,11 +1235,27 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11D = model.vec[119]
     obj$s00D = model.vec[115] / (1 + model.vec[118])
     obj$s11D = model.vec[116] / (1 + model.vec[119])
-    if(model.vec[117] == 0 & assume.cladogenetic==TRUE){
-        obj$s01D = obj$s00D
+    
+    #if(model.vec[117] == 0 & assume.cladogenetic==TRUE){
+    #    obj$s01D = obj$s00D
+    #}else{
+    #    obj$s01D = model.vec[117] - obj$s00D - obj$s11D
+    #}
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[117] == 0){
+            #For the independent models
+            obj$s01D = obj$s00D
+        }else{
+            obj$s01D = model.vec[117] - obj$s00D - obj$s11D
+        }
     }else{
-        obj$s01D = model.vec[117] - obj$s00D - obj$s11D
+        if(model.vec[117] == 0){
+            obj$s01D = 0
+        }else{
+            obj$s01D = model.vec[117]
+        }
     }
+    
     obj$x00D = (model.vec[118] * model.vec[115]) / (1 + model.vec[118])
     obj$x11D = (model.vec[119] * model.vec[116]) / (1 + model.vec[119])
 
@@ -1218,11 +1314,27 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11E = model.vec[157]
     obj$s00E = model.vec[153] / (1 + model.vec[156])
     obj$s11E = model.vec[154] / (1 + model.vec[157])
-    if(model.vec[155] == 0 & assume.cladogenetic==TRUE){
-        obj$s01E = obj$s00E
+    
+    #if(model.vec[155] == 0 & assume.cladogenetic==TRUE){
+    #    obj$s01E = obj$s00E
+    #}else{
+    #    obj$s01E = model.vec[155] - obj$s00E - obj$s11E
+    #}
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[155] == 0){
+            #For the independent models
+            obj$s01E = obj$s00E
+        }else{
+            obj$s01E = model.vec[155] - obj$s00E - obj$s11E
+        }
     }else{
-        obj$s01E = model.vec[155] - obj$s00E - obj$s11E
+        if(model.vec[155] == 0){
+            obj$s01E = 0
+        }else{
+            obj$s01E = model.vec[155]
+        }
     }
+    
     obj$x00E = (model.vec[156] * model.vec[153]) / (1 + model.vec[156])
     obj$x11E = (model.vec[157] * model.vec[154]) / (1 + model.vec[157])
 
@@ -1281,11 +1393,27 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11F = model.vec[195]
     obj$s00F = model.vec[191] / (1 + model.vec[194])
     obj$s11F = model.vec[192] / (1 + model.vec[195])
-    if(model.vec[193] == 0 & assume.cladogenetic==TRUE){
-        obj$s01F = obj$s00F
+    
+    #if(model.vec[193] == 0 & assume.cladogenetic==TRUE){
+    #    obj$s01F = obj$s00F
+    #}else{
+    #    obj$s01F = model.vec[193] - obj$s00F - obj$s11F
+    #}
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[193] == 0){
+            #For the independent models
+            obj$s01F = obj$s00F
+        }else{
+            obj$s01F = model.vec[193] - obj$s00F - obj$s11F
+        }
     }else{
-        obj$s01F = model.vec[193] - obj$s00F - obj$s11F
+        if(model.vec[193] == 0){
+            obj$s01F = 0
+        }else{
+            obj$s01F = model.vec[193]
+        }
     }
+    
     obj$x00F = (model.vec[194] * model.vec[191]) / (1 + model.vec[194])
     obj$x11F = (model.vec[195] * model.vec[192]) / (1 + model.vec[195])
 
@@ -1344,11 +1472,27 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11G = model.vec[233]
     obj$s00G = model.vec[229] / (1 + model.vec[232])
     obj$s11G = model.vec[230] / (1 + model.vec[233])
-    if(model.vec[231] == 0 & assume.cladogenetic==TRUE){
-        obj$s01G = obj$s00G
+    
+    #if(model.vec[231] == 0 & assume.cladogenetic==TRUE){
+    #    obj$s01G = obj$s00G
+    #}else{
+    #    obj$s01G = model.vec[231] - obj$s00G - obj$s11G
+    #}
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[231] == 0){
+            #For the independent models
+            obj$s01G = obj$s00G
+        }else{
+            obj$s01G = model.vec[231] - obj$s00G - obj$s11G
+        }
     }else{
-        obj$s01G = model.vec[231] - obj$s00G - obj$s11G
+        if(model.vec[231] == 0){
+            obj$s01G = 0
+        }else{
+            obj$s01G = model.vec[231]
+        }
     }
+
     obj$x00G = (model.vec[232] * model.vec[229]) / (1 + model.vec[232])
     obj$x11G = (model.vec[233] * model.vec[230]) / (1 + model.vec[233])
 
@@ -1407,11 +1551,27 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11H = model.vec[271]
     obj$s00H = model.vec[267] / (1 + model.vec[270])
     obj$s11H = model.vec[268] / (1 + model.vec[271])
-    if(model.vec[269] == 0 & assume.cladogenetic==TRUE){
-        obj$s01H = obj$s00H
+    
+    #if(model.vec[269] == 0 & assume.cladogenetic==TRUE){
+    #    obj$s01H = obj$s00H
+    #}else{
+    #    obj$s01H = model.vec[269] - obj$s00H - obj$s11H
+    #}
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[269] == 0){
+            #For the independent models
+            obj$s01H = obj$s00H
+        }else{
+            obj$s01H = model.vec[269] - obj$s00H - obj$s11H
+        }
     }else{
-        obj$s01H = model.vec[269] - obj$s00H - obj$s11H
+        if(model.vec[269] == 0){
+            obj$s01H = 0
+        }else{
+            obj$s01H = model.vec[269]
+        }
     }
+
     obj$x00H = (model.vec[270] * model.vec[267]) / (1 + model.vec[270])
     obj$x11H = (model.vec[271] * model.vec[268]) / (1 + model.vec[271])
 
@@ -1470,11 +1630,27 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11I = model.vec[309]
     obj$s00I = model.vec[305] / (1 + model.vec[308])
     obj$s11I = model.vec[306] / (1 + model.vec[309])
-    if(model.vec[307] == 0 & assume.cladogenetic==TRUE){
-        obj$s01I = obj$s00I
+    
+    #if(model.vec[307] == 0 & assume.cladogenetic==TRUE){
+    #    obj$s01I = obj$s00I
+    #}else{
+    #    obj$s01I = model.vec[307] - obj$s00I - obj$s11I
+    #}
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[307] == 0){
+            #For the independent models
+            obj$s01I = obj$s00I
+        }else{
+            obj$s01I = model.vec[307] - obj$s00I - obj$s11I
+        }
     }else{
-        obj$s01I = model.vec[307] - obj$s00I - obj$s11I
+        if(model.vec[307] == 0){
+            obj$s01I = 0
+        }else{
+            obj$s01I = model.vec[307]
+        }
     }
+
     obj$x00I = (model.vec[308] * model.vec[305]) / (1 + model.vec[308])
     obj$x11I = (model.vec[309] * model.vec[306]) / (1 + model.vec[309])
 
@@ -1533,11 +1709,27 @@ ParametersToPassGeoHiSSEfast <- function(model.vec, hidden.states, assume.cladog
     #obj$x11J = model.vec[347]
     obj$s00J = model.vec[343] / (1 + model.vec[346])
     obj$s11J = model.vec[344] / (1 + model.vec[347])
-    if(model.vec[345] == 0 & assume.cladogenetic==TRUE){
-        obj$s01J = obj$s00J
+    
+    #if(model.vec[345] == 0 & assume.cladogenetic==TRUE){
+    #    obj$s01J = obj$s00J
+    #}else{
+    #    obj$s01J = model.vec[345] - obj$s00J - obj$s11J
+    #}
+    if(assume.cladogenetic==TRUE){
+        if(model.vec[345] == 0){
+            #For the independent models
+            obj$s01J = obj$s00J
+        }else{
+            obj$s01J = model.vec[345] - obj$s00J - obj$s11J
+        }
     }else{
-        obj$s01J = model.vec[345] - obj$s00J - obj$s11J
+        if(model.vec[345] == 0){
+            obj$s01J = 0
+        }else{
+            obj$s01J = model.vec[345]
+        }
     }
+
     obj$x00J = (model.vec[346] * model.vec[343]) / (1 + model.vec[346])
     obj$x11J = (model.vec[347] * model.vec[344]) / (1 + model.vec[347])
 

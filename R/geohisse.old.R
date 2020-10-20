@@ -219,7 +219,7 @@ GeoHiSSE.old <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation
         names(init.pars) <- NULL
         
         if(is.null(starting.vals)){
-            def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]),3), rep(log(.01), 12)), rate.cats)
+            def.set.pars <- rep(c(log(init.pars[1:3]), log(init.pars[4:5]), rep(log(init.pars[6:7]),3), rep(log(0.01), 12)), rate.cats)
         }else{
             ## Check if 'starting.vals' has the correct format.
             if( !length(starting.vals) %in% c(3,7) ){
@@ -432,6 +432,7 @@ GeoHiSSE.old <- function(phy, data, f=c(1,1,1), speciation=c(1,2,3), extirpation
         cat("Finished. Beginning simulated annealing...", "\n")
         out.sann = GenSA(ip, fn=DevOptimizeGeoHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         cat("Finished. Refining using subplex routine...", "\n")
+        opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
         out = nloptr(x0=out.sann$par, eval_f=DevOptimizeGeoHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.areas, assume.cladogenetic=assume.cladogenetic, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]

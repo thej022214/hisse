@@ -447,7 +447,7 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -579,14 +579,14 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=2, condition.on
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
-        if(hidden.areas ==TRUE & length(root.p)==3){
+        if(hidden.states ==TRUE & length(root.p)==3){
             root.p <- rep(root.p, 3)
             root.p <- root.p / sum(root.p)
             warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
@@ -611,7 +611,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladoge
     cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=TRUE, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
     
     nstates = 30
-    nstates.to.eval <- 3 * hidden.areas
+    nstates.to.eval <- 3 * hidden.states
     nstates.not.eval <- 30 - nstates.to.eval
     
     nodes <- unique(phy$edge[,1])
@@ -651,7 +651,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladoge
         marginal.probs.tmp <- numeric(30)
         nstates = which(!dat.tab[tip,7:36] == 0)
         cache$states.keep <- as.data.frame(dat.tab[tip,7:36])
-        for (j in nstates[1:hidden.areas]){
+        for (j in nstates[1:hidden.states]){
             cache$to.change <- cache$states.keep
             tmp.state <- 1 * c(cache$to.change[1,j])
             cache$to.change[1,] <- 0
@@ -665,14 +665,14 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladoge
         for (k in 1:dim(cache$to.change)[2]){
             dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
         }
-        best.probs = max(marginal.probs.tmp[nstates[1:hidden.areas]])
-        marginal.probs.rescaled = marginal.probs.tmp[nstates[1:hidden.areas]] - best.probs
+        best.probs = max(marginal.probs.tmp[nstates[1:hidden.states]])
+        marginal.probs.rescaled = marginal.probs.tmp[nstates[1:hidden.states]] - best.probs
         marginal.probs <- numeric(30)
-        marginal.probs[nstates[1:hidden.areas]] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
+        marginal.probs[nstates[1:hidden.states]] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(tip, marginal.probs))
     }
     
-    if(hidden.areas>1){
+    if(hidden.states>1){
         cat(paste("Finished. Calculating marginal probabilities for ", nb.tip, " tips...", sep=""), "\n")
         tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
         obj$tip.mat = matrix(unlist(tip.marginals), ncol = 30+1, byrow = TRUE)
@@ -713,8 +713,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.areas=2, assume.cladoge
 ######################################################################################################################################
 ######################################################################################################################################
 
-
-MarginReconMiSSE <- function(phy, f, pars, hidden.states=2, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -956,7 +955,11 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
             rates.mat[2,] <- (x[1,] * x[2,]) / (1 + x[2,])
             rates.mat[3,] <- rates.mat[1,] - rates.mat[2,]
             for(widespread.index in c(3,6,9,12,15,18,21,24,27,30)){
-                rates.mat[1,widespread.index] <- x[1,widespread.index] - rates.mat[1,widespread.index-1] - rates.mat[1, widespread.index-2]
+                if(x[1,widespread.index] == 0){
+                    rates.mat[1,widespread.index] <- rates.mat[1,widespread.index-2]
+                }else{
+                    rates.mat[1,widespread.index] <- x[1,widespread.index] - rates.mat[1,widespread.index-1] - rates.mat[1, widespread.index-2]
+                }
                 rates.mat[2,widespread.index] <- 0
                 rates.mat[3,widespread.index] <- sum(x[1,c(widespread.index-2,widespread.index-1,widespread.index)])
             }
@@ -970,7 +973,11 @@ ParameterTransformfGeoSSE <- function(x, assume.cladogenetic=TRUE){
             rates.mat[3,] <- rates.mat[1,] - rates.mat[2,]
             
             rates.mat[3,is.na(rates.mat[3,])] = 0
-            rates.mat[1,3] <- x[1,3] - rates.mat[1,2] - rates.mat[1, 1]
+            if(x[1,3] == 0){
+                rates.mat[1,3] <- x[1,1]
+            }else{
+                rates.mat[1,3] <- x[1,3] - rates.mat[1,2] - rates.mat[1, 1]
+            }
             rates.mat[2,3] <- 0
             rates.mat[3,3] <- sum(x[1,c(1,2,3)])
         }

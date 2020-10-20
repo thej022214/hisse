@@ -379,13 +379,27 @@ SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time
     if(cache$hidden.states == TRUE){
         yini <-c(E0A=compE[1], E1A=compE[2], E0B=compE[3], E1B=compE[4], E0C=compE[5], E1C=compE[6], E0D=compE[7], E1D=compE[8], D0A=compD[1], D1A=compD[2], D0B=compD[3], D1B=compD[4], D0C=compD[5], D1C=compD[6], D0D=compD[7], D1D=compD[8])
         times=c(start.time, end.time)
+        runSilent <- function() {
+            options(warn = -1)
+            on.exit(options(warn = 0))
+            capture.output(res <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            res
+        }
         #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dll = "fhisse-ext-derivs", rtol=1e-8, atol=1e-8)
-        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- runSilent()
     }else{
         yini <-c(E0=compE[1], E1=compE[2], D0=compD[1], D1=compD[2])
         times=c(start.time, end.time)
+        runSilent <- function() {
+            options(warn = -1)
+            on.exit(options(warn = 0))
+            capture.output(res <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            res
+        }
         #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dll = "fbisse-ext-derivs", rtol=1e-8, atol=1e-8)
-        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- runSilent()
     }
     ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
     if(attributes(prob.subtree.cal.full)$istate[1] < 0){

@@ -4,13 +4,13 @@
 \title{Transition Rate matrix generator for the GeoHiSSE model}
 \description{Generates and manipulates the index of the transition rate parameters to be optimized.}
 \usage{
-TransMatMakerGeoHiSSE(hidden.areas=0, make.null=FALSE, include.jumps=FALSE, 
+TransMatMakerGeoHiSSE(hidden.traits=0, make.null=FALSE, include.jumps=FALSE, 
 	separate.extirpation=FALSE)
 }       
 \arguments{
-\item{hidden.areas}{a numeric value with the number of hidden areas in
+\item{hidden.traits}{a numeric value with the number of hidden trait in
   the model. The cannonical GeoSSE model has no hidden areas, so
-  \code{'hidden.areas=0'}. The default value is 0.} 
+  \code{'hidden.traits=0'}. The default value is 0.} 
 \item{make.null}{Sets the transition matrix to the null model such that (1)
   transition rates from endemic to widespread areas (A -> AB and B ->
   AB) are the same across all hidden areas and (2) the transition rates
