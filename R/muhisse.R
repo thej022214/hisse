@@ -36,6 +36,10 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         f[which(f==0)] <- 1
     }
     
+    if(sann == FALSE & starting.vals == NULL){
+        warning("You have chosen to rely on the internal starting points that generally work but does not guarantee finding the MLE.")
+    }
+
     if(!root.type == "madfitz" & !root.type == "herr_als"){
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
