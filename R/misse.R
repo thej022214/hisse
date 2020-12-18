@@ -56,7 +56,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
 
     setDTthreads(threads=dt.threads)
 
-    if(sann == FALSE & starting.vals == NULL){
+    if(sann == FALSE & is.null(starting.vals)){
         warning("You have chosen to rely on the internal starting points that generally work but does not guarantee finding the MLE.")
     }
 
