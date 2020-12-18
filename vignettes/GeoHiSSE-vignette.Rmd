@@ -138,7 +138,7 @@ mod3 <- GeoHiSSE(phy = phy, data = sim.dat, f=c(1,1,1),
 
 Finally, if we want to fit a GeoHiSSE model we would do the following:
 ```{r, eval=FALSE}
-## Model 4. GeoHiSSE model with 1 hidden trait, no range-dependent diversification.
+## Model 4. GeoHiSSE model with 1 hidden trait, range-dependent diversification.
 turnover <- c(1,2,3,4,5,6)
 eps <- c(1,1,1,1)
 trans.rate <- TransMatMakerGeoHiSSE(hidden.traits=1)
