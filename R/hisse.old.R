@@ -199,7 +199,7 @@ hisse.old <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,
 		cat("Finished. Beginning simulated annealing...", "\n")
 		out.sann = GenSA(ip, fn=DevOptimize, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np, ode.eps=ode.eps)
 		cat("Finished. Refining using subplex routine...", "\n")
-                opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
+        opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
         out = nloptr(x0=out.sann$par, eval_f=DevOptimize, ub=upper, lb=lower, opts=opts, pars=pars, phy=phy, data=data.new[,1], f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, timeslice=timeslice, np=np, ode.eps=ode.eps)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
