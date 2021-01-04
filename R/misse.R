@@ -283,7 +283,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
 
         data.for.fit <- data.frame(nparam=(possible.combos$eps+possible.combos$turnover)[1:min(nrow(possible.combos), chunk.size*batch_index)], logmin=log(possible.combos$elapsedMinutes[1:min(nrow(possible.combos), chunk.size*batch_index)]))
         data.for.prediction <- data.frame(nparam=(possible.combos$eps+possible.combos$turnover))
-        possible.combos$predictedMinutes <- exp(predict(lm(logmin ~ nparam, data=data.for.fit), newdata=data.for.prediction))
+        suppressWarnings(possible.combos$predictedMinutes <- exp(predict(lm(logmin ~ nparam, data=data.for.fit), newdata=data.for.prediction)))
 
         cat("\nResults so far\n")
         print(round(possible.combos,2))
