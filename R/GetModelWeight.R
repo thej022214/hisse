@@ -25,7 +25,7 @@ GetModelWeight <- function(...){
     mod.names <- names( models )
     mod.AIC <- sapply(models, function(x) x$AIC )
     delta <- mod.AIC - min( mod.AIC )
-    aicw <- exp( -0.5 * delta) / sum( exp( -0.5 * delta) )
-    names( aicw ) <- mod.names
-    return( aicw )
+    AICw <- exp( -0.5 * delta) / sum( exp( -0.5 * delta) )
+    names( AICw ) <- mod.names
+    return( AICw )
 }

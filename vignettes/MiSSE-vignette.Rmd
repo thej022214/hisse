@@ -89,7 +89,7 @@ axis(1, at = seq(1, 5, by = 1), las =1, lwd=1, labels=c("One Rate", "Two Rate", 
 Like with all other functions, we provide plotting functionality with `plot.misse.states()` for hidden state reconstructions of `class misse.states` output by our `MarginReconMiSSE()` function. And, as with other functions, a single `misse.states` object can be supplied and the plotting function will provide a heat map of the diversification rate parameter of choice, or a list of `misse.states` objects can be supplied and the function will "model-average" the results. For plotting rates, users can choose among turnover, net diversification ("net.div"), speciation, extinction, or extinction fraction ("extinction.fraction"). Below is an example of how to run the reconstruction function to obtain `misse.states` output from our two rate model for cetaceans. But, again, for simplicity, I have a file that contains the reconstructions and we can check that everything has loaded correctly and is of the proper `misse.states` class:
 ```{r, eval=TRUE}
 # two.rate.recon <- MarginReconMiSSE(phy=phy, f=1,  hidden.states=2, 
-                #pars=two.rate$solution, n.cores=3, aic=two.rate$AIC)
+                #pars=two.rate$solution, n.cores=3, AIC=two.rate$AIC)
 load("misse.vignette.Rsave") # Line above shows the command to create this result.
 class(two.rate.recon)
 two.rate.recon
@@ -193,7 +193,7 @@ for (model_index in 1:length(model.set)) {
     misse_recon <- MarginReconMiSSE(phy = model.set[[model_index]]$phy, f = 1, 
                                     hidden.states = nturnover, 
                                     pars = model.set[[model_index]]$solution, 
-                                    aic = model.set[[model_index]]$AIC)
+                                    AIC = model.set[[model_index]]$AIC)
     model.recons[[model_index]] <- misse_recon
 }
 ```

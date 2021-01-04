@@ -5,7 +5,7 @@
 \usage{
 MarginRecon.old(phy, data, f, pars, hidden.states=TRUE, four.state.null=FALSE, 
 timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, 
-aic=NULL, verbose=TRUE, n.cores=NULL)
+AIC=NULL, verbose=TRUE, n.cores=NULL)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -18,7 +18,7 @@ aic=NULL, verbose=TRUE, n.cores=NULL)
 \item{condition.on.survival}{a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
 \item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
-\item{aic}{the AIC for the model being used for the reconstruction. This is used by the plotting function. The default is \code{NULL}.}
+\item{AIC}{the AIC for the model being used for the reconstruction. This is used by the plotting function. The default is \code{NULL}.}
 \item{verbose}{a logical indicating whether progress should be printed to screen. The default is \code{TRUE}.}
 \item{n.cores}{specifies the number of independent processors to conduct the analysis.. The default is \code{NULL}.}
 }

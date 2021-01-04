@@ -4,7 +4,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginRecon.old <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=FALSE, timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
+MarginRecon.old <- function(phy, data, f, pars, hidden.states=TRUE, four.state.null=FALSE, timeslice=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, verbose=TRUE, n.cores=NULL){
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
@@ -168,8 +168,8 @@ MarginRecon.old <- function(phy, data, f, pars, hidden.states=TRUE, four.state.n
         obj$phy = phy
     }
     
-    if(!is.null(aic)){
-        obj$aic = aic
+    if(!is.null(AIC)){
+        obj$AIC = AIC
     }
     class(obj) = "hisse.states"
     return(obj)
@@ -183,7 +183,7 @@ MarginRecon.old <- function(phy, data, f, pars, hidden.states=TRUE, four.state.n
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconGeoSSE.old <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, verbose=TRUE, n.cores=NULL){
+MarginReconGeoSSE.old <- function(phy, data, f, pars, hidden.areas=TRUE, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, verbose=TRUE, n.cores=NULL){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -299,8 +299,8 @@ MarginReconGeoSSE.old <- function(phy, data, f, pars, hidden.areas=TRUE, assume.
     phy$node.label = apply(obj$node.mat[,2:dim(obj$node.mat)[2]], 1, which.max)
     obj$phy = phy
     
-    if(!is.null(aic)){
-        obj$aic = aic
+    if(!is.null(AIC)){
+        obj$AIC = AIC
     }
     
     class(obj) = "hisse.geosse.states"
@@ -315,7 +315,7 @@ MarginReconGeoSSE.old <- function(phy, data, f, pars, hidden.areas=TRUE, assume.
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -431,8 +431,8 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     obj$rates.mat = rates.mat
     obj$phy = phy
     
-    if(!is.null(aic)){
-        obj$aic = aic
+    if(!is.null(AIC)){
+        obj$AIC = AIC
     }
     
     class(obj) = "hisse.states"
@@ -447,7 +447,7 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -563,8 +563,8 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     obj$rates.mat = rates.mat
     obj$phy = phy
     
-    if(!is.null(aic)){
-        obj$aic = aic
+    if(!is.null(AIC)){
+        obj$AIC = AIC
     }
     
     class(obj) = "muhisse.states"
@@ -579,7 +579,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -697,8 +697,8 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
     obj$phy = phy
     
     
-    if(!is.null(aic)){
-        obj$aic = aic
+    if(!is.null(AIC)){
+        obj$AIC = AIC
     }
     
     class(obj) = "hisse.geosse.states"
@@ -713,7 +713,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, aic=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -817,8 +817,8 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     obj$rates.mat = rates.mat
     obj$phy = phy
     
-    if(!is.null(aic)){
-        obj$aic = aic
+    if(!is.null(AIC)){
+        obj$AIC = AIC
     }
     
     class(obj) = "misse.states"

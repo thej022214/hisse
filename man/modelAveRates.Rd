@@ -13,7 +13,7 @@ bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000)) )
 \item{AIC.weights}{a numeric vector with length equal to the number of
   models in the list 'x'. This is the AICw for each of the models to be
   averaged. If 'AIC.weights==NULL' (the default value) then function
-  will compute the AICw for the models in the set from the $aic value
+  will compute the AICw for the models in the set from the $AIC value
   for each model.}
 \item{type}{one of "tips", "nodes", or "both" (the default). This
   controls whether only the averaged rates for the tips, nodes or both
@@ -35,7 +35,7 @@ model-average the results (it assumes the trees are the same) in
 addition to accounting for uncertainty in the marginal probabilities at
 tips and nodes.
 If 'AIC.weights==NULL', then the models in the set do not require the
-'$aic' element to compute the AICw. Otherwise the function will return
+'$AIC' element to compute the AICw. Otherwise the function will return
 an error message.
 }
 \references{

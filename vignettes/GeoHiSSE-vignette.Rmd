@@ -196,19 +196,19 @@ These can take a while to run. We will load the results of previous analyses. Un
 recon.mod1 <- MarginReconGeoSSE(phy = mod1$phy, data = mod1$data, f = mod1$f,
                                  pars = mod1$solution, hidden.states = 1,
                                  root.type = mod1$root.type, root.p = mod1$root.p,
-                                 aic = mod1$AIC, n.cores = 4)
+                                 AIC = mod1$AIC, n.cores = 4)
 recon.mod2 <- MarginReconGeoSSE(phy = mod2$phy, data = mod2$data, f = mod2$f,
                                  pars = mod2$solution, hidden.states = 1,
                                  root.type = mod2$root.type, root.p = mod2$root.p,
-                                 aic = mod2$AIC, n.cores = 4)
+                                 AIC = mod2$AIC, n.cores = 4)
 recon.mod3 <- MarginReconGeoSSE(phy = mod3$phy, data = mod3$data, f = mod3$f,
                                  pars = mod3$solution, hidden.states = 2,
                                  root.type = mod3$root.type, root.p = mod3$root.p,
-                                 aic = mod3$AIC, n.cores = 4)
+                                 AIC = mod3$AIC, n.cores = 4)
 recon.mod4 <- MarginReconGeoSSE(phy = mod4$phy, data = mod4$data, f = mod4$f,
                                  pars = mod4$solution, hidden.states = 2,
                                  root.type = mod4$root.type, root.p = mod4$root.p,
-                                 aic = mod4$AIC, n.cores = 4)
+                                 AIC = mod4$AIC, n.cores = 4)
 ```
 
 ```{r, eval=TRUE}

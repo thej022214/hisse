@@ -33,13 +33,13 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
 
     if( !inherits(hisse.results, what = c("list", "hisse.states", "hisse.geosse.states", "muhisse.states", "misse.states")) ) stop("x needs to be a list of model reconstructions or a single model reconstruction object of class 'hisse.states', 'hisse.geosse.states', 'muhisse.states', or 'misse.states'.")
 
-    ## If hisse.results is a list of model reconstructions, then test if they have $aic. Return error message otherwise.
-    ## There is no need for the $aic element if AIC.weigths argument is provided.
+    ## If hisse.results is a list of model reconstructions, then test if they have $AIC. Return error message otherwise.
+    ## There is no need for the $AIC element if AIC.weigths argument is provided.
     ## AIC.weights is a substitute for AIC. See help page.
     if(class(hisse.results) == "list"){
         if( is.null( AIC.weights ) ){
-            empty.aic <- sapply(hisse.results, function(x) !is.null(x$aic) )
-            if( sum( empty.aic ) != length(hisse.results) ) stop("All elements of the list need to have a '$aic' element.")
+            empty.AIC <- sapply(hisse.results, function(x) !is.null(x$AIC) )
+            if( sum( empty.AIC ) != length(hisse.results) ) stop("All elements of the list need to have a '$AIC' element.")
             model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states", "muhisse.states", "misse.states")) )
             if( as.logical( sum( model.class ) ) ) stop("x needs to be a list of model reconstruction with class 'hisse.states' or 'hisse.geosse.states' ")
         } else{
@@ -54,9 +54,9 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
             stop( "If using a single model, then 'AIC.weights' needs to be NULL. " )
         }
         
-        if(is.null(hisse.results$aic)){
-            ## If a user forgot to include the aic, then we add a random value in for them
-            hisse.results$aic = 42
+        if(is.null(hisse.results$AIC)){
+            ## If a user forgot to include the AIC, then we add a random value in for them
+            hisse.results$AIC = 42
         }
         tmp.list <- list()
         tmp.list[[1]] <- hisse.results
