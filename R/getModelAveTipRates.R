@@ -39,6 +39,15 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
     if(class(hisse.results) == "list"){
         if( is.null( AIC.weights ) ){
             empty.AIC <- sapply(hisse.results, function(x) !is.null(x$AIC) )
+
+			if(sum( empty.AIC ) != length(hisse.results)) {
+				for (hisse.results.index in seq_along(hisse.results)) {
+					if(is.null(hisse.results[[hisse.results.index]]$AIC) & !is.null(hisse.results[[hisse.results.index]]$aic)) {
+						hisse.results[[hisse.results.index]]$AIC <- hisse.results[[hisse.results.index]]$aic
+					}
+				}
+            	empty.AIC <- sapply(hisse.results, function(x) !is.null(x$AIC) )
+			}
             if( sum( empty.AIC ) != length(hisse.results) ) stop("All elements of the list need to have a '$AIC' element.")
             model.class <- sapply(hisse.results, function(x) !inherits(x, what = c("hisse.states", "hisse.geosse.states", "muhisse.states", "misse.states")) )
             if( as.logical( sum( model.class ) ) ) stop("x needs to be a list of model reconstruction with class 'hisse.states' or 'hisse.geosse.states' ")
@@ -54,10 +63,14 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
             stop( "If using a single model, then 'AIC.weights' needs to be NULL. " )
         }
         
-        if(is.null(hisse.results$AIC)){
-            ## If a user forgot to include the AIC, then we add a random value in for them
-            hisse.results$AIC = 42
-        }
+		if(is.null(hisse.results$AIC)){
+			if(!is.null(hisse.results$aic)) {
+				hisse.results$AIC <- hisse.results$aic #fix capitalization
+			} else {
+			## If a user forgot to include the AIC, then we add a random value in for them
+				hisse.results$AIC = 42
+			}
+		}
         tmp.list <- list()
         tmp.list[[1]] <- hisse.results
         hisse.results <- tmp.list
