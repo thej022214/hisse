@@ -1,6 +1,6 @@
 Package: hisse
-Version: 1.9.10
-Date: 2020-12-18
+Version: 1.9.11
+Date: 2021-1-8
 Title: Hidden State Speciation and Extinction
 Authors@R: c(person("Jeremy", "Beaulieu", role=c("aut", "cre"),
                      email = "jmbeauli@uark.edu"),
