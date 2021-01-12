@@ -29,14 +29,14 @@ As with `hisse`, rather than optimizing $\lambda_i$ and $\mu_i$ separately, `MiS
 ```{r, eval=FALSE}
 turnover <- c(1)
 eps <- c(1)
-one.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps, sann=TRUE, sann.its=5000)
+one.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 ```
 
 Pretty simple. Now to fit a model that contains two rate classes, we will simply expand out the turnover vector:
 ```{r, eval=FALSE}
 turnover <- c(1,2)
 eps <- c(1,1)
-two.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps, sann=TRUE, sann.its=5000)
+two.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 ```
 
 Overall, `MiSSE` allows up to 26 possible hidden states in diversification (denoted by A-Z), and in this example since we fit two rate classes, we have two hidden states, A and B, impacting turnover rates. Here is the rest of the model set applied to the whale data set:
@@ -44,15 +44,15 @@ Overall, `MiSSE` allows up to 26 possible hidden states in diversification (deno
 #rate classes A:C
 turnover <- c(1,2,3)
 eps <- c(1,1,1)
-three.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps, sann=TRUE, sann.its=5000)
+three.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 #rate classes A:D
 turnover <- c(1,2,3,4)
 eps <- c(1,1,1,1)
-four.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps, sann=TRUE, sann.its=5000)
+four.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 #rate classes A:E
 turnover <- c(1,2,3,4,5)
 eps <- c(1,1,1,1,1)
-five.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps, sann=TRUE, sann.its=5000)
+five.rate <- MiSSE(phy, f=1, turnover=turnover, eps=eps)
 ```
 
 We can also let $\epsilon_i$ vary across the tree:

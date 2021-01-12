@@ -777,11 +777,10 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     }
     
     NodeEval <- function(node){
-        focal <- node
         if(node == cache$nb.tip+1){
             marginal.probs <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
-            return(c(node, marginal.probs))
         }else{
+            focal <- node
             marginal.probs.tmp <- c()
             for (j in 1:nstates.to.eval){
                 marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
