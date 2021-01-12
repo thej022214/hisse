@@ -590,42 +590,42 @@ DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type,
     pars <- c(cache$lambda0A, cache$mu0A, cache$lambda0B, cache$mu0B, cache$lambda0C, cache$mu0C, cache$lambda0D, cache$mu0D, cache$lambda0E, cache$mu0E, cache$lambda0F, cache$mu0F, cache$lambda0G, cache$mu0G, cache$lambda0H, cache$mu0H, cache$lambda0I, cache$mu0I, cache$lambda0J, cache$mu0J, cache$lambda0K, cache$mu0K, cache$lambda0L, cache$mu0L, cache$lambda0M, cache$mu0M, cache$lambda0N, cache$mu0N, cache$lambda0O, cache$mu0O, cache$lambda0P, cache$mu0P, cache$lambda0Q, cache$mu0Q, cache$lambda0R, cache$mu0R, cache$lambda0S, cache$mu0S, cache$lambda0T, cache$mu0T, cache$lambda0U, cache$mu0U, cache$lambda0V, cache$mu0V, cache$lambda0W, cache$mu0W, cache$lambda0X, cache$mu0X, cache$lambda0Y, cache$mu0Y, cache$lambda0Z, cache$mu0Z, cache$q0, cache$hidden.states)
     lambda <- c(cache$lambda0A, cache$lambda0B, cache$lambda0C, cache$lambda0D, cache$lambda0E, cache$lambda0F, cache$lambda0G, cache$lambda0H, cache$lambda0I, cache$lambda0J, cache$lambda0K, cache$lambda0L, cache$lambda0M, cache$lambda0N, cache$lambda0O, cache$lambda0P, cache$lambda0Q, cache$lambda0R, cache$lambda0S, cache$lambda0T, cache$lambda0U, cache$lambda0V, cache$lambda0W, cache$lambda0X, cache$lambda0Y, cache$lambda0Z)
 
-    nb.tip <- cache$nb.tip
-    nb.node <- cache$nb.node
-    TIPS <- 1:nb.tip
+    dat.tab.copy <- copy(dat.tab)
+
+    TIPS <- 1:cache$nb.tip
     for(i in 1:length(gen)){
         if(i == length(gen)){
             if(!is.null(node)){
                 if(node %in% gen[[i]]){
                     cache$node <- node
                     cache$state <- state
-                    res.tmp <- GetRootProbMiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab, generations=gen[[i]])
+                    res.tmp <- GetRootProbMiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, generations=gen[[i]])
                     cache$node <- NULL
                     cache$state <- NULL
                 }else{
-                    res.tmp <- GetRootProbMiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab, generations=gen[[i]])
+                    res.tmp <- GetRootProbMiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, generations=gen[[i]])
                 }
             }else{
-                res.tmp <- GetRootProbMiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab, generations=gen[[i]])
+                res.tmp <- GetRootProbMiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, generations=gen[[i]])
             }
             compD.root <- res.tmp[c(28:53)]
             compE.root <- res.tmp[c(2:27)]
-            setkey(dat.tab, DesNode)
-            comp <- dat.tab[["comp"]]
+            setkey(dat.tab.copy, DesNode)
+            comp <- dat.tab.copy[["comp"]]
             comp <- c(comp[-TIPS], res.tmp[1])
         }else{
             if(!is.null(node)){
                 if(node %in% gen[[i]]){
                     cache$node <- node
                     cache$state <- state
-                    dat.tab <- FocalNodeProbMiSSE(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                    dat.tab.copy <- FocalNodeProbMiSSE(cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, gen[[i]])
                     cache$node <- NULL
                     cache$state <- NULL
                 }else{
-                    dat.tab <- FocalNodeProbMiSSE(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                    dat.tab.copy <- FocalNodeProbMiSSE(cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, gen[[i]])
                 }
             }else{
-                dat.tab <- FocalNodeProbMiSSE(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                dat.tab.copy <- FocalNodeProbMiSSE(cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, gen[[i]])
             }
         }
     }
@@ -660,7 +660,7 @@ DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type,
     if(get.phi==TRUE){
         obj = NULL
         obj$compD.root = compD.root/sum(compD.root)
-        obj$compE = compE
+        obj$compE = compE.root
         obj$root.p = root.p
         return(obj)
     }else{

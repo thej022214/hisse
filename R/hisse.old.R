@@ -26,7 +26,7 @@ hisse.old <- function(phy, data, f=c(1,1), hidden.states=TRUE, turnover.anc=c(1,
         
     }
     
-    if(sann == FALSE & starting.vals == NULL){
+    if(sann == FALSE & is.null(starting.vals)){
         warning("You have chosen to rely on the internal starting points that generally work but does not guarantee finding the MLE.")
     }
 
@@ -490,6 +490,7 @@ DownPass <- function(phy, cache, hidden.states, bad.likelihood=-10000000000, con
 		obj = NULL
 		obj$compD.root = compD[root.node,]
 		obj$compE = compE
+        obj$root.p = root.p
 		return(obj)
 	}else{
 		return(loglik)

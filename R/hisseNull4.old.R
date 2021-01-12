@@ -290,6 +290,7 @@ DownPassNull <- function(phy, cache, bad.likelihood=-10000000000, condition.on.s
 		obj = NULL
 		obj$compD.root = compD[root.node,]
 		obj$compE = compE
+        obj$root.p = root.p
 		return(obj)
 	}else{
 		return(loglik)
