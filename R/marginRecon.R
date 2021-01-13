@@ -45,18 +45,23 @@ MarginRecon.old <- function(phy, data, f, pars, hidden.states=TRUE, four.state.n
         nodes <- unique(phy$edge[,1])
         
         NodeEval <- function(node){
-            focal <- node
-            marginal.probs.tmp <- c()
-            for (j in 1:nstates){
-                marginal.probs.tmp <- c(marginal.probs.tmp, DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+            if(node == nb.tip+1){
+                marginal.probs <- DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+            }else{
+                focal <- node
+                marginal.probs.tmp <- c()
+                for (j in 1:nstates){
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPass(phy, cache, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                }
+                best.probs = max(marginal.probs.tmp)
+                marginal.probs.rescaled = marginal.probs.tmp - best.probs
+                marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
             }
-            best.probs = max(marginal.probs.tmp)
-            marginal.probs.rescaled = marginal.probs.tmp - best.probs
-            marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
             return(c(node, marginal.probs))
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-        
+        print(node.marginals)
+
         if(hidden.states==TRUE){
             TipEval <- function(tip){
                 marginal.probs.tmp <- numeric(4)
@@ -121,18 +126,22 @@ MarginRecon.old <- function(phy, data, f, pars, hidden.states=TRUE, four.state.n
         nodes <- unique(phy$edge[,1])
         
         NodeEval <- function(node){
-            focal <- node
-            marginal.probs.tmp <- c()
-            for (j in 1:nstates){
-                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassNull(phy, cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+            if(node == nb.tip+1){
+                marginal.probs <- DownPassNull(phy, cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+            }else{
+                focal <- node
+                marginal.probs.tmp <- c()
+                for (j in 1:nstates){
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassNull(phy, cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                }
+                best.probs = max(marginal.probs.tmp)
+                marginal.probs.rescaled = marginal.probs.tmp - best.probs
+                marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
             }
-            best.probs = max(marginal.probs.tmp)
-            marginal.probs.rescaled = marginal.probs.tmp - best.probs
-            marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
             return(c(node, marginal.probs))
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-        
+        print(node.marginals)
         TipEval <- function(tip){
             marginal.probs.tmp <- numeric(8)
             nstates = which(!cache$states[tip,] == 0)
@@ -223,18 +232,22 @@ MarginReconGeoSSE.old <- function(phy, data, f, pars, hidden.areas=TRUE, assume.
     }
     
     NodeEval <- function(node){
-        focal <- node
-        marginal.probs.tmp <- c()
-        for (j in 1:nstates){
-            if(assume.cladogenetic == TRUE){
-                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassGeoHisse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
-            }else{
-                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+        if(node == cache$nb.tip+1){
+            marginal.probs <- DownPassGeoHisse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+        }else{
+            focal <- node
+            marginal.probs.tmp <- c()
+            for (j in 1:nstates){
+                if(assume.cladogenetic == TRUE){
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassGeoHisse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                }else{
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMusse(phy, cache, hidden.states=hidden.areas, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                }
             }
+            best.probs = max(marginal.probs.tmp)
+            marginal.probs.rescaled = marginal.probs.tmp - best.probs
+            marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         }
-        best.probs = max(marginal.probs.tmp)
-        marginal.probs.rescaled = marginal.probs.tmp - best.probs
-        marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(node, marginal.probs))
     }
     node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
@@ -358,15 +371,19 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     }
     
     NodeEval <- function(node){
-        focal <- node
-        marginal.probs.tmp <- c()
-        for (j in 1:nstates.to.eval){
-            marginal.probs.tmp <- c(marginal.probs.tmp, DownPassHiSSE(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fix.type="fix"))
+        if(node == cache$nb.tip+1){
+            marginal.probs <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+        }else{
+            focal <- node
+            marginal.probs.tmp <- c()
+            for (j in 1:nstates.to.eval){
+                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassHiSSE(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fix.type="fix"))
+            }
+            marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
+            best.probs <- max(marginal.probs.tmp)
+            marginal.probs.rescaled <- marginal.probs.tmp - best.probs
+            marginal.probs <- exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         }
-        marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
-        best.probs <- max(marginal.probs.tmp)
-        marginal.probs.rescaled <- marginal.probs.tmp - best.probs
-        marginal.probs <- exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(node, marginal.probs))
     }
     
@@ -490,15 +507,19 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     }
     
     NodeEval <- function(node){
-        focal <- node
-        marginal.probs.tmp <- c()
-        for (j in 1:nstates.to.eval){
-            marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fix.type="fix"))
+        if(node == cache$nb.tip+1){
+            marginal.probs <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+        }else{
+            focal <- node
+            marginal.probs.tmp <- c()
+            for (j in 1:nstates.to.eval){
+                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fix.type="fix"))
+            }
+            marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
+            best.probs <- max(marginal.probs.tmp)
+            marginal.probs.rescaled <- marginal.probs.tmp - best.probs
+            marginal.probs <- exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         }
-        marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
-        best.probs <- max(marginal.probs.tmp)
-        marginal.probs.rescaled <- marginal.probs.tmp - best.probs
-        marginal.probs <- exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(node, marginal.probs))
     }
     
@@ -621,18 +642,22 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
     }
     
     NodeEval <- function(node){
-        focal <- node
-        marginal.probs.tmp <- c()
-        for (j in 1:nstates.to.eval){
-            marginal.probs.tmp <- c(marginal.probs.tmp, DownPassGeoHissefast(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+        if(node == cache$nb.tip+1){
+            marginal.probs <- DownPassGeoHissefast(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+        }else{
+            focal <- node
+            marginal.probs.tmp <- c()
+            for (j in 1:nstates.to.eval){
+                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassGeoHissefast(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+            }
+            marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
+            best.probs = max(marginal.probs.tmp)
+            marginal.probs.rescaled = marginal.probs.tmp - best.probs
+            marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         }
-        marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
-        best.probs = max(marginal.probs.tmp)
-        marginal.probs.rescaled = marginal.probs.tmp - best.probs
-        marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(node, marginal.probs))
     }
-    
+
     if(get.tips.only == FALSE){
         cat(paste("Calculating marginal probabilities for ", length(nodes), " internal nodes...", sep=""), "\n")
         obj <- NULL
@@ -752,15 +777,19 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     }
     
     NodeEval <- function(node){
-        focal <- node
-        marginal.probs.tmp <- c()
-        for (j in 1:nstates.to.eval){
-            marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+        if(node == cache$nb.tip+1){
+            marginal.probs <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+        }else{
+            focal <- node
+            marginal.probs.tmp <- c()
+            for (j in 1:nstates.to.eval){
+                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+            }
+            marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
+            best.probs = max(marginal.probs.tmp)
+            marginal.probs.rescaled = marginal.probs.tmp - best.probs
+            marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         }
-        marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
-        best.probs = max(marginal.probs.tmp)
-        marginal.probs.rescaled = marginal.probs.tmp - best.probs
-        marginal.probs = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(node, marginal.probs))
     }
     
@@ -776,7 +805,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
         obj <- NULL
     }
     
-    dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+    #dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
         marginal.probs.tmp <- numeric(2)

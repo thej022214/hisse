@@ -971,7 +971,7 @@ DownPassGeoHissefast <- function(dat.tab, gen, cache, condition.on.survival, roo
     if(get.phi==TRUE){
         obj = NULL
         obj$compD.root = compD.root/sum(compD.root)
-        obj$compE = compE
+        obj$compE = compE.root
         obj$root.p = root.p
         return(obj)
     }else{

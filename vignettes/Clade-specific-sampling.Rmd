@@ -93,7 +93,7 @@ left.branch.probs[1:2]
 round(left.branch.probs[1:2],4) == round(right.branch.probs[1:2],4)
 ```
 
-Now, these extinction probabilities no longer converge at the root. In these situations, the likelihood is incorrect. An important question worth further examination is if sampling is uneven, is the final answer worse by forcing the assumption that sampling is even or is it better to allow clade-specific sampling but with mathematical errors? Future work will address this question. But until then, for mathemetical reasons we feel it is best to avoid using clade-specific sampling fractions, which is why we have removed this capability within all HiSSE functions. We recommend for now using either a global sampling fraction as shown above, or a global fraction for each of the states included in a given model. 
+Now, these extinction probabilities no longer converge at the root, and the likelihood is incorrect. An important question worth further examination is if sampling is uneven, is the final answer worse by forcing the assumption that sampling is even or is it better to allow clade-specific sampling but with mathematical errors? Future work will address this question. But until then, for mathemetical reasons we feel it is best to avoid using clade-specific sampling fractions, which is why we have removed this capability within all HiSSE functions. We recommend for now using either a global sampling fraction as shown above, or a global fraction for each of the states included in a given model. 
 
 ## References
 Moore, B.R., S. Hohna, M.R. May, B. Rannala, and J.P. Huelsenbeck. 2016. Critically evaluating the theory and performance of Bayesian analysis of macroevolutionary mixtures. Proceedings of the National Academy of Sciences, USA, 113:9569-9574.
