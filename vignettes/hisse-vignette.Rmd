@@ -100,7 +100,7 @@ trans.rates.bisse
 Whatever transition matrix is designed, it is supplied to the `trans.rate=` argument in the `hisse()` call:
 ```{r, eval=FALSE}
 pp = hisse.old(phy, sim.dat, f=c(1,1), hidden.states=TRUE, turnover.anc=turnover.anc, 
-           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal, sann=FALSE)
+           eps.anc=eps.anc, trans.rate=trans.rates.nodual.allequal, sann=TRUE)
 ```
 
 ## A common mistake
