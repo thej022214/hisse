@@ -6,7 +6,7 @@
 \usage{
 MiSSEGreedy(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(),
 stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=NULL,
-condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=FALSE,
+condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=TRUE,
 sann.its=10000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL,
 turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0)
 }
@@ -30,7 +30,7 @@ turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0)
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using
-  \code{subplex}. The default is \code{FALSE}.}
+  \code{subplex}. The default is \code{TRUE}.}
 \item{sann.its}{a numeric indicating the number of times the simulated
   annealing algorithm should call the objective function.}
 \item{bounded.search}{a logical indicating whether or not bounds should
