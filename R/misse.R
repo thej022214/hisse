@@ -239,7 +239,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         local.combos <- possible.combos[(1+chunk.size*(batch_index-1)):min(nrow(possible.combos), chunk.size*batch_index) ,]
 
         #cat("\nNow starting run with", paste(range(local.combos$turnover), collapse="-"), "turnover categories and", paste(range(local.combos$eps), collapse="-"), "extinction fraction categories", "\n")
-        cat("Starting at ", as.character(starting.time), "\n running on ", chunk.size, " cores.", sep="")
+        cat("Starting at ", as.character(starting.time), "\n running on ", n.cores, " cores.", sep="")
         cat("\n")
         print(local.combos[,1:3])
         cat("\n")
