@@ -1,0 +1,16 @@
+
+### R ###
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+
+# Because Jeremy is here
+.DS_Store
+
+# compiled code
+src/*.o
+src/*.so
+
