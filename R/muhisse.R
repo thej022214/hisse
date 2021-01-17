@@ -409,7 +409,7 @@ DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.t
     ## print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=ode.eps)
+    cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-250), ode.eps=ode.eps)
     logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     
     return(-logl)
@@ -539,6 +539,13 @@ OrganizeData <- function(data, phy, f, hidden.states){
 
 
 SingleChildProb <- function(cache, pars, compD, compE, start.time, end.time, branch.type){
+    
+    if(any(!is.finite(c(compD, compE)))) { # something went awry at a previous step. Bail!
+        prob.subtree.cal <- rep(0, ifelse(cache$hidden.states == TRUE, 64, 8))
+        prob.subtree.cal[(1+length(prob.subtree.cal)/2):length(prob.subtree.cal)] <- cache$bad.likelihood
+        return(prob.subtree.cal)
+    }
+    
     if(branch.type == 1){
         # Update fossil tips initial condition -- for use by DEBaTE function only ##
         if(cache$hidden.states == TRUE){
