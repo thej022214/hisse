@@ -588,7 +588,7 @@ SingleChildProbGeo <- function(cache, pars, compD, compE, start.time, end.time, 
         prob.subtree.cal[(1+length(prob.subtree.cal)/2):length(prob.subtree.cal)] <- cache$bad.likelihood
         return(prob.subtree.cal)
     }
-    
+
     if(cache$hidden.states == TRUE){
         yini <- c(E00A = compE[1], E11A = compE[2], E01A = compE[3], E00B = compE[4], E11B = compE[5], E01B = compE[6], E00C = compE[7], E11C = compE[8], E01C = compE[9], E00D = compE[10], E11D = compE[11], E01D = compE[12], E00E = compE[13], E11E = compE[14], E01E = compE[15], E00F = compE[16], E11F = compE[17], E01F = compE[18], E00G = compE[19], E11G = compE[20], E01G = compE[21], E00H = compE[22], E11H = compE[23], E01H = compE[24], E00I = compE[25], E11I = compE[26], E01I = compE[27], E00J = compE[28], E11J = compE[29], E01J = compE[30], D00A = compD[1], D11A = compD[2], D01A = compD[3], D00B = compD[4], D11B = compD[5], D01B = compD[6], D00C = compD[7], D11C = compD[8], D01C = compD[9], D00D = compD[10], D11D = compD[11], D01D = compD[12], D00E = compD[13], D11E = compD[14], D01E = compD[15], D00F = compD[16], D11F = compD[17], D01F = compD[18], D00G = compD[19], D11G = compD[20], D01G = compD[21], D00H = compD[22], D11H = compD[23], D01H = compD[24], D00I = compD[25], D11I = compD[26], D01I = compD[27], D00J = compD[28], D11J = compD[29], D01J = compD[30])
         times=c(start.time, end.time)
@@ -614,7 +614,7 @@ SingleChildProbGeo <- function(cache, pars, compD, compE, start.time, end.time, 
             prob.subtree.cal.full <- runSilent()
         }
     }else{
-        yini <-c(E_0=compE[1], E_1=compE[2], E_01=compE[3], D_N0=compD[1], D_N1=compD[2], D_N2=compD[3])
+        yini <- c(E_0=compE[1], E_1=compE[2], E_01=compE[3], D_N0=compD[1], D_N1=compD[2], D_N2=compD[3])
         times=c(start.time, end.time)
         if(cache$assume.cladogenetic == TRUE){
             runSilent <- function() {
@@ -735,7 +735,7 @@ FocalNodeProbGeo <- function(cache, pars, lambdas, dat.tab, generations){
         }
         dat.tab[data.table(c(generations)), "comp" := tmp.comp]
     }else{
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, pars, z[7:9], z[10:13],  z[2], z[1])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, pars, z[7:9], z[10:12],  z[2], z[1])))
         if(cache$assume.cladogenetic == TRUE){
             #I imagine this is slower than it needs to be. But this is the best I can come up with
             DM <- matrix(tmp[seq(1,nrow(tmp)-1,2),4:6], length(unique(CurrentGenData$FocalNode)), 3)
@@ -816,7 +816,7 @@ GetRootProbGeo <- function(cache, pars, lambdas, dat.tab, generations){
             }
         }
     }else{
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, pars, z[7:9], z[10:13],  z[2], z[1])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbGeo(cache, pars, z[7:9], z[10:12], z[2], z[1])))
         if(cache$assume.cladogenetic == TRUE){
             #I imagine this is slower than it needs to be. But this is the best I can come up with
             DM <- matrix(tmp[seq(1,nrow(tmp)-1,2),4:6], length(unique(CurrentGenData$FocalNode)), 3)

@@ -643,8 +643,9 @@ test_that("GeoSSE_fGeoSSSE_test1", {
     model.vec[1:11] <- c(1.5, 0.5, 1.0, pars[4], pars[5], 0, pars[6], 0, pars[7], pars[5], pars[4])
     cache <- hisse:::ParametersToPassGeoHiSSE(phy, states[,1], f=c(.2,.2,.2), model.vec, hidden.states=FALSE)
     geohisse.full <- hisse:::DownPassGeoHisse(phy=phy, cache=cache, hidden.states=TRUE, bad.likelihood=-1000000, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
-    comparison <- identical(round(geohisse.full,4), round(diversitree.full,4), round(geohisse.new,4))
-    
+    #comparison <- identical(round(geohisse.full,4), round(diversitree.full,4), round(geohisse.new,4))
+    comparison <- identical(round(geohisse.new,4), round(diversitree.full,4))
+
     expect_true(comparison)
 })
 
@@ -741,7 +742,8 @@ test_that("GeoSSE_fGeoSSSE_test3", {
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeDataGeo(states[,3], phy, c(1,1,1), hidden.states=FALSE)
     geohisse.new <- hisse:::DownPassGeoHissefast(dat.tab, gen=gen, cache=cache.slim, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
-    comparison <- identical(round(hisse.constrained,4), round(diversitree.constrained,4), round(geohisse.new,4))
+    #comparison <- identical(round(hisse.constrained,4), round(diversitree.constrained,4), round(geohisse.new,4))
+    comparison <- identical(round(geohisse.new,4), round(diversitree.constrained,4))
 
     expect_true(comparison)
 })
