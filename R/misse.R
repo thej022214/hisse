@@ -491,10 +491,8 @@ SingleChildProbMiSSE <- function(cache, pars, compD, compE, start.time, end.time
     ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
     if(attributes(prob.subtree.cal.full)$istate[1] < 0){
         prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-        if(cache$hidden.states == TRUE){
-            prob.subtree.cal[27:52] <- cache$bad.likelihood
-            return(prob.subtree.cal)
-        }
+        prob.subtree.cal[27:52] <- cache$bad.likelihood
+        return(prob.subtree.cal)
     }else{
         prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
     }
