@@ -412,7 +412,7 @@ SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time
             prob.subtree.cal[9:16] <- cache$bad.likelihood
             return(prob.subtree.cal)
         }else{
-            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            prob.subtree.cal[3:4] <- cache$bad.likelihood
             return(prob.subtree.cal)
         }
     }else{
