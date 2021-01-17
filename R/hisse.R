@@ -380,6 +380,11 @@ OrganizeDataHiSSE <- function(data, phy, f, hidden.states){
 
 
 SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time){
+	if(any(!is.finite(c(compD, compE)))) { # something went awry at a previous step. Bail!
+		prob.subtree.cal <- rep(0, ifelse(cache$hidden.states == TRUE, 16, 4))
+		prob.subtree.cal[(1+length(prob.subtree.cal)/2):length(prob.subtree.cal)] <- cache$bad.likelihood
+		return(prob.subtree.cal)
+	}
     if(cache$hidden.states == TRUE){
         yini <-c(E0A=compE[1], E1A=compE[2], E0B=compE[3], E1B=compE[4], E0C=compE[5], E1C=compE[6], E0D=compE[7], E1D=compE[8], D0A=compD[1], D1A=compD[2], D0B=compD[3], D1B=compD[4], D0C=compD[5], D1C=compD[6], D0D=compD[7], D1D=compD[8])
         times=c(start.time, end.time)
