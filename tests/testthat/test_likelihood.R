@@ -421,7 +421,7 @@ test_that("MuHiSSE_test1", {
     phy$node.label = NULL
     cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE,
     nb.tip=Ntip(phy), nb.node=Nnode(phy),
-    bad.likelihood=exp(-500), ode.eps=0)
+    bad.likelihood=exp(-250), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,1), hidden.states=TRUE)
     hisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache,
@@ -476,7 +476,7 @@ test_that("MuHiSSE_test2", {
     phy$node.label = NULL
     cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE,
     nb.tip=Ntip(phy), nb.node=Nnode(phy),
-    bad.likelihood=exp(-500), ode.eps=0)
+    bad.likelihood=exp(-250), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,0), hidden.states=TRUE)
     muhisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
@@ -737,7 +737,7 @@ test_that("GeoSSE_fGeoSSSE_test3", {
     model.vec = rep(0,380)
     model.vec[1:11] = pars.hisse
     phy$node.label = NULL
-    cache.slim <- hisse:::ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=FALSE, assume.cladogenetic=FALSE, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-500), ode.eps=0)
+    cache.slim <- hisse:::ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=FALSE, assume.cladogenetic=FALSE, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-250), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeDataGeo(states[,3], phy, c(1,1,1), hidden.states=FALSE)
     geohisse.new <- hisse:::DownPassGeoHissefast(dat.tab, gen=gen, cache=cache.slim, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
