@@ -300,7 +300,7 @@ DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.ti
     ## print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache = ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-250), ode.eps=ode.eps)
+    cache = ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=ode.eps)
     logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
     
     return(-logl)

@@ -489,7 +489,7 @@ DevOptimizeGeoHiSSEfast <- function(p, pars, dat.tab, gen, hidden.states, assume
     #print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache = ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-250), ode.eps=ode.eps)
+    cache = ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=hidden.states, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=ode.eps)
     #save(cache, file="cache.Rsave")
     if(any(cache$s01A<0, cache$s01B<0, cache$s01C<0, cache$s01D<0, cache$s01E<0, cache$s01F<0, cache$s01G<0, cache$s01H<0, cache$s01I<0, cache$s01J<0)){
         #print("bad")

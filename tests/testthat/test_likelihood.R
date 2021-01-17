@@ -421,7 +421,7 @@ test_that("MuHiSSE_test1", {
     phy$node.label = NULL
     cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE,
     nb.tip=Ntip(phy), nb.node=Nnode(phy),
-    bad.likelihood=exp(-250), ode.eps=0)
+    bad.likelihood=exp(-300), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,1), hidden.states=TRUE)
     hisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache,
@@ -476,7 +476,7 @@ test_that("MuHiSSE_test2", {
     phy$node.label = NULL
     cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE,
     nb.tip=Ntip(phy), nb.node=Nnode(phy),
-    bad.likelihood=exp(-250), ode.eps=0)
+    bad.likelihood=exp(-300), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,0), hidden.states=TRUE)
     muhisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
@@ -494,7 +494,7 @@ test_that("MiSSE_test1", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(0.103624, 5.207178e-09, rep(0,52), 1)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-250), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     logl.one.rate <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     right.logl <- -277.6942
     comparison <- round(logl.one.rate,4) == round(right.logl,4)
@@ -511,7 +511,7 @@ test_that("MiSSE_test2", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(0.103624, 5.207178e-09, 0.103624, 5.207178e-09, 0.103624, 5.207178e-09, rep(0,46), 1)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=3, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-250), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=3, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     logl.three.rate <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     right.logl <- -277.6942
     comparison <- round(logl.three.rate,4) == round(right.logl,4)
@@ -542,7 +542,7 @@ test_that("BiSSE_fHiSSE_test1", {
     model.vec <- numeric(48)
     model.vec[1:6] = pars.bisse
     phy$node.label = NULL
-    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-250), ode.eps=0)
+    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
     hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
@@ -573,7 +573,7 @@ test_that("BiSSE_fHiSSE_test2", {
     model.vec <- numeric(48)
     model.vec[1:24] = pars.hisse
     phy$node.label = NULL
-    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-250), ode.eps=0)
+    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
     hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
     expect_true(comparison)
@@ -610,7 +610,7 @@ test_that("HiSSE_Null_Four_fHiSSE_test", {
     model.vec <- numeric(48)
     model.vec[1:48] = pars.hisse
     phy$node.label = NULL
-    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-250), ode.eps=0)
+    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
     hisse.null.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(hisse.nullOG.full,4), round(hisse.null.full,4))
     
@@ -635,7 +635,7 @@ test_that("GeoSSE_fGeoSSSE_test1", {
     model.vec <- numeric(380)
     model.vec[1:11] <- c(1.5+0.7, 0.5+0.4, sum(1.5, 0.5, 1.0), pars[4]/pars[1], pars[5]/pars[2], 0, pars[6], 0, pars[7], 0,0)
     phy$node.label <- NULL
-    cache.slim <- hisse:::ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=FALSE,nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-250), ode.eps=0)
+    cache.slim <- hisse:::ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=FALSE,nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeDataGeo(states[,1], phy, c(.2,.2,.2), hidden.states=FALSE)
     geohisse.new <- hisse:::DownPassGeoHissefast(dat.tab, gen=gen, cache=cache.slim, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
@@ -666,7 +666,7 @@ test_that("GeoSSE_fGeoSSSE_test2", {
     model.vec <- numeric(380)
     model.vec[1:76] <- c(0.07612170+0.02869795, 0.07612170+0.02869795, 0, 0.02869795/0.07612170, 0.02869795/0.07612170, 0, 0.02727061, 0, 0.03946784, 0.02869795, 0.02869795, 0.01055818, rep(0, 8), 0.01055818, rep(0, 8), 0.01055818, rep(0, 8), 0.18861747+0.02869795, 0.18861747+0.02869795, 0, 0.02869795/0.18861747, 0.02869795/0.18861747, 0, 0.02727061, 0, 0.03946784, 0.02869795, 0.02869795, 0.01055818, rep(0, 8), 0.01055818, rep(0, 8), 0.01055818, rep(0, 8))
     phy$node.label <- NULL
-    cache.slim <- hisse:::ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=TRUE, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-250), ode.eps=0)
+    cache.slim <- hisse:::ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=TRUE, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeDataGeo(states[,1], phy, c(1,1,1), hidden.states=TRUE)
     geohisse.new <- hisse:::DownPassGeoHissefast(dat.tab, gen=gen, cache=cache.slim, root.type="madfitz", root.p=NULL, condition.on.survival=TRUE)
@@ -737,7 +737,7 @@ test_that("GeoSSE_fGeoSSSE_test3", {
     model.vec = rep(0,380)
     model.vec[1:11] = pars.hisse
     phy$node.label = NULL
-    cache.slim <- hisse:::ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=FALSE, assume.cladogenetic=FALSE, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-250), ode.eps=0)
+    cache.slim <- hisse:::ParametersToPassGeoHiSSEfast(model.vec=model.vec, hidden.states=FALSE, assume.cladogenetic=FALSE, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), ode.eps=0)
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeDataGeo(states[,3], phy, c(1,1,1), hidden.states=FALSE)
     geohisse.new <- hisse:::DownPassGeoHissefast(dat.tab, gen=gen, cache=cache.slim, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
