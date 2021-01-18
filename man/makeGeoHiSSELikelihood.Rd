@@ -6,7 +6,7 @@
 \usage{
 makeGeoHiSSELikelihood(phy, data, hidden.areas=0, f=c(1,1,1), assume.cladogenetic=TRUE, 
 condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, dt.threads=1, ode.eps = 0, 
-bad.likelihood = exp(-500))
+bad.likelihood = exp(-300))
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}

@@ -1,7 +1,7 @@
 ## Exporting the likelihood for the GeoHiSSE function.
 ## This is based on the fGeoHiSSE version of the function.
 
-makeGeoHiSSELikelihood <- function(phy, data, hidden.areas=0, f = c(1,1,1), assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, dt.threads=1, ode.eps = 0, bad.likelihood = exp(-500)){
+makeGeoHiSSELikelihood <- function(phy, data, hidden.areas=0, f = c(1,1,1), assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, dt.threads=1, ode.eps = 0, bad.likelihood = exp(-300)){
     
     ## ########################################################
     ## Block for basic checks.
