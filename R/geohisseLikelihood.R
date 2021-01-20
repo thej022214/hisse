@@ -131,7 +131,7 @@ makeGeoHiSSELikelihood <- function(phy, data, hidden.areas=0, f = c(1,1,1), assu
             p.full <- rep(0.0, times = length(par_key) )
             p.full[ trans_key ] <- p
             cache <- ParametersToPassGeoHiSSEfast(model.vec = p.full, hidden.states = hidden.states, assume.cladogenetic = assume.cladogenetic
-                                                , nb.tip = nb.tip, nb.node = nb.node, bad.likelihood = exp(-500), ode.eps = ode.eps)
+                                                , nb.tip = nb.tip, nb.node = nb.node, bad.likelihood = exp(-300), ode.eps = ode.eps)
             if(any(cache$s01A<0, cache$s01B<0, cache$s01C<0, cache$s01D<0, cache$s01E<0, cache$s01F<0, cache$s01G<0, cache$s01H<0, cache$s01I<0, cache$s01J<0)){
                 ## If this condition is meet than the likelihood will blow, the function will return the bad value for the likelihood.
                 return(log(cache$bad.likelihood)^13)

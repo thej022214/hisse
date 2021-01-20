@@ -359,7 +359,7 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
     
     nstates <- 8
     nstates.to.eval <- 2 * hidden.states
@@ -495,7 +495,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
     
     nstates <- 32
     nstates.to.eval <- 4 * hidden.states
@@ -629,7 +629,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=TRUE, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- ParametersToPassGeoHiSSEfast(model.vec, hidden.states=TRUE, assume.cladogenetic=assume.cladogenetic, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
     
     nstates = 30
     nstates.to.eval <- 3 * hidden.states
@@ -765,7 +765,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)
+    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
     
     nstates = 26
     nstates.to.eval <- hidden.states
