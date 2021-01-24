@@ -15,6 +15,10 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 			warning("With current settings, hisse will grow a tree to infinite size and height until the death of the universe. Or, until all the taxa in the simulation go extinct. Normally the program would throw an error, but you claim to know what you're doing (override.safeties==TRUE). We would strongly advise you to have checkpointing running. You may also want to buy a carbon offset for the CPU-years you might burn through during this simulation.")		
 		}
 	}
+	if(length(mass.extinction.heights)>0) {
+		mass.extinction.magnitudes <- mass.extinction.magnitudes[order(mass.extinction.heights)]
+		mass.extinction.heights <- mass.extinction.heights[order(mass.extinction.heights)]
+	}
 	start <- Sys.time()
 	if(length(turnover.rates) != length(eps.values)) {
 		stop("need to have same number of turnover and eps rates")	
@@ -69,20 +73,21 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 		}
 		starting.time <- max(subset(results, living)$height)
 		ending.time <- starting.time + min(0, min.times, na.rm=TRUE)
-		mass.extinctions.in.range <- which(mass.extinction.heights>starting.time & mass.extinction.heights<=ending.time)
+		mass.extinctions.in.range <- which(mass.extinction.heights<=ending.time)
 		if(keep.running) {
 			if(length(mass.extinctions.in.range)>0) { 
 				extinction.time <- mass.extinction.heights[mass.extinctions.in.range[1]]
 				results[which(results$living),]$height <- results[which(results$living),]$height + (extinction.time-starting.time)
 				results[which(results$living),]$length <- results[which(results$living),]$length + (extinction.time-starting.time)
 				death.probability <- mass.extinction.magnitudes[mass.extinctions.in.range[1]]
-				potential.very.unlucky.taxa <- subset(results, living & state==states[which.min(birth.wait.times)])$id
-				actual.very.unlucky.taxa <- which(rbinom(length(potential.very.unlucky.taxa), 1, death.probability)==1)
-				
+				potential.very.unlucky.taxa <- subset(results, living)$id
+				actual.very.unlucky.taxa <- potential.very.unlucky.taxa[which(rbinom(length(potential.very.unlucky.taxa), 1, death.probability)==1)]
 				mass.extinction.death.counts <- mass.extinction.death.counts + length(actual.very.unlucky.taxa )
-				if(length(actual.very.unlucky.taxa)>0) {
-					results[which(id %in% actual.very.unlucky.taxa),]$living <- FALSE
+				for(killed.index in seq_along(actual.very.unlucky.taxa)) {
+					results[which(id==actual.very.unlucky.taxa[killed.index]),]$living <- FALSE
 				}
+				mass.extinction.heights <- mass.extinction.heights[-1]
+				mass.extinction.magnitudes <- mass.extinction.magnitudes[-1]
 			} else {
 				results[which(results$living),]$height <- results[which(results$living),]$height + min(min.times)
 				results[which(results$living),]$length <- results[which(results$living),]$length + min(min.times)
