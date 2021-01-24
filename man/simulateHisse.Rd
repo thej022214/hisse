@@ -5,8 +5,8 @@
 \usage{
 SimulateHisse(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, 
 max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, 
-checkpoint.start.object=NULL, override.safeties=FALSE, max.extinction.heights=c(),
-max.extinction.magnitudes=c())
+checkpoint.start.object=NULL, override.safeties=FALSE, mass.extinction.heights=c(),
+mass.extinction.magnitudes=c())
 }       
 \arguments{
 \item{turnover.rates}{a vector of turnover rates.}
