@@ -33,12 +33,14 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 	diag(transition.rates) <- NA
 	birth.counts <- 0*birth.rates
 	death.counts <- 0*death.rates
+	mass.extinction.death.counts <- 0
 	transition.counts <- 0*transition.rates
 
 	if(!is.null(checkpoint.start.object)) {
 		results <- checkpoint.start.object$results
 		birth.counts <- checkpoint.start.object$birth.counts
 		death.counts <- checkpoint.start.object$death.counts
+		mass.extinction.death.counts  <- checkpoint.start.object$mass.extinction.death.counts 
 		transition.counts <- checkpoint.start.object$transition.counts
 	} else {
 		results <- data.table(anc=NA, id=1, state=factor(x0, state.levels), length=0, height=0, living=TRUE, descendants=FALSE)
@@ -76,7 +78,11 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 				death.probability <- mass.extinction.magnitudes[mass.extinctions.in.range[1]]
 				potential.very.unlucky.taxa <- subset(results, living & state==states[which.min(birth.wait.times)])$id
 				actual.very.unlucky.taxa <- which(rbinom(length(potential.very.unlucky.taxa), 1, death.probability)==1)
-				results[which(id %in% actual.very.unlucky.taxa),]$living <- FALSE
+				
+				mass.extinction.death.counts <- mass.extinction.death.counts + length(actual.very.unlucky.taxa )
+				if(length(actual.very.unlucky.taxa)>0) {
+					results[which(id %in% actual.very.unlucky.taxa),]$living <- FALSE
+				}
 			} else {
 				results[which(results$living),]$height <- results[which(results$living),]$height + min(min.times)
 				results[which(results$living),]$length <- results[which(results$living),]$length + min(min.times)
@@ -113,12 +119,12 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 		}
 		if(!is.null(checkpoint.file)) {
 			if(rep.count %% checkpoint.frequency == 0) {
-				checkpoint.result <- list(results=as.data.frame(results), birth.counts=birth.counts, death.counts=death.counts, transition.counts=transition.counts, n.surviving = dim(subset(results, living))[1])
+				checkpoint.result <- list(results=as.data.frame(results), birth.counts=birth.counts, death.counts=death.counts, mass.extinction.death.counts=mass.extinction.death.counts, transition.counts=transition.counts, n.surviving = dim(subset(results, living))[1])
 				save(checkpoint.result, file=checkpoint.file)
 			} 	
 		}
 	}
-	return(list(results=as.data.frame(results), birth.counts=birth.counts, death.counts=death.counts, transition.counts=transition.counts, n.surviving = dim(subset(results, living))[1]))
+	return(list(results=as.data.frame(results), birth.counts=birth.counts, death.counts=death.counts, mass.extinction.death.counts=mass.extinction.death.counts, transition.counts=transition.counts, n.surviving = dim(subset(results, living))[1]))
 }
 
 Multiply <- function(x, y) { #I know, this is silly. It's like the joke about Wickham's addr package

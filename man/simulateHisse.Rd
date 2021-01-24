@@ -37,7 +37,8 @@ The output can be returned as an ape \code{phylo} tree by passing the \code{$res
 	This returns a list, with the following elements:
 	\item{$results}{a dataframe containing the simulation output: states at nodes and tips, ancestor-descendant pairs, branch lengths.}
 	\item{$birth.counts}{a vector, in the same state order as turnover.rates et al., that includes the counts for the number of times species in each state speciated.}
-	\item{$death.counts}{same as birth.counts, but counting extinction events in each state.}
+	\item{$death.counts}{same as birth.counts, but counting extinction events in each state outside of mass extinctions.}
+	\item{$mass.extinction.death.counts}{total number of species that went extinct during a mass extinction event (which is assumed to be trait-independent).}
 	\item{$transition.counts}{matrix of counts of transitions from one state to another.}
 	\item{$n.surviving}{the number of taxa alive at the end of the simulation.}
 }
