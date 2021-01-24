@@ -6,7 +6,7 @@
 ######################################################################################################################################
 
 
-SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL, override.safeties=FALSE) {
+SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, checkpoint.start.object=NULL, override.safeties=FALSE, mass.extinction.heights=c(), mass.extinction.magnitudes=c()) {
     id <- living <- state <- NULL
     if(!is.finite(max.taxa) & !is.finite(max.t) & !is.finite(max.wall.time)) {
 		if(!override.safeties) {
@@ -65,37 +65,49 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 			results[which(results$living),]$height <- results[which(results$living),]$height + time.dif
 			results[which(results$living),]$length <- results[which(results$living),]$length + time.dif
 		}
+		starting.time <- max(subset(results, living)$height)
+		ending.time <- starting.time + min(0, min.times, na.rm=TRUE)
+		mass.extinctions.in.range <- which(mass.extinction.heights>starting.time & mass.extinction.heights<=ending.time)
 		if(keep.running) {
-			results[which(results$living),]$height <- results[which(results$living),]$height + min(min.times)
-			results[which(results$living),]$length <- results[which(results$living),]$length + min(min.times)
-
-			if(which.min(min.times)==1) { #birth
-				birth.counts[which.min(birth.wait.times)] <- birth.counts[which.min(birth.wait.times)]+1
-				potential.lucky.taxa <- subset(results, living & state==states[which.min(birth.wait.times)])$id
-				lucky.taxon <- potential.lucky.taxa[sample.int(length(potential.lucky.taxa), 1)]
-				results[which(id==lucky.taxon),]$living <- FALSE
-				results[which(id==lucky.taxon),]$descendants <- TRUE
-				results <- rbind(results, data.table(anc=lucky.taxon, id=max(results$id)+1, state=subset(results, id==lucky.taxon)$state, length=0, height=subset(results, id==lucky.taxon)$height, living=TRUE, descendants=FALSE))
-				results <- rbind(results, data.table(anc=lucky.taxon, id=max(results$id)+1, state=subset(results, id==lucky.taxon)$state, length=0, height=subset(results, id==lucky.taxon)$height, living=TRUE, descendants=FALSE))
-			}
-			if(which.min(min.times)==2) { #death
-				death.counts[which.min(death.wait.times)] <- death.counts[which.min(death.wait.times)]+1
-				potential.unlucky.taxa <- subset(results, living & state==states[which.min(death.wait.times)])$id
-				unlucky.taxon <- potential.unlucky.taxa[sample.int(length(potential.unlucky.taxa), 1)]
-				results[which(id==unlucky.taxon),]$living <- FALSE
-			}
-			if(which.min(min.times)==3) { #transition
-				from.to <- which(transition.wait.times == min(transition.wait.times, na.rm=TRUE), arr.ind=TRUE)
-				if (dim(from.to)[1] > 1) {
-					from.to <- from.to[sample.int(dim(from.to)[1], 1),]	
-				} else {
-					from.to <- from.to[1,]	
+			if(length(mass.extinctions.in.range)>0) { 
+				extinction.time <- mass.extinction.heights[mass.extinctions.in.range[1]]
+				results[which(results$living),]$height <- results[which(results$living),]$height + (extinction.time-starting.time)
+				results[which(results$living),]$length <- results[which(results$living),]$length + (extinction.time-starting.time)
+				death.probability <- mass.extinction.magnitudes[mass.extinctions.in.range[1]]
+				potential.very.unlucky.taxa <- subset(results, living & state==states[which.min(birth.wait.times)])$id
+				actual.very.unlucky.taxa <- which(rbinom(length(potential.very.unlucky.taxa), 1, death.probability)==1)
+				results[which(id %in% actual.very.unlucky.taxa),]$living <- FALSE
+			} else {
+				results[which(results$living),]$height <- results[which(results$living),]$height + min(min.times)
+				results[which(results$living),]$length <- results[which(results$living),]$length + min(min.times)
+				if(which.min(min.times)==1) { #birth
+					birth.counts[which.min(birth.wait.times)] <- birth.counts[which.min(birth.wait.times)]+1
+					potential.lucky.taxa <- subset(results, living & state==states[which.min(birth.wait.times)])$id
+					lucky.taxon <- potential.lucky.taxa[sample.int(length(potential.lucky.taxa), 1)]
+					results[which(id==lucky.taxon),]$living <- FALSE
+					results[which(id==lucky.taxon),]$descendants <- TRUE
+					results <- rbind(results, data.table(anc=lucky.taxon, id=max(results$id)+1, state=subset(results, id==lucky.taxon)$state, length=0, height=subset(results, id==lucky.taxon)$height, living=TRUE, descendants=FALSE))
+					results <- rbind(results, data.table(anc=lucky.taxon, id=max(results$id)+1, state=subset(results, id==lucky.taxon)$state, length=0, height=subset(results, id==lucky.taxon)$height, living=TRUE, descendants=FALSE))
 				}
-				transition.counts[from.to[1], from.to[2]] <- transition.counts[from.to[1], from.to[2]] +1
-				transition.wait.times[from.to[1], from.to[2]] <- transition.wait.times[from.to[1], from.to[2]] + 1
-				potential.changing.taxa <- subset(results, living & state==states[from.to[1]])$id
-				changed.taxon <- potential.changing.taxa[sample.int(length(potential.changing.taxa), 1)]
-				results[which(id==changed.taxon),]$state <- states[from.to[2]]
+				if(which.min(min.times)==2) { #death
+					death.counts[which.min(death.wait.times)] <- death.counts[which.min(death.wait.times)]+1
+					potential.unlucky.taxa <- subset(results, living & state==states[which.min(death.wait.times)])$id
+					unlucky.taxon <- potential.unlucky.taxa[sample.int(length(potential.unlucky.taxa), 1)]
+					results[which(id==unlucky.taxon),]$living <- FALSE
+				}
+				if(which.min(min.times)==3) { #transition
+					from.to <- which(transition.wait.times == min(transition.wait.times, na.rm=TRUE), arr.ind=TRUE)
+					if (dim(from.to)[1] > 1) {
+						from.to <- from.to[sample.int(dim(from.to)[1], 1),]	
+					} else {
+						from.to <- from.to[1,]	
+					}
+					transition.counts[from.to[1], from.to[2]] <- transition.counts[from.to[1], from.to[2]] +1
+					transition.wait.times[from.to[1], from.to[2]] <- transition.wait.times[from.to[1], from.to[2]] + 1
+					potential.changing.taxa <- subset(results, living & state==states[from.to[1]])$id
+					changed.taxon <- potential.changing.taxa[sample.int(length(potential.changing.taxa), 1)]
+					results[which(id==changed.taxon),]$state <- states[from.to[2]]
+				}
 			}
 			keep.running <- CheckKeepRunning(results, max.taxa, max.t, max.wall.time, start)
 		}

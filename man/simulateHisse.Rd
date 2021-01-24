@@ -5,7 +5,8 @@
 \usage{
 SimulateHisse(turnover.rates, eps.values, transition.rates, max.taxa=Inf, max.t=Inf, 
 max.wall.time=Inf, x0, nstart=1, checkpoint.file=NULL, checkpoint.frequency=100, 
-checkpoint.start.object=NULL, override.safeties=FALSE)
+checkpoint.start.object=NULL, override.safeties=FALSE, max.extinction.heights=c(),
+max.extinction.magnitudes=c())
 }       
 \arguments{
 \item{turnover.rates}{a vector of turnover rates.}
@@ -20,6 +21,8 @@ checkpoint.start.object=NULL, override.safeties=FALSE)
 \item{checkpoint.frequency}{if there is a checkpoint file, frequency (in terms of number of steps: births, deaths, or transitions) at which this is saved.}
 \item{checkpoint.start.object}{if you are starting from a checkpointed.file, the object loaded from that file. Typically called \code{checkpoint.result}.}
 \item{override.safeties}{simulate even if there is no limit on number of taxa, depth of tree, or wall time.}
+\item{mass.extinction.heights}{vector of times above the root [NOT from the present] to have a mass extinction.}
+\item{mass.extinction.magnitudes}{vector of per species extinction probability at mass extinctions.}
 }
 \details{
 Note that currently, the simulator assumes \code{turnover.rates}, \code{eps.values}, and \code{transition rates} are in the same state order. Remember that \code{turnover.rates} are birth + death rates, and \code{eps.values} are death / birth rates. 
