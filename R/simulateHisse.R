@@ -186,13 +186,12 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 		return(structure(list(edge = structure(c(2L,1L), .Dim = c(1L, 2L)), edge.length = c(results[which(results$id==final.tips),]$height), tip.label = c("t1"), Nnode = 0L), .Names = c("edge", "edge.length", "tip.label", "Nnode"), class = "phylo"))
 	}
 
-	
 	tips <- subset(results, !descendants)$id
 	if( length(which(is.na(results$anc))) > 1) { #we do not have a stem, but start with node at base. Stick a stem on, then prune it off
 		new.root.id <- min(results$anc, na.rm=TRUE)-1
 		results[which(is.na(results$anc)),]$anc <- new.root.id
 		results<- rbind(results[1,], results)
-		results[1,]$anc <-NA
+		results[1,]$anc <- NA
 		results[1,]$id <- new.root.id
 		results[1,]$length <- 0
 		results[1,]$height <- 0		
@@ -206,7 +205,7 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 	non.tips <- subset(results, descendants)$id
 	results$phylo.tipward.id[which(results$descendants)] <- seq(from=(length(tips)+1), to=length(c(tips, non.tips)), by=1)
 	results$phylo.rootward.id <- NA
-	results$phylo.rootward.id <- sapply(results$anc, GetConversionOfAncestralNode, results=results)
+	results$phylo.rootward.id <- unlist(sapply(results$anc, GetConversionOfAncestralNode, results=results))
 	root.edge <- NULL
 	if(drop.stem) {
 		 results <- results[-which(is.na(results$anc)),]	
@@ -214,7 +213,7 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 		 root.edge <- results$length[which(is.na(results$anc))][1]
 		 results <- results[-which(is.na(results$anc)),]	
 	 }
-	edge <-unname(cbind(as.numeric(results$phylo.rootward.id), as.numeric(results$phylo.tipward.id)))
+	edge <- unname(cbind(as.numeric(as.vector(results$phylo.rootward.id)), as.numeric(as.vector(results$phylo.tipward.id))))
 	edge <- edge[order(edge[,2], decreasing=FALSE),]
 	edge.length <- as.numeric(results$length[order(as.numeric(results$phylo.tipward.id), decreasing=FALSE)])
 	Nnode <- length(non.tips)
