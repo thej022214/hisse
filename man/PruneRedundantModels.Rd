@@ -1,5 +1,5 @@
-\name{Prune Redundant Models}
-\alias{PruneRedudantModels}
+\name{PruneRedundantModels}
+\alias{PruneRedundantModels}
 \title{Prune Redundant Models}
 \description{Removes models that fit equivalently well to models that are as simple or simpler.}
 \usage{
