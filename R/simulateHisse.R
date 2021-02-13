@@ -188,7 +188,7 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 
 	tips <- subset(results, !descendants)$id
 	if( length(which(is.na(results$anc))) > 1) { #we do not have a stem, but start with node at base. Stick a stem on, then prune it off
-		new.root.id <- min(results$anc, na.rm=TRUE)-1
+		new.root.id <- min(results$id, na.rm=TRUE)-1
 		results[which(is.na(results$anc)),]$anc <- new.root.id
 		results<- rbind(results[1,], results)
 		results[1,]$anc <- NA
@@ -200,12 +200,14 @@ SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
 		drop.stem <- TRUE
 	}
 
-	results$phylo.tipward.id <- NA
+	results$phylo.tipward.id <- NA #this is to renumber according to how ape does it
 	results$phylo.tipward.id[which(!results$descendants)] <- sequence(length(tips))
 	non.tips <- subset(results, descendants)$id
 	results$phylo.tipward.id[which(results$descendants)] <- seq(from=(length(tips)+1), to=length(c(tips, non.tips)), by=1)
 	results$phylo.rootward.id <- NA
-	results$phylo.rootward.id <- unlist(sapply(results$anc, GetConversionOfAncestralNode, results=results))
+	results$phylo.rootward.id[which(!is.na(results$anc))] <- unlist(sapply(results$anc[which(!is.na(results$anc))], GetConversionOfAncestralNode, results=results))
+
+
 	root.edge <- NULL
 	if(drop.stem) {
 		 results <- results[-which(is.na(results$anc)),]	

@@ -74,12 +74,21 @@ Saving output while this goes is highly recommended -- you can see how things ar
   library(ape)
   phy <- rcoal(50)
   potential.combos <- generateMiSSEGreedyCombinations(max.param=4, vary.both=TRUE)
-  result <- MiSSEGreedy(phy, potential.combos, n.cores=parallel::detectCores())
-  # Yes, [[ is a function you can lapply, and the name of elements within each list
-  # object can be arguments. Life is awesome.
+
+  #run on one core:
+  result <- MiSSEGreedy(phy, potential.combos, n.cores=1, f=1) 
+
+  #run on all available cores: (commented out because CRAN does not allow this in examples)
+  #result <- MiSSEGreedy(phy, potential.combos, n.cores=parallel::detectCores(), f=1)
+
+
+
   AICc <- unlist(lapply(result, "[[", "AICc"))
   deltaAICc <- AICc-min(AICc)
   print(length(result))
+
+  # Yes, [[ is a function you can lapply, and the name of elements within each list
+  # object can be arguments. Life is awesome.
 }
 }
 \references{
