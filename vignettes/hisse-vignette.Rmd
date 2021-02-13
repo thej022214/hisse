@@ -167,9 +167,9 @@ and the results can be compared against any model in the hisse set, including Bi
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(fig.width=7, fig.height=5)
 ```
-Our HiSSE package provides plotting functionality in `plot.hisse.states()` for character state reconstructions of `class hisse.states` output by our `MarginRecon()` function. Specifically, the function provides an overlay of the state reconstructions on the rate estimates. There are a couple of options for how these reconstructions to be plotted. First, a single `hisse.states` object can be supplied and it will provide a heat map of the diversification rate parameter of choice. Users can choose among turnover, net diversification ("net.div"), speciation, extinction, or extinction fraction ("extinction.fraction"). I've provided example `hisse.states` output from the example data set simulated above. This particular model assumed two diversification rate parameters -- i.e., turnover.anc=c(1,1,1,2), and eps.anc=c(1,1,1,1). Let's load this file and check that everything has loaded correctly and is of the proper `hisse.states` class:
+Our HiSSE package provides plotting functionality in `plot.hisse.states()` for character state reconstructions of `class hisse.states` output by our `MarginRecon.old()` function. Specifically, the function provides an overlay of the state reconstructions on the rate estimates. There are a couple of options for how these reconstructions to be plotted. First, a single `hisse.states` object can be supplied and it will provide a heat map of the diversification rate parameter of choice. Users can choose among turnover, net diversification ("net.div"), speciation, extinction, or extinction fraction ("extinction.fraction"). I've provided example `hisse.states` output from the example data set simulated above. This particular model assumed two diversification rate parameters -- i.e., turnover.anc=c(1,1,1,2), and eps.anc=c(1,1,1,1). Let's load this file and check that everything has loaded correctly and is of the proper `hisse.states` class:
 ```{r, eval=TRUE}
-# pp.recon <- MarginRecon(phy=phy, data=sim.dat, f = pp$f, pars = pp$solution
+# pp.recon <- MarginRecon.old(phy=phy, data=sim.dat, f = pp$f, pars = pp$solution
 #                         , hidden.states = pp$hidden.states, AIC = pp$AIC)
 load("testrecon1.Rsave") # Line above shows the command to create this result.
 class(pp.recon)
@@ -194,9 +194,9 @@ A first initial step when doing the modeling-averaging approach is to make sure 
 ```{r, eval=TRUE}
 pp.recon$AIC
 ```
-If this returns a NULL, then something has gone wrong and you should check how you performed the reconstructions. The AIC for the model can be supplied as an argument in the `MarginRecon()` function (using the `pp` object we defined above):
+If this returns a NULL, then something has gone wrong and you should check how you performed the reconstructions. The AIC for the model can be supplied as an argument in the `MarginRecon.old()` function (using the `pp` object we defined above):
 ```{r, eval=FALSE}
-pp.recon = MarginRecon(phy, sim.dat, f=c(1,1), hidden.states=TRUE, pars=pp$solution, 
+pp.recon = MarginRecon.old(phy, sim.dat, f=c(1,1), hidden.states=TRUE, pars=pp$solution, 
                        AIC=pp$AIC, n.cores=2)
 ```
 I've created two additional `hisse.states` objects that I will use to demonstrate how to plot model-averaged states and rates: one reconstruction is based on the null-two model [turnover.anc=c(1,1,2,2)], and the other assumes four free turnover rates [i.e., turnover.anc=c(1,2,3,4)]; in all cases I assumed equal transition rates and equal extinction fractions. I recognize that there are many ways to generate a list. But here is one way, where I'm assuming that the marginal reconstructions from three models are saved to the directory we are working from:
