@@ -840,6 +840,9 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     index.vector <- 1:52
     rates.mat[1,] <- model.vec[index.vector %% 2 == 1][-27]
     rates.mat[2,] <- model.vec[index.vector %% 2 == 0]
+    if(!is.null(fixed.eps)){
+        rates.mat[2,] <- fixed.eps
+    }
     rownames(rates.mat) <- c("turnover", "extinction.fraction")
     colnames(rates.mat) <- c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)")
     rates.mat <- ParameterTransformMiSSE(rates.mat)
