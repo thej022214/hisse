@@ -119,6 +119,7 @@ AdaptiveConfidenceIntervalSamplingGeoHiSSE <- function(par, lower, upper, desire
     while(length(which((results[,1]-min(results[,1], na.rm=TRUE))<desired.delta))<min.number.points) {
         warning("Did not generate enough points in the region; restarting to create additional points")
         print(paste("Now doing an additional", 2+round(n.points/4), "points to the", dim(results)[1], "ones already done because not enough points in the good enough region were sampled"))
+        scale.int <- scale.int*0.5
         new.results <- AdaptiveConfidenceIntervalSamplingGeoHiSSE(par, lower=lower, upper=upper, desired.delta = desired.delta, n.points=n.points, verbose=verbose, phy=phy, data=data, index.par=index.par, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, scale.int=scale.int, assume.cladogenetic=assume.cladogenetic, min.number.points=0)
         results <- rbind(results, new.results[-1,])
     }
