@@ -257,7 +257,7 @@ TransMatMakerMuHiSSE <- function(hidden.traits=0, make.null=FALSE, include.diago
                 sub.mat21 <- matrix(NA, 4, 4)
                 diag(sub.mat21) <- max.par + 1
                 if(cat.trans.vary == TRUE){
-                    trans.mat <- rbind(cbind(sub.mat1, sub.mat6, sub.mat13, sub.mat18, sub.mat21), cbind(sub.mat2, sub.mat1, sub.mat7, sub.mat14, sub.mat19), cbind(sub.mat10, sub.mat3, sub.mat1, sub.mat8, sub.mat15), cbind(sub.mat16, sub.mat11, sub.mat4, sub.mat1, sub.mat9), cbind(sub.mat20, sub.mat2, sub.mat17, sub.mat5, sub.mat1))
+                    trans.mat <- rbind(cbind(sub.mat1, sub.mat6, sub.mat13, sub.mat18, sub.mat21), cbind(sub.mat2, sub.mat1, sub.mat7, sub.mat14, sub.mat19), cbind(sub.mat10, sub.mat3, sub.mat1, sub.mat8, sub.mat15), cbind(sub.mat16, sub.mat11, sub.mat4, sub.mat1, sub.mat9), cbind(sub.mat20, sub.mat17, sub.mat12, sub.mat5, sub.mat1))
                 }else{
                     trans.mat <- rbind(cbind(sub.mat1, sub.mat2, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat1, sub.mat2, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat1, sub.mat2, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat1, sub.mat2), cbind(sub.mat2, sub.mat2, sub.mat2, sub.mat2, sub.mat1))
                 }
