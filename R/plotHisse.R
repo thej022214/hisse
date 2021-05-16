@@ -12,12 +12,12 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         if( inherits(hisse.results, what="hisse.states") ){
             ## we have to make a list so we can run this generally
             if(is.null(hisse.results$AIC)){
-				if(!is.null(hisse.results$aic)) {
-					hisse.results$AIC <- hisse.results$aic #fix capitalization
-				} else {
-                ## If a user forgot to include the AIC, then we add a random value in for them
-                	hisse.results$AIC = 42
-				}
+                if(!is.null(hisse.results$aic)) {
+                    hisse.results$AIC <- hisse.results$aic #fix capitalization
+                } else {
+                    ## If a user forgot to include the AIC, then we add a random value in for them
+                    hisse.results$AIC = 42
+                }
             }
             tmp.list <- list()
             tmp.list[[1]] <- hisse.results
@@ -26,30 +26,30 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
             ## If x is a list we need to check if all elements have the $AIC to make the model average.
             any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="hisse.states") ) )
             if( any.other.class ) stop("All elements of the list 'x' need to be of class 'hisse.states'.")
-
+            
             any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
-			if(any.missing) {
-				for (hisse.results.index in seq_along(hisse.results)) {
-					if(is.null(hisse.results[[hisse.results.index]]$AIC) & !is.null(hisse.results[[hisse.results.index]]$aic)) {
-						hisse.results[[hisse.results.index]]$AIC <- hisse.results[[hisse.results.index]]$aic
-					}
-				}
-				any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
-			}
+            if(any.missing) {
+                for (hisse.results.index in seq_along(hisse.results)) {
+                    if(is.null(hisse.results[[hisse.results.index]]$AIC) & !is.null(hisse.results[[hisse.results.index]]$aic)) {
+                        hisse.results[[hisse.results.index]]$AIC <- hisse.results[[hisse.results.index]]$aic
+                    }
+                }
+                any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
+            }
             if( any.missing ) stop( "If x is a list, then each reconstruction needs to have $AIC information in order to make the model average." )
-
+            
         }
     } else {
         stop( "x needs to be an object of class 'hisse.states'." )
     }
-
+    
     ## Check the parameters for the functions:
     rate.param <- match.arg(rate.param, c("turnover", "net.div", "speciation", "extinction"
-                                        , "extinction.fraction") )
+    , "extinction.fraction") )
     type <- match.arg(type, c("fan", "phylogram") )
     if( !is.logical( show.tip.label ) ) stop("show.tip.label needs TRUE or FALSE")
     legend <- match.arg(legend, c("none", "traditional", "tips", "internal", "all") )
-
+    
     ## ############################################
     ## Block to get the parameters from the ... list.
     ## Will also check the parameters to see if they are valid.
@@ -143,8 +143,8 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         legend.bg <- "cornsilk3"
     }
     ## ############################################
-
-
+    
+    
     ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
     old.par <- par(no.readonly=T)
     if(is.null(rate.colors)) {
@@ -164,7 +164,7 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         stop("So far we can easily plot just the binary observed state; if you want to plot the hidden states, use a different function")
     }
     tree.to.plot <- hisse.results[[1]]$phy
-    #	rate.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToRate(hisse.object$tip.mat, rate.vector= rate.vector), plot=FALSE, anc.states=ConvertToRate(hisse.object$node.mat, rate.vector= rate.vector), ...)
+    #    rate.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToRate(hisse.object$tip.mat, rate.vector= rate.vector), plot=FALSE, anc.states=ConvertToRate(hisse.object$node.mat, rate.vector= rate.vector), ...)
     rate.lims <- range(c(rates.tips, rates.internal))
     if(!is.null(rate.range)) {
         if(min(rate.range) > min(rate.lims) | max(rate.range) < max(rate.lims)) {
@@ -175,29 +175,29 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
     }
     rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
     rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
-
+    
     rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims)
     #change colors
     rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
     rate.tree$cols[] <- rate.colors
     #rate.tree$cols[] <- adjustcolor(rate.tree$cols[], alpha.f=0.3)
     #state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
-
+    
     state.lims <- range(c(states.tips, states.internal))
     state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
     state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
-
+    
     state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips, plot=FALSE, anc.states=states.internal, lims=state.lims)
     #state.colors <- grey(seq(1,0,length.out=length(state.tree$cols)))
     state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
     state.tree$cols[]<- state.colors
-
+    
     par(fig=c(0,1, 0, 1), new=FALSE)
     plot.contMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
     , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
     , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
     , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
-
+    
     if(legend!="none") {
         par(fig=legend.position, new=TRUE)
         plot(x=c(-0.1,1.1), y=c(-1.5,1.5), xlab="", ylab="", bty="n", type="n", xaxt="n", yaxt="n")
@@ -212,7 +212,7 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
             rates.to.plot <- append(rates.to.plot, rates.internal)
             states.to.plot <- append(states.to.plot, states.internal)
         }
-
+        
         if(legend.kernel.rates=="auto") {
             if(length(unique(rates.to.plot))<=4) {
                 legend.kernel.rates <- "hist"
@@ -227,7 +227,7 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
                 legend.kernel.states <- "rectangular"
             }
         }
-
+        
         rates.density <- GetNormalizedDensityPlot(rates.to.plot, rate.lims, legend.kernel.rates)
         states.density <- GetNormalizedDensityPlot(states.to.plot, state.lims, legend.kernel.states)
         states.density$y <- (-1) * states.density$y #so it gets drawn below the other one
@@ -248,7 +248,7 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         # rates.density$y <- rates.density$y/max(rates.density$y)
         # states.density$y <- (-1) * states.density$y/max(states.density$y)
         # states.density$x <- (states.density$x - state.lims[1]) / (state.lims[2]-state.lims[1]) #so it goes from zero to one
-
+        
         # if(legend=="rect") {
         # rates.density$y <- rep(1, length(rates.density$y))
         # states.density$y <- rep(-1, length(states.density$y))
@@ -258,17 +258,17 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         text(x=0, y=1.2, labels=format(rate.lims[1], digits=2), cex=legend.cex)
         text(x=1, y=1.2, labels=format(rate.lims[2], digits=2), cex=legend.cex)
         text(x=0.5, y=1.2, labels=rate.param, cex=legend.cex)
-        #		lines(rates.density$x, rates.density$y, lwd=0.5, col="gray")
-
+        #        lines(rates.density$x, rates.density$y, lwd=0.5, col="gray")
+        
         segments(x0=states.density$x, y0=rep(0, length(states.density$y)), y1=states.density$y, col=state.colors[1+as.integer(round((length(state.colors)-1)* states.density$x))], lwd=ifelse(legend.kernel.states=="hist",4,1))
         text(x=0, y=-1.2, labels="0", cex=legend.cex)
         text(x=1, y=-1.2, labels="1", cex=legend.cex)
         text(x=0.5, y=-1.2, labels="State", cex=legend.cex)
-        #		lines(states.density$x, states.density$y, lwd=0.5, col="gray")
-        #		lines(rates.density$x, 0*rates.density$y, lwd=0.5, col="gray")
-
+        #        lines(states.density$x, states.density$y, lwd=0.5, col="gray")
+        #        lines(rates.density$x, 0*rates.density$y, lwd=0.5, col="gray")
+        
     }
-
+    
     ## Return par to the previous state.
     par( old.par )
     return(list(rate.tree=rate.tree, state.tree=state.tree))
@@ -281,12 +281,12 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
         if( inherits(hisse.results, what="hisse.geosse.states") ){
             ## we have to make a list so we can run this generally
             if(is.null(hisse.results$AIC)){
-				if(!is.null(hisse.results$aic)) {
-					hisse.results$AIC <- hisse.results$aic #fix capitalization
-				} else {
-                ## If a user forgot to include the AIC, then we add a random value in for them
-                	hisse.results$AIC = 42
-				}
+                if(!is.null(hisse.results$aic)) {
+                    hisse.results$AIC <- hisse.results$aic #fix capitalization
+                } else {
+                    ## If a user forgot to include the AIC, then we add a random value in for them
+                    hisse.results$AIC = 42
+                }
             }
             tmp.list <- list()
             tmp.list[[1]] <- hisse.results
@@ -295,31 +295,31 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
             ## If x is a list we need to check if all elements have the $AIC to make the model average.
             any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="hisse.geosse.states") ) )
             if( any.other.class ) stop("All elements of the list 'x' need to be of class 'hisse.geosse.states'.")
-
+            
             any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
-			if(any.missing) {
-				for (hisse.results.index in seq_along(hisse.results)) {
-					if(is.null(hisse.results[[hisse.results.index]]$AIC) & !is.null(hisse.results[[hisse.results.index]]$aic)) {
-						hisse.results[[hisse.results.index]]$AIC <- hisse.results[[hisse.results.index]]$aic
-					}
-				}
-				any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
-			}
+            if(any.missing) {
+                for (hisse.results.index in seq_along(hisse.results)) {
+                    if(is.null(hisse.results[[hisse.results.index]]$AIC) & !is.null(hisse.results[[hisse.results.index]]$aic)) {
+                        hisse.results[[hisse.results.index]]$AIC <- hisse.results[[hisse.results.index]]$aic
+                    }
+                }
+                any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
+            }
             if( any.missing ) stop( "If x is a list, then each reconstruction needs to have $AIC information in order to make the model average." )
-
+            
         }
     } else {
         stop( "x needs to be an object of class 'hisse.geosse.states'." )
     }
-
+    
     ## Check the values for the parameters:
     rate.param <- match.arg(rate.param, c("turnover", "net.div", "speciation", "extinction"
-                                        , "extinction.fraction") )
+    , "extinction.fraction") )
     type <- match.arg(type, c("fan", "phylogram") )
     if( !is.logical( show.tip.label ) ) stop("show.tip.label needs TRUE or FALSE")
     if( !is.numeric( fsize ) ) stop("fsize needs a numeric value")
     if( !is.logical( legend ) ) stop("legend needs TRUE or FALSE")
-
+    
     ## ############################################
     ## Block to get the parameters from the ... list.
     ## Will also check the parameters to see if they are valid.
@@ -408,10 +408,10 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
         legend.bg <- "cornsilk3"
     }
     ## ############################################
-
+    
     ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
     old.par <- par(no.readonly=T)
-
+    
     ## This sets the coordinates of the figure and facilitate localization.
     par(fig=c(0, 1, 0, 1), new=FALSE)
     if(is.null(rate.colors)) {
@@ -443,12 +443,12 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
     }
     rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
     rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
-
+    
     rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims)
     ## change colors
     rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
     rate.tree$cols[] <- rate.colors
-
+    
     states.tips.tmp <- rowSums(states.tips %*% c(0,1,2))
     names(states.tips.tmp) <- 1:length(states.tips.tmp)
     states.internal.tmp <- rowSums(states.internal %*% c(0,1,2))
@@ -459,7 +459,7 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
     state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims)
     state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
     state.tree$cols[]<- state.colors
-
+    
     ## Make the plot.
     ## This is NOT using the phytools version.
     ## This is a special plotting function for HiSSE.
@@ -467,7 +467,7 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
     , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
     , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
     , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
-
+    
     ## Need to make the legend now:
     ## Supporting only the plot of the rates in this version:
     if( legend ){
@@ -479,7 +479,7 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
                 legend.kernel <- "rectangular"
             }
         }
-
+        
         ## Make the plot:
         par(fig=legend.position, new=TRUE)
         plot(x=c(-0.1, 1.1), y=c(0, 1.5), xlab="", ylab="", bty="n", type="n", xaxt="n", yaxt="n")
@@ -493,7 +493,7 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
         text(x=1, y=1.2, labels=format(rate.lims[2], digits=2), cex=legend.cex)
         text(x=0.5, y=1.2, labels=rate.param, cex=legend.cex)
     }
-
+    
     ## Return par to the previous state.
     par( old.par )
     ## The tiplables for the individual trees will be strange. But this seems fine.
@@ -506,12 +506,12 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
         if( inherits(hisse.results, what="muhisse.states") ){
             ## we have to make a list so we can run this generally
             if(is.null(hisse.results$AIC)){
-				if(!is.null(hisse.results$aic)) {
-					hisse.results$AIC <- hisse.results$aic #fix capitalization
-				} else {
-                ## If a user forgot to include the AIC, then we add a random value in for them
-                	hisse.results$AIC = 42
-				}
+                if(!is.null(hisse.results$aic)) {
+                    hisse.results$AIC <- hisse.results$aic #fix capitalization
+                } else {
+                    ## If a user forgot to include the AIC, then we add a random value in for them
+                    hisse.results$AIC = 42
+                }
             }
             tmp.list <- list()
             tmp.list[[1]] <- hisse.results
@@ -520,31 +520,31 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
             ## If x is a list we need to check if all elements have the $AIC to make the model average.
             any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="muhisse.states") ) )
             if( any.other.class ) stop("All elements of the list 'x' need to be of class 'muhisse.states'.")
- 
+            
             any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
-			if(any.missing) {
-				for (hisse.results.index in seq_along(hisse.results)) {
-					if(is.null(hisse.results[[hisse.results.index]]$AIC) & !is.null(hisse.results[[hisse.results.index]]$aic)) {
-						hisse.results[[hisse.results.index]]$AIC <- hisse.results[[hisse.results.index]]$aic
-					}
-				}
-				any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
-			}
+            if(any.missing) {
+                for (hisse.results.index in seq_along(hisse.results)) {
+                    if(is.null(hisse.results[[hisse.results.index]]$AIC) & !is.null(hisse.results[[hisse.results.index]]$aic)) {
+                        hisse.results[[hisse.results.index]]$AIC <- hisse.results[[hisse.results.index]]$aic
+                    }
+                }
+                any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
+            }
             if( any.missing ) stop( "If x is a list, then each reconstruction needs to have $AIC information in order to make the model average." )
-
+            
         }
     } else {
         stop( "x needs to be an object of class 'muhisse.states'." )
     }
-
+    
     ## Check the values for the parameters:
     rate.param <- match.arg(rate.param, c("turnover", "net.div", "speciation", "extinction"
-                                        , "extinction.fraction") )
+    , "extinction.fraction") )
     type <- match.arg(type, c("fan", "phylogram") )
     if( !is.logical( show.tip.label ) ) stop("show.tip.label needs TRUE or FALSE")
     if( !is.numeric( fsize ) ) stop("fsize needs a numeric value")
     if( !is.logical( legend ) ) stop("legend needs TRUE or FALSE")
-
+    
     ## ############################################
     ## Block to get the parameters from the ... list.
     ## Will also check the parameters to see if they are valid.
@@ -633,10 +633,10 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
         legend.bg <- "cornsilk3"
     }
     ## ############################################
-
+    
     ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
     old.par <- par(no.readonly=T)
-
+    
     ## This sets the coordinates of the figure and facilitate localization.
     par(fig=c(0, 1, 0, 1), new=FALSE)
     if(is.null(rate.colors)) {
@@ -668,12 +668,12 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
     }
     rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
     rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
-
+    
     rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims)
     ## change colors
     rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
     rate.tree$cols[] <- rate.colors
-
+    
     states.tips.tmp <- rowSums(states.tips %*% c(1,2,3,4))
     names(states.tips.tmp) <- 1:length(states.tips.tmp)
     states.internal.tmp <- rowSums(states.internal %*% c(1,2,3,4))
@@ -684,7 +684,7 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
     state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips.tmp, plot=FALSE, anc.states=states.internal.tmp, lims=state.lims)
     state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
     state.tree$cols[]<- state.colors
-
+    
     ## Make the plot.
     ## This is NOT using the phytools version.
     ## This is a special plotting function for HiSSE.
@@ -692,7 +692,7 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
     , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
     , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
     , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
-
+    
     ## Need to make the legend now:
     ## Supporting only the plot of the rates in this version:
     if( legend ){
@@ -704,7 +704,7 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
                 legend.kernel <- "rectangular"
             }
         }
-
+        
         ## Make the plot:
         par(fig=legend.position, new=TRUE)
         plot(x=c(-0.1, 1.1), y=c(0, 1.5), xlab="", ylab="", bty="n", type="n", xaxt="n", yaxt="n")
@@ -718,7 +718,7 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
         text(x=1, y=1.2, labels=format(rate.lims[2], digits=2), cex=legend.cex)
         text(x=0.5, y=1.2, labels=rate.param, cex=legend.cex)
     }
-
+    
     ## Return par to the previous state.
     par( old.par )
     ## The tiplables for the individual trees will be strange. But this seems fine.
@@ -733,12 +733,12 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         if( inherits(hisse.results, what="misse.states") ){
             ## we have to make a list so we can run this generally
             if(is.null(hisse.results$AIC)){
-				if(!is.null(hisse.results$aic)) {
-					hisse.results$AIC <- hisse.results$aic #fix capitalization
-				} else {
-                ## If a user forgot to include the AIC, then we add a random value in for them
-                	hisse.results$AIC = 42
-				}
+                if(!is.null(hisse.results$aic)) {
+                    hisse.results$AIC <- hisse.results$aic #fix capitalization
+                } else {
+                    ## If a user forgot to include the AIC, then we add a random value in for them
+                    hisse.results$AIC = 42
+                }
             }
             tmp.list <- list()
             tmp.list[[1]] <- hisse.results
@@ -747,30 +747,30 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
             ## If x is a list we need to check if all elements have the $AIC to make the model average.
             any.other.class <- any( sapply(hisse.results, function(x) !inherits(x, what="misse.states") ) )
             if( any.other.class ) stop("All elements of the list 'x' need to be of class 'misse.states'.")
-
+            
             any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
-			if(any.missing) {
-				for (hisse.results.index in seq_along(hisse.results)) {
-					if(is.null(hisse.results[[hisse.results.index]]$AIC) & !is.null(hisse.results[[hisse.results.index]]$aic)) {
-						hisse.results[[hisse.results.index]]$AIC <- hisse.results[[hisse.results.index]]$aic
-					}
-				}
-				any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
-			}
+            if(any.missing) {
+                for (hisse.results.index in seq_along(hisse.results)) {
+                    if(is.null(hisse.results[[hisse.results.index]]$AIC) & !is.null(hisse.results[[hisse.results.index]]$aic)) {
+                        hisse.results[[hisse.results.index]]$AIC <- hisse.results[[hisse.results.index]]$aic
+                    }
+                }
+                any.missing <- any( sapply(hisse.results, function(x) is.null(x$AIC) ) )
+            }
             if( any.missing ) stop( "If x is a list, then each reconstruction needs to have $AIC information in order to make the model average." )
-
+            
         }
     } else {
         stop( "x needs to be an object of class 'misse.states'." )
     }
-
+    
     ## Check the parameters for the functions:
     rate.param <- match.arg(rate.param, c("turnover", "net.div", "speciation", "extinction"
     , "extinction.fraction") )
     type <- match.arg(type, c("fan", "phylogram") )
     if( !is.logical( show.tip.label ) ) stop("show.tip.label needs TRUE or FALSE")
     legend <- match.arg(legend, c("none", "traditional", "tips", "internal", "all") )
-
+    
     ## ############################################
     ## Block to get the parameters from the ... list.
     ## Will also check the parameters to see if they are valid.
@@ -864,8 +864,8 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         legend.bg <- "cornsilk3"
     }
     ## ############################################
-
-
+    
+    
     ## Going to change par here. So need to save current par and return to previous at the end. Good practice!
     old.par <- par(no.readonly=T)
     if(is.null(rate.colors)) {
@@ -883,7 +883,7 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         states.internal <- rep(0, dim(hisse.results[[1]][["node.mat"]])[1])
     }
     tree.to.plot <- hisse.results[[1]]$phy
-    #	rate.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToRate(hisse.object$tip.mat, rate.vector= rate.vector), plot=FALSE, anc.states=ConvertToRate(hisse.object$node.mat, rate.vector= rate.vector), ...)
+    #    rate.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToRate(hisse.object$tip.mat, rate.vector= rate.vector), plot=FALSE, anc.states=ConvertToRate(hisse.object$node.mat, rate.vector= rate.vector), ...)
     rate.lims <- range(c(rates.tips, rates.internal))
     if(!is.null(rate.range)) {
         if(min(rate.range) > min(rate.lims) | max(rate.range) < max(rate.lims)) {
@@ -894,29 +894,29 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
     }
     rate.lims[1] <- rate.lims[1] - lims.percentage.correction*abs(rate.lims[1])
     rate.lims[2] <- rate.lims[2] + lims.percentage.correction*abs(rate.lims[2])
-
+    
     rate.tree <- contMapGivenAnc(tree= tree.to.plot, x=rates.tips, plot=FALSE, anc.states=rates.internal, lims=rate.lims)
     #change colors
     rate.colors <- colorRampPalette(rate.colors, space="Lab")(length(rate.tree$cols))
     rate.tree$cols[] <- rate.colors
     #rate.tree$cols[] <- adjustcolor(rate.tree$cols[], alpha.f=0.3)
     #state.tree <- contMapGivenAnc(tree=hisse.object$phy, x=ConvertToBinaryState(hisse.object$tip.mat, state.0.indices=state.0.indices), plot=FALSE, anc.states=ConvertToBinaryState(hisse.object$node.mat, state.0.indices=state.0.indices))
-
+    
     #state.lims <- range(c(states.tips, states.internal))
     #state.lims[1] <- state.lims[1] - lims.percentage.correction*abs(state.lims[1])
     #state.lims[2] <- state.lims[2] + lims.percentage.correction*abs(state.lims[2])
-
+    
     #state.tree <- contMapGivenAnc(tree=tree.to.plot, x=states.tips, plot=FALSE, anc.states=states.internal, lims=state.lims)
     #state.colors <- grey(seq(1,0,length.out=length(state.tree$cols)))
     #state.colors <- colorRampPalette(state.colors, space="Lab")(length(rate.tree$cols))
     #state.tree$cols[]<- state.colors
-
+    
     par(fig=c(0,1, 0, 1), new=FALSE)
     plot.contMapHisse(A=rate.tree, B=rate.tree, lwd.factor=width.factor, fsize=fsize,
     , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
     , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
     , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
-
+    
     if(legend!="none") {
         par(fig=legend.position, new=TRUE)
         plot(x=c(-0.1,1.1), y=c(-1.5,1.5), xlab="", ylab="", bty="n", type="n", xaxt="n", yaxt="n")
@@ -931,7 +931,7 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
             rates.to.plot <- append(rates.to.plot, rates.internal)
             states.to.plot <- append(states.to.plot, states.internal)
         }
-
+        
         if(legend.kernel.rates=="auto") {
             if(length(unique(rates.to.plot))<=4) {
                 legend.kernel.rates <- "hist"
@@ -946,7 +946,7 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
                 legend.kernel.states <- "rectangular"
             }
         }
-
+        
         rates.density <- GetNormalizedDensityPlot(rates.to.plot, rate.lims, legend.kernel.rates)
         #states.density <- GetNormalizedDensityPlot(states.to.plot, state.lims, legend.kernel.states)
         #states.density$y <- (-1) * states.density$y #so it gets drawn below the other one
@@ -967,7 +967,7 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         # rates.density$y <- rates.density$y/max(rates.density$y)
         # states.density$y <- (-1) * states.density$y/max(states.density$y)
         # states.density$x <- (states.density$x - state.lims[1]) / (state.lims[2]-state.lims[1]) #so it goes from zero to one
-
+        
         # if(legend=="rect") {
         # rates.density$y <- rep(1, length(rates.density$y))
         # states.density$y <- rep(-1, length(states.density$y))
@@ -977,17 +977,17 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
         text(x=0, y=1.2, labels=format(rate.lims[1], digits=2), cex=legend.cex)
         text(x=1, y=1.2, labels=format(rate.lims[2], digits=2), cex=legend.cex)
         text(x=0.5, y=1.2, labels=rate.param, cex=legend.cex)
-        #		lines(rates.density$x, rates.density$y, lwd=0.5, col="gray")
-
+        #        lines(rates.density$x, rates.density$y, lwd=0.5, col="gray")
+        
         #segments(x0=states.density$x, y0=rep(0, length(states.density$y)), y1=states.density$y, col=state.colors[1+as.integer(round((length(state.colors)-1)* states.density$x))], lwd=ifelse(legend.kernel.states=="hist",4,1))
         #text(x=0, y=-1.2, labels="0", cex=legend.cex)
         #text(x=1, y=-1.2, labels="1", cex=legend.cex)
         #text(x=0.5, y=-1.2, labels="State", cex=legend.cex)
-        #		lines(states.density$x, states.density$y, lwd=0.5, col="gray")
-        #		lines(rates.density$x, 0*rates.density$y, lwd=0.5, col="gray")
-
+        #        lines(states.density$x, states.density$y, lwd=0.5, col="gray")
+        #        lines(rates.density$x, 0*rates.density$y, lwd=0.5, col="gray")
+        
     }
-
+    
     ## Return par to the previous state.
     par( old.par )
     return(list(rate.tree=rate.tree))
@@ -996,7 +996,7 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
 
 GetNormalizedDensityPlot <- function(x, limits, kernel, min.breaks=100) {
     x.density <- c()
-
+    
     if (kernel=="hist") {
         x.density<-hist(x, breaks=seq(from= limits[1], to= limits[2], length.out = max(min.breaks,nclass.Sturges(x)+2)), plot=FALSE)
         x.density$x <- x.density$mid
@@ -1155,7 +1155,7 @@ ConvertToRate <- function(x, rate.vector) {
     x.trimmed <- x.trimmed / rowSums(x.trimmed) #normalize to 1 (which it should be already)
     result.vector <- rep(0, dim(x.trimmed)[1])
     for (i in sequence(dim(x.trimmed)[2])) {
-        result.vector <- result.vector + rate.vector[i] * x.trimmed[,i]	#get weighted mean
+        result.vector <- result.vector + rate.vector[i] * x.trimmed[,i]    #get weighted mean
     }
     names(result.vector) <- x[,1]
     return(result.vector)
@@ -1177,7 +1177,7 @@ ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weig
 CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix){
     ## Check if every column of the matrices in the list x is within the bounds set to the each of the parameters.
     ## Drop all the models that are not. Models are the columns in each of the matrices in the list x.
-
+    
     check.keep.mod <- matrix(nrow = 5, ncol = n.models)
     for( i in 1:5 ){
         lim.range <- bound.par.matrix[i, ]
@@ -1224,6 +1224,7 @@ ConvertManyToBinaryState <- function(hisse.results, which.element, AIC.weights=N
     return(final.results)
 }
 
+
 ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights=NULL) {
     if( is.null(AIC.weights) ){
         AIC.weights <- GetAICWeights(hisse.results)
@@ -1237,6 +1238,7 @@ ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights=NU
     colnames(final.results) <- unique(gsub("[^0-9]", "", colnames(hisse.results[[1]][[which.element]][,-1])))
     return(final.results)
 }
+
 
 GetAICWeights <- function(hisse.results, criterion="AIC") {
     if(class(hisse.results)=="misse.states") {
@@ -1265,3 +1267,4 @@ GetRateRange <- function(x, rate.param) {
 GetRelevantRowEntries <- function(x, rate.param) {
     return(x[which(rownames(x)==rate.param),])
 }
+

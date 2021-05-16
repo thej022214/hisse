@@ -13,7 +13,7 @@
 #include <R_ext/Rdynload.h>
 #include <Rmath.h>
 #include <stdio.h>
-#define NUMELEMENTS 20
+#define NUMELEMENTS 21
 
 static double params_musse[NUMELEMENTS];
 
@@ -56,26 +56,27 @@ void musse_derivs(int *neq, double *t, double *y, double *ydot, double *yout, in
     q10A_11A = params_musse[16],
     q11A_00A = params_musse[17],
     q11A_01A = params_musse[18],
-    q11A_10A = params_musse[19];
-
+    q11A_10A = params_musse[19],
+    psi = params_musse[20];
+    
     /* The E's */
-    ydot[0] = mu00A - (lambda00A + (q00A_01A + q00A_10A + q00A_11A) + mu00A) * E00A + lambda00A*E00A*E00A + (q00A_01A*E01A + q00A_10A*E10A + q00A_11A*E11A);
-
-    ydot[1] = mu01A - (lambda01A + (q01A_00A + q01A_10A + q01A_11A) + mu01A) * E01A + lambda01A*E01A*E01A + (q01A_00A*E00A + q01A_10A*E10A + q01A_11A*E11A);
-
-    ydot[2] = mu10A - (lambda10A + (q10A_00A + q10A_01A + q10A_11A) + mu10A) * E10A + lambda10A*E10A*E10A +     (q10A_00A*E00A + q10A_01A*E01A + q10A_11A*E11A);
-
-    ydot[3] = mu11A - (lambda11A + (q11A_00A + q11A_01A + q11A_10A) + mu11A) * E11A + lambda11A*E11A*E11A + (q11A_00A*E00A + q11A_01A*E01A + q11A_10A*E10A);
-
-
+    ydot[0] = mu00A - (lambda00A + psi + (q00A_01A + q00A_10A + q00A_11A) + mu00A) * E00A + lambda00A*E00A*E00A + (q00A_01A*E01A + q00A_10A*E10A + q00A_11A*E11A);
+    
+    ydot[1] = mu01A - (lambda01A + psi + (q01A_00A + q01A_10A + q01A_11A) + mu01A) * E01A + lambda01A*E01A*E01A + (q01A_00A*E00A + q01A_10A*E10A + q01A_11A*E11A);
+    
+    ydot[2] = mu10A - (lambda10A + psi + (q10A_00A + q10A_01A + q10A_11A) + mu10A) * E10A + lambda10A*E10A*E10A + (q10A_00A*E00A + q10A_01A*E01A + q10A_11A*E11A);
+    
+    ydot[3] = mu11A - (lambda11A + psi + (q11A_00A + q11A_01A + q11A_10A) + mu11A) * E11A + lambda11A*E11A*E11A + (q11A_00A*E00A + q11A_01A*E01A + q11A_10A*E10A);
+    
+    
     /* The D's */
-    ydot[4] =  - (lambda00A + (q00A_01A + q00A_10A + q00A_11A) + mu00A) * D00A + 2*lambda00A*E00A*D00A + (q00A_01A*D01A + q00A_10A*D10A + q00A_11A*D11A);
-
-    ydot[5] =  - (lambda01A + (q01A_00A + q01A_10A + q01A_11A) + mu01A) * D01A + 2*lambda01A*E01A*D01A + (q01A_00A*D00A + q01A_10A*D10A + q01A_11A*D11A);
-
-    ydot[6] =  - (lambda10A + (q10A_00A + q10A_01A + q10A_11A) + mu10A) * D10A + 2*lambda10A*E10A*D10A + (q10A_00A*D00A + q10A_01A*D01A + q10A_11A*D11A);
-
-    ydot[7] =  - (lambda11A + (q11A_00A + q11A_01A + q11A_10A) + mu11A) * D11A + 2*lambda11A*E11A*D11A + (q11A_00A*D00A + q11A_01A*D01A + q11A_10A*D10A);
+    ydot[4] =  - (lambda00A + psi + (q00A_01A + q00A_10A + q00A_11A) + mu00A) * D00A + 2*lambda00A*E00A*D00A + (q00A_01A*D01A + q00A_10A*D10A + q00A_11A*D11A);
+    
+    ydot[5] =  - (lambda01A + psi + (q01A_00A + q01A_10A + q01A_11A) + mu01A) * D01A + 2*lambda01A*E01A*D01A + (q01A_00A*D00A + q01A_10A*D10A + q01A_11A*D11A);
+    
+    ydot[6] =  - (lambda10A + psi + (q10A_00A + q10A_01A + q10A_11A) + mu10A) * D10A + 2*lambda10A*E10A*D10A + (q10A_00A*D00A + q10A_01A*D01A + q10A_11A*D11A);
+    
+    ydot[7] =  - (lambda11A + psi + (q11A_00A + q11A_01A + q11A_10A) + mu11A) * D11A + 2*lambda11A*E11A*D11A + (q11A_00A*D00A + q11A_01A*D01A + q11A_10A*D10A);
 }
 
 

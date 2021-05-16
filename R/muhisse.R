@@ -6,7 +6,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -39,7 +39,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     if(sann == FALSE & is.null(starting.vals)){
         warning("You have chosen to rely on the internal starting points that generally work but does not guarantee finding the MLE.")
     }
-
+    
     if(!root.type == "madfitz" & !root.type == "herr_als"){
         stop("Check that you specified a proper root.type option. Options are 'madfitz' or 'herr_als'. See help for more details.", call.=FALSE)
     }
@@ -272,25 +272,58 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         pars[1:length(pars.tmp)] <- pars.tmp
     }
     
+    if(includes.fossils == TRUE){
+        pars <- c(pars, max(pars.tmp)+1)
+    }else{
+        pars <- c(pars, 0)
+    }
+    
     np <- max(pars)
     pars[pars==0] <- np+1
     
     cat("Initializing...", "\n")
     
-    data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
-    data.new <- data.new[phy$tip.label,]
+    # Some new prerequisites #
+    if(includes.fossils == TRUE){
+        if(!is.null(k.samples)){
+            psi.type <- "m+k"
+            split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
+            #in simulation ordering of the k samples mattered:
+            k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
+            phy <- AddKNodes(phy, k.samples)
+            fix.type <- GetKSampleMRCA(phy, k.samples)
+            data <- AddKData(data, k.samples, muhisse=TRUE)
+            no.k.samples <- length(k.samples[,1])
+        }else{
+            psi.type <- "m_only"
+            fix.type <- NULL
+            split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
+            no.k.samples <- 0
+        }
+        gen <- FindGenerations(phy)
+        data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
+        data.new <- data.new[phy$tip.label,]
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
+        #These are all inputs for generating starting values:
+        fossil.taxa <- which(dat.tab$branch.type == 1)
+        fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
+        n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
+    }else{
+        gen <- FindGenerations(phy)
+        data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
+        data.new <- data.new[phy$tip.label,]
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
+        fossil.taxa <- NULL
+        fix.type <- NULL
+        psi.type <- NULL
+    }
+    nb.tip <- Ntip(phy)
+    nb.node <- phy$Nnode
+    ##########################
     
     #This is used to scale starting values to account for sampling:
     if(length(f) == 4){
         freqs <- table(apply(data.new, 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "01" = 2, "10" = 3, "11" = 4, "02"=1, "20"=3, "21"=2, "12"=4, "22"=4)))
-        
-        ## if(length(freqs == 4)){
-        ##     freqs[which(!c(1:4) %in% names(freqs))] <- 0
-        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
-        ## }else{
-        ##     samp.freq.tree <- Ntip(phy) / sum(freqs / f)
-        ## }
-        
         ## Fixing the structure of the freqs vector.
         freqs.vec <- rep(0, times = 4)
         freqs.vec[as.numeric(names(freqs))] <- as.numeric( freqs )
@@ -305,9 +338,18 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     }
     if(is.null(restart.obj)){
         if(sum(eps)==0){
-            init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=TRUE)
+            if(includes.fossils == TRUE){
+                stop("You input a tree that contains fossils but you are assuming no extinction. Check your function call.")
+            }else{
+                init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=TRUE)
+            }
         }else{
-            init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=FALSE)
+            if(includes.fossils == TRUE){
+                init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=4, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+                psi.start <- init.pars[length(init.pars)]
+            }else{
+                init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=FALSE)
+            }
             if(any(init.pars[5:8] == 0)){
                 init.pars[5:8] = 1e-6
             }
@@ -335,14 +377,27 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
             upper.full <- rep(21,length(def.set.pars))
         }
         
-        np.sequence <- 1:np
-        ip <- numeric(np)
-        upper <- numeric(np)
-        for(i in np.sequence){
-            ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
-            upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
+        if(includes.fossils == TRUE){
+            np.sequence <- 1:(np-1)
+            ip <- numeric(np-1)
+            upper <- numeric(np-1)
+            for(i in np.sequence){
+                ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
+                upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
+            }
+            ip <- c(ip, log(psi.start))
+            upper <- c(upper, log(trans.upper))
+            lower <- rep(-20, length(ip))
+        }else{
+            np.sequence <- 1:np
+            ip <- numeric(np)
+            upper <- numeric(np)
+            for(i in np.sequence){
+                ip[i] <- def.set.pars[which(pars == np.sequence[i])[1]]
+                upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
+            }
+            lower <- rep(-20, length(ip))
         }
-        lower <- rep(-20, length(ip))
     }else{
         upper <- restart.obj$upper.bounds
         lower <- restart.obj$lower.bounds
@@ -353,46 +408,38 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }
     }
     
-    # Some new prerequisites #
-    gen <- FindGenerations(phy)
-    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
-    nb.tip <- Ntip(phy)
-    nb.node <- phy$Nnode
-    ##########################
-    
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = nloptr(x0=ip, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeMuHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+            out = subplex(ip, fn=DevOptimizeMuHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann = GenSA(ip, fn=DevOptimizeMuHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
-        #out.sann <- stogo(x0=ip, fn=DevOptimizeMuHiSSE, gr=NULL, upper=upper, lower=lower, pars=pars, phy=phy, data=data.new, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out.sann = GenSA(ip, fn=DevOptimizeMuHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps)
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         
         loglik = -out$objective
     }
     
-    names(solution) <- c("turnover00A","turnover01A","turnover10A","turnover11A","eps00A","eps01A","eps10A","eps11A","q00A_01A","q00A_10A","q00A_11A","q01A_00A","q01A_10A","q01A_11A","q10A_00A","q10A_01A","q10A_11A","q11A_00A","q11A_01A","q11A_10A","q00A_00B","q00A_00C","q00A_00D","q00A_00E","q00A_00F","q00A_00G","q00A_00H","q01A_01B","q01A_01C","q01A_01D","q01A_01E","q01A_01F","q01A_01G","q01A_01H","q10A_10B","q10A_10C","q10A_10D","q10A_10E","q10A_10F","q10A_10G","q10A_10H","q11A_11B","q11A_11C","q11A_11D","q11A_11E","q11A_11F","q11A_11G","q11A_11H","turnover00B","turnover01B","turnover10B","turnover11B","eps00B","eps01B","eps10B","eps11B","q00B_01B","q00B_10B","q00B_11B","q01B_00B","q01B_10B","q01B_11B","q10B_00B","q10B_01B","q10B_11B","q11B_00B","q11B_01B","q11B_10B","q00B_00A","q00B_00C","q00B_00D","q00B_00E","q00B_00F","q00B_00G","q00B_00H","q01B_01A","q01B_01C","q01B_01D","q01B_01E","q01B_01F","q01B_01G","q01B_01H","q10B_10A","q10B_10C","q10B_10D","q10B_10E","q10B_10F","q10B_10G","q10B_10H","q11B_11A","q11B_11C","q11B_11D","q11B_11E","q11B_11F","q11B_11G","q11B_11H","turnover00C","turnover01C","turnover10C","turnover11C","eps00C","eps01C","eps10C","eps11C","q00C_01C","q00C_10C","q00C_11C","q01C_00C","q01C_10C","q01C_11C","q10C_00C","q10C_01C","q10C_11C","q11C_00C","q11C_01C","q11C_10C","q00C_00A","q00C_00B","q00C_00D","q00C_00E","q00C_00F","q00C_00G","q00C_00H","q01C_01A","q01C_01B","q01C_01D","q01C_01E","q01C_01F","q01C_01G","q01C_01H","q10C_10A","q10C_10B","q10C_10D","q10C_10E","q10C_10F","q10C_10G","q10C_10H","q11C_11A","q11C_11B","q11C_11D","q11C_11E","q11C_11F","q11C_11G","q11C_11H","turnover00D","turnover01D","turnover10D","turnover11D","eps00D","eps01D","eps10D","eps11D","q00D_01D","q00D_10D","q00D_11D","q01D_00D","q01D_10D","q01D_11D","q10D_00D","q10D_01D","q10D_11D","q11D_00D","q11D_01D","q11D_10D","q00D_00A","q00D_00B","q00D_00C","q00D_00E","q00D_00F","q00D_00G","q00D_00H","q01D_01A","q01D_01B","q01D_01C","q01D_01E","q01D_01F","q01D_01G","q01D_01H","q10D_10A","q10D_10B","q10D_10C","q10D_10E","q10D_10F","q10D_10G","q10D_10H","q11D_11A","q11D_11B","q11D_11C","q11D_11E","q11D_11F","q11D_11G","q11D_11H","turnover00E","turnover01E","turnover10E","turnover11E","eps00E","eps01E","eps10E","eps11E","q00E_01E","q00E_10E","q00E_11E","q01E_00E","q01E_10E","q01E_11E","q10E_00E","q10E_01E","q10E_11E","q11E_00E","q11E_01E","q11E_10E","q00E_00A","q00E_00B","q00E_00C","q00E_00D","q00E_00F","q00E_00G","q00E_00H","q01E_01A","q01E_01B","q01E_01C","q01E_01D","q01E_01F","q01E_01G","q01E_01H","q10E_10A","q10E_10B","q10E_10C","q10E_10D","q10E_10F","q10E_10G","q10E_10H","q11E_11A","q11E_11B","q11E_11C","q11E_11D","q11E_11F","q11E_11G","q11E_11H","turnover00F","turnover01F","turnover10F","turnover11F","eps00F","eps01F","eps10F","eps11F","q00F_01F","q00F_10F","q00F_11F","q01F_00F","q01F_10F","q01F_11F","q10F_00F","q10F_01F","q10F_11F","q11F_00F","q11F_01F","q11F_10F","q00F_00A","q00F_00B","q00F_00C","q00F_00D","q00F_00E","q00F_00G","q00F_00H","q01F_01A","q01F_01B","q01F_01C","q01F_01D","q01F_01E","q01F_01G","q01F_01H","q10F_10A","q10F_10B","q10F_10C","q10F_10D","q10F_10E","q10F_10G","q10F_10H","q11F_11A","q11F_11B","q11F_11C","q11F_11D","q11F_11E","q11F_11G","q11F_11H","turnover00G","turnover01G","turnover10G","turnover11G","eps00G","eps01G","eps10G","eps11G","q00G_01G","q00G_10G","q00G_11G","q01G_00G","q01G_10G","q01G_11G","q10G_00G","q10G_01G","q10G_11G","q11G_00G","q11G_01G","q11G_10G","q00G_00A","q00G_00B","q00G_00C","q00G_00D","q00G_00E","q00G_00F","q00G_00H","q01G_01A","q01G_01B","q01G_01C","q01G_01D","q01G_01E","q01G_01F","q01G_01H","q10G_10A","q10G_10B","q10G_10C","q10G_10D","q10G_10E","q10G_10F","q10G_10H","q11G_11A","q11G_11B","q11G_11C","q11G_11D","q11G_11E","q11G_11F","q11G_11H","turnover00H","turnover01H","turnover10H","turnover11H","eps00H","eps01H","eps10H","eps11H","q00H_01H","q00H_10H","q00H_11H","q01H_00H","q01H_10H","q01H_11H","q10H_00H","q10H_01H","q10H_11H","q11H_00H","q11H_01H","q11H_10H","q00H_00A","q00H_00B","q00H_00C","q00H_00D","q00H_00E","q00H_00F","q00H_00G","q01H_01A","q01H_01B","q01H_01C","q01H_01D","q01H_01E","q01H_01F","q01H_01G","q10H_10A","q10H_10B","q10H_10C","q10H_10D","q10H_10E","q10H_10F","q10H_10G","q11H_11A","q11H_11B","q11H_11C","q11H_11D","q11H_11E","q11H_11F","q11H_11G")
+    names(solution) <- c("turnover00A","turnover01A","turnover10A","turnover11A","eps00A","eps01A","eps10A","eps11A","q00A_01A","q00A_10A","q00A_11A","q01A_00A","q01A_10A","q01A_11A","q10A_00A","q10A_01A","q10A_11A","q11A_00A","q11A_01A","q11A_10A","q00A_00B","q00A_00C","q00A_00D","q00A_00E","q00A_00F","q00A_00G","q00A_00H","q01A_01B","q01A_01C","q01A_01D","q01A_01E","q01A_01F","q01A_01G","q01A_01H","q10A_10B","q10A_10C","q10A_10D","q10A_10E","q10A_10F","q10A_10G","q10A_10H","q11A_11B","q11A_11C","q11A_11D","q11A_11E","q11A_11F","q11A_11G","q11A_11H","turnover00B","turnover01B","turnover10B","turnover11B","eps00B","eps01B","eps10B","eps11B","q00B_01B","q00B_10B","q00B_11B","q01B_00B","q01B_10B","q01B_11B","q10B_00B","q10B_01B","q10B_11B","q11B_00B","q11B_01B","q11B_10B","q00B_00A","q00B_00C","q00B_00D","q00B_00E","q00B_00F","q00B_00G","q00B_00H","q01B_01A","q01B_01C","q01B_01D","q01B_01E","q01B_01F","q01B_01G","q01B_01H","q10B_10A","q10B_10C","q10B_10D","q10B_10E","q10B_10F","q10B_10G","q10B_10H","q11B_11A","q11B_11C","q11B_11D","q11B_11E","q11B_11F","q11B_11G","q11B_11H","turnover00C","turnover01C","turnover10C","turnover11C","eps00C","eps01C","eps10C","eps11C","q00C_01C","q00C_10C","q00C_11C","q01C_00C","q01C_10C","q01C_11C","q10C_00C","q10C_01C","q10C_11C","q11C_00C","q11C_01C","q11C_10C","q00C_00A","q00C_00B","q00C_00D","q00C_00E","q00C_00F","q00C_00G","q00C_00H","q01C_01A","q01C_01B","q01C_01D","q01C_01E","q01C_01F","q01C_01G","q01C_01H","q10C_10A","q10C_10B","q10C_10D","q10C_10E","q10C_10F","q10C_10G","q10C_10H","q11C_11A","q11C_11B","q11C_11D","q11C_11E","q11C_11F","q11C_11G","q11C_11H","turnover00D","turnover01D","turnover10D","turnover11D","eps00D","eps01D","eps10D","eps11D","q00D_01D","q00D_10D","q00D_11D","q01D_00D","q01D_10D","q01D_11D","q10D_00D","q10D_01D","q10D_11D","q11D_00D","q11D_01D","q11D_10D","q00D_00A","q00D_00B","q00D_00C","q00D_00E","q00D_00F","q00D_00G","q00D_00H","q01D_01A","q01D_01B","q01D_01C","q01D_01E","q01D_01F","q01D_01G","q01D_01H","q10D_10A","q10D_10B","q10D_10C","q10D_10E","q10D_10F","q10D_10G","q10D_10H","q11D_11A","q11D_11B","q11D_11C","q11D_11E","q11D_11F","q11D_11G","q11D_11H","turnover00E","turnover01E","turnover10E","turnover11E","eps00E","eps01E","eps10E","eps11E","q00E_01E","q00E_10E","q00E_11E","q01E_00E","q01E_10E","q01E_11E","q10E_00E","q10E_01E","q10E_11E","q11E_00E","q11E_01E","q11E_10E","q00E_00A","q00E_00B","q00E_00C","q00E_00D","q00E_00F","q00E_00G","q00E_00H","q01E_01A","q01E_01B","q01E_01C","q01E_01D","q01E_01F","q01E_01G","q01E_01H","q10E_10A","q10E_10B","q10E_10C","q10E_10D","q10E_10F","q10E_10G","q10E_10H","q11E_11A","q11E_11B","q11E_11C","q11E_11D","q11E_11F","q11E_11G","q11E_11H","turnover00F","turnover01F","turnover10F","turnover11F","eps00F","eps01F","eps10F","eps11F","q00F_01F","q00F_10F","q00F_11F","q01F_00F","q01F_10F","q01F_11F","q10F_00F","q10F_01F","q10F_11F","q11F_00F","q11F_01F","q11F_10F","q00F_00A","q00F_00B","q00F_00C","q00F_00D","q00F_00E","q00F_00G","q00F_00H","q01F_01A","q01F_01B","q01F_01C","q01F_01D","q01F_01E","q01F_01G","q01F_01H","q10F_10A","q10F_10B","q10F_10C","q10F_10D","q10F_10E","q10F_10G","q10F_10H","q11F_11A","q11F_11B","q11F_11C","q11F_11D","q11F_11E","q11F_11G","q11F_11H","turnover00G","turnover01G","turnover10G","turnover11G","eps00G","eps01G","eps10G","eps11G","q00G_01G","q00G_10G","q00G_11G","q01G_00G","q01G_10G","q01G_11G","q10G_00G","q10G_01G","q10G_11G","q11G_00G","q11G_01G","q11G_10G","q00G_00A","q00G_00B","q00G_00C","q00G_00D","q00G_00E","q00G_00F","q00G_00H","q01G_01A","q01G_01B","q01G_01C","q01G_01D","q01G_01E","q01G_01F","q01G_01H","q10G_10A","q10G_10B","q10G_10C","q10G_10D","q10G_10E","q10G_10F","q10G_10H","q11G_11A","q11G_11B","q11G_11C","q11G_11D","q11G_11E","q11G_11F","q11G_11H","turnover00H","turnover01H","turnover10H","turnover11H","eps00H","eps01H","eps10H","eps11H","q00H_01H","q00H_10H","q00H_11H","q01H_00H","q01H_10H","q01H_11H","q10H_00H","q10H_01H","q10H_11H","q11H_00H","q11H_01H","q11H_10H","q00H_00A","q00H_00B","q00H_00C","q00H_00D","q00H_00E","q00H_00F","q00H_00G","q01H_01A","q01H_01B","q01H_01C","q01H_01D","q01H_01E","q01H_01F","q01H_01G","q10H_10A","q10H_10B","q10H_10C","q10H_10D","q10H_10E","q10H_10F","q10H_10G","q11H_11A","q11H_11B","q11H_11C","q11H_11D","q11H_11E","q11H_11F","q11H_11G","psi")
     
     cat("Finished. Summarizing results...", "\n")
     
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps)
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, fix.type=fix.type, psi.type=psi.type)
     class(obj) <- append(class(obj), "muhisse.fit")
     return(obj)
 }
@@ -403,15 +450,19 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
 ######################################################################################################################################
 ######################################################################################################################################
 
-DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, ode.eps) {
+#Function used for optimizing parameters:
+DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, f, ode.eps, fossil.taxa, fix.type) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
     ## print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache = ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=ode.eps)
-    logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p)
-    
+    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
+    if(!is.null(fix.type)){
+        logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+    }else{
+        logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
+    }
     return(-logl)
 }
 
@@ -426,7 +477,7 @@ DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.t
 OrganizeData <- function(data, phy, f, hidden.states){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
-
+    
     nb.tip <- length(phy$tip.label)
     nb.node <- phy$Nnode
     
@@ -507,14 +558,21 @@ OrganizeData <- function(data, phy, f, hidden.states){
         }
     }
     
-    node.ages <- c(rep(0, Ntip(phy)), branching.times(phy))
-    table.ages <- matrix(0, dim(phy$edge)[1], 2)
-    branch.type <- rep(0, dim(table.ages)[1])
-    for(row.index in 1:dim(phy$edge)[1]){
-        table.ages[row.index,1] <- node.ages[phy$edge[row.index,1]]
-        table.ages[row.index,2] <- node.ages[phy$edge[row.index,2]]
+    table.info <- GetTreeTable(phy, root.age=NULL)
+    k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
+    branch.type <- rep(0, dim(table.info)[1])
+    for(row.index in 1:dim(table.info)[1]){
+        if(table.info[row.index,5]<=nb.tip){
+            if(table.info[row.index,2] > .Machine$double.eps^.50){
+                branch.type[row.index] <- 1
+            }
+            if(any(phy$edge[row.index,2]==k.sample.tip.no)){
+                branch.type[row.index] <- 2
+            }
+        }
     }
-    tmp.df <- cbind(table.ages, phy$edge.length, phy$edge[,1], phy$edge[,2], 0, matrix(0, nrow(table.ages), ncol(compD)), matrix(0, nrow(table.ages), ncol(compE)), branch.type)
+    
+    tmp.df <- cbind(table.info, 0, matrix(0, nrow(table.info), ncol(compD)), matrix(0, nrow(table.info), ncol(compE)), branch.type)
     colnames(tmp.df) <- c("RootwardAge", "TipwardAge", "BranchLength", "FocalNode", "DesNode", "comp", paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"), "branch.type")
     dat.tab <- as.data.table(tmp.df)
     setkey(dat.tab, DesNode)
@@ -546,110 +604,104 @@ SingleChildProb <- function(cache, pars, compD, compE, start.time, end.time, bra
         return(prob.subtree.cal)
     }
     
-    if(branch.type == 1){
-        # Update fossil tips initial condition -- for use by DEBaTE function only ##
-        if(cache$hidden.states == TRUE){
-            yini <- c(E00A = compE[1], E01A = compE[2], E10A = compE[3], E11A = compE[4], E00B = compE[5], E01B = compE[6], E10B = compE[7], E11B = compE[8], E00C = compE[9], E01C = compE[10], E10C = compE[11], E11C = compE[12], E00D = compE[13], E01D = compE[14], E10D = compE[15], E11D = compE[16], E00E = compE[17], E01E = compE[18], E10E = compE[19], E11E = compE[20], E00F = compE[21], E01F = compE[22], E10F = compE[23], E11F = compE[24], E00G = compE[25], E01G = compE[26], E10G = compE[27], E11G = compE[28], E00H = compE[29], E01H = compE[30], E10H = compE[31], E11H = compE[32], D00A = compD[1], D01A = compD[2], D10A = compD[3], D11A = compD[4], D00B = compD[5], D01B = compD[6], D10B = compD[7], D11B = compD[8], D00C = compD[9], D01C = compD[10], D10C = compD[11], D11C = compD[12], D00D = compD[13], D01D = compD[14], D10D = compD[15], D11D = compD[16], D00E = compD[17], D01E = compD[18], D10E = compD[19], D11E = compD[20], D00F = compD[21], D01F = compD[22], D10F = compD[23], D11F = compD[24], D00G = compD[25], D01G = compD[26], D10G = compD[27], D11G = compD[28], D00H = compD[29], D01H = compD[30], D10H = compD[31], D11H = compD[32])
+    if(cache$hidden.states == TRUE){
+        yini <- c(E00A = compE[1], E01A = compE[2], E10A = compE[3], E11A = compE[4], E00B = compE[5], E01B = compE[6], E10B = compE[7], E11B = compE[8], E00C = compE[9], E01C = compE[10], E10C = compE[11], E11C = compE[12], E00D = compE[13], E01D = compE[14], E10D = compE[15], E11D = compE[16], E00E = compE[17], E01E = compE[18], E10E = compE[19], E11E = compE[20], E00F = compE[21], E01F = compE[22], E10F = compE[23], E11F = compE[24], E00G = compE[25], E01G = compE[26], E10G = compE[27], E11G = compE[28], E00H = compE[29], E01H = compE[30], E10H = compE[31], E11H = compE[32], D00A = compD[1], D01A = compD[2], D10A = compD[3], D11A = compD[4], D00B = compD[5], D01B = compD[6], D10B = compD[7], D11B = compD[8], D00C = compD[9], D01C = compD[10], D10C = compD[11], D11C = compD[12], D00D = compD[13], D01D = compD[14], D10D = compD[15], D11D = compD[16], D00E = compD[17], D01E = compD[18], D10E = compD[19], D11E = compD[20], D00F = compD[21], D01F = compD[22], D10F = compD[23], D11F = compD[24], D00G = compD[25], D01G = compD[26], D10G = compD[27], D11G = compD[28], D00H = compD[29], D01H = compD[30], D10H = compD[31], D11H = compD[32])
+        if(branch.type == 2){
             times <- c(0, end.time)
-            runSilent <- function() {
-                options(warn = -1)
-                on.exit(options(warn = 0))
-                capture.output(res <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                res
-            }
-            #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8, hini=10)
-            #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- runSilent()
-            prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-            prob.subtree.cal[33:64] <- compD
         }else{
-            yini <-c(E00=compE[1], E01=compE[2], E10=compE[3], E11=compE[4], D00=compD[1], D01=compD[2], D10=compD[3], D11=compD[4])
-            times <- c(0, end.time)
-            runSilent <- function() {
-                options(warn = -1)
-                on.exit(options(warn = 0))
-                capture.output(res <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                res
-            }
-            #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
-            #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- runSilent()
-            prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-            prob.subtree.cal[5:8] <- compD
+            times=c(start.time, end.time)
         }
-        return(prob.subtree.cal)
+        runSilent <- function() {
+            options(warn = -1)
+            on.exit(options(warn = 0))
+            capture.output(res <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            res
+        }
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8, hini=10)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- runSilent()
     }else{
-        if(cache$hidden.states == TRUE){
-            yini <- c(E00A = compE[1], E01A = compE[2], E10A = compE[3], E11A = compE[4], E00B = compE[5], E01B = compE[6], E10B = compE[7], E11B = compE[8], E00C = compE[9], E01C = compE[10], E10C = compE[11], E11C = compE[12], E00D = compE[13], E01D = compE[14], E10D = compE[15], E11D = compE[16], E00E = compE[17], E01E = compE[18], E10E = compE[19], E11E = compE[20], E00F = compE[21], E01F = compE[22], E10F = compE[23], E11F = compE[24], E00G = compE[25], E01G = compE[26], E10G = compE[27], E11G = compE[28], E00H = compE[29], E01H = compE[30], E10H = compE[31], E11H = compE[32], D00A = compD[1], D01A = compD[2], D10A = compD[3], D11A = compD[4], D00B = compD[5], D01B = compD[6], D10B = compD[7], D11B = compD[8], D00C = compD[9], D01C = compD[10], D10C = compD[11], D11C = compD[12], D00D = compD[13], D01D = compD[14], D10D = compD[15], D11D = compD[16], D00E = compD[17], D01E = compD[18], D10E = compD[19], D11E = compD[20], D00F = compD[21], D01F = compD[22], D10F = compD[23], D11F = compD[24], D00G = compD[25], D01G = compD[26], D10G = compD[27], D11G = compD[28], D00H = compD[29], D01H = compD[30], D10H = compD[31], D11H = compD[32])
-            times=c(start.time, end.time)
-            runSilent <- function() {
-                options(warn = -1)
-                on.exit(options(warn = 0))
-                capture.output(res <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                res
-            }
-            #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8, hini=10)
-            #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- runSilent()
+        yini <- c(E00=compE[1], E01=compE[2], E10=compE[3], E11=compE[4], D00=compD[1], D01=compD[2], D10=compD[3], D11=compD[4])
+        if(branch.type == 2){
+            times <- c(0, end.time)
         }else{
-            yini <- c(E00=compE[1], E01=compE[2], E10=compE[3], E11=compE[4], D00=compD[1], D01=compD[2], D10=compD[3], D11=compD[4])
             times=c(start.time, end.time)
-            runSilent <- function() {
-                options(warn = -1)
-                on.exit(options(warn = 0))
-                capture.output(res <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
-                res
-            }
-            #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
-            #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-            prob.subtree.cal.full <- runSilent()
         }
-        ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
-        if(attributes(prob.subtree.cal.full)$istate[1] < 0){
+        runSilent <- function() {
+            options(warn = -1)
+            on.exit(options(warn = 0))
+            capture.output(res <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            res
+        }
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
+        #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- runSilent()
+    }
+    
+    ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
+    if(attributes(prob.subtree.cal.full)$istate[1] < 0){
+        prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+        if(cache$hidden.states == TRUE){
+            prob.subtree.cal[33:64] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }else{
+            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }else{
+        if(branch.type == 2){
             prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
             if(cache$hidden.states == TRUE){
-                prob.subtree.cal[33:64] <- cache$bad.likelihood
-                return(prob.subtree.cal)
+                prob.subtree.cal[33:64] <- compD
             }else{
-                prob.subtree.cal[5:8] <- cache$bad.likelihood
-                return(prob.subtree.cal)
+                prob.subtree.cal[5:8] <- compD
             }
         }else{
-            prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
-        }
-        ##############################################################################
-        
-        if(cache$hidden.states == TRUE){
-            if(any(is.nan(prob.subtree.cal[33:64]))){
-                prob.subtree.cal[33:64] <- cache$bad.likelihood
-                return(prob.subtree.cal)
-            }
-            #This is default and cannot change, but if we get a negative probability, discard the results:
-            if(any(prob.subtree.cal[33:64] < 0)){
-                prob.subtree.cal[33:64] <- cache$bad.likelihood
-                return(prob.subtree.cal)
-            }
-            if(sum(prob.subtree.cal[33:64]) < cache$ode.eps){
-                prob.subtree.cal[33:64] <- cache$bad.likelihood
-                return(prob.subtree.cal)
-            }
-        }else{
-            if(any(is.nan(prob.subtree.cal[5:8]))){
-                prob.subtree.cal[5:8] <- cache$bad.likelihood
-                return(prob.subtree.cal)
-            }
-            #This is default and cannot change, but if we get a negative probability, discard the results:
-            if(any(prob.subtree.cal[5:8] < 0)){
-                prob.subtree.cal[5:8] <- cache$bad.likelihood
-                return(prob.subtree.cal)
-            }
-            if(sum(prob.subtree.cal[5:8]) < cache$ode.eps){
-                prob.subtree.cal[5:8] <- cache$bad.likelihood
-                return(prob.subtree.cal)
+            if(branch.type == 1){
+                if(cache$hidden.states == TRUE){
+                    prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+                    prob.subtree.cal[33:64] <- prob.subtree.cal[1:32] * compD
+                }else{
+                    prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+                    prob.subtree.cal[5:8] <- prob.subtree.cal[1:4] * compD
+                }
+            }else{
+                prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
             }
         }
-        return(prob.subtree.cal)
     }
+    ##############################################################################
+    
+    if(cache$hidden.states == TRUE){
+        if(any(is.nan(prob.subtree.cal[33:64]))){
+            prob.subtree.cal[33:64] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        #This is default and cannot change, but if we get a negative probability, discard the results:
+        if(any(prob.subtree.cal[33:64] < 0)){
+            prob.subtree.cal[33:64] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        if(sum(prob.subtree.cal[33:64]) < cache$ode.eps){
+            prob.subtree.cal[33:64] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }else{
+        if(any(is.nan(prob.subtree.cal[5:8]))){
+            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        #This is default and cannot change, but if we get a negative probability, discard the results:
+        if(any(prob.subtree.cal[5:8] < 0)){
+            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+        if(sum(prob.subtree.cal[5:8]) < cache$ode.eps){
+            prob.subtree.cal[5:8] <- cache$bad.likelihood
+            return(prob.subtree.cal)
+        }
+    }
+    return(prob.subtree.cal)
 }
 
 
@@ -658,13 +710,13 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
     DesNode = NULL
     FocalNode = NULL
     . = NULL
-
+    
     gens <- data.table(c(generations))
     #gens <- dat.tab[.(generations), which=TRUE]
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
     if(cache$hidden.states == TRUE){
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:38], z[39:70],  z[2], z[1], z[71])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:38], z[39:70], z[2], z[1], z[71])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2), 33:64] * tmp[seq(2,nrow(tmp),2), 33:64], length(unique(CurrentGenData$FocalNode)), 32)
         v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
@@ -675,10 +727,11 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
                         #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
                         lambdas.check <- lambdas
                         lambdas.check[which(lambdas==0)] <- 1
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
+                        #The initial condition for a k.sample is D(t)*psi
+                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
                     }else{
                         #Fixes the state at the node nothing needs to be done other than fix the node
-                        fixer = numeric(32)
+                        fixer <- numeric(32)
                         fixer[cache$state[fix.index]] = 1
                         v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
                     }
@@ -700,7 +753,7 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
         }
         dat.tab[gens, "comp" := tmp.comp]
     }else{
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:10], z[11:14],  z[2], z[1], z[15])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:10], z[11:14], z[2], z[1], z[15])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),5:8] * tmp[seq(2,nrow(tmp),2),5:8], length(unique(CurrentGenData$FocalNode)), 4)
         v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 4, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
@@ -711,9 +764,10 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
                         #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
                         lambdas.check <- lambdas
                         lambdas.check[which(lambdas==0)] <- 1
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
-                     }else{
-                        fixer = numeric(4)
+                        #The initial condition for a k.sample is D(t)*psi
+                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                    }else{
+                        fixer <- numeric(4)
                         fixer[cache$state[fix.index]] = 1
                         #Fixes the state at the node
                         v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
@@ -744,12 +798,12 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     FocalNode = NULL
     . = NULL
-
+    
     gens <- data.table(c(generations))
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
     if(cache$hidden.states == TRUE){
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:38], z[39:70],  z[2], z[1], z[71])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:38], z[39:70], z[2], z[1], z[71])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),33:64] * tmp[seq(2,nrow(tmp),2),33:64], length(unique(CurrentGenData$FocalNode)), 32)
         v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 32, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:32], length(unique(CurrentGenData$FocalNode)), 32)
@@ -761,7 +815,8 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
                             #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
                             lambdas.check <- lambdas
                             lambdas.check[which(lambdas==0)] <- 1
-                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
+                            #The initial condition for a k.sample is D(t)*psi
+                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
                         }else{
                             #Fixes the state at the node nothing needs to be done other than fix the node
                             fixer = numeric(32)
@@ -773,7 +828,7 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
             }
         }
     }else{
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:10], z[11:14],  z[2], z[1], z[15])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:10], z[11:14], z[2], z[1], z[15])))
         v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),5:8] * tmp[seq(2,nrow(tmp),2),5:8], length(unique(CurrentGenData$FocalNode)), 4)
         v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 4, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:4], length(unique(CurrentGenData$FocalNode)), 4)
@@ -783,7 +838,8 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
                     if(cache$fix.type[fix.index] == "event"){
                         lambdas.check <- lambdas
                         lambdas.check[which(lambdas==0)] <- 1
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
+                        #The initial condition for a k.sample is D(t)*psi
+                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
                     }else{
                         fixer = numeric(4)
                         fixer[cache$state[fix.index]] = 1
@@ -798,8 +854,53 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
     tmp.comp <- rowSums(v.mat)
     tmp.probs <- v.mat / tmp.comp
     #tmp.probs <- v.mat
-
+    
     return(cbind(tmp.comp, phi.mat, tmp.probs))
+}
+
+
+#Calculates the initial conditions for fossil taxa in the tree.
+GetFossilInitialsMuHiSSE <- function(cache, pars, lambdas, dat.tab, fossil.taxa){
+    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+    DesNode = NULL
+    . = NULL
+    if(cache$hidden.states == TRUE){
+        fossils <- data.table(c(fossil.taxa))
+        setkey(dat.tab, DesNode)
+        CurrentGenData <- dat.tab[fossils]
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:38], z[39:70],  0, z[2], z[71])))
+        tmp.probs <- matrix(tmp[,33:64], length(fossil.taxa), 32) * cache$psi
+        phi.mat <- matrix(tmp[,1:32], length(fossil.taxa), 32)
+        
+        setkey(dat.tab, DesNode)
+        rows <- dat.tab[.(fossils), which=TRUE]
+        cols <- names(dat.tab)
+        for (j in 1:(dim(tmp.probs)[2])){
+            #dat.tab[data.table(c(generations)), paste("compD", j, sep="_") := tmp.probs[,j]]
+            set(dat.tab, rows, cols[6+j], tmp.probs[,j])
+            #dat.tab[data.table(c(generations)), paste("compE", j, sep="_") := phi.mat[,j]]
+            set(dat.tab, rows, cols[38+j], phi.mat[,j])
+        }
+    }else{
+        fossils <- data.table(c(fossil.taxa))
+        setkey(dat.tab, DesNode)
+        CurrentGenData <- dat.tab[fossils]
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProb(cache, pars, z[7:10], z[11:14], 0, z[2], z[15])))
+        tmp.probs <- matrix(tmp[,5:8], length(fossil.taxa), 4) * cache$psi
+        phi.mat <- matrix(tmp[,1:4], length(fossil.taxa), 4)
+        
+        setkey(dat.tab, DesNode)
+        rows <- dat.tab[.(fossils), which=TRUE]
+        cols <- names(dat.tab)
+        for (j in 1:(dim(tmp.probs)[2])){
+            #dat.tab[data.table(c(generations)), paste("compD", j, sep="_") := tmp.probs[,j]]
+            set(dat.tab, rows, cols[6+j], tmp.probs[,j])
+            #dat.tab[gens, cols[10+j] := phi.mat[,j]]
+            set(dat.tab, rows, cols[10+j], phi.mat[,j])
+        }
+    }
+    dat.tab[fossils,"branch.type" := 0]
+    return(dat.tab)
 }
 
 
@@ -810,24 +911,31 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, fix.type=NULL) {
+DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, fossil.taxa=NULL, fix.type=NULL) {
     
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     compE = NULL
-
+    . = NULL
+    
     ## Moved this here instead of above because it actually significantly improved the speed.
     if(cache$hidden.states == FALSE){
-        pars <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$mu00A, cache$mu01A, cache$mu10A, cache$mu11A, cache$q00A_01A, cache$q00A_10A, cache$q00A_11A, cache$q01A_00A, cache$q01A_10A, cache$q01A_11A, cache$q10A_00A, cache$q10A_01A, cache$q10A_11A, cache$q11A_00A, cache$q11A_01A, cache$q11A_10A)
+        pars <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$mu00A, cache$mu01A, cache$mu10A, cache$mu11A, cache$q00A_01A, cache$q00A_10A, cache$q00A_11A, cache$q01A_00A, cache$q01A_10A, cache$q01A_11A, cache$q10A_00A, cache$q10A_01A, cache$q10A_11A, cache$q11A_00A, cache$q11A_01A, cache$q11A_10A, cache$psi)
         lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A)
     }else{
-        pars <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$mu00A, cache$mu01A, cache$mu10A, cache$mu11A, cache$q00A_01A, cache$q00A_10A, cache$q00A_11A, cache$q01A_00A, cache$q01A_10A, cache$q01A_11A, cache$q10A_00A, cache$q10A_01A, cache$q10A_11A, cache$q11A_00A, cache$q11A_01A, cache$q11A_10A, cache$q00A_00B, cache$q00A_00C, cache$q00A_00D, cache$q00A_00E, cache$q00A_00F, cache$q00A_00G, cache$q00A_00H, cache$q01A_01B, cache$q01A_01C, cache$q01A_01D, cache$q01A_01E, cache$q01A_01F, cache$q01A_01G, cache$q01A_01H, cache$q10A_10B, cache$q10A_10C, cache$q10A_10D, cache$q10A_10E, cache$q10A_10F, cache$q10A_10G, cache$q10A_10H, cache$q11A_11B, cache$q11A_11C, cache$q11A_11D, cache$q11A_11E, cache$q11A_11F, cache$q11A_11G, cache$q11A_11H, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$mu00B, cache$mu01B, cache$mu10B, cache$mu11B, cache$q00B_01B, cache$q00B_10B, cache$q00B_11B, cache$q01B_00B, cache$q01B_10B, cache$q01B_11B, cache$q10B_00B, cache$q10B_01B, cache$q10B_11B, cache$q11B_00B, cache$q11B_01B, cache$q11B_10B, cache$q00B_00A, cache$q00B_00C, cache$q00B_00D, cache$q00B_00E, cache$q00B_00F, cache$q00B_00G, cache$q00B_00H, cache$q01B_01A, cache$q01B_01C, cache$q01B_01D, cache$q01B_01E, cache$q01B_01F, cache$q01B_01G, cache$q01B_01H, cache$q10B_10A, cache$q10B_10C, cache$q10B_10D, cache$q10B_10E, cache$q10B_10F, cache$q10B_10G, cache$q10B_10H, cache$q11B_11A, cache$q11B_11C, cache$q11B_11D, cache$q11B_11E, cache$q11B_11F, cache$q11B_11G, cache$q11B_11H, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$mu00C, cache$mu01C, cache$mu10C, cache$mu11C, cache$q00C_01C, cache$q00C_10C, cache$q00C_11C, cache$q01C_00C, cache$q01C_10C, cache$q01C_11C, cache$q10C_00C, cache$q10C_01C, cache$q10C_11C, cache$q11C_00C, cache$q11C_01C, cache$q11C_10C, cache$q00C_00A, cache$q00C_00B, cache$q00C_00D, cache$q00C_00E, cache$q00C_00F, cache$q00C_00G, cache$q00C_00H, cache$q01C_01A, cache$q01C_01B, cache$q01C_01D, cache$q01C_01E, cache$q01C_01F, cache$q01C_01G, cache$q01C_01H, cache$q10C_10A, cache$q10C_10B, cache$q10C_10D, cache$q10C_10E, cache$q10C_10F, cache$q10C_10G, cache$q10C_10H, cache$q11C_11A, cache$q11C_11B, cache$q11C_11D, cache$q11C_11E, cache$q11C_11F, cache$q11C_11G, cache$q11C_11H, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$mu00D, cache$mu01D, cache$mu10D, cache$mu11D, cache$q00D_01D, cache$q00D_10D, cache$q00D_11D, cache$q01D_00D, cache$q01D_10D, cache$q01D_11D, cache$q10D_00D, cache$q10D_01D, cache$q10D_11D, cache$q11D_00D, cache$q11D_01D, cache$q11D_10D, cache$q00D_00A, cache$q00D_00B, cache$q00D_00C, cache$q00D_00E, cache$q00D_00F, cache$q00D_00G, cache$q00D_00H, cache$q01D_01A, cache$q01D_01B, cache$q01D_01C, cache$q01D_01E, cache$q01D_01F, cache$q01D_01G, cache$q01D_01H, cache$q10D_10A, cache$q10D_10B, cache$q10D_10C, cache$q10D_10E, cache$q10D_10F, cache$q10D_10G, cache$q10D_10H, cache$q11D_11A, cache$q11D_11B, cache$q11D_11C, cache$q11D_11E, cache$q11D_11F, cache$q11D_11G, cache$q11D_11H, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$mu00E, cache$mu01E, cache$mu10E, cache$mu11E, cache$q00E_01E, cache$q00E_10E, cache$q00E_11E, cache$q01E_00E, cache$q01E_10E, cache$q01E_11E, cache$q10E_00E, cache$q10E_01E, cache$q10E_11E, cache$q11E_00E, cache$q11E_01E, cache$q11E_10E, cache$q00E_00A, cache$q00E_00B, cache$q00E_00C, cache$q00E_00D, cache$q00E_00F, cache$q00E_00G, cache$q00E_00H, cache$q01E_01A, cache$q01E_01B, cache$q01E_01C, cache$q01E_01D, cache$q01E_01F, cache$q01E_01G, cache$q01E_01H, cache$q10E_10A, cache$q10E_10B, cache$q10E_10C, cache$q10E_10D, cache$q10E_10F, cache$q10E_10G, cache$q10E_10H, cache$q11E_11A, cache$q11E_11B, cache$q11E_11C, cache$q11E_11D, cache$q11E_11F, cache$q11E_11G, cache$q11E_11H, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$mu00F, cache$mu01F, cache$mu10F, cache$mu11F, cache$q00F_01F, cache$q00F_10F, cache$q00F_11F, cache$q01F_00F, cache$q01F_10F, cache$q01F_11F, cache$q10F_00F, cache$q10F_01F, cache$q10F_11F, cache$q11F_00F, cache$q11F_01F, cache$q11F_10F, cache$q00F_00A, cache$q00F_00B, cache$q00F_00C, cache$q00F_00D, cache$q00F_00E, cache$q00F_00G, cache$q00F_00H, cache$q01F_01A, cache$q01F_01B, cache$q01F_01C, cache$q01F_01D, cache$q01F_01E, cache$q01F_01G, cache$q01F_01H, cache$q10F_10A, cache$q10F_10B, cache$q10F_10C, cache$q10F_10D, cache$q10F_10E, cache$q10F_10G, cache$q10F_10H, cache$q11F_11A, cache$q11F_11B, cache$q11F_11C, cache$q11F_11D, cache$q11F_11E, cache$q11F_11G, cache$q11F_11H, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$mu00G, cache$mu01G, cache$mu10G, cache$mu11G, cache$q00G_01G, cache$q00G_10G, cache$q00G_11G, cache$q01G_00G, cache$q01G_10G, cache$q01G_11G, cache$q10G_00G, cache$q10G_01G, cache$q10G_11G, cache$q11G_00G, cache$q11G_01G, cache$q11G_10G, cache$q00G_00A, cache$q00G_00B, cache$q00G_00C, cache$q00G_00D, cache$q00G_00E, cache$q00G_00F, cache$q00G_00H, cache$q01G_01A, cache$q01G_01B, cache$q01G_01C, cache$q01G_01D, cache$q01G_01E, cache$q01G_01F, cache$q01G_01H, cache$q10G_10A, cache$q10G_10B, cache$q10G_10C, cache$q10G_10D, cache$q10G_10E, cache$q10G_10F, cache$q10G_10H, cache$q11G_11A, cache$q11G_11B, cache$q11G_11C, cache$q11G_11D, cache$q11G_11E, cache$q11G_11F, cache$q11G_11H, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H, cache$mu00H, cache$mu01H, cache$mu10H, cache$mu11H, cache$q00H_01H, cache$q00H_10H, cache$q00H_11H, cache$q01H_00H, cache$q01H_10H, cache$q01H_11H, cache$q10H_00H, cache$q10H_01H, cache$q10H_11H, cache$q11H_00H, cache$q11H_01H, cache$q11H_10H, cache$q00H_00A, cache$q00H_00B, cache$q00H_00C, cache$q00H_00D, cache$q00H_00E, cache$q00H_00F, cache$q00H_00G, cache$q01H_01A, cache$q01H_01B, cache$q01H_01C, cache$q01H_01D, cache$q01H_01E, cache$q01H_01F, cache$q01H_01G, cache$q10H_10A, cache$q10H_10B, cache$q10H_10C, cache$q10H_10D, cache$q10H_10E, cache$q10H_10F, cache$q10H_10G, cache$q11H_11A, cache$q11H_11B, cache$q11H_11C, cache$q11H_11D, cache$q11H_11E, cache$q11H_11F, cache$q11H_11G)
+        pars <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$mu00A, cache$mu01A, cache$mu10A, cache$mu11A, cache$q00A_01A, cache$q00A_10A, cache$q00A_11A, cache$q01A_00A, cache$q01A_10A, cache$q01A_11A, cache$q10A_00A, cache$q10A_01A, cache$q10A_11A, cache$q11A_00A, cache$q11A_01A, cache$q11A_10A, cache$q00A_00B, cache$q00A_00C, cache$q00A_00D, cache$q00A_00E, cache$q00A_00F, cache$q00A_00G, cache$q00A_00H, cache$q01A_01B, cache$q01A_01C, cache$q01A_01D, cache$q01A_01E, cache$q01A_01F, cache$q01A_01G, cache$q01A_01H, cache$q10A_10B, cache$q10A_10C, cache$q10A_10D, cache$q10A_10E, cache$q10A_10F, cache$q10A_10G, cache$q10A_10H, cache$q11A_11B, cache$q11A_11C, cache$q11A_11D, cache$q11A_11E, cache$q11A_11F, cache$q11A_11G, cache$q11A_11H, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$mu00B, cache$mu01B, cache$mu10B, cache$mu11B, cache$q00B_01B, cache$q00B_10B, cache$q00B_11B, cache$q01B_00B, cache$q01B_10B, cache$q01B_11B, cache$q10B_00B, cache$q10B_01B, cache$q10B_11B, cache$q11B_00B, cache$q11B_01B, cache$q11B_10B, cache$q00B_00A, cache$q00B_00C, cache$q00B_00D, cache$q00B_00E, cache$q00B_00F, cache$q00B_00G, cache$q00B_00H, cache$q01B_01A, cache$q01B_01C, cache$q01B_01D, cache$q01B_01E, cache$q01B_01F, cache$q01B_01G, cache$q01B_01H, cache$q10B_10A, cache$q10B_10C, cache$q10B_10D, cache$q10B_10E, cache$q10B_10F, cache$q10B_10G, cache$q10B_10H, cache$q11B_11A, cache$q11B_11C, cache$q11B_11D, cache$q11B_11E, cache$q11B_11F, cache$q11B_11G, cache$q11B_11H, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$mu00C, cache$mu01C, cache$mu10C, cache$mu11C, cache$q00C_01C, cache$q00C_10C, cache$q00C_11C, cache$q01C_00C, cache$q01C_10C, cache$q01C_11C, cache$q10C_00C, cache$q10C_01C, cache$q10C_11C, cache$q11C_00C, cache$q11C_01C, cache$q11C_10C, cache$q00C_00A, cache$q00C_00B, cache$q00C_00D, cache$q00C_00E, cache$q00C_00F, cache$q00C_00G, cache$q00C_00H, cache$q01C_01A, cache$q01C_01B, cache$q01C_01D, cache$q01C_01E, cache$q01C_01F, cache$q01C_01G, cache$q01C_01H, cache$q10C_10A, cache$q10C_10B, cache$q10C_10D, cache$q10C_10E, cache$q10C_10F, cache$q10C_10G, cache$q10C_10H, cache$q11C_11A, cache$q11C_11B, cache$q11C_11D, cache$q11C_11E, cache$q11C_11F, cache$q11C_11G, cache$q11C_11H, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$mu00D, cache$mu01D, cache$mu10D, cache$mu11D, cache$q00D_01D, cache$q00D_10D, cache$q00D_11D, cache$q01D_00D, cache$q01D_10D, cache$q01D_11D, cache$q10D_00D, cache$q10D_01D, cache$q10D_11D, cache$q11D_00D, cache$q11D_01D, cache$q11D_10D, cache$q00D_00A, cache$q00D_00B, cache$q00D_00C, cache$q00D_00E, cache$q00D_00F, cache$q00D_00G, cache$q00D_00H, cache$q01D_01A, cache$q01D_01B, cache$q01D_01C, cache$q01D_01E, cache$q01D_01F, cache$q01D_01G, cache$q01D_01H, cache$q10D_10A, cache$q10D_10B, cache$q10D_10C, cache$q10D_10E, cache$q10D_10F, cache$q10D_10G, cache$q10D_10H, cache$q11D_11A, cache$q11D_11B, cache$q11D_11C, cache$q11D_11E, cache$q11D_11F, cache$q11D_11G, cache$q11D_11H, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$mu00E, cache$mu01E, cache$mu10E, cache$mu11E, cache$q00E_01E, cache$q00E_10E, cache$q00E_11E, cache$q01E_00E, cache$q01E_10E, cache$q01E_11E, cache$q10E_00E, cache$q10E_01E, cache$q10E_11E, cache$q11E_00E, cache$q11E_01E, cache$q11E_10E, cache$q00E_00A, cache$q00E_00B, cache$q00E_00C, cache$q00E_00D, cache$q00E_00F, cache$q00E_00G, cache$q00E_00H, cache$q01E_01A, cache$q01E_01B, cache$q01E_01C, cache$q01E_01D, cache$q01E_01F, cache$q01E_01G, cache$q01E_01H, cache$q10E_10A, cache$q10E_10B, cache$q10E_10C, cache$q10E_10D, cache$q10E_10F, cache$q10E_10G, cache$q10E_10H, cache$q11E_11A, cache$q11E_11B, cache$q11E_11C, cache$q11E_11D, cache$q11E_11F, cache$q11E_11G, cache$q11E_11H, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$mu00F, cache$mu01F, cache$mu10F, cache$mu11F, cache$q00F_01F, cache$q00F_10F, cache$q00F_11F, cache$q01F_00F, cache$q01F_10F, cache$q01F_11F, cache$q10F_00F, cache$q10F_01F, cache$q10F_11F, cache$q11F_00F, cache$q11F_01F, cache$q11F_10F, cache$q00F_00A, cache$q00F_00B, cache$q00F_00C, cache$q00F_00D, cache$q00F_00E, cache$q00F_00G, cache$q00F_00H, cache$q01F_01A, cache$q01F_01B, cache$q01F_01C, cache$q01F_01D, cache$q01F_01E, cache$q01F_01G, cache$q01F_01H, cache$q10F_10A, cache$q10F_10B, cache$q10F_10C, cache$q10F_10D, cache$q10F_10E, cache$q10F_10G, cache$q10F_10H, cache$q11F_11A, cache$q11F_11B, cache$q11F_11C, cache$q11F_11D, cache$q11F_11E, cache$q11F_11G, cache$q11F_11H, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$mu00G, cache$mu01G, cache$mu10G, cache$mu11G, cache$q00G_01G, cache$q00G_10G, cache$q00G_11G, cache$q01G_00G, cache$q01G_10G, cache$q01G_11G, cache$q10G_00G, cache$q10G_01G, cache$q10G_11G, cache$q11G_00G, cache$q11G_01G, cache$q11G_10G, cache$q00G_00A, cache$q00G_00B, cache$q00G_00C, cache$q00G_00D, cache$q00G_00E, cache$q00G_00F, cache$q00G_00H, cache$q01G_01A, cache$q01G_01B, cache$q01G_01C, cache$q01G_01D, cache$q01G_01E, cache$q01G_01F, cache$q01G_01H, cache$q10G_10A, cache$q10G_10B, cache$q10G_10C, cache$q10G_10D, cache$q10G_10E, cache$q10G_10F, cache$q10G_10H, cache$q11G_11A, cache$q11G_11B, cache$q11G_11C, cache$q11G_11D, cache$q11G_11E, cache$q11G_11F, cache$q11G_11H, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H, cache$mu00H, cache$mu01H, cache$mu10H, cache$mu11H, cache$q00H_01H, cache$q00H_10H, cache$q00H_11H, cache$q01H_00H, cache$q01H_10H, cache$q01H_11H, cache$q10H_00H, cache$q10H_01H, cache$q10H_11H, cache$q11H_00H, cache$q11H_01H, cache$q11H_10H, cache$q00H_00A, cache$q00H_00B, cache$q00H_00C, cache$q00H_00D, cache$q00H_00E, cache$q00H_00F, cache$q00H_00G, cache$q01H_01A, cache$q01H_01B, cache$q01H_01C, cache$q01H_01D, cache$q01H_01E, cache$q01H_01F, cache$q01H_01G, cache$q10H_10A, cache$q10H_10B, cache$q10H_10C, cache$q10H_10D, cache$q10H_10E, cache$q10H_10F, cache$q10H_10G, cache$q11H_11A, cache$q11H_11B, cache$q11H_11C, cache$q11H_11D, cache$q11H_11E, cache$q11H_11F, cache$q11H_11G, cache$psi)
         lambda <- c(cache$lambda00A,cache$lambda01A,cache$lambda10A,cache$lambda11A,cache$lambda00B,cache$lambda01B,cache$lambda10B,cache$lambda11B,cache$lambda00C,cache$lambda01C,cache$lambda10C,cache$lambda11C,cache$lambda00D,cache$lambda01D,cache$lambda10D,cache$lambda11D,cache$lambda00E,cache$lambda01E,cache$lambda10E,cache$lambda11E,cache$lambda00F,cache$lambda01F,cache$lambda10F,cache$lambda11F,cache$lambda00G,cache$lambda01G,cache$lambda10G,cache$lambda11G,cache$lambda00H,cache$lambda01H,cache$lambda10H,cache$lambda11H)
     }
-
-    nb.tip <- cache$nb.tip
-    nb.node <- cache$nb.node
-    TIPS <- 1:nb.tip
+    
+    if(!is.null(fossil.taxa)){
+        #Gets initial conditions for fossil taxa:
+        dat.tab.copy <- copy(dat.tab)
+        dat.tab.copy <- GetFossilInitialsMuHiSSE(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, fossil.taxa=fossil.taxa)
+    }else{
+        dat.tab.copy <- copy(dat.tab)
+    }
+    
+    TIPS <- 1:cache$nb.tip
     for(i in 1:length(gen)){
         if(i == length(gen)){
             if(!is.null(node)){
@@ -835,15 +943,15 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                     cache$node <- node
                     cache$state <- state
                     cache$fix.type <- fix.type
-                    res.tmp <- GetRootProb(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab, generations=gen[[i]])
+                    res.tmp <- GetRootProb(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, generations=gen[[i]])
                     cache$node <- NULL
                     cache$state <- NULL
                     cache$fix.type <- NULL
                 }else{
-                    res.tmp <- GetRootProb(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab, generations=gen[[i]])
+                    res.tmp <- GetRootProb(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, generations=gen[[i]])
                 }
             }else{
-                res.tmp <- GetRootProb(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab, generations=gen[[i]])
+                res.tmp <- GetRootProb(cache=cache, pars=pars, lambdas=lambda, dat.tab=dat.tab.copy, generations=gen[[i]])
             }
             if(cache$hidden.states == TRUE){
                 compD.root <- res.tmp[c(34:65)]
@@ -852,8 +960,8 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                 compD.root <- res.tmp[c(6:9)]
                 compE.root <- res.tmp[c(2:5)]
             }
-            setkey(dat.tab, DesNode)
-            comp <- dat.tab[["comp"]]
+            setkey(dat.tab.copy, DesNode)
+            comp <- dat.tab.copy[["comp"]]
             comp <- c(comp[-TIPS], res.tmp[1])
         }else{
             if(!is.null(node)){
@@ -861,18 +969,37 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                     cache$node <- node
                     cache$state <- state
                     cache$fix.type <- fix.type
-                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                    dat.tab.copy <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab.copy, gen[[i]])
                     cache$node <- NULL
                     cache$state <- NULL
                     cache$fix.type <- NULL
                 }else{
-                    dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                    dat.tab.copy <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab.copy, gen[[i]])
                 }
             }else{
-                dat.tab <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab, gen[[i]])
+                dat.tab.copy <- FocalNodeProb(cache, pars=pars, lambdas=lambda, dat.tab.copy, gen[[i]])
             }
         }
     }
+    
+    if(!is.null(fossil.taxa)){
+        if(cache$hidden.states == TRUE){
+            pars[length(pars)] <- 0
+            cache$psi <- 0
+            init.d <- rep(cache$f, 8)
+            init.e <- rep(1-cache$f, 8)
+            phi.mat <- SingleChildProb(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
+            compE.root <- matrix(phi.mat[1:32], 1, 32)
+        }else{
+            pars[length(pars)] <- 0
+            cache$psi <- 0
+            init.d <- cache$f
+            init.e <- 1-cache$f
+            phi.mat <- SingleChildProb(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
+            compE.root <- matrix(phi.mat[1:4], 1, 4)
+        }
+    }
+    
     if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
         return(log(cache$bad.likelihood)^13)
     }else{
@@ -885,13 +1012,11 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
         if(condition.on.survival == TRUE){
             if(cache$hidden.states == FALSE){
                 if(root.type == "madfitz"){
-                    #lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A)
                     compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
                     #Corrects for possibility that you have 0/0:
                     compD.root[which(is.na(compD.root))] = 0
                     loglik <- log(sum(compD.root * root.p)) + sum(log(comp))
                 }else{
-                    #lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A)
                     compD.root <- (compD.root * root.p) / (lambda * (1 - compE.root)^2)
                     #Corrects for possibility that you have 0/0:
                     compD.root[which(is.na(compD.root))] = 0
@@ -899,7 +1024,6 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                 }
             }else{
                 if(root.type == "madfitz"){
-                    #lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H)
                     compD.root <- compD.root / sum(root.p * lambda * (1 - compE.root)^2)
                     #Corrects for possibility that you have 0/0:
                     compD.root[which(is.na(compD.root))] = 0
@@ -907,7 +1031,6 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
                     #Here for testing purposes:
                     #loglik <- log(sum(compD.root * root.p))
                 }else{
-                    #lambda <- c(cache$lambda00A, cache$lambda01A, cache$lambda10A, cache$lambda11A, cache$lambda00B, cache$lambda01B, cache$lambda10B, cache$lambda11B, cache$lambda00C, cache$lambda01C, cache$lambda10C, cache$lambda11C, cache$lambda00D, cache$lambda01D, cache$lambda10D, cache$lambda11D, cache$lambda00E, cache$lambda01E, cache$lambda10E, cache$lambda11E, cache$lambda00F, cache$lambda01F, cache$lambda10F, cache$lambda11F, cache$lambda00G, cache$lambda01G, cache$lambda10G, cache$lambda11G, cache$lambda00H, cache$lambda01H, cache$lambda10H, cache$lambda11H)
                     compD.root <- (compD.root * root.p) / (lambda * (1 - compE.root)^2)
                     #Corrects for possibility that you have 0/0:
                     compD.root[which(is.na(compD.root))] = 0
@@ -937,7 +1060,7 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
 ######################################################################################################################################
 ######################################################################################################################################
 
-ParametersToPassMuHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, bad.likelihood, ode.eps){
+ParametersToPassMuHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, bad.likelihood, f, ode.eps){
     #Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
     obj <- NULL
     
@@ -946,6 +1069,7 @@ ParametersToPassMuHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, b
     obj$nb.node <- nb.node
     obj$bad.likelihood <- bad.likelihood
     obj$ode.eps <- ode.eps
+    obj$f <- f
     
     ##Hidden State A
     obj$lambda00A = model.vec[1] / (1 + model.vec[5])
@@ -1355,6 +1479,8 @@ ParametersToPassMuHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, b
     obj$q11H_11F = model.vec[383]
     obj$q11H_11G = model.vec[384]
     
+    obj$psi <- model.vec[385]
+    
     return(obj)
 }
 
@@ -1376,6 +1502,13 @@ print.muhisse.fit <- function(x,...){
     cat("\n")
     print(par.list)
     cat("\n")
+    if(!is.null(x$psi.type)){
+        if(x$psi.type == "m_only"){
+            cat("psi estimate reflects fossil tip sampling only. \n")
+        }else{
+            cat("psi estimate reflects both fossil edge and tip sampling. \n")
+        }
+    }
 }
 
 

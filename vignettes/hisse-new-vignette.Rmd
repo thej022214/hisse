@@ -49,7 +49,7 @@ As with the original HiSSE implementation (see `hisse.old()`), the number of fre
 ```{r, eval=FALSE}
 turnover <- c(1,1)
 extinction.fraction <- c(1,1)
-f <- c(1,1,1,1)
+f <- c(1,1)
 ```
 
 Next, we have to set up a transition matrix. There is a function provided to make this easy, and allows users to customize the matrix to fit particular hypotheses. Be sure to look at the options on this function call, for allowing diagonals and for customizing the matrix when you have character independent model. 
@@ -71,7 +71,7 @@ If you wanted to set up a true BiSSE model, where the turnover rate parameters a
 ```{r, eval=FALSE}
 turnover <- c(1,2)
 extinction.fraction <- c(1,1)
-BiSSE <- hiSSE(phy=phy, data=sim.dat, f=f, turnover=turnover, 
+BiSSE <- hisse(phy=phy, data=sim.dat, f=f, turnover=turnover, 
                      eps=extinction.fraction, hidden.states=FALSE, 
                      trans.rate=trans.rates.bisse)
 ```
@@ -97,7 +97,7 @@ print(trans.rate.hisse)
 Now, we can just plug these options into MuHiSSE:
 
 ```{r, eval=FALSE}
-HiSSE <- hisse(phy=phy, data=states.trans, f=f, turnover=turnover, 
+HiSSE <- hisse(phy=phy, data=sim.dat, f=f, turnover=turnover, 
                      eps=extinction.fraction, hidden.states=TRUE, 
                      trans.rate=trans.rate.hisse)
 ```

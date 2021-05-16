@@ -60,8 +60,7 @@ MarginRecon.old <- function(phy, data, f, pars, hidden.states=TRUE, four.state.n
             return(c(node, marginal.probs))
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-        print(node.marginals)
-
+        
         if(hidden.states==TRUE){
             TipEval <- function(tip){
                 marginal.probs.tmp <- numeric(4)
@@ -141,7 +140,7 @@ MarginRecon.old <- function(phy, data, f, pars, hidden.states=TRUE, four.state.n
             return(c(node, marginal.probs))
         }
         node.marginals <- mclapply((nb.tip+1):(nb.tip+nb.node), NodeEval, mc.cores=n.cores)
-        print(node.marginals)
+        
         TipEval <- function(tip){
             marginal.probs.tmp <- numeric(8)
             nstates = which(!cache$states[tip,] == 0)
@@ -328,7 +327,7 @@ MarginReconGeoSSE.old <- function(phy, data, f, pars, hidden.areas=TRUE, assume.
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -346,11 +345,30 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     
     model.vec = pars
     
-    # Some new prerequisites #
-    data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
-    data.new <- data.new[phy$tip.label,]
-    gen <- FindGenerations(phy)
-    dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+    ##########################
+    if(includes.fossils == TRUE){
+        if(!is.null(k.samples)){
+            k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
+            phy <- AddKNodes(phy, k.samples)
+            fix.type <- GetKSampleMRCA(phy, k.samples)
+            data <- AddKData(data, k.samples, muhisse=FALSE)
+        }else{
+            fix.type <- NULL
+        }
+        gen <- FindGenerations(phy)
+        data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+        data.new <- data.new[phy$tip.label,]
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+        #These are all inputs for generating starting values:
+        fossil.taxa <- which(dat.tab$branch.type == 1)
+    }else{
+        gen <- FindGenerations(phy)
+        data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+        data.new <- data.new[phy$tip.label,]
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+        fossil.taxa <- NULL
+        fix.type <- NULL
+    }
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ##########################
@@ -359,8 +377,7 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
-    
+    cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=0)
     nstates <- 8
     nstates.to.eval <- 2 * hidden.states
     nstates.not.eval <- 8 - nstates.to.eval
@@ -372,12 +389,22 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     
     NodeEval <- function(node){
         if(node == cache$nb.tip+1){
-            marginal.probs <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+            if(!is.null(k.samples)){
+                marginal.probs <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=as.numeric(fix.type[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type[,2], get.phi=TRUE)$root.p
+            }else{
+                marginal.probs <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, fossil.taxa=fossil.taxa, fix.type=NULL, get.phi=TRUE)$root.p
+            }
         }else{
             focal <- node
             marginal.probs.tmp <- c()
             for (j in 1:nstates.to.eval){
-                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassHiSSE(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fix.type="fix"))
+                if(!is.null(k.samples)){
+                    fix.type.tmp <- fix.type
+                    fix.type.tmp <- rbind(fix.type.tmp, c(focal, "fix", j))
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type.tmp[,1]), state=as.numeric(fix.type.tmp[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type.tmp[,2]))
+                }else{
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fossil.taxa=fossil.taxa, fix.type="fix"))
+                }
             }
             marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
             best.probs <- max(marginal.probs.tmp)
@@ -399,7 +426,8 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
         obj <- NULL
     }
     
-    dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+    #Can delete given that I am now making a copy inside DownPass():
+    #dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
         marginal.probs.tmp <- numeric(8)
@@ -413,7 +441,11 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
             for (k in 1:dim(cache$to.change)[2]){
                 dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
             }
-            marginal.probs.tmp[j] <- DownPassHiSSE(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+            if(!is.null(k.samples)){
+                marginal.probs.tmp[j] <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+            }else{
+                marginal.probs.tmp[j] <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
+            }
         }
         for (k in 1:dim(cache$to.change)[2]){
             dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
@@ -464,7 +496,7 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -479,14 +511,33 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     }
     
     setDTthreads(threads=dt.threads)
-
-    model.vec = pars
     
-    # Some new prerequisites #
-    data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
-    data.new <- data.new[phy$tip.label,]
-    gen <- FindGenerations(phy)
-    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+    model.vec <- pars
+    
+    ##########################
+    if(includes.fossils == TRUE){
+        if(!is.null(k.samples)){
+            k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
+            phy <- AddKNodes(phy, k.samples)
+            fix.type <- GetKSampleMRCA(phy, k.samples)
+            data <- AddKData(data, k.samples, muhisse=TRUE)
+        }else{
+            fix.type <- NULL
+        }
+        gen <- FindGenerations(phy)
+        data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
+        data.new <- data.new[phy$tip.label,]
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+        #These are all inputs for generating starting values:
+        fossil.taxa <- which(dat.tab$branch.type == 1)
+    }else{
+        gen <- FindGenerations(phy)
+        data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
+        data.new <- data.new[phy$tip.label,]
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+        fossil.taxa <- NULL
+        fix.type <- NULL
+    }
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ##########################
@@ -495,7 +546,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
+    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=0)
     
     nstates <- 32
     nstates.to.eval <- 4 * hidden.states
@@ -508,12 +559,22 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     
     NodeEval <- function(node){
         if(node == cache$nb.tip+1){
-            marginal.probs <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+            if(!is.null(k.samples)){
+                marginal.probs <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=as.numeric(fix.type[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type[,2], get.phi=TRUE)$root.p
+            }else{
+                marginal.probs <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, fossil.taxa=fossil.taxa, fix.type=NULL, get.phi=TRUE)$root.p
+            }
         }else{
             focal <- node
             marginal.probs.tmp <- c()
             for (j in 1:nstates.to.eval){
-                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fix.type="fix"))
+                if(!is.null(k.samples)){
+                    fix.type.tmp <- fix.type
+                    fix.type.tmp <- rbind(fix.type.tmp, c(focal, "fix", j))
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type.tmp[,1]), state=as.numeric(fix.type.tmp[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type.tmp[,2]))
+                }else{
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fix.type="fix"))
+                }
             }
             marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
             best.probs <- max(marginal.probs.tmp)
@@ -535,7 +596,6 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
         obj <- NULL
     }
     
-    dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
         marginal.probs.tmp <- numeric(32)
@@ -549,7 +609,11 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
             for (k in 1:dim(cache$to.change)[2]){
                 dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
             }
-            marginal.probs.tmp[j] <- DownPassMuHisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+            if(!is.null(k.samples)){
+                marginal.probs.tmp[j] <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+            }else{
+                marginal.probs.tmp[j] <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
+            }
         }
         for (k in 1:dim(cache$to.change)[2]){
             dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
@@ -615,7 +679,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
     }
     
     setDTthreads(threads=dt.threads)
-
+    
     model.vec = pars
     
     # Some new prerequisites #
@@ -657,7 +721,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
         }
         return(c(node, marginal.probs))
     }
-
+    
     if(get.tips.only == FALSE){
         cat(paste("Calculating marginal probabilities for ", length(nodes), " internal nodes...", sep=""), "\n")
         obj <- NULL
@@ -707,7 +771,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
         setkey(dat.tab, DesNode)
         obj$tip.mat[,2:4] <- matrix(unlist(dat.tab[1:nb.tip,7:9]), ncol = 3, byrow = FALSE)
     }
-
+    
     cat("Done.","\n")
     rates.mat <- matrix(0, 2, 30)
     rates.mat[1,] <- model.vec[c(1:3, 39:41, 77:79, 115:117, 153:155, 191:193, 229:231, 267:269, 305:307, 343:345)]
@@ -723,7 +787,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
     
     
     if(!is.null(AIC)){
-        obj$AIC = AIC
+        obj$AIC <- AIC
     }
     
     class(obj) = "hisse.geosse.states"
@@ -738,7 +802,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -753,12 +817,33 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     }
     
     setDTthreads(threads=dt.threads)
-
+    
     model.vec = pars
     
     # Some new prerequisites #
-    gen <- FindGenerations(phy)
-    dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+    if(includes.fossils == TRUE){
+        if(!is.null(k.samples)){
+            k.samples <- k.samples[order(as.numeric(k.samples[,3]), decreasing=FALSE),]
+            phy <- AddKNodes(phy, k.samples)
+            fix.type <- GetKSampleMRCA(phy, k.samples)
+            gen <- FindGenerations(phy)
+            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+            #These are all inputs for generating starting values:
+            fossil.taxa <- which(dat.tab$branch.type == 1)
+        }else{
+            fix.type <- NULL
+            gen <- FindGenerations(phy)
+            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+            #These are all inputs for generating starting values:
+            fossil.taxa <- which(dat.tab$branch.type == 1)
+        }
+    }else{
+        fix.type <- NULL
+        gen <- FindGenerations(phy)
+        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+        fossil.taxa <- NULL
+    }
+    
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
@@ -766,6 +851,9 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     ##########################
     
     cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
+    if(includes.fossils == FALSE){
+        cache$psi <- 0
+    }
     
     nstates = 26
     nstates.to.eval <- hidden.states
@@ -778,12 +866,22 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     
     NodeEval <- function(node){
         if(node == cache$nb.tip+1){
-            marginal.probs <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+            if(!is.null(k.samples)){
+                marginal.probs <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type.tmp[,1]), fossil.taxa=fossil.taxa, fix.type=fix.type.tmp[,2], get.phi=TRUE)$root.p
+            }else{
+                marginal.probs <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, fossil.taxa=fossil.taxa, fix.type=NULL, get.phi=TRUE)$root.p
+            }
         }else{
             focal <- node
             marginal.probs.tmp <- c()
             for (j in 1:nstates.to.eval){
-                marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j))
+                if(!is.null(k.samples)){
+                    fix.type.tmp <- fix.type
+                    fix.type.tmp <- rbind(fix.type.tmp, c(focal, "fix", j))
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type.tmp[,1]), state=as.numeric(fix.type.tmp[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type.tmp[,2]))
+                }else{
+                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fossil.taxa=fossil.taxa, fix.type="fix"))
+                }
             }
             marginal.probs.tmp <- c(marginal.probs.tmp, rep(log(cache$bad.likelihood)^13, nstates.not.eval))
             best.probs = max(marginal.probs.tmp)
@@ -805,10 +903,11 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
         obj <- NULL
     }
     
+    #Can delete given that I am now making a copy inside DownPass():
     #dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
-        marginal.probs.tmp <- numeric(2)
+        marginal.probs.tmp <- numeric(hidden.states)
         nstates = which(!dat.tab[tip,7:32] == 0)
         cache$states.keep <- as.data.frame(dat.tab[tip,7:32])
         for (j in nstates){
@@ -816,10 +915,14 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
             tmp.state <- 1 * c(cache$to.change[1,j])
             cache$to.change[1,] <- 0
             cache$to.change[1,j] <- tmp.state
-            for (k in 1:dim(cache$to.change)[2]){
+            for(k in 1:dim(cache$to.change)[2]){
                 dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
             }
-            marginal.probs.tmp[j] <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=j)
+            if(!is.null(k.samples)){
+                marginal.probs.tmp[j] <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+            }else{
+                marginal.probs.tmp[j] <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
+            }
         }
         for (k in 1:dim(cache$to.change)[2]){
             dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
@@ -830,6 +933,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
         marginal.probs[nstates] = exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(tip, marginal.probs))
     }
+    
     cat(paste("Finished. Calculating marginal probabilities for ", nb.tip, " tips...", sep=""), "\n")
     tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)
     obj$tip.mat = matrix(unlist(tip.marginals), ncol = 26+1, byrow = TRUE)
@@ -838,7 +942,8 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     cat("Done.","\n")
     rates.mat <- matrix(0, 2, 26)
     index.vector <- 1:52
-    rates.mat[1,] <- model.vec[index.vector %% 2 == 1][-27]
+    model.vec <- model.vec[1:52]
+    rates.mat[1,] <- model.vec[index.vector %% 2 == 1]
     rates.mat[2,] <- model.vec[index.vector %% 2 == 0]
     if(!is.null(fixed.eps)){
         rates.mat[2,] <- fixed.eps
@@ -850,7 +955,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     obj$phy = phy
     
     if(!is.null(AIC)){
-        obj$AIC = AIC
+        obj$AIC <- AIC
     }
     
     class(obj) = "misse.states"
@@ -1050,11 +1155,18 @@ ParameterTransformMiSSE <- function(x){
 }
 
 
-ParameterTransform <- function(x, y){
-    speciation <- x / (1+y)
-    extinction <- (x*y) / (1+y)
-    return(c(speciation, extinction))
+ParameterTransformMiSSESpecial <- function(x) {
+    rates.mat <- matrix(0, 2, 26)
+    index.vector <- 1:52
+    model.vec <- x[1:52]
+    rates.mat[1,] <- model.vec[index.vector %% 2 == 1]
+    rates.mat[2,] <- model.vec[index.vector %% 2 == 0]
+    colnames(rates.mat) <- c("(0A)", "(0B)", "(0C)", "(0D)", "(0E)", "(0F)", "(0G)", "(0H)", "(0I)", "(0J)", "(0K)", "(0L)", "(0M)", "(0N)", "(0O)", "(0P)", "(0Q)", "(0R)", "(0S)", "(0T)", "(0U)", "(0V)", "(0W)", "(0X)", "(0Y)", "(0Z)")
+    rates.mat <- ParameterTransformMiSSE(rates.mat)
+    rownames(rates.mat) <- c("turnover", "extinction.fraction","net.div", "speciation", "extinction")
+    return(c(rates.mat))
 }
+
 
 
 print.hisse.states <- function(x,...){
@@ -1073,3 +1185,4 @@ print.muhisse.states <- function(x,...){
 print.misse.states <- function(x,...){
     print(x$phy)
 }
+
