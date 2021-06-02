@@ -120,6 +120,19 @@ SimulateHisse <- function(turnover.rates, eps.values, transition.rates, max.taxa
 					results[which(id==changed.taxon),]$state <- states[from.to[2]]
 				}
 			}
+			if(dim(subset(results, living))[1]>=max.taxa) { # we're going to stop now over hitting max taxa, so add a bit of random brlen
+				tip.state.counts <- table(subset(results, living)$state)
+				birth.rates.actual <- birth.rates * tip.state.counts
+				death.rates.actual <- death.rates * tip.state.counts
+				transition.rates.actual <- apply(transition.rates, 2, Multiply, y=tip.state.counts)
+				birth.wait.times <- suppressWarnings(rexp(n=length(birth.rates.actual), birth.rates.actual))
+				death.wait.times <- suppressWarnings(rexp(n=length(death.rates.actual), death.rates.actual))
+				transition.wait.times <- suppressWarnings(matrix(rexp(n=length(transition.rates.actual), transition.rates.actual), nrow=dim(transition.rates.actual)[1])) #the NAs will be an issue
+				min.times <- suppressWarnings(c(min(birth.wait.times, na.rm=TRUE), min(death.wait.times, na.rm=TRUE), min(transition.wait.times, na.rm=TRUE)))
+				extra.time <- 0.5 * min(min.times, na.rm=TRUE) # Let's stop halfway to the next random event, just so the last pair of species don't have zero tip length
+				results[which(results$living),]$height <- results[which(results$living),]$height + min(extra.time)
+				results[which(results$living),]$length <- results[which(results$living),]$length + min(extra.time)
+			}
 			keep.running <- CheckKeepRunning(results, max.taxa, max.t, max.wall.time, start)
 		}
 		if(!is.null(checkpoint.file)) {
