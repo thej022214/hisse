@@ -122,14 +122,14 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             no.k.samples <- 0
         }
         gen <- FindGenerations(phy)
-        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
         #These are all inputs for generating starting values:
         fossil.taxa <- which(dat.tab$branch.type == 1)
         fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
         n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
     }else{
         gen <- FindGenerations(phy)
-        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
         fix.type <- NULL
         psi.type <- NULL
@@ -514,7 +514,7 @@ GetTreeTable <- function(phy, root.age=NULL){
 }
 
 
-OrganizeDataMiSSE <- function(phy, f, hidden.states){
+OrganizeDataMiSSE <- function(phy, f, hidden.states, includes.fossils=FALSE){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     
@@ -543,7 +543,9 @@ OrganizeDataMiSSE <- function(phy, f, hidden.states){
     for(row.index in 1:dim(table.info)[1]){
         if(table.info[row.index,5]<=nb.tip){
             if(table.info[row.index,2] > .Machine$double.eps^.50){
-                branch.type[row.index] <- 1
+                if(includes.fossils==TRUE){
+                    branch.type[row.index] <- 1
+                }
             }
             if(any(phy$edge[row.index,2]==k.sample.tip.no)){
                 branch.type[row.index] <- 2

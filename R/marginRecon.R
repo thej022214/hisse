@@ -358,14 +358,14 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
         #These are all inputs for generating starting values:
         fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
         fix.type <- NULL
     }
@@ -527,14 +527,14 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
         #These are all inputs for generating starting values:
         fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
         fix.type <- NULL
     }
@@ -826,24 +826,20 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
             k.samples <- k.samples[order(as.numeric(k.samples[,3]), decreasing=FALSE),]
             phy <- AddKNodes(phy, k.samples)
             fix.type <- GetKSampleMRCA(phy, k.samples)
-            gen <- FindGenerations(phy)
-            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
-            #These are all inputs for generating starting values:
-            fossil.taxa <- which(dat.tab$branch.type == 1)
         }else{
             fix.type <- NULL
-            gen <- FindGenerations(phy)
-            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
-            #These are all inputs for generating starting values:
-            fossil.taxa <- which(dat.tab$branch.type == 1)
         }
+        gen <- FindGenerations(phy)
+        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
+        #These are all inputs for generating starting values:
+        fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{
         fix.type <- NULL
         gen <- FindGenerations(phy)
-        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
     }
-    
+
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when

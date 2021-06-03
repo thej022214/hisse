@@ -57,7 +57,7 @@ AdaptiveConfidenceIntervalSamplingMiSSE <- function(par, lower, upper, desired.d
     
     # Some new prerequisites #
     gen <- FindGenerations(phy)
-    dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+    dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
     if(includes.fossils == TRUE){
         fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{

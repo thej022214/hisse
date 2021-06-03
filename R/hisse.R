@@ -184,7 +184,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
         #These are all inputs for generating starting values:
         fossil.taxa <- which(dat.tab$branch.type == 1)
         fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
@@ -193,7 +193,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
         fix.type <- NULL
         psi.type <- NULL
@@ -359,7 +359,7 @@ DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.ti
 ######################################################################################################################################
 ######################################################################################################################################
 
-OrganizeDataHiSSE <- function(data, phy, f, hidden.states){
+OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.fossils=FALSE){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     
@@ -410,7 +410,9 @@ OrganizeDataHiSSE <- function(data, phy, f, hidden.states){
     for(row.index in 1:dim(table.info)[1]){
         if(table.info[row.index,5]<=nb.tip){
             if(table.info[row.index,2] > .Machine$double.eps^.50){
-                branch.type[row.index] <- 1
+                if(includes.fossils==TRUE){
+                    branch.type[row.index] <- 1
+                }
             }
             if(any(phy$edge[row.index,2]==k.sample.tip.no)){
                 branch.type[row.index] <- 2
@@ -823,7 +825,6 @@ DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type,
             compE.root <- matrix(phi.mat[1:2], 1, 2)
         }
     }
-    
     if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
         return(log(cache$bad.likelihood)^13)
     }else{
@@ -861,7 +862,7 @@ DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type,
             }
         }
         if(!is.finite(loglik)){
-            return(log(cache$bad.likelihood)^7)
+            return(log(cache$bad.likelihood)^13)
         }
     }
     if(get.phi==TRUE){

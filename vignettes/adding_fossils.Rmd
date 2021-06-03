@@ -17,11 +17,13 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=75),tidy=TRUE)
 ```
 
 
-As of version 2.1.1, we have added the ability for HiSSE, MuHiSSE, and MiSSE to handle fossils. Our model for fossils closely follows that of Stadler (2010), and includes a new parameter, $\psi$, that estimates the rate of fossils preservation in a birth-death model. We have extended Stadler's basic model to the SSE equations of Maddison et al. (2007) and the details of which will be included in a forthcoming paper (Beaulieu and O'Meara, In prep). Below I will demonstrate how to set up HiSSE, MuHiSSE, and MiSSE models when the tree and data contain fossils. I will mainly focus on the MiSSE, as it is the most straightforward and because it can be used to demonstrate that both the HiSSE and MuHiSSE likelihoods are correct. Before getting started, be sure to load the `hisse` and `TreeSim` packages:
+As of version 2.1.1, we have added the ability for HiSSE, MuHiSSE, and MiSSE to handle fossils. Our model for fossils closely follows that of Stadler (2010), and includes a new parameter, $\psi$, that estimates the rate of fossils preservation in a birth-death model. We have extended Stadler's basic model to the SSE equations of Maddison et al. (2007) and the details of which will be included in a forthcoming paper (Beaulieu and O'Meara, In prep). Below I will demonstrate how to set up HiSSE, MuHiSSE, and MiSSE models when the tree and data contain fossils. I will mainly focus on MiSSE, as it is the most straightforward and because it can be used to demonstrate that both the HiSSE and MuHiSSE likelihoods are correct. Before getting started, be sure to load the `hisse` and `TreeSim` packages:
 ```{r, eval=TRUE}
 suppressWarnings(library(hisse))
 suppressWarnings(library(TreeSim))
 ```
+
+Also, there are two important terms that need to be understood. Under the FBD there are actually two types of fossils that are sampled. The first are referred to as _m_ fossils, which represent extinct tips -- that is, they represent distinct branches that went extinct before the present. The second are referred _k_ fossils, which represent samples of lineages that eventually made it to the present. In most cases, both fossil types must be present for the FBD to work well, though having _k_ fossils is not absolutely critical for _hisse_ whereas _m_ fossils are. 
 
 ## Simulating a practice data set under MiSSE
 
@@ -64,7 +66,7 @@ one.rate <- MiSSE(fbd.tree$phy, f=1, turnover=turnover, eps=eps,
                   includes.fossils=TRUE, k.samples=fdb.tree$k.samples, sann=TRUE, sann.its=1000)
 ```
 
-Note that the only two additions to the function call are `includes.fossils=TRUE`, which indicates that the tree contains fossils, and `k.samples=` that takes the table of edge samples. If no edge samples exist, this can be set to `NULL`,
+Note that the only two additions to the function call are `includes.fossils=TRUE`, which indicates that the tree contains at least _m_ fossils, and `k.samples=` that takes the table of edge samples. If no edge samples exist, this can be set to `NULL`,
 ```{r, eval=FALSE}
 one.rate <- MiSSE(fbd.tree$phy, f=1, turnover=turnover, eps=eps, 
                   includes.fossils=TRUE, k.samples=NULL, sann=TRUE, sann.its=1000)
@@ -97,9 +99,9 @@ margin.test <- MarginReconMuHiSSE(phy=fbd.tree$phy, data=data, f=c(1,1,1,1), par
                                   includes.fossils=TRUE, k.samples=fbd.tree$k.samples)
 ```
 
-## Checking the HiSSE and MuHiSSE likelihoods
+## Checking the MiSSE, HiSSE, and MuHiSSE likelihoods
 
-The easiest way to check that the likelihoods calculated by `hisse()` and `MuHiSSE()` are correct is to take the likelihood calculated by `MiSSE()` and add this to the likelihood of a simple Markov transition model. As described in Caetano et al. (2018), an SSE model jointly maximizes the probability of the observed states at the tips *and* the observed tree, given the model. Thus, if the character is completely disassociated from the rate differences in the tree (with what we call a character independent model) then this test should work. 
+The easiest way to check that the likelihoods calculated by `MiSSE()`, `hisse()`, and `MuHiSSE()` are correct is to take the likelihood calculated by `MiSSE()` and add this to the likelihood of a simple Markov transition model. As described in Caetano et al. (2018), an SSE model jointly maximizes the probability of the observed states at the tips *and* the observed tree, given the model. Thus, if the character is completely disassociated from the rate differences in the tree (with what we call a character independent model) then this test should work. 
 
 I will show this test here. First, I will calculate the likelihood of a simple BiSSE model, where the diversification rates are the same for states 0 and 1, on a simulated dataset that contains fossils:
 ```{r, eval=TRUE}
@@ -123,7 +125,7 @@ data <- hisse:::AddKData(data, k.samples)
 data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
 data.new <- data.new[phy.k$tip.label,]
     
-dat.tab <- hisse:::OrganizeDataHiSSE(data.new, phy=phy.k, f=c(1,1), hidden.states=FALSE)
+dat.tab <- hisse:::OrganizeDataHiSSE(data.new, phy=phy.k, f=c(1,1), hidden.states=FALSE, includes.fossils=TRUE)
 fossil.taxa <- which(dat.tab$branch.type == 1)
 pars.bisse <- c(0.1+0.03, 0.1+0.03, 0.03/0.1, 0.03/0.1, 0.01, 0.01)
  
@@ -137,7 +139,7 @@ hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", co
 
 Next we will calculate the likelihood of _just_ the tree using `MiSSE()`:
 ```{r, eval=TRUE}
-dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
+dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
 cache$psi <- 0.01
@@ -221,7 +223,8 @@ cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=FALS
                                          bad.likelihood=exp(-500), f=c(1,1,1,1), ode.eps=0)
 cache$psi <- 0.01
 gen <- hisse:::FindGenerations(phy.k)
-dat.tab <- hisse:::OrganizeData(data.new, phy.k, f=c(1,1,1,1), hidden.states=FALSE)
+dat.tab <- hisse:::OrganizeData(data.new, phy.k, f=c(1,1,1,1), hidden.states=FALSE, 
+                                includes.fossils=TRUE)
 fossil.taxa <- which(dat.tab$branch.type == 1)
     
 muhisse.full <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, root.type="madfitz", 
@@ -231,7 +234,7 @@ muhisse.full <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, root.type
 
 ## Trait independent model should be loglik_tree + loglik_character ##
 #Part 1: MiSSE loglik:
-dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
+dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, 
                                       nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), 
