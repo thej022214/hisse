@@ -14,7 +14,7 @@ verbose=TRUE, n.cores=NULL, dt.threads=1)
 \item{data}{a data matrix containing species information (see Details).}
 \item{f}{vector of length 3 with the estimated proportion of extant species in area 00, 11, and 01 that are included in the phylogeny. A value of c(0.25, 0.5, 0.25) means that 25 percent of species in state 00 and 01 and 50 percent of species in state 11 are included in the phylogeny. By default all species are assumed to be known.}
 \item{pars}{vector containing the MLE of the parameters.}
-\item{hidden.states}{a numeric indicating the number of shifts. The default is \code{1}.} 
+\item{hidden.states}{a numeric indicating the number of shifts. The default is \code{1} meaning a standard GeoSSE model.} 
 \item{assume.cladogenetic}{a logical indicating whether the model
   assumes that changes occurr at the nodes. The default is
   \code{TRUE}. Setting this to \code{FALSE} will result in a different

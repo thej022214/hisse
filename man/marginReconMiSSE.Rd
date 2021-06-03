@@ -14,7 +14,7 @@ k.samples=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.th
   0.50 means that 50 percent of species are contained in the. By default all species are assumed 
   to be sampled.}
 \item{pars}{vector containing the MLE of the parameters.}
-\item{hidden.states}{a numeric indicating the number of shifts. The default is \code{2}.} 
+\item{hidden.states}{a numeric indicating the number of shifts. The default is \code{1} meaning a single birth-death model.} 
 \item{fixed.eps}{a value to be used to fix extinction fraction during search. Default is \code{NULL} meaning that it is freely estimated.}
 \item{condition.on.survival}{a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
 \item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}

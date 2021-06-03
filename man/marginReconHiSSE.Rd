@@ -20,7 +20,7 @@ k.samples = NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.
   that 25 percent of species in state 0 and 50 percent of species in state 1 are 
   included in the phylogeny. By default all species are assumed to be sampled.}
 \item{pars}{vector containing the MLE of the parameters.}
-\item{hidden.states}{a numeric indicating the number of shifts. The default is \code{1}.} 
+\item{hidden.states}{a numeric indicating the number of shifts. The default is \code{1} meaning a standard BiSSE model.} 
 \item{condition.on.survival}{a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
 \item{root.type}{indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, \dQuote{madfitz}, assumed equal, \dQuote{equal}, or set to user, \dQuote{user}.}
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
