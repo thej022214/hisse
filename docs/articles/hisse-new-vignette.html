@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.9.12</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.1</span>
       </span>
     </div>
 
@@ -66,6 +66,9 @@
       <a href="../articles/MuHiSSE-vignette.html">Running a Multistate HiSSE model</a>
     </li>
     <li>
+      <a href="../articles/adding_fossils.html">Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE</a>
+    </li>
+    <li>
       <a href="../articles/hisse-fisse-type1-vignette.html">Type I errors, Model rejection, &amp; HiSSE vs. FiSSE</a>
     </li>
     <li>
@@ -87,7 +90,7 @@
 
       
 
-      </header><script src="hisse-new-vignette_files/header-attrs-2.6/header-attrs.js"></script><div class="row">
+      </header><script src="hisse-new-vignette_files/header-attrs-2.8/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>A newer, faster HiSSE function</h1>
@@ -138,7 +141,7 @@
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
 <span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
-<span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></code></pre></div>
+<span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></code></pre></div>
 <p>Next, we have to set up a transition matrix. There is a function provided to make this easy, and allows users to customize the matrix to fit particular hypotheses. Be sure to look at the options on this function call, for allowing diagonals and for customizing the matrix when you have character independent model.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">trans.rates.bisse</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/TransMatMakerHiSSE.html">TransMatMakerHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">0</span><span class="op">)</span>
@@ -155,7 +158,7 @@
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>
 <span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
-<span class="va">BiSSE</span> <span class="op">&lt;-</span> <span class="fu">hiSSE</span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">sim.dat</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, 
+<span class="va">BiSSE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hisse.html">hisse</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">sim.dat</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, 
                      eps<span class="op">=</span><span class="va">extinction.fraction</span>, hidden.states<span class="op">=</span><span class="cn">FALSE</span>, 
                      trans.rate<span class="op">=</span><span class="va">trans.rates.bisse</span><span class="op">)</span></code></pre></div>
 </div>
@@ -178,7 +181,7 @@
 ## (1B)   NA    5    3   NA</code></pre>
 <p>Now, we can just plug these options into MuHiSSE:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">HiSSE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hisse.html">hisse</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">states.trans</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, 
+<code class="sourceCode R"><span class="va">HiSSE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hisse.html">hisse</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">sim.dat</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, 
                      eps<span class="op">=</span><span class="va">extinction.fraction</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, 
                      trans.rate<span class="op">=</span><span class="va">trans.rate.hisse</span><span class="op">)</span></code></pre></div>
 </div>

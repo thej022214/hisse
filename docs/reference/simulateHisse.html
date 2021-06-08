@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.9.12</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.1</span>
       </span>
     </div>
 
@@ -105,6 +105,9 @@
     </li>
     <li>
       <a href="../articles/MuHiSSE-vignette.html">Running a Multistate HiSSE model</a>
+    </li>
+    <li>
+      <a href="../articles/adding_fossils.html">Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE</a>
     </li>
     <li>
       <a href="../articles/hisse-fisse-type1-vignette.html">Type I errors, Model rejection, &amp; HiSSE vs. FiSSE</a>
@@ -144,7 +147,8 @@
 
     <pre class="usage"><span class='fu'>SimulateHisse</span><span class='op'>(</span><span class='va'>turnover.rates</span>, <span class='va'>eps.values</span>, <span class='va'>transition.rates</span>, max.taxa<span class='op'>=</span><span class='cn'>Inf</span>, max.t<span class='op'>=</span><span class='cn'>Inf</span>, 
 max.wall.time<span class='op'>=</span><span class='cn'>Inf</span>, <span class='va'>x0</span>, nstart<span class='op'>=</span><span class='fl'>1</span>, checkpoint.file<span class='op'>=</span><span class='cn'>NULL</span>, checkpoint.frequency<span class='op'>=</span><span class='fl'>100</span>, 
-checkpoint.start.object<span class='op'>=</span><span class='cn'>NULL</span>, override.safeties<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span></pre>
+checkpoint.start.object<span class='op'>=</span><span class='cn'>NULL</span>, override.safeties<span class='op'>=</span><span class='cn'>FALSE</span>, mass.extinction.heights<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>)</span>,
+mass.extinction.magnitudes<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -197,6 +201,14 @@ checkpoint.start.object<span class='op'>=</span><span class='cn'>NULL</span>, ov
       <th>override.safeties</th>
       <td><p>simulate even if there is no limit on number of taxa, depth of tree, or wall time.</p></td>
     </tr>
+    <tr>
+      <th>mass.extinction.heights</th>
+      <td><p>vector of times above the root [NOT from the present] to have a mass extinction.</p></td>
+    </tr>
+    <tr>
+      <th>mass.extinction.magnitudes</th>
+      <td><p>vector of per species extinction probability at mass extinctions.</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
@@ -210,7 +222,8 @@ checkpoint.start.object<span class='op'>=</span><span class='cn'>NULL</span>, ov
     <p>This returns a list, with the following elements:</p>
 <dt>$results</dt><dd><p>a dataframe containing the simulation output: states at nodes and tips, ancestor-descendant pairs, branch lengths.</p></dd>
 	<dt>$birth.counts</dt><dd><p>a vector, in the same state order as turnover.rates et al., that includes the counts for the number of times species in each state speciated.</p></dd>
-	<dt>$death.counts</dt><dd><p>same as birth.counts, but counting extinction events in each state.</p></dd>
+	<dt>$death.counts</dt><dd><p>same as birth.counts, but counting extinction events in each state outside of mass extinctions.</p></dd>
+	<dt>$mass.extinction.death.counts</dt><dd><p>total number of species that went extinct during a mass extinction event (which is assumed to be trait-independent).</p></dd>
 	<dt>$transition.counts</dt><dd><p>matrix of counts of transitions from one state to another.</p></dd>
 	<dt>$n.surviving</dt><dd><p>the number of taxa alive at the end of the simulation.</p></dd>
 

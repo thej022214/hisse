@@ -1,4 +1,4 @@
-pandoc: 2.11.3.2
+pandoc: '2.13'
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
@@ -6,8 +6,9 @@ articles:
   GeoHiSSE-vignette: GeoHiSSE-vignette.html
   MiSSE-vignette: MiSSE-vignette.html
   MuHiSSE-vignette: MuHiSSE-vignette.html
+  adding_fossils: adding_fossils.html
   hisse-fisse-type1-vignette: hisse-fisse-type1-vignette.html
   hisse-new-vignette: hisse-new-vignette.html
   hisse-vignette: hisse-vignette.html
-last_built: 2021-01-16T23:15Z
+last_built: 2021-06-08T16:46Z
 

@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.9.12</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.1</span>
       </span>
     </div>
 
@@ -66,6 +66,9 @@
       <a href="../articles/MuHiSSE-vignette.html">Running a Multistate HiSSE model</a>
     </li>
     <li>
+      <a href="../articles/adding_fossils.html">Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE</a>
+    </li>
+    <li>
       <a href="../articles/hisse-fisse-type1-vignette.html">Type I errors, Model rejection, &amp; HiSSE vs. FiSSE</a>
     </li>
     <li>
@@ -87,7 +90,7 @@
 
       
 
-      </header><script src="hisse-vignette_files/header-attrs-2.6/header-attrs.js"></script><div class="row">
+      </header><script src="hisse-vignette_files/header-attrs-2.8/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Running the old HiSSE function</h1>
@@ -290,9 +293,9 @@
            eps.anc<span class="op">=</span><span class="va">eps.anc</span>, trans.rate<span class="op">=</span><span class="va">trans.rates.nodual.allequal</span>, sann<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
 <p>and the results can be compared against any model in the hisse set, including BiSSE.</p>
 <p>##Plotting hisse reconstructions</p>
-<p>Our HiSSE package provides plotting functionality in <code><a href="../reference/plot.hisse.states.html">plot.hisse.states()</a></code> for character state reconstructions of <code>class hisse.states</code> output by our <code>MarginRecon()</code> function. Specifically, the function provides an overlay of the state reconstructions on the rate estimates. There are a couple of options for how these reconstructions to be plotted. First, a single <code>hisse.states</code> object can be supplied and it will provide a heat map of the diversification rate parameter of choice. Users can choose among turnover, net diversification (“net.div”), speciation, extinction, or extinction fraction (“extinction.fraction”). I’ve provided example <code>hisse.states</code> output from the example data set simulated above. This particular model assumed two diversification rate parameters – i.e., turnover.anc=c(1,1,1,2), and eps.anc=c(1,1,1,1). Let’s load this file and check that everything has loaded correctly and is of the proper <code>hisse.states</code> class:</p>
+<p>Our HiSSE package provides plotting functionality in <code><a href="../reference/plot.hisse.states.html">plot.hisse.states()</a></code> for character state reconstructions of <code>class hisse.states</code> output by our <code><a href="../reference/MarginRecon.old.html">MarginRecon.old()</a></code> function. Specifically, the function provides an overlay of the state reconstructions on the rate estimates. There are a couple of options for how these reconstructions to be plotted. First, a single <code>hisse.states</code> object can be supplied and it will provide a heat map of the diversification rate parameter of choice. Users can choose among turnover, net diversification (“net.div”), speciation, extinction, or extinction fraction (“extinction.fraction”). I’ve provided example <code>hisse.states</code> output from the example data set simulated above. This particular model assumed two diversification rate parameters – i.e., turnover.anc=c(1,1,1,2), and eps.anc=c(1,1,1,1). Let’s load this file and check that everything has loaded correctly and is of the proper <code>hisse.states</code> class:</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># pp.recon &lt;- MarginRecon(phy=phy, data=sim.dat, f = pp$f, pars = pp$solution</span>
+<code class="sourceCode R"><span class="co"># pp.recon &lt;- MarginRecon.old(phy=phy, data=sim.dat, f = pp$f, pars = pp$solution</span>
 <span class="co">#                         , hidden.states = pp$hidden.states, AIC = pp$AIC)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="st">"testrecon1.Rsave"</span><span class="op">)</span> <span class="co"># Line above shows the command to create this result.</span>
 <span class="fu"><a href="https://rdrr.io/r/base/class.html">class</a></span><span class="op">(</span><span class="va">pp.recon</span><span class="op">)</span></code></pre></div>
@@ -352,9 +355,9 @@
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pp.recon</span><span class="op">$</span><span class="va">AIC</span></code></pre></div>
 <pre><code>## [1] 364.8615</code></pre>
-<p>If this returns a NULL, then something has gone wrong and you should check how you performed the reconstructions. The AIC for the model can be supplied as an argument in the <code>MarginRecon()</code> function (using the <code>pp</code> object we defined above):</p>
+<p>If this returns a NULL, then something has gone wrong and you should check how you performed the reconstructions. The AIC for the model can be supplied as an argument in the <code><a href="../reference/MarginRecon.old.html">MarginRecon.old()</a></code> function (using the <code>pp</code> object we defined above):</p>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">pp.recon</span> <span class="op">=</span> <span class="fu">MarginRecon</span><span class="op">(</span><span class="va">phy</span>, <span class="va">sim.dat</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, pars<span class="op">=</span><span class="va">pp</span><span class="op">$</span><span class="va">solution</span>, 
+<code class="sourceCode R"><span class="va">pp.recon</span> <span class="op">=</span> <span class="fu"><a href="../reference/MarginRecon.old.html">MarginRecon.old</a></span><span class="op">(</span><span class="va">phy</span>, <span class="va">sim.dat</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, pars<span class="op">=</span><span class="va">pp</span><span class="op">$</span><span class="va">solution</span>, 
                        AIC<span class="op">=</span><span class="va">pp</span><span class="op">$</span><span class="va">AIC</span>, n.cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p>I’ve created two additional <code>hisse.states</code> objects that I will use to demonstrate how to plot model-averaged states and rates: one reconstruction is based on the null-two model [turnover.anc=c(1,1,2,2)], and the other assumes four free turnover rates [i.e., turnover.anc=c(1,2,3,4)]; in all cases I assumed equal transition rates and equal extinction fractions. I recognize that there are many ways to generate a list. But here is one way, where I’m assuming that the marginal reconstructions from three models are saved to the directory we are working from:</p>
 <div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">

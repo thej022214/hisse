@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.9.12</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.1</span>
       </span>
     </div>
 
@@ -105,6 +105,9 @@
     </li>
     <li>
       <a href="../articles/MuHiSSE-vignette.html">Running a Multistate HiSSE model</a>
+    </li>
+    <li>
+      <a href="../articles/adding_fossils.html">Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE</a>
     </li>
     <li>
       <a href="../articles/hisse-fisse-type1-vignette.html">Type I errors, Model rejection, &amp; HiSSE vs. FiSSE</a>
@@ -235,14 +238,14 @@ AIC<span class='op'>=</span><span class='cn'>NULL</span>, verbose<span class='op
 <span class='va'>phy</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/diversitree/man/simulate.html'>tree.bisse</a></span><span class='op'>(</span><span class='va'>pars</span>, max.t<span class='op'>=</span><span class='fl'>30</span>, x0<span class='op'>=</span><span class='fl'>0</span><span class='op'>)</span>
 <span class='va'>sim.dat</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/names.html'>names</a></span><span class='op'>(</span><span class='va'>phy</span><span class='op'>$</span><span class='va'>tip.state</span><span class='op'>)</span>, <span class='va'>phy</span><span class='op'>$</span><span class='va'>tip.state</span><span class='op'>)</span>
 <span class='co'>## Now fit HiSSE equivalent with a hidden state for state 1:</span>
-<span class='va'>trans.rates.hisse</span> <span class='op'>&lt;-</span> <span class='fu'>TransMatMaker</span><span class='op'>(</span>hidden.states<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in TransMatMaker(hidden.states = TRUE): could not find function "TransMatMaker"</span></div><div class='input'><span class='va'>trans.rates.hisse</span> <span class='op'>&lt;-</span> <span class='fu'><a href='TransMatMaker.old.html'>ParDrop</a></span><span class='op'>(</span><span class='va'>trans.rates.hisse</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2</span>,<span class='fl'>3</span>,<span class='fl'>5</span>,<span class='fl'>7</span>,<span class='fl'>8</span>,<span class='fl'>9</span>,<span class='fl'>10</span>,<span class='fl'>12</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in ParDrop(trans.rates.hisse, c(2, 3, 5, 7, 8, 9, 10, 12)): object 'trans.rates.hisse' not found</span></div><div class='input'><span class='va'>pp.hisse</span> <span class='op'>&lt;-</span> <span class='fu'><a href='hisse.html'>hisse</a></span><span class='op'>(</span><span class='va'>phy</span>, <span class='va'>sim.dat</span>, hidden.states<span class='op'>=</span><span class='cn'>TRUE</span>, turnover.anc<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>0</span>,<span class='fl'>3</span><span class='op'>)</span>, 
+<span class='va'>trans.rates.hisse</span> <span class='op'>&lt;-</span> <span class='fu'><a href='TransMatMaker.old.html'>TransMatMaker.old</a></span><span class='op'>(</span>hidden.states<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='va'>trans.rates.hisse</span> <span class='op'>&lt;-</span> <span class='fu'><a href='TransMatMaker.old.html'>ParDrop</a></span><span class='op'>(</span><span class='va'>trans.rates.hisse</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2</span>,<span class='fl'>3</span>,<span class='fl'>5</span>,<span class='fl'>7</span>,<span class='fl'>8</span>,<span class='fl'>9</span>,<span class='fl'>10</span>,<span class='fl'>12</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>pp.hisse</span> <span class='op'>&lt;-</span> <span class='fu'><a href='hisse.html'>hisse</a></span><span class='op'>(</span><span class='va'>phy</span>, <span class='va'>sim.dat</span>, hidden.states<span class='op'>=</span><span class='cn'>TRUE</span>, turnover.anc<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>0</span>,<span class='fl'>3</span><span class='op'>)</span>, 
 eps.anc<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>2</span>,<span class='fl'>0</span>,<span class='fl'>3</span><span class='op'>)</span>, trans.rate<span class='op'>=</span><span class='va'>trans.rates.hisse</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='error'>Error in hisse(phy, sim.dat, hidden.states = TRUE, turnover.anc = c(1,     2, 0, 3), eps.anc = c(1, 2, 0, 3), trans.rate = trans.rates.hisse): unused arguments (turnover.anc = c(1, 2, 0, 3), eps.anc = c(1, 2, 0, 3))</span></div><div class='input'><span class='co'>##Now reconstruct the likeliest states under this model:</span>
-<span class='va'>pp</span> <span class='op'>&lt;-</span> <span class='fu'>MarginRecon</span><span class='op'>(</span><span class='va'>phy</span>, <span class='va'>sim.dat</span>, f<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>1</span><span class='op'>)</span>, pars<span class='op'>=</span><span class='va'>pp.hisse</span><span class='op'>$</span><span class='va'>solution</span>, 
+<span class='va'>pp</span> <span class='op'>&lt;-</span> <span class='fu'>MarginRecon.old</span><span class='op'>(</span><span class='va'>phy</span>, <span class='va'>sim.dat</span>, f<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>1</span><span class='op'>)</span>, pars<span class='op'>=</span><span class='va'>pp.hisse</span><span class='op'>$</span><span class='va'>solution</span>, 
 hidden.states<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in MarginRecon(phy, sim.dat, f = c(1, 1), pars = pp.hisse$solution,     hidden.states = TRUE): could not find function "MarginRecon"</span></div><div class='input'><span class='co'># }</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in MarginRecon.old(phy, sim.dat, f = c(1, 1), pars = pp.hisse$solution,     hidden.states = TRUE): object 'pp.hisse' not found</span></div><div class='input'><span class='co'># }</span>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
