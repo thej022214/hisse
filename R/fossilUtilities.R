@@ -72,7 +72,7 @@ GetFossils <- function(phy, psi=0.1, edge_combined=NULL) {
 	# loop to find k fossils that have sampled descendants from branches that are extinct
 	for (i in sequence(nrow(fossils))) {
 		all_descendants <- phangorn::Descendants(phy, fossils$tipwardnode[i], type="all")[[1]]
-		all_descendants <- all_descendants[which(all_descendants>ape::Ntip(phy))] # so we only look at the internal nodes
+#		all_descendants <- all_descendants[which(all_descendants>ape::Ntip(phy))] # so we only look at the internal nodes
 		other_fossils <- subset(fossils, fossils$tipwardnode!=fossils$tipwardnode[i])
 		if(length(all_descendants)>0) {
 			if(any(all_descendants %in% other_fossils$rootwardnode)) {
