@@ -45,7 +45,8 @@ GetEdgeCombined <- function(phy) {
 }
 
 
-GetFossils <- function(phy, psi=0.1, edge_combined=NULL) {
+GetFossils <- function(phy, psi=0.1) {
+    edge_combined=NULL
     if(is.null(edge_combined)) {
         edge_combined <- GetEdgeCombined(phy)
     }
@@ -81,21 +82,18 @@ GetFossils <- function(phy, psi=0.1, edge_combined=NULL) {
 		}
 	}
 	
-	fossils$fossiltype_mk <- NA
-	fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_terminal")] <- "m"
-	fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_internal" & !fossils$has_sampled_descendant)] <- "m"
-	fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_internal" & fossils$has_sampled_descendant)] <- "k"
-
-
-	
-
+    #fossils$fossiltype_mk <- NA
+    #fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_terminal")] <- "m"
+    #fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_internal" & !fossils$has_sampled_descendant)] <- "m"
+    #fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_internal" & fossils$has_sampled_descendant)] <- "k"
+    
     fossils <- fossils[order(fossils$timefrompresent),]
     
     return(fossils)
 }
 
 
-ProcessSimSample <- function(phy, f, keep.root.samples=FALSE){
+ProcessSimSample <- function(phy, f){
     
     #Step 1: Get MRCA of K samples for table. We want MRCA1, MRCA2, TIMEFROMPRESENT, Trait
     k.samples <- f[which(f$has_sampled_descendant == TRUE),]
@@ -189,6 +187,7 @@ ProcessSimSample <- function(phy, f, keep.root.samples=FALSE){
     
     k.samples <- data.frame(taxon1=tmp[,1], taxon2=tmp[,2], timefrompresent=tmp[,3], stringsAsFactors=FALSE)
     
+    keep.root.samples=FALSE
     if(keep.root.samples == FALSE){
         root.edge.samples <- which(as.numeric(k.samples[,3]) > max(node.depth.edgelength(new.tree)))
         if(length(root.edge.samples)>0){
