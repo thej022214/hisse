@@ -914,7 +914,7 @@ test_that("Placing_m_k_fossils", {
     skip_on_cran()
     
     set.seed(42)
-    phy <- TreeSim::sim.bd.taxa(n = 100, numbsim = 1, lambda = .3, mu = .2)[[1]]
+    phy <- TreeSim::sim.bd.taxa(n = 200, numbsim = 1, lambda = .3, mu = .2)[[1]]
     f <- hisse:::GetFossils(phy, psi=0.1)
     pp <- hisse:::ProcessSimSample(phy, f)
 

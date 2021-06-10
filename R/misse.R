@@ -585,7 +585,7 @@ SingleChildProbMiSSE <- function(cache, pars, compD, compE, start.time, end.time
     runSilent <- function() {
         options(warn = -1)
         on.exit(options(warn = 0))
-        capture.output(res <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+        capture.output(res <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-10, atol=1e-10))
         res
     }
     #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dll = "misse-ext-derivs", rtol=1e-8, atol=1e-8)

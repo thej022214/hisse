@@ -863,7 +863,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     NodeEval <- function(node){
         if(node == cache$nb.tip+1){
             if(!is.null(k.samples)){
-                marginal.probs <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type.tmp[,1]), fossil.taxa=fossil.taxa, fix.type=fix.type.tmp[,2], get.phi=TRUE)$root.p
+                marginal.probs <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), fossil.taxa=fossil.taxa, fix.type=fix.type[,2], get.phi=TRUE)$root.p
             }else{
                 marginal.probs <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, fossil.taxa=fossil.taxa, fix.type=NULL, get.phi=TRUE)$root.p
             }

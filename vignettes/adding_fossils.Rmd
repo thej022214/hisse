@@ -17,10 +17,11 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=75),tidy=TRUE)
 ```
 
 
-As of version 2.1.1, we have added the ability for HiSSE, MuHiSSE, and MiSSE to handle fossils. Our model for fossils closely follows that of Stadler (2010), and includes a new parameter, $\psi$, that estimates the rate of fossils preservation in a birth-death model. We have extended Stadler's basic model to the SSE equations of Maddison et al. (2007) and the details of which will be included in a forthcoming paper (Beaulieu and O'Meara, In prep). Below I will demonstrate how to set up HiSSE, MuHiSSE, and MiSSE models when the tree and data contain fossils. I will mainly focus on MiSSE, as it is the most straightforward and because it can be used to demonstrate that both the HiSSE and MuHiSSE likelihoods are correct. Before getting started, be sure to load the `hisse` and `TreeSim` packages:
+As of version 2.1.1, we have added the ability for HiSSE, MuHiSSE, and MiSSE to handle fossils. Our fossilized birth-death model (FBD) closely follows that of Stadler (2010), and includes a new parameter, $\psi$, that estimates the rate of fossils preservation in a birth-death model. We have extended Stadler's basic model to the SSE equations of Maddison et al. (2007), the details of which will be included in a forthcoming paper (Beaulieu and O'Meara, In prep). Below I will demonstrate how to set up HiSSE, MuHiSSE, and MiSSE models when the tree and data contain fossils. I will mainly focus on MiSSE, as it is the most straightforward and because it can be used to demonstrate that both the HiSSE and MuHiSSE likelihoods are correct. 
+
+Before getting started, be sure to load the `hisse` and `TreeSim` packages:
 ```{r, eval=TRUE}
 suppressWarnings(library(hisse))
-suppressWarnings(library(TreeSim))
 ```
 
 Also, there are two important terms that need to be understood. Under the FBD there are actually two types of fossils that are sampled. The first are referred to as _m_ fossils, which represent extinct tips -- that is, they represent distinct branches that went extinct before the present. The second are referred _k_ fossils, which represent samples of lineages that eventually made it to the present. In most cases, both fossil types must be present for the FBD to work well, though having _k_ fossils is not absolutely critical for _hisse_ whereas _m_ fossils are. 
@@ -35,8 +36,8 @@ phy <- TreeSim::sim.bd.taxa(n = 100, numbsim = 1, lambda = 0.3, mu = 0.2)[[1]]
 
 In order to sample both extinct tips and edges, consistent under the fossilized birth-death model, we have written customized functions that takes as input the full tree and a value for $\psi$ and returns a sampled tree:
 ```{r, eval=TRUE}
-f <- hisse:::GetFossils(phy, psi=0.05)
-fbd.tree <- hisse:::ProcessSimSample(phy, f)
+f <- GetFossils(phy, psi=0.05)
+fbd.tree <- ProcessSimSample(phy, f)
 ```
 
 The first function, `GetFossils()` samples edges and extinct tips and provides a detailed table about these samples. The second function, `ProcessSimSample()`, takes the detailed table and provides a phylogeny that contains sampled extinct tips and a table that contains the location of the edge samples. Let's look at the setup of the edge samples table:
