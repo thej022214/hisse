@@ -80,6 +80,14 @@ GetFossils <- function(phy, psi=0.1, edge_combined=NULL) {
 			}
 		}
 	}
+	
+	fossils$fossil_type_mk <- NA
+	fossils$fossil_type_mk[which(fossils$fossiltype_long=="extinct_terminal")] <- "m"
+	fossils$fossil_type_mk[which(fossils$fossiltype_long=="extinct_internal" & !fossils$has_sampled_descendant)] <- "m"
+	fossils$fossil_type_mk[which(fossils$fossiltype_long=="extinct_internal" & fossils$has_sampled_descendant)] <- "k"
+
+
+	
 
     fossils <- fossils[order(fossils$timefrompresent),]
     
