@@ -79,6 +79,9 @@ GetFossils <- function(phy, psi=0.1) {
 			if(any(all_descendants %in% other_fossils$rootwardnode)) {
 				fossils$has_sampled_descendant[i] <- TRUE
 			}
+            if(any(fossils$tipwardnode[i] %in% other_fossils$rootwardnode)) {
+                fossils$has_sampled_descendant[i] <- TRUE
+            }
 		}
 	}
 	
