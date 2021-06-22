@@ -9,6 +9,8 @@ It has multiple models:
 * MuHiSSE: for multiple states (or multiple characters converted into a single multistate character)
 * MiSSE: trait-independent heterogeneous models
 
+See the articles tab on https://speciationextinction.info/ for vignettes on using the models in hisse.
+
 This is the bleeding edge version: you can install it with `remotes::install_github("thej022214/hisse")` [install the remotes package from CRAN first]
 
 See http://thej022214.github.io/hisse/ for info on its functions and its vignettes (longer tutorials, listed as articles).
