@@ -12,8 +12,7 @@ turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0,
 dt.threads=1)
 }       
 \arguments{
-\item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
-  with internal nodes labeled denoting the ancestral selective regimes.}
+\item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
 \item{data}{a matrix (or dataframe) with three columns. The first column 
   containing the species names and the second and third containing the binary 
   character information. Character "0" is on column 2 and chracter "1" is on 

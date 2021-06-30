@@ -12,8 +12,7 @@ max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.u
 trans.upper=100, restart.obj=NULL, ode.eps=0)
 }
 \arguments{
-\item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and
-  with internal nodes labeled denoting the ancestral selective regimes.}
+\item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
 \item{f}{the estimated proportion of extant species included in the phylogeny. A value of
   0.50 means that 50 percent of species are contained in the. By default all species are assumed
   to be sampled.}
