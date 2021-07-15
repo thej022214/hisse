@@ -5,13 +5,13 @@
  and Extinction) on a phylogeny, varying the number of parameters for turnover and extinction fraction.}
 \usage{
 generateMiSSEGreedyCombinations(max.param=52, turnover.tries=sequence(26), 
-eps.tries=sequence(26), fixed.eps.tries=c(0, 0.9, NA), vary.both=TRUE)
+eps.tries=sequence(26), fixed.eps.tries=NA, vary.both=TRUE)
 }
 \arguments{
 \item{max.param}{how many parameters to try estimating at the most.}
 \item{turnover.tries}{vector of number of free turnover parameters.}
 \item{eps.tries}{vector of number of free eps parameters.}
-\item{fixed.eps.tries}{fixed eps values to use (and an NA to allow estimating, as well).}
+\item{fixed.eps.tries}{fixed eps values to use. By default this is set to NA to allow estimating. However, a vector of values can supplied as fixed value for eps (and an NA to allow estimating, as well).}
 \item{vary.both}{if TRUE, allows models that have multiple parameters for turnover and eps; if FALSE, if turnover has multiple hidden states eps can only have one estimated value and vice versa.}
 }
 \details{

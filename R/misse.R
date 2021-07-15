@@ -248,19 +248,22 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
             out = nloptr(x0=ip, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+            sann.counts <- NULL
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
             out = subplex(ip, fn=DevOptimizeMiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+            sann.counts <- out$counts
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann = GenSA(ip, fn=DevOptimizeMiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+        out.sann = GenSA(ip, fn=DevOptimizeMiSSE, lower=lower, upper=upper, control=list(max.call=sann.its, threshold.stop=max.tol), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+        sann.counts <- out.sann$counts
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
         out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
@@ -274,7 +277,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     
     cat("Finished. Summarizing results...", "\n")
     misse_end_time <- Sys.time()
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, fixed.eps=fixed.eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, turnover=turnover, eps=eps, elapsed.minutes=difftime(misse_end_time, misse_start_time, units="min"), includes.fossils=includes.fossils, k.samples=k.samples, fix.type=fix.type, psi.type=psi.type)
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, fixed.eps=fixed.eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, turnover=turnover, eps=eps, elapsed.minutes=difftime(misse_end_time, misse_start_time, units="min"), includes.fossils=includes.fossils, k.samples=k.samples, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
     class(obj) <- append(class(obj), "misse.fit")
     return(obj)
 }
@@ -400,7 +403,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
 }
 
 
-generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequence(26), eps.tries=sequence(26), fixed.eps.tries=c(0, 0.9, NA), vary.both=TRUE) {
+generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequence(26), eps.tries=sequence(26), fixed.eps.tries=NA, vary.both=TRUE) {
     fixed.eps <- eps <- "CRAN wants this declared somehow"
     if(vary.both) {
         combos <- expand.grid(turnover=turnover.tries, eps=eps.tries, fixed.eps=fixed.eps.tries)
@@ -486,6 +489,8 @@ DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, fixed.eps, nb
     }else{
         logl <- DownPassMisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
     }
+    print(p.new)
+    print(logl)
     return(-logl)
 }
 
@@ -582,15 +587,15 @@ SingleChildProbMiSSE <- function(cache, pars, compD, compE, start.time, end.time
     }else{
         times=c(start.time, end.time)
     }
-    runSilent <- function() {
-        options(warn = -1)
-        on.exit(options(warn = 0))
-        capture.output(res <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-10, atol=1e-10))
-        res
-    }
+    #runSilent <- function() {
+    #    options(warn = -1)
+    #    on.exit(options(warn = 0))
+    #    capture.output(res <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-10, atol=1e-10))
+    #    res
+    #}
     #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dll = "misse-ext-derivs", rtol=1e-8, atol=1e-8)
-    #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-    prob.subtree.cal.full <- runSilent()
+    prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+    #prob.subtree.cal.full <- runSilent()
     
     ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
     if(attributes(prob.subtree.cal.full)$istate[1] < 0){
