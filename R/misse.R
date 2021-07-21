@@ -490,8 +490,6 @@ DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, fixed.eps, nb
     }else{
         logl <- DownPassMisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
     }
-    print(p.new)
-    print(logl)
     return(-logl)
 }
 
