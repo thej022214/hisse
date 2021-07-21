@@ -154,14 +154,14 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             if(includes.fossils == TRUE){
                 stop("You input a tree that contains fossils but you are assuming no extinction. Check your function call.")
             }else{
-                init.pars <- starting.point.generator(phy, k=1, samp.freq.tree, yule=TRUE)
+                init.pars <- starting.point.generator(phy, k=2, samp.freq.tree, yule=TRUE)
             }
         }else{
             if(includes.fossils == TRUE){
-                init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=1, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+                init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
                 psi.start <- init.pars[3]
             }else{
-                init.pars <- starting.point.generator(phy, k=1, samp.freq.tree, yule=FALSE)
+                init.pars <- starting.point.generator(phy, k=2, samp.freq.tree, yule=FALSE)
             }
             if(init.pars[2] == 0){
                 init.pars[2] = 1e-6
@@ -173,11 +173,12 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             def.set.pars <- rep(NA, 2*rate.cats)
             scaling=seq(from=1.2, to=0.8, length.out=rate.cats)
             for(cat.index in sequence(rate.cats)) {
-                def.set.pars[1+(cat.index-1)*2] <- log((init.pars[1]+init.pars[2]) * ifelse(length(unique(turnover))==1, 1, scaling[cat.index]))
-                def.set.pars[2+(cat.index-1)*2] <- log(ifelse(length(unique(eps))==1, 1, scaling[cat.index]) * init.pars[2]/init.pars[1])
+                def.set.pars[1+(cat.index-1)*2] <- log((init.pars[1]+init.pars[3]) * ifelse(length(unique(turnover))==1, 1, scaling[cat.index]))
+                def.set.pars[2+(cat.index-1)*2] <- log(ifelse(length(unique(eps))==1, 1, scaling[cat.index]) * init.pars[3]/init.pars[1])
             }
             #def.set.pars <- rep(c(log(init.pars[1]+init.pars[2]), log(init.pars[2]/init.pars[1])), rate.cats)
-            trans.start <- log(rate.cats/sum(phy$edge.length))
+            #trans.start <- log(rate.cats/sum(phy$edge.length))
+            trans.start <- log(init.pars[5])
         }else{
             ## Check the length of the stating vector:
             if( length( starting.vals ) != 3 ){

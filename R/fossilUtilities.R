@@ -330,6 +330,64 @@ AddKData <- function(data, k.samples, muhisse=FALSE){
 }
 
 
+######################################################################################################################################
+######################################################################################################################################
+### Adds Sampled Fossil Points to a Phylo Plot
+######################################################################################################################################
+######################################################################################################################################
+
+getphylo_x <- function(phy, node) {
+    if(is.character(node)) {
+        node <- which(c(phy$tip.label, phy$node.label)==node)
+    }
+    pi <- phy$edge[phy$edge[,2]==node, 1]
+    if (length(pi)) {
+        ei <- which(phy$edge[,1]==pi & phy$edge[,2]==node)
+        phy$edge.length[ei] + Recall(phy, pi)
+    } else {
+        if(!is.null(phy$root.edge)) {
+            phy$root.edge
+        } else {
+            0
+        }
+    }
+}
+
+
+getphylo_y <- function(phy, node) {
+    if(is.character(node)) {
+        node <- which(c(phy$tip.label, phy$node.label)==node)
+    }
+    ci <- phy$edge[phy$edge[,1]==node, 2]
+    if (length(ci)==2) {
+        mean(c(Recall(phy, ci[1]), Recall(phy, ci[2])))
+    } else if (length(ci)==0) {
+        Ntip <- length(phy$tip.label)
+        which(phy$edge[phy$edge[, 2] <= Ntip, 2] == node)
+    } else {
+        stop(paste("error", length(ci)))
+    }
+}
+
+
+AddFossilPoints <- function(fossil.samples, phy, ...){
+    for(row.index in 1:dim(fossil.samples)[1]){
+        #Step 1: get Y coordinates for the tipward:
+        y.tip <- getphylo_y(phy, fossil.samples$tipwardnode[row.index])
+        #Step 2: Plot the point:
+        points(fossil.samples$timefromroot[row.index], y.tip, ...)
+    }
+}
+
+
+#data to play with:
+#ntax=200
+#true.psi=0.01
+#try(sim.tab <- hisse::SimulateHisse(turnover=c(0.25,0.25), eps=rep(0.25,2), max.taxa=ntax, x0=0, transition.rates=matrix(c(NA, 0.005, 0.005, NA), nrow=2), nstart=2))
+#phy <- SimToPhylo(sim.tab, include.extinct=TRUE)
+#f <- hisse:::GetFossils(phy, psi=true.psi)
+
+
 #CheckPlot <- function(phy, extinct.samples, k.samples){
 #    split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
 #    plot(phy, cex=.5)
