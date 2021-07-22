@@ -159,12 +159,12 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         }else{
             if(includes.fossils == TRUE){
                 init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
-                psi.start <- init.pars[3]
+                psi.start <- init.pars[length(init.pars)]
             }else{
                 init.pars <- starting.point.generator(phy, k=2, samp.freq.tree, yule=FALSE)
             }
-            if(init.pars[2] == 0){
-                init.pars[2] = 1e-6
+            if(init.pars[3] == 0){
+                init.pars[3] = 1e-6
             }
         }
         names(init.pars) <- NULL
@@ -180,12 +180,22 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             #trans.start <- log(rate.cats/sum(phy$edge.length))
             trans.start <- log(init.pars[5])
         }else{
-            ## Check the length of the stating vector:
-            if( length( starting.vals ) != 3 ){
-                stop("Incorrect length for starting.vals vector.")
+            if(includes.fossils == TRUE){
+                ## Check the length of the stating vector:
+                if( length( starting.vals ) != 4 ){
+                    stop("Incorrect length for starting.vals vector.")
+                }
+                def.set.pars <- rep(c(log(starting.vals[1]), log(starting.vals[2])), rate.cats)
+                trans.start <- log(starting.vals[3])
+                psi.start <- log(starting.vals[4])
+            }else{
+                ## Check the length of the stating vector:
+                if( length( starting.vals ) != 3 ){
+                    stop("Incorrect length for starting.vals vector.")
+                }
+                def.set.pars <- rep(c(log(starting.vals[1]), log(starting.vals[2])), rate.cats)
+                trans.start <- log(starting.vals[3])
             }
-            def.set.pars <- rep(c(log(starting.vals[1]), log(starting.vals[2])), rate.cats)
-            trans.start <- log(starting.vals[3])
         }
         
         if(bounded.search == TRUE){
