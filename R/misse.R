@@ -596,15 +596,15 @@ SingleChildProbMiSSE <- function(cache, pars, compD, compE, start.time, end.time
     }else{
         times=c(start.time, end.time)
     }
-    #runSilent <- function() {
-    #    options(warn = -1)
-    #    on.exit(options(warn = 0))
-    #    capture.output(res <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-10, atol=1e-10))
-    #    res
-    #}
+    runSilent <- function() {
+        options(warn = -1)
+        on.exit(options(warn = 0))
+        capture.output(res <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+        res
+    }
     #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dll = "misse-ext-derivs", rtol=1e-8, atol=1e-8)
-    prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-    #prob.subtree.cal.full <- runSilent()
+    #prob.subtree.cal.full <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+    prob.subtree.cal.full <- runSilent()
     
     ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
     if(attributes(prob.subtree.cal.full)$istate[1] < 0){
