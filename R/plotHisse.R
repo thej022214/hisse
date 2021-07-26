@@ -1301,7 +1301,7 @@ GetEdges <- function(turn.free.p, eps.free.p, nodes){
 
 
 PlotMisseSpace <- function(x, possible.combos, ...){
-    if(is.null(x)){
+    if(!is.null(x)){
         tmp <- c()
         for(model.index in 1:dim(possible.combos)[1]){
             tmp <- rbind(tmp, c(x[[model.index]]$loglik, x[[model.index]]$AICc))
