@@ -6,9 +6,9 @@
 \usage{
 MiSSE(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE,
 root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, sann=TRUE, 
-sann.its=1000, sann.temp=5230, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, 
-starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL,
-ode.eps=0, dt.threads=1, expand.mode=FALSE)
+sann.its=1000, sann.temp=5230, sann.seed=-100377, bounded.search=TRUE, 
+max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, 
+trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1, expand.mode=FALSE)
 }
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
@@ -35,6 +35,7 @@ ode.eps=0, dt.threads=1, expand.mode=FALSE)
 \item{sann.its}{a numeric indicating the number of times the simulated
   annealing algorithm should call the objective function.}
 \item{sann.temp}{the starting temperature for the simulated annealing. Higher temperatures results in the chain sampling a much wider space initially. The default of 5320 is based on the default of the GenSA package. For larger trees setting this value higher in conjunction with more sann.its can drastically improve performance.}
+\item{sann.seed}{the seed number for the simulated annealing algorithm. This value must be negative and an odd number.}
 \item{bounded.search}{a logical indicating whether or not bounds should
   be enforced during optimization. The default is \code{TRUE}.}
 \item{max.tol}{supplies the relative optimization tolerance to

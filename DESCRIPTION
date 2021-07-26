@@ -10,7 +10,7 @@ Authors@R: c(person("Jeremy", "Beaulieu", role=c("aut", "cre"),
 Maintainer: Jeremy Beaulieu <jmbeauli@uark.edu>
 Depends: ape, deSolve, GenSA, subplex, nloptr
 Suggests: testthat, knitr, rmarkdown
-Imports: parallel, phytools, data.table, methods, diversitree, paleotree, plotrix, geiger, phangorn, TreeSim, corHMM
+Imports: parallel, phytools, data.table, igraph, methods, diversitree, paleotree, plotrix, geiger, phangorn, TreeSim, corHMM
 Description: Sets up and executes a HiSSE model (Hidden State Speciation and Extinction) on a phylogeny and character sets to test for hidden shifts in trait dependent rates of diversification. Beaulieu and O'Meara (2016) <doi:10.1093/sysbio/syw022>.
 License: GPL (>= 2)
 VignetteBuilder: knitr

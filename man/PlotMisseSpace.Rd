@@ -1,19 +1,14 @@
-\name{plot.misse.states}
-\alias{plot.misse.states}
-\title{Plotting function misse.states objects}
-\description{A plotting function for visualizing changes in states and rates over a phylogeny}
+\name{PlotMisseSpace}
+\alias{PlotMisseSpace}
+\title{Plotting function for MiSSEGreedy}
+\description{A plotting function for visualizing the model space explored in MiSSEGreedy}
 \usage{
-\method{plot}{misse.states}(x, rate.param = "net.div", type = "fan",
-show.tip.label = TRUE, fsize = 1.0, legend = "tips", ...)
+\method{PlotMisseSpace}(x, possible.combos, ...)
 }       
 \arguments{
-\item{x}{a \code{misse.states} object or a list of such objects.}
-\item{rate.param}{indicates the type of rates to plot. Options include: \dQuote{turnover}, \dQuote{net.div}, \dQuote{speciation},  \dQuote{extinction},  \dQuote{extinction.fraction}.}
-\item{type}{a character string specifying the type of phylogeny to be drawn. Options are "fan" (default) or "phylogram".}
-\item{show.tip.label}{a logical indicating whether tip names should be included. Default is TRUE}
-\item{fsize}{sets the font size for the tip labels.}
-\item{legend}{indicates if the legend is to be plotted. TRUE or FALSE.}
-\item{...}{Additional parameters to control the plot. See \dQuote{Details}.}
+\item{x}{a \code{misse.states} list of such objects.}
+\item{possible.combos}{data.frame of parameter combinations to try. See 'Details'.}
+\item{...}{Additional parameters to control the igraph plot. See \dQuote{Details}.}
 }
 \details{
   Additional parameters can be defined using \dQuote{...}:
@@ -62,7 +57,6 @@ show.tip.label = TRUE, fsize = 1.0, legend = "tips", ...)
 function. See more details in help page for \code{hisse::plot.hisse.states} function.
 }
 \references{
-Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
-}
-\author{Brian O'Meara and Daniel Caetano}
+Vascancelos, T, B.C. O'Meara, and J.M. Beaulieu. In prep.
+\author{Jeremy M. Beaulieu}
 \keyword{plotting}
