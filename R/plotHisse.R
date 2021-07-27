@@ -1276,7 +1276,7 @@ GetEdges <- function(turn.free.p, eps.free.p, nodes){
     distances.turn <- dist(turn.free.p)
     dist.mat.turn <- as.matrix(distances.turn)
     dist.mat.turn[lower.tri(dist.mat.turn)] <- max(dist.mat.turn)
-    
+
     #Step 2: Get model distance based on eps
     distances.eps <- dist(eps.free.p)
     dist.mat.eps <- as.matrix(distances.eps)
@@ -1288,7 +1288,6 @@ GetEdges <- function(turn.free.p, eps.free.p, nodes){
     one.par.diff.eps <- which(dist.mat.eps == 1 & dist.mat.turn == 0, arr.ind=TRUE)
     #Step 5: Combine Step 3 and 4
     one.par.diff <- rbind(one.par.diff.turn, one.par.diff.eps)
-    
     #Step 5: Loop through table to assign proper node names for use in igraph
     tmp.edges.mat <- c()
     for(index in 1:dim(one.par.diff)[1]){
@@ -1300,28 +1299,29 @@ GetEdges <- function(turn.free.p, eps.free.p, nodes){
 }
 
 
-PlotMisseSpace <- function(x, possible.combos, ...){
+PlotMisseSpace <- function(x, possible.combos=NULL, ...){
     if(!is.null(x)){
         tmp <- c()
-        for(model.index in 1:dim(possible.combos)[1]){
-            tmp <- rbind(tmp, c(x[[model.index]]$loglik, x[[model.index]]$AICc))
+        for(model.index in 1:length(x)){
+            tmp <- rbind(tmp, c(length(unique(x[[model.index]]$turnover)), length(unique(x[[model.index]]$eps)), x[[model.index]]$loglik, x[[model.index]]$AICc))
         }
-        model.space <- cbind(possible.combos, tmp)
+        model.space <- data.frame(turnover=tmp[,1], eps=tmp[,2], loglik=tmp[,3], aic=tmp[,4])
         nodes <- paste("T", model.space[,1], "_", "E", model.space[,2], sep="")
         edges <- GetEdges(model.space[,1], model.space[,2], nodes)
         node.size <- setNames(GetAICWeights(x), nodes)
+        node.size <- sqrt(node.size)/max(sqrt(node.size))
         graph.df <- graph.data.frame(edges, vertices=nodes)
-        plot(graph.df, edge.arrow.size=0.01, vertex.size=node.size*100, ...)
+        plot(graph.df, vertex.size=10*node.size, ...)
     }else{
         tmp <- c()
         model.space <- possible.combos
         nodes <- paste("T", model.space[,1], "_", "E", model.space[,2], sep="")
         edges <- GetEdges(model.space[,1], model.space[,2], nodes)
         graph.df <- graph.data.frame(edges, vertices=nodes)
-        plot(graph.df, edge.arrow.size=0.01, vertex.size=node.size*100, ...)
+        plot(graph.df, ...)
     }
 }
-
+PlotMisseSpace(misse.list)
 
 
 
