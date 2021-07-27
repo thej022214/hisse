@@ -1321,7 +1321,6 @@ PlotMisseSpace <- function(x, possible.combos=NULL, ...){
         plot(graph.df, ...)
     }
 }
-PlotMisseSpace(misse.list)
 
 
 
