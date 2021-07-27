@@ -1269,36 +1269,6 @@ GetRelevantRowEntries <- function(x, rate.param) {
 }
 
 
-#Takes a vector of free parameters and find the distance between them and gives back an
-#edge matrix for models 1 freepar away from each other
-GetEdges <- function(turn.free.p, eps.free.p, nodes){
-    #Step 1 get model distance based on turnover
-    distances.turn <- dist(turn.free.p)
-    dist.mat.turn <- as.matrix(distances.turn)
-    dist.mat.turn[lower.tri(dist.mat.turn)] <- max(dist.mat.turn)
-
-    #Step 2: Get model distance based on eps
-    distances.eps <- dist(eps.free.p)
-    dist.mat.eps <- as.matrix(distances.eps)
-    dist.mat.eps[lower.tri(dist.mat.eps)] <- max(dist.mat.eps)
-    
-    #Step 3: Get model diff of 1 in turn direction, zero for eps
-    one.par.diff.turn <- which(dist.mat.turn == 1 & dist.mat.eps == 0, arr.ind=TRUE)
-    #Step 4: Get model diff of 1 in eps direction, zero for turn
-    one.par.diff.eps <- which(dist.mat.eps == 1 & dist.mat.turn == 0, arr.ind=TRUE)
-    #Step 5: Combine Step 3 and 4
-    one.par.diff <- rbind(one.par.diff.turn, one.par.diff.eps)
-    #Step 5: Loop through table to assign proper node names for use in igraph
-    tmp.edges.mat <- c()
-    for(index in 1:dim(one.par.diff)[1]){
-        tmp.edges.mat <- rbind(tmp.edges.mat, c(nodes[one.par.diff[index,1]], nodes[one.par.diff[index,2]]))
-    }
-    final.edge.mat <- data.frame(x=tmp.edges.mat[,1], y=tmp.edges.mat[,2], weight=rep(1,dim(tmp.edges.mat)[1]))
-    #Fin.
-    return(final.edge.mat)
-}
-
-
 PlotMisseSpace <- function(x, possible.combos=NULL, ...){
     if(!is.null(x)){
         tmp <- c()
