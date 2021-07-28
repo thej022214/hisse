@@ -5,11 +5,12 @@
  and Extinction) on a phylogeny, varying the number of parameters for turnover and extinction fraction and stopping when models stop being very good.}
 \usage{
 MiSSEGreedy(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(),
-stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=NULL,
-condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE,
-k.samples=NULL, sann=TRUE, sann.its=10000, sann.temp=5230, sann.seed=-100377, 
-bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, 
-turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0)
+stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=NULL, check.fits=FALSE, 
+remove.bad=FALSE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, 
+includes.fossils=FALSE, k.samples=NULL, sann=TRUE, sann.its=1000, sann.temp=5230, 
+sann.seed=-100377, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, 
+starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL,
+ode.eps=0)
 }
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
@@ -21,12 +22,13 @@ turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0)
 \item{save.file}{file to use to save results while the code is running}
 \item{n.cores}{how many cores to run this on in parallel}
 \item{chunk.size}{how many models to run before checking to make sure there are no improvements. See 'Details'.}
+\item{check.fits}{a logical indicating whether a secondary check to ensure optimization performed well. See \code{FindAndRerun}}
+\item{remove.bad}{a logical indicating whether bad models identified as poorly fit should be removed. Only invoked when \code{FindAndRerun=TRUE}.}
 \item{condition.on.survival}{a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
   speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}
 \item{root.type}{indicates whether root summarization follow the procedure described by FitzJohn et al. 2009, \dQuote{madfitz} or Herrera-Alsina et al. 2018, \dQuote{herr_als}.}
-\item{root.p}{a vector indicating fixed root state probabilities. The
-  default is \code{NULL}.}
+\item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
 \item{includes.fossils}{a logical indicating whether the tree contains fossil taxa. The default is \code{FALSE}.}
 \item{k.samples}{a table of extinct individuals with sampled descendants. See details for how the table must be formatted.}
 \item{sann}{a logical indicating whether a two-step optimization

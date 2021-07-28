@@ -6,7 +6,8 @@
 
 SupportRegionMiSSE <- function(misse.obj, n.points=1000, scale.int=0.1, desired.delta=2, min.number.points=10, verbose=TRUE){
     
-    phy <- misse.obj$phy
+    #If no fossils should be fine, but necessary to call this tree if fossils are present:
+    phy <- misse.obj$phy.w.k
     
     f <- misse.obj$f
     np <- max(misse.obj$index.par) - 1

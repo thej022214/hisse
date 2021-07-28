@@ -48,7 +48,7 @@ FindBadOptim <- function(graph, nodes, loglik.vec){
             }
         }
     }
-    return(bad.models)
+    return(unique(bad.models))
 }
 
 
@@ -56,12 +56,13 @@ RerunBadOptim <- function(bad.fits, misse.list, sann, sann.its, sann.temp, bound
 
     if(sann == FALSE){
         sann = TRUE
+        bounded.search = TRUE
     }
     current.loglik <- misse.list[[bad.fits]]$loglik
     current.fit <- misse.list[[bad.fits]]
     print(paste("current loglik:", current.loglik))
-    sann.its <- 1000 * 2
-    sann.temp <- 5230
+    sann.its <- sann.its * 2
+    sann.temp <- sann.temp
     sann.seed <- c(-487281, -391945, -149149)[retries[[bad.fits]]+1]
     redo.fit <- MiSSE(misse.list[[bad.fits]]$phy, f=misse.list[[bad.fits]]$f, turnover=misse.list[[bad.fits]]$turnover, eps=misse.list[[bad.fits]]$eps, condition.on.survival=misse.list[[bad.fits]]$condition.on.survival, root.type=misse.list[[bad.fits]]$root.type, root.p=misse.list[[bad.fits]]$root.p, includes.fossils=misse.list[[bad.fits]]$includes.fossils, k.samples=misse.list[[bad.fits]]$k.samples, sann=sann, sann.its=sann.its, sann.temp=sann.temp, sann.seed=sann.seed, bounded.search=bounded.search, max.tol=misse.list[[bad.fits]]$max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=misse.list[[bad.fits]], ode.eps=misse.list[[bad.fits]]$ode.eps)
     print(paste("new loglik:", redo.fit$loglik))
@@ -73,7 +74,7 @@ RerunBadOptim <- function(bad.fits, misse.list, sann, sann.its, sann.temp, bound
 }
 
 
-FindAndRerun <- function(misse.list, sann=TRUE, sann.its=1000, sann.temp=5230, bounded.search=TRUE, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, remove.bad=TRUE, n.cores=1){
+MiSSENet <- function(misse.list, sann=TRUE, sann.its=1000, sann.temp=5230, bounded.search=TRUE, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, remove.bad=TRUE, dont.rerun=FALSE, n.cores=1){
     
     #Step 1: Make igraph of examined model space
     tmp <- c()
@@ -87,52 +88,63 @@ FindAndRerun <- function(misse.list, sann=TRUE, sann.its=1000, sann.temp=5230, b
     
     #Step 2: Locate the bad fits by traversing graph in step 1
     bad.fits <- FindBadOptim(graph=graph.df, nodes=nodes, loglik.vec=model.space$loglik)
-    model.retries <- as.list(as.list(numeric(length(misse.list))))
-    retries <- 0
-    done.enough <- FALSE
     
-    while(length(bad.fits)>0 & done.enough == FALSE){
-        cat("Current set of model fits identified as poorly optimized:", bad.fits, "\n")
-        #Step 3: Rerun the bad fits by increasing simulated annealing temperature? Still trying to figure out
-        cat("Rerunning...", "\n")
-        print(paste("before", bad.fits))
-        bad.fits <- bad.fits[which(unlist(model.retries)[bad.fits]<2)]
-        print(paste("after", bad.fits))
-        rerun.fits <- parallel::mclapply(bad.fits, RerunBadOptim, misse.list=misse.list, sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, retries=model.retries, mc.cores=ifelse(is.null(n.cores),1,n.cores))
-        ### Keeping this here for debugging purposes ###
-        #RerunBadOptim(bad.fits=bad.fits[1], misse.list=misse.list, sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj)
-        ################################################
-        for(rerun.index in 1:length(rerun.fits)){
-            misse.list[[bad.fits[rerun.index]]] <- rerun.fits[[rerun.index]]
-            model.retries[[bad.fits[rerun.index]]] <- model.retries[[bad.fits[rerun.index]]] + 1
-        }
-        cat("Finished. Reexamining model fits...", "\n")
-
-        #Repeat step 1:
-        tmp <- c()
-        for(model.index in 1:length(misse.list)){
-            tmp <- rbind(tmp, c(length(unique(misse.list[[model.index]]$turnover)), length(unique(misse.list[[model.index]]$eps)), misse.list[[model.index]]$loglik, misse.list[[model.index]]$AICc))
-        }
-        model.space <- data.frame(turnover=tmp[,1], eps=tmp[,2], loglik=tmp[,3], aic=tmp[,4])
-        nodes <- paste("T", model.space$turnover, "_", "E", model.space$eps, sep="")
-        edges <- GetEdges(model.space$turnover, model.space$eps, nodes)
-        graph.df <- igraph::graph.data.frame(edges, vertices=nodes)
-        bad.fits <- FindBadOptim(graph=graph.df, nodes=nodes, loglik.vec=model.space$loglik)
-        if(all(unlist(model.retries)[bad.fits] >= 2)){
-            done.enough = TRUE
+    if(dont.rerun == TRUE){
+        if(remove.bad == TRUE){
+            for(bad.index in 1:length(bad.fits)){
+                misse.list[[bad.fits[bad.index]]] <- NA
+            }
+            misse.list <- Filter(Negate(anyNA), misse.list)
+            return(misse.list)
         }else{
-            cat("One or more models identified as poorly optimized.", "\n")
+            return(bad.fits)
         }
-    }
-    cat("Maximum number of reassessments reached. These models should be discarded:", bad.fits, "\n")
-
-    if(remove.bad == TRUE){
-        for(bad.index in 1:length(bad.fits)){
-            misse.list[[bad.fits[bad.index]]] <- NA
+    }else{
+        model.retries <- as.list(as.list(numeric(length(misse.list))))
+        retries <- 0
+        done.enough <- FALSE
+        
+        while(length(bad.fits)>0 & done.enough == FALSE){
+            cat("Current set of model fits identified as poorly optimized:", bad.fits, "\n")
+            #Step 3: Rerun the bad fits by increasing simulated annealing temperature? Still trying to figure out
+            print(paste("before", bad.fits))
+            bad.fits <- bad.fits[which(unlist(model.retries)[bad.fits]<2)]
+            print(paste("after", bad.fits))
+            rerun.fits <- parallel::mclapply(bad.fits, RerunBadOptim, misse.list=misse.list, sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, retries=model.retries, mc.cores=ifelse(is.null(n.cores),1,n.cores))
+            ### Keeping this here for debugging purposes ###
+            #RerunBadOptim(bad.fits=bad.fits[1], misse.list=misse.list, sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj)
+            ################################################
+            for(rerun.index in 1:length(rerun.fits)){
+                misse.list[[bad.fits[rerun.index]]] <- rerun.fits[[rerun.index]]
+                model.retries[[bad.fits[rerun.index]]] <- model.retries[[bad.fits[rerun.index]]] + 1
+            }
+            
+            #Repeat step 1:
+            tmp <- c()
+            for(model.index in 1:length(misse.list)){
+                tmp <- rbind(tmp, c(length(unique(misse.list[[model.index]]$turnover)), length(unique(misse.list[[model.index]]$eps)), misse.list[[model.index]]$loglik, misse.list[[model.index]]$AICc))
+            }
+            model.space <- data.frame(turnover=tmp[,1], eps=tmp[,2], loglik=tmp[,3], aic=tmp[,4])
+            nodes <- paste("T", model.space$turnover, "_", "E", model.space$eps, sep="")
+            edges <- GetEdges(model.space$turnover, model.space$eps, nodes)
+            graph.df <- igraph::graph.data.frame(edges, vertices=nodes)
+            bad.fits <- FindBadOptim(graph=graph.df, nodes=nodes, loglik.vec=model.space$loglik)
+            if(all(unlist(model.retries)[bad.fits] >= 2)){
+                done.enough = TRUE
+            }else{
+                cat("One or more models still identified as poorly optimized.", "\n")
+            }
         }
-        misse.list <- Filter(Negate(anyNA), misse.list)
+        cat("Maximum number of reassessments reached. These models should be discarded:", bad.fits, "\n")
+        
+        if(remove.bad == TRUE){
+            for(bad.index in 1:length(bad.fits)){
+                misse.list[[bad.fits[bad.index]]] <- NA
+            }
+            misse.list <- Filter(Negate(anyNA), misse.list)
+        }
+        
+        return(misse.list)
     }
-    
-    return(misse.list)
 }
 
