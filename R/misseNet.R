@@ -60,7 +60,7 @@ RerunBadOptim <- function(bad.fits, misse.list, sann, sann.its, sann.temp, bound
     current.fit <- misse.list[[bad.fits]]
     print(paste("current loglik:", current.loglik))
     sann.its <- sann.its * 2
-    sann.temp <- sann.temp * 2
+    sann.temp <- sann.temp
     sann.seed <- c(-487281, -391945, -149149)[retries[[bad.fits]]+1]
     redo.fit <- MiSSE(misse.list[[bad.fits]]$phy, f=misse.list[[bad.fits]]$f, turnover=misse.list[[bad.fits]]$turnover, eps=misse.list[[bad.fits]]$eps, condition.on.survival=misse.list[[bad.fits]]$condition.on.survival, root.type=misse.list[[bad.fits]]$root.type, root.p=misse.list[[bad.fits]]$root.p, includes.fossils=misse.list[[bad.fits]]$includes.fossils, k.samples=misse.list[[bad.fits]]$k.samples, sann=sann, sann.its=sann.its, sann.temp=sann.temp, sann.seed=sann.seed, bounded.search=bounded.search, max.tol=misse.list[[bad.fits]]$max.tol, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=misse.list[[bad.fits]], ode.eps=misse.list[[bad.fits]]$ode.eps)
     print(paste("new loglik:", redo.fit$loglik))
