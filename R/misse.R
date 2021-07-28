@@ -277,7 +277,6 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
         out.sann = GenSA(ip, fn=DevOptimizeMiSSE, lower=log(exp(lower)+0.0000000001), upper=log(exp(upper)-0.0000000001), control=list(max.call=sann.its, temperature=sann.temp, seed=sann.seed), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
-        print(out.sann)
         sann.counts <- out.sann$counts
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
@@ -415,7 +414,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         #         expand.mode=TRUE
         # ))
     }
-
+    print("made it to the end of Greedy!!")
     if(check.fits == TRUE){
         cat("Checking model fits...", "\n")
         misse.list.updated <- MiSSENet(misse.list=misse.list, sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, remove.bad=remove.bad, n.cores=ifelse(is.null(n.cores),1,n.cores))
