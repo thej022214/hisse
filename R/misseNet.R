@@ -72,7 +72,7 @@ RerunBadOptim <- function(bad.fits, misse.list, sann, sann.its, sann.temp, bound
 }
 
 
-MiSSENet <- function(misse.list, sann=TRUE, sann.its=1000, sann.temp=5230, bounded.search=TRUE, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, remove.bad=TRUE, dont.rerun=FALSE, n.cores=1){
+MiSSENet <- function(misse.list, sann=TRUE, sann.its=5000, sann.temp=5230, bounded.search=TRUE, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, remove.bad=TRUE, dont.rerun=FALSE, n.cores=1){
     
     #Step 1: Make igraph of examined model space
     tmp <- c()

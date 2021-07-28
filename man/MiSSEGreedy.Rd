@@ -7,7 +7,7 @@
 MiSSEGreedy(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(),
 stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=NULL, check.fits=FALSE, 
 remove.bad=FALSE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, 
-includes.fossils=FALSE, k.samples=NULL, sann=TRUE, sann.its=1000, sann.temp=5230, 
+includes.fossils=FALSE, k.samples=NULL, sann=TRUE, sann.its=5000, sann.temp=5230, 
 sann.seed=-100377, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, 
 starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL,
 ode.eps=0)

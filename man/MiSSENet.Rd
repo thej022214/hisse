@@ -4,7 +4,7 @@
 \description{A function for assessing whether models optimized well, identifying bad fits, and rerunning them if needed.
 }
 \usage{
-MiSSENet(misse.list, sann=TRUE, sann.its=1000, sann.temp=5230, bounded.search=TRUE, 
+MiSSENet(misse.list, sann=TRUE, sann.its=5000, sann.temp=5230, bounded.search=TRUE, 
 starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL,
 remove.bad=TRUE, dont.rerun=FALSE, n.cores=1)
 }
