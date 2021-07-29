@@ -129,15 +129,15 @@ MiSSENet <- function(misse.list, n.tries=2, remove.bad=TRUE, dont.rerun=FALSE, n
             edges <- GetEdges(model.space$turnover, model.space$eps, nodes)
             graph.df <- igraph::graph.data.frame(edges, vertices=nodes)
             bad.fits <- FindBadOptim(graph=graph.df, nodes=nodes, loglik.vec=model.space$loglik)
-            if(all(unlist(model.retries)[bad.fits] == n.tries)){
+            if(all(unlist(model.retries)[bad.fits] == n.tries) | bad.fits == 0){
                 done.enough = TRUE
             }else{
                 cat("One or more models still identified as poorly optimized.", "\n")
             }
         }
-        cat("Maximum number of reassessments reached. These models should be discarded:", bad.fits, "\n")
         
         if(bad.fits != 0){
+            cat("Maximum number of reassessments reached. These models should be discarded:", bad.fits, "\n")
             if(remove.bad == TRUE){
                 if(length(bad.fits))
                 for(bad.index in 1:length(bad.fits)){
