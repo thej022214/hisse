@@ -40,7 +40,8 @@ FindBadOptim <- function(graph, nodes, loglik.vec){
         desc.nodes <- igraph::neighbors(graph, igraph::V(graph)[node.index])
         for(neighbor.index in 1:length(desc.nodes)){
             if(length(desc.nodes) > 0){
-                if(round(loglik.vec[node.index],3) > round(loglik.vec[desc.nodes[neighbor.index]],3)){
+                if(round(loglik.vec[node.index],3) - round(loglik.vec[desc.nodes[neighbor.index]],3) > 0.1){
+                    print(c(round(loglik.vec[node.index],3), round(loglik.vec[desc.nodes[neighbor.index]],3)))
                     bad.models <- c(bad.models, desc.nodes[neighbor.index])
                 }
             }
@@ -81,7 +82,7 @@ MiSSENet <- function(misse.list, n.tries=2, remove.bad=TRUE, dont.rerun=FALSE, n
     }
     model.space <- data.frame(turnover=tmp[,1], eps=tmp[,2], loglik=tmp[,3], aic=tmp[,4])
     nodes <- paste("T", model.space$turnover, "_", "E", model.space$eps, sep="")
-    edges <- hisse:::GetEdges(model.space$turnover, model.space$eps, nodes)
+    edges <- GetEdges(model.space$turnover, model.space$eps, nodes)
     graph.df <- igraph::graph.data.frame(edges, vertices=nodes)
     
     #Step 2: Locate the bad fits by traversing graph in step 1
