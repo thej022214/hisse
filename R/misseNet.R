@@ -46,7 +46,11 @@ FindBadOptim <- function(graph, nodes, loglik.vec){
             }
         }
     }
-    return(unique(bad.models))
+    if(length(bad.models) == 0){
+        return(0)
+    }else{
+        return(unique(bad.models))
+    }
 }
 
 
@@ -133,13 +137,15 @@ MiSSENet <- function(misse.list, n.tries=2, remove.bad=TRUE, dont.rerun=FALSE, n
         }
         cat("Maximum number of reassessments reached. These models should be discarded:", bad.fits, "\n")
         
-        if(remove.bad == TRUE){
-            for(bad.index in 1:length(bad.fits)){
-                misse.list[[bad.fits[bad.index]]] <- NA
+        if(bad.fits != 0){
+            if(remove.bad == TRUE){
+                if(length(bad.fits))
+                for(bad.index in 1:length(bad.fits)){
+                    misse.list[[bad.fits[bad.index]]] <- NA
+                }
+                misse.list <- Filter(Negate(anyNA), misse.list)
             }
-            misse.list <- Filter(Negate(anyNA), misse.list)
         }
-        
         return(misse.list)
     }
 }
