@@ -81,7 +81,7 @@ Saving output while this goes is highly recommended -- you can see how things ar
   potential.combos <- generateMiSSEGreedyCombinations(max.param=4, vary.both=TRUE)
 
   #run on one core:
-  result <- MiSSEGreedy(phy, potential.combos, n.cores=1, f=1) 
+  result <- MiSSEGreedy(phy, possible.combos=potential.combos, n.cores=1, f=1) 
 
   #run on all available cores: (commented out because CRAN does not allow this in examples)
   #result <- MiSSEGreedy(phy, potential.combos, n.cores=parallel::detectCores(), f=1)
