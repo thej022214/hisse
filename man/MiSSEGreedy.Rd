@@ -6,7 +6,7 @@
 \usage{
 MiSSEGreedy(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(),
 stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=NULL, check.fits=FALSE, 
-remove.bad=FALSE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, 
+remove.bad=FALSE, n.tries=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, 
 includes.fossils=FALSE, k.samples=NULL, sann=TRUE, sann.its=5000, sann.temp=5230, 
 sann.seed=-100377, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, 
 starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL,
@@ -24,6 +24,7 @@ ode.eps=0)
 \item{chunk.size}{how many models to run before checking to make sure there are no improvements. See 'Details'.}
 \item{check.fits}{a logical indicating whether a secondary check to ensure optimization performed well. See \code{FindAndRerun}}
 \item{remove.bad}{a logical indicating whether bad models identified as poorly fit should be removed. Only invoked when \code{FindAndRerun=TRUE}.}
+\item{n.tries}{maximum number of retries for a given model when \code{check.fits=TRUE}.}
 \item{condition.on.survival}{a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
   speciation event subtending them (Nee et al. 1994). The default is \code{TRUE}.}

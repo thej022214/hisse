@@ -72,7 +72,7 @@ RerunBadOptim <- function(bad.fits, misse.list, sann, sann.its, sann.temp, bound
 }
 
 
-MiSSENet <- function(misse.list, sann=TRUE, sann.its=5000, sann.temp=5230, bounded.search=TRUE, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, remove.bad=TRUE, dont.rerun=FALSE, n.cores=1){
+MiSSENet <- function(misse.list, n.tries=2, remove.bad=TRUE, dont.rerun=FALSE, n.cores=1, sann=TRUE, sann.its=5000, sann.temp=5230, bounded.search=TRUE, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL){
     
     #Step 1: Make igraph of examined model space
     tmp <- c()
@@ -105,9 +105,7 @@ MiSSENet <- function(misse.list, sann=TRUE, sann.its=5000, sann.temp=5230, bound
         while(length(bad.fits)>0 & done.enough == FALSE){
             cat("Current set of model fits identified as poorly optimized:", bad.fits, "\n")
             #Step 3: Rerun the bad fits by increasing simulated annealing temperature? Still trying to figure out
-            print(paste("before", bad.fits))
-            bad.fits <- bad.fits[which(unlist(model.retries)[bad.fits]<2)]
-            print(paste("after", bad.fits))
+            bad.fits <- bad.fits[which(unlist(model.retries)[bad.fits] < n.tries)]
             rerun.fits <- parallel::mclapply(bad.fits, RerunBadOptim, misse.list=misse.list, sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, retries=model.retries, mc.cores=ifelse(is.null(n.cores),1,n.cores))
             ### Keeping this here for debugging purposes ###
             #RerunBadOptim(bad.fits=bad.fits[1], misse.list=misse.list, sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj)
@@ -127,7 +125,7 @@ MiSSENet <- function(misse.list, sann=TRUE, sann.its=5000, sann.temp=5230, bound
             edges <- GetEdges(model.space$turnover, model.space$eps, nodes)
             graph.df <- igraph::graph.data.frame(edges, vertices=nodes)
             bad.fits <- FindBadOptim(graph=graph.df, nodes=nodes, loglik.vec=model.space$loglik)
-            if(all(unlist(model.retries)[bad.fits] >= 2)){
+            if(all(unlist(model.retries)[bad.fits] == n.tries)){
                 done.enough = TRUE
             }else{
                 cat("One or more models still identified as poorly optimized.", "\n")

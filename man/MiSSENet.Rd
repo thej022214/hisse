@@ -4,12 +4,16 @@
 \description{A function for assessing whether models optimized well, identifying bad fits, and rerunning them if needed.
 }
 \usage{
-MiSSENet(misse.list, sann=TRUE, sann.its=5000, sann.temp=5230, bounded.search=TRUE, 
-starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL,
-remove.bad=TRUE, dont.rerun=FALSE, n.cores=1)
+MiSSENet(misse.list, n.tries=2, remove.bad=TRUE, dont.rerun=FALSE, n.cores=1, sann=TRUE, 
+sann.its=5000, sann.temp=5230, bounded.search=TRUE, starting.vals=NULL, 
+turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL)
 }
 \arguments{
 \item{misse.list}{a \code{misse} list of model fits obtain from \code{MiSSEGreedy}.}
+\item{n.tries}{maximum number of retries for a given model.}
+\item{remove.bad}{a logical indicating whether models identified as poorly optimized (even after attempting to be refit) should be removed from \code{misse.list}.}
+\item{dont.rerun}{a logical indicating whether models identified as poorly optimized should be run. The default is \code{FALSE}, meaning they will be rerun. Note that if \code{dont.rerun=TRUE} and \code{remove.bad=TRUE}, the bad models will be removed from the input list; when \code{remove.bad=FALSE} only a vector of model numbers are provided.}
+\item{n.cores}{how many cores to run this on in parallel.}
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using
@@ -26,9 +30,6 @@ remove.bad=TRUE, dont.rerun=FALSE, n.cores=1)
 \item{eps.upper}{sets the upper bound for the eps parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
 \item{restart.obj}{an object of class  that contains everything to restart an optimization.}
-\item{remove.bad}{a logical indicating whether models identified as poorly optimized (even after attempting to be refit) should be removed from \code{misse.list}.}
-\item{dont.rerun}{a logical indicating whether models identified as poorly optimized should be run. The default is \code{FALSE}, meaning they will be rerun. Note that if \code{dont.rerun=TRUE} and \code{remove.bad=TRUE}, the bad models will be removed from the input list; when \code{remove.bad=FALSE} only a vector of model numbers are provided.}
-\item{n.cores}{how many cores to run this on in parallel.}
 }
 \details{
 This function is used to triage poorly optimized models after a \code{MiSSEGreedy} run. 
