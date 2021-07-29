@@ -40,7 +40,7 @@ FindBadOptim <- function(graph, nodes, loglik.vec){
         desc.nodes <- igraph::neighbors(graph, igraph::V(graph)[node.index])
         for(neighbor.index in 1:length(desc.nodes)){
             if(length(desc.nodes) > 0){
-                if(round(loglik.vec[node.index],3) > round(loglik.vec[desc.nodes[neighbor.index]],3)){
+                if(round(loglik.vec[node.index],2) > round(loglik.vec[desc.nodes[neighbor.index]],2)){
                     bad.models <- c(bad.models, desc.nodes[neighbor.index])
                 }
             }

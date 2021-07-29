@@ -5,11 +5,12 @@
 Arguments in \code{...} are passed to \code{plot.igraph}.
 }
 \usage{
-PlotMisseSpace(x, possible.combos=NULL, ...)
+PlotMisseSpace(x, possible.combos=NULL, arrows.by.weight=FALSE, ...)
 }       
 \arguments{
 \item{x}{a \code{misse} list of model fits obtain from \code{MiSSEGreedy}.}
 \item{possible.combos}{data.frame of parameter combinations to try. See 'Details'.}
+\item{arrows.by.weight}{a logical indicating whether arrow direction between adjacent model reflects which model has higher support. The default is \code{FALSE} which means arrows show direction of model complexity.}
 \item{...}{Additional parameters to control the igraph plot. See \code{plot.igraph}.}
 }
 \details{

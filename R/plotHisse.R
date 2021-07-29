@@ -1269,7 +1269,7 @@ GetRelevantRowEntries <- function(x, rate.param) {
 }
 
 
-PlotMisseSpace <- function(x, possible.combos=NULL, ...){
+PlotMisseSpace <- function(x, possible.combos=NULL, arrows.by.weight=FALSE, ...){
     if(!is.null(x)){
         tmp <- c()
         for(model.index in 1:length(x)){
@@ -1280,6 +1280,17 @@ PlotMisseSpace <- function(x, possible.combos=NULL, ...){
         edges <- GetEdges(model.space[,1], model.space[,2], nodes)
         node.size <- setNames(GetAICWeights(x), nodes)
         node.size <- sqrt(node.size)/max(sqrt(node.size))
+        if(arrows.by.weight == TRUE){
+            edges.tmp <- as.matrix(edges)
+            for(row.index in 1:dim(edges.tmp)[1]){
+                if(node.size[which(names(node.size) == edges.tmp[row.index,1])] > node.size[which(names(node.size) == edges.tmp[row.index,2])]){
+                    tmp.vec <- c(edges.tmp[row.index,1], edges.tmp[row.index,2])
+                    edges.tmp[row.index,1] <- as.character(tmp.vec[2])
+                    edges.tmp[row.index,2] <- as.character(tmp.vec[1])
+                }
+            }
+            edges <- data.frame(x=edges.tmp[,1], y=edges.tmp[,2], weight=1)
+        }
         graph.df <- graph.data.frame(edges, vertices=nodes)
         plot(graph.df, vertex.size=10*node.size, ...)
     }else{
