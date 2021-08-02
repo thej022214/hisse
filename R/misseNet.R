@@ -76,7 +76,7 @@ RerunBadOptim <- function(bad.fits, misse.list, sann, sann.its, sann.temp, bound
 }
 
 
-MiSSENet <- function(misse.list, n.tries=2, remove.bad=TRUE, dont.rerun=FALSE, n.cores=1, sann=TRUE, sann.its=5000, sann.temp=5230, bounded.search=TRUE, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL){
+MiSSENet <- function(misse.list, n.tries=2, remove.bad=TRUE, dont.rerun=FALSE, save.file=NULL, n.cores=1, sann=TRUE, sann.its=5000, sann.temp=5230, bounded.search=TRUE, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL){
     
     #Step 1: Make igraph of examined model space
     tmp <- c()
@@ -137,16 +137,22 @@ MiSSENet <- function(misse.list, n.tries=2, remove.bad=TRUE, dont.rerun=FALSE, n
             if(bad.fits[1] != 0){
                 cat("Maximum number of reassessments reached. These models should be discarded:", bad.fits, "\n")
                 if(remove.bad == TRUE){
-                    if(length(bad.fits))
-                    for(bad.index in 1:length(bad.fits)){
-                        misse.list[[bad.fits[bad.index]]] <- NA
+                    if(!is.null(save.file)) {
+                        save(misse.list, file=save.file)
                     }
-                    misse.list <- Filter(Negate(anyNA), misse.list)
+                    if(length(bad.fits)){
+                        for(bad.index in 1:length(bad.fits)){
+                            misse.list[[bad.fits[bad.index]]] <- NA
+                        }
+                        misse.list <- Filter(Negate(anyNA), misse.list)
+                    }
                 }
             }
+            return(misse.list)
+        }else{
+            cat("All models appeared to have optimized well.", "\n")
+            return(misse.list)
         }
-        return(misse.list)
     }
 }
-
 

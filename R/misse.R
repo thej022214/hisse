@@ -414,13 +414,18 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         #         expand.mode=TRUE
         # ))
     }
-    print("made it to the end of Greedy!!")
+
     if(check.fits == TRUE){
         cat("Checking model fits...", "\n")
-        misse.list.updated <- MiSSENet(misse.list=misse.list, n.tries=n.tries, remove.bad=remove.bad, n.cores=ifelse(is.null(n.cores),1,n.cores), sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj, )
+        misse.list.updated <- MiSSENet(misse.list=misse.list, n.tries=n.tries, remove.bad=remove.bad, dont.rerun=FALSE, save.file=save.file, n.cores=ifelse(is.null(n.cores),1,n.cores), sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj)
         return(misse.list.updated)
     }else{
-        return(misse.list)
+        if(remove.bad == TRUE){
+            misse.list.updated <- MiSSENet(misse.list=misse.list, n.tries=n.tries, remove.bad=remove.bad, dont.rerun=TRUE, save.file=save.file, n.cores=ifelse(is.null(n.cores),1,n.cores), sann=sann, sann.its=sann.its, sann.temp=sann.temp, bounded.search=bounded.search, starting.vals=starting.vals, turnover.upper=turnover.upper, eps.upper=eps.upper, trans.upper=trans.upper, restart.obj=restart.obj)
+            return(misse.list.updated)
+        }else{
+            return(misse.list)
+        }
     }
 }
 
