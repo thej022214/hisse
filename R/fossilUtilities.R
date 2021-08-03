@@ -330,55 +330,6 @@ AddKData <- function(data, k.samples, muhisse=FALSE){
 }
 
 
-######################################################################################################################################
-######################################################################################################################################
-### Adds Sampled Fossil Points to a Phylo Plot
-######################################################################################################################################
-######################################################################################################################################
-
-getphylo_x <- function(phy, node) {
-    if(is.character(node)) {
-        node <- which(c(phy$tip.label, phy$node.label)==node)
-    }
-    pi <- phy$edge[phy$edge[,2]==node, 1]
-    if (length(pi)) {
-        ei <- which(phy$edge[,1]==pi & phy$edge[,2]==node)
-        phy$edge.length[ei] + Recall(phy, pi)
-    } else {
-        if(!is.null(phy$root.edge)) {
-            phy$root.edge
-        } else {
-            0
-        }
-    }
-}
-
-
-getphylo_y <- function(phy, node) {
-    if(is.character(node)) {
-        node <- which(c(phy$tip.label, phy$node.label)==node)
-    }
-    ci <- phy$edge[phy$edge[,1]==node, 2]
-    if (length(ci)==2) {
-        mean(c(Recall(phy, ci[1]), Recall(phy, ci[2])))
-    } else if (length(ci)==0) {
-        Ntip <- length(phy$tip.label)
-        which(phy$edge[phy$edge[, 2] <= Ntip, 2] == node)
-    } else {
-        stop(paste("error", length(ci)))
-    }
-}
-
-
-AddFossilPoints <- function(fossil.samples, phy, ...){
-    for(row.index in 1:dim(fossil.samples)[1]){
-        #Step 1: get Y coordinates for the tipward:
-        y.tip <- getphylo_y(phy, fossil.samples$tipwardnode[row.index])
-        #Step 2: Plot the point:
-        points(fossil.samples$timefromroot[row.index], y.tip, ...)
-    }
-}
-
 
 #data to play with:
 #ntax=200
