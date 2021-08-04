@@ -325,10 +325,20 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         starting.time <- Sys.time()
 		focal.models <- sequence(min(chunk.size, nrow(possible.combos)))
 		if(batch_index>1) {
-			possible.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(possible.combos, !is.na(possible.combos$AICc))), newdata=possible.combos) #Idea here is to focus on the best candidate models
-			best.ones <- base::order(possible.combos$predictedAICc)
+			print("here?")
+            print(subset(possible.combos, !is.na(possible.combos$AICc))))
+            possible.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(possible.combos, !is.na(possible.combos$AICc))), newdata=possible.combos) #Idea here is to focus on the best candidate models
+            print("possible.combos$predictedAICc")
+            print(possible.combos$predictedAICc)
+            best.ones <- base::order(possible.combos$predictedAICc)
+            print("best ones")
+            print(best.ones)
 			best.ones <- best.ones[!(best.ones %in% which(!is.na(possible.combos$AICc)))]
+            print("best ones 2")
+            print(best.ones)
 			focal.models <- best.ones[1:min(chunk.size, length(best.ones))]
+            print("focal models")
+            print(focal.models)
 		}
 		all.examined <- append(all.examined, focal.models)
 		
@@ -393,7 +403,6 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         
         data.for.fit <- data.frame(nparam=(final.combos$eps+possible.combos$turnover)[all.examined], logmin=log(final.combos$elapsedMinutes[all.examined]))
         data.for.prediction <- data.frame(nparam=(final.combos$eps+final.combos$turnover))
-
 
         suppressWarnings(final.combos$predictedMinutes <- exp(predict(lm(logmin ~ nparam, data=data.for.fit), newdata=data.for.prediction)))
         
