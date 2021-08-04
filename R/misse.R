@@ -323,7 +323,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
     
     for (batch_index in sequence(total.chunks)) { # So, if we can do parallel, we do it in chunks so all cores are busy
         starting.time <- Sys.time()
-		focal.models <- min(sequence(chunk.size),nrow(possible.combos))
+		focal.models <- sequence(min(chunk.size, nrow(possible.combos)))
 		if(batch_index>1) {
 			possible.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(possible.combos, !is.na(possible.combos$AICc))), newdata=possible.combos) #Idea here is to focus on the best candidate models
 			best.ones <- base::order(possible.combos$predictedAICc)
