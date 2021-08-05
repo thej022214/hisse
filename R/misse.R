@@ -327,10 +327,10 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
 		if(batch_index>1) {
 			print("here?")
             print(subset(possible.combos, !is.na(possible.combos$AICc)))
-            possible.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(possible.combos, !is.na(possible.combos$AICc))), newdata=possible.combos) #Idea here is to focus on the best candidate models
-            print("possible.combos$predictedAICc")
-            print(possible.combos$predictedAICc)
-            best.ones <- base::order(possible.combos$predictedAICc)
+            final.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(possible.combos, !is.na(final.combos$AICc))), newdata=possible.combos) #Idea here is to focus on the best candidate models
+            print("final.combos$predictedAICc")
+            print(final.combos$predictedAICc)
+            best.ones <- base::order(final.combos$predictedAICc)
             print("best ones")
             print(best.ones)
 			best.ones <- best.ones[!(best.ones %in% which(!is.na(possible.combos$AICc)))]
