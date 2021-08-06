@@ -325,8 +325,8 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         starting.time <- Sys.time()
 		focal.models <- sequence(min(chunk.size, nrow(possible.combos)))
 		if(batch_index>1) {
+            print(final.combos)
 			print("here?")
-            print(subset(possible.combos, !is.na(possible.combos$AICc)))
             final.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(possible.combos, !is.na(final.combos$AICc))), newdata=possible.combos) #Idea here is to focus on the best candidate models
             print("final.combos$predictedAICc")
             print(final.combos$predictedAICc)
