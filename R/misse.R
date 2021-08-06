@@ -325,10 +325,9 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         starting.time <- Sys.time()
 		focal.models <- sequence(min(chunk.size, nrow(possible.combos)))
 		if(batch_index>1) {
-            print(final.combos)
-            save(final.combos, possible.combos, file="stufffordebugging.Rsave")
+            #save(final.combos, possible.combos, file="stufffordebugging.Rsave")
 			print("here?")
-            final.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(possible.combos, !is.na(final.combos$AICc))), newdata=possible.combos) #Idea here is to focus on the best candidate models
+            final.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(final.combos, !is.na(final.combos$AICc))), newdata=possible.combos) #Idea here is to focus on the best candidate models
             print("final.combos$predictedAICc")
             print(final.combos$predictedAICc)
             best.ones <- base::order(final.combos$predictedAICc)
