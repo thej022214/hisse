@@ -311,13 +311,14 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
     misse.list <- list()
     chunk.size <- ifelse(is.null(chunk.size),ifelse(is.null(n.cores),1,n.cores), chunk.size)
     total.chunks <- ceiling(nrow(possible.combos)/chunk.size)
-    possible.combos$lnL <- NA
-    possible.combos$AIC <- NA
-    possible.combos$AICc <- NA
+    possible.combos$runorder <- NA
     possible.combos$deltaAICc <- NA
+    possible.combos$AICc <- NA
+	possible.combos$predictedAICc <- NA
+	possible.combos$lnL <- NA
+    possible.combos$AIC <- NA
     possible.combos$elapsedMinutes <- NA
     possible.combos$predictedMinutes <- NA
-	possible.combos$predictedAICc <- NA
 	final.combos <- possible.combos
 	all.examined <- c()
     
@@ -333,17 +334,19 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
             best.ones <- base::order(final.combos$predictedAICc)
             print("best ones")
             print(best.ones)
-			best.ones <- best.ones[!(best.ones %in% which(!is.na(possible.combos$AICc)))]
+			best.ones <- best.ones[!(best.ones %in% which(!is.na(final.combos$AICc)))]
             print("best ones 2")
             print(best.ones)
 			focal.models <- best.ones[1:min(chunk.size, length(best.ones))]
             print("focal models")
             print(focal.models)
 		}
+		
+		print(final.combos)
 		all.examined <- append(all.examined, focal.models)
 		
         #local.combos <- possible.combos[(1+chunk.size*(batch_index-1)):min(nrow(possible.combos), chunk.size*batch_index) ,]
-		local.combos <- possible.combos[focal.models,]
+		local.combos <- final.combos[focal.models,]
         
         #cat("\nNow starting run with", paste(range(local.combos$turnover), collapse="-"), "turnover categories and", paste(range(local.combos$eps), collapse="-"), "extinction fraction categories", "\n")
         cat("Starting at ", as.character(starting.time), "\n running on ", n.cores, " cores.", sep="")
@@ -400,8 +403,10 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         final.combos$AICc[all.examined] <- AICc
         final.combos$deltaAICc[all.examined] <- deltaAICc
         final.combos$elapsedMinutes[all.examined] <- unlist(lapply(misse.list, "[[", "elapsed.minutes"))
+		final.combos$runorder[all.examined] <- batch_index
+		save(final.combos, file="~/Downloads/final.combos.Rsave")
         
-        data.for.fit <- data.frame(nparam=(final.combos$eps+possible.combos$turnover)[all.examined], logmin=log(final.combos$elapsedMinutes[all.examined]))
+        data.for.fit <- data.frame(nparam=(final.combos$eps+final.combos$turnover)[all.examined], logmin=log(final.combos$elapsedMinutes[all.examined]))
         data.for.prediction <- data.frame(nparam=(final.combos$eps+final.combos$turnover))
 
         suppressWarnings(final.combos$predictedMinutes <- exp(predict(lm(logmin ~ nparam, data=data.for.fit), newdata=data.for.prediction)))
