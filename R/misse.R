@@ -336,7 +336,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
 			model.distances[,is.na(final.combos$AICc)] <- Inf #We don't want to consider models that have no AICc
 			for (model_index in sequence(nrow(final.combos))) {
 				best <- which(model.distances[model_index,] == min(model.distances[model_index,]))
-				final.combos$predictedAICc[model_index] <- mean(final.combos[best, "AICc"]+model.distances[model_index, best], na.rm=TRUE)		
+				final.combos$predictedAICc[model_index] <- min(final.combos[best, "AICc"]+model.distances[model_index, best], na.rm=TRUE)		
 			}
 			
 			
