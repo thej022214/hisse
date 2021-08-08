@@ -328,7 +328,14 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
 		if(batch_index>1) {
             #save(final.combos, possible.combos, file="stufffordebugging.Rsave")
 			print("here?")
-            final.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(final.combos, !is.na(final.combos$AICc))), newdata=possible.combos) #Idea here is to focus on the best candidate models
+			
+			
+            final.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(final.combos, !is.na(final.combos$AICc))), newdata=final.combos) #Idea here is to focus on the best candidate models
+			
+			#model.distances <- dist(final.combos[,c("turnover", "eps")], diag=TRUE, upper=TRUE)
+			#model.distances[,is.na(final.combos$AICc)] <- Inf #We don't want to consider models that have no AICc
+			
+			
             print("final.combos$predictedAICc")
             print(final.combos$predictedAICc)
             best.ones <- base::order(final.combos$predictedAICc)
@@ -403,7 +410,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         final.combos$AICc[all.examined] <- AICc
         final.combos$deltaAICc[all.examined] <- deltaAICc
         final.combos$elapsedMinutes[all.examined] <- unlist(lapply(misse.list, "[[", "elapsed.minutes"))
-		final.combos$runorder[all.examined] <- batch_index
+		final.combos$runorder[focal.models] <- batch_index
 		save(final.combos, file="~/Downloads/final.combos.Rsave")
         
         data.for.fit <- data.frame(nparam=(final.combos$eps+final.combos$turnover)[all.examined], logmin=log(final.combos$elapsedMinutes[all.examined]))
