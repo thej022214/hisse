@@ -332,7 +332,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
 			
             #final.combos$predictedAICc <- stats::predict(stats::glm(AICc ~ turnover + eps + turnover*eps, data=subset(final.combos, !is.na(final.combos$AICc))), newdata=final.combos) #Idea here is to focus on the best candidate models
 			
-			model.distances <- dist(final.combos[,c("turnover", "eps")], diag=TRUE, upper=TRUE)
+			model.distances <- as.matrix(dist(final.combos[,c("turnover", "eps")], diag=TRUE, upper=TRUE))
 			unknown.indices <- which(is.na(final.combos$AICc))
 			for(unknown.index in unknown.indices) {
 				model.distances[,unknown.index] <- 1e10	
