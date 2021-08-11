@@ -5,7 +5,7 @@
  and Extinction) on a phylogeny, varying the number of parameters for turnover and extinction fraction.}
 \usage{
 generateMiSSEGreedyCombinations(max.param=52, turnover.tries=sequence(26), 
-eps.tries=sequence(26), fixed.eps.tries=NA, vary.both=TRUE)
+eps.tries=sequence(26), fixed.eps.tries=NA, vary.both=TRUE, shuffle.start=TRUE)
 }
 \arguments{
 \item{max.param}{how many parameters to try estimating at the most.}
@@ -13,6 +13,7 @@ eps.tries=sequence(26), fixed.eps.tries=NA, vary.both=TRUE)
 \item{eps.tries}{vector of number of free eps parameters.}
 \item{fixed.eps.tries}{fixed eps values to use. By default this is set to NA to allow estimating. However, a vector of values can supplied as fixed value for eps (and an NA to allow estimating, as well).}
 \item{vary.both}{if TRUE, allows models that have multiple parameters for turnover and eps; if FALSE, if turnover has multiple hidden states eps can only have one estimated value and vice versa.}
+\item{shuffle.start}{if TRUE, instead of generating models strictly by increasing complexity shuffles them around so that simpler models tend to be earlier but with some more complex models mixed in}
 }
 \details{
 This creates the set of combinations of models to run through MiSSEGreedy as a data.frame. It has columns for the number of rates to estimate for turnover, the number of values to estimate for eps, and any fixed values for eps to apply to the whole tree. You can add your own rows or delete some to this data.frame to add more or fewer combinations. By default, this comes out ordered so that simpler models are run first in \code{MiSSEGreedy} but that is not required (but wise for most use cases), and you can reorder if you wish.
