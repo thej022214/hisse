@@ -482,7 +482,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
 }
 
 
-generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequence(26), eps.tries=sequence(26), fixed.eps.tries=NA, vary.both=TRUE, shuffle.start=FALSE) {
+generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequence(26), eps.tries=sequence(26), fixed.eps.tries=NA, vary.both=TRUE, shuffle.start=TRUE) {
     fixed.eps <- eps <- "CRAN wants this declared somehow"
     if(vary.both) {
         combos <- expand.grid(turnover=turnover.tries, eps=eps.tries, fixed.eps=fixed.eps.tries)
