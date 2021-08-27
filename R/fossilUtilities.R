@@ -95,6 +95,23 @@ GetFossils <- function(phy, psi=0.1) {
     return(fossils)
 }
 
+GetStratigraphicIntervals <- function(f, phy) {
+    f$edge_root_tip <- paste0(f$rootwardnode, "_", f$tipwardnode)
+    strat_intervals <- data.frame(edge_root_tip=unique(f$edge_root_tip), rootwardnode=NA, tipwardnode=NA, startingtimefromroot=NA, endingtimefromroot=NA, intervallength=0, tipwardendisextant=FALSE)
+    for (i in sequence(nrow(strat_intervals))) {
+        matching_f <- subset(f,edge_root_tip== strat_intervals$edge_root_tip[i])
+        strat_intervals$rootwardnode[i] <- matching_f$rootwardnode[1]
+        strat_intervals$tipwardnode[i] <- matching_f$tipwardnode[1]
+        if(nrow(matching_f)==1 && matching_f$fossiltype_long[1]=="surviving_terminal") {
+            strat_intervals$tipwardendisextant[i] <- TRUE
+        }
+        strat_intervals$startingtimefromroot[i] <- min(matching_f$timefromroot)
+        strat_intervals$endingtimefromroot[i] <- ifelse(strat_intervals$tipwardendisextant[i], max(node.depth.edgelength(phy)), max(matching_f$timefromroot))
+        strat_intervals$intervallength[i] <- strat_intervals$endingtimefromroot[i] - strat_intervals$startingtimefromroot[i]
+    }
+    return(strat_intervals)
+}
+
 
 ProcessSimSample <- function(phy, f){
     
@@ -332,11 +349,11 @@ AddKData <- function(data, k.samples, muhisse=FALSE){
 
 
 #data to play with:
-#ntax=200
-#true.psi=0.01
-#try(sim.tab <- hisse::SimulateHisse(turnover=c(0.25,0.25), eps=rep(0.25,2), max.taxa=ntax, x0=0, transition.rates=matrix(c(NA, 0.005, 0.005, NA), nrow=2), nstart=2))
-#phy <- SimToPhylo(sim.tab, include.extinct=TRUE)
-#f <- hisse:::GetFossils(phy, psi=true.psi)
+ntax=200
+true.psi=0.1
+try(sim.tab <- hisse::SimulateHisse(turnover=c(0.25,0.25), eps=rep(0.25,2), max.taxa=ntax, x0=0, transition.rates=matrix(c(NA, 0.005, 0.005, NA), nrow=2), nstart=2))
+phy <- SimToPhylo(sim.tab, include.extinct=TRUE)
+f <- hisse:::GetFossils(phy, psi=true.psi)
 
 
 #CheckPlot <- function(phy, extinct.samples, k.samples){
