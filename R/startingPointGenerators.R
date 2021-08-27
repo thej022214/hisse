@@ -96,7 +96,7 @@ p_one <- function(x,lambda, mu, psi, rho){
 }
 
 
-starting.point.tree.fossils <- function(x, rho, n, m, k, x_times, y_times){
+starting.point.tree.fossils <- function(x, rho, n, m, k, x_times, y_times, interval.sum){
     x <- exp(x)
     lambda <- x[1] / (1 + x[2])
     mu <- x[2] * x[1] / (1 + x[2])
@@ -106,13 +106,17 @@ starting.point.tree.fossils <- function(x, rho, n, m, k, x_times, y_times){
     #loglik <- log( (((lambda^(n+m-2)) * (psi^m))/(1-p_0(max(x_times),lambda,mu,psi,rho))^2) * p_one(max(x_times), lambda, mu, psi, rho) * prod(p_one(x_times, lambda,mu,psi,rho)) * prod(p_0(y_times,lambda,mu,psi,rho)/p_one(y_times,lambda,mu,psi,rho)) )
     loglik <- (((n+m-2) * log(lambda)) + ((k+m) * log(psi))) - log(1-exp(p_0(max(x_times),lambda,mu,psi=0,rho)))*2 + p_one(max(x_times), lambda, mu, psi, rho) + sum(p_one(x_times, lambda,mu,psi,rho)) + (sum(p_0(y_times,lambda,mu,psi,rho)) - sum(p_one(y_times,lambda,mu,psi,rho)))
     
+    if(!is.null(interval.sum)){
+        loglik <- loglik + (psi * interval.sum)
+    }
+    
     return(-loglik)
 }
 
 
-starting.point.generator.fossils <- function(n.tax, k, samp.freq.tree, q.div=5, fossil.taxa, fossil.ages, no.k.samples, split.times, get.likelihood=FALSE) {
+starting.point.generator.fossils <- function(n.tax, k, samp.freq.tree, q.div=5, fossil.taxa, fossil.ages, no.k.samples, split.times, interval.sum, get.likelihood=FALSE) {
     opts <- list("algorithm" = "NLOPT_LN_NELDERMEAD", "maxeval" = 100000, "ftol_rel" = .Machine$double.eps^.5)
-    out <- nloptr(x0=log(c(0.1, 0.2, 0.01)), eval_f=starting.point.tree.fossils, ub=log(c(10, 0.99, 1)), lb=c(-21,-21, -21), opts=opts, rho=samp.freq.tree, n=n.tax, m=length(fossil.taxa), k=no.k.samples, x_times=split.times, y_times=fossil.ages)
+    out <- nloptr(x0=log(c(0.1, 0.2, 0.01)), eval_f=starting.point.tree.fossils, ub=log(c(10, 0.99, 1)), lb=c(-21,-21, -21), opts=opts, rho=samp.freq.tree, n=n.tax, m=length(fossil.taxa), k=no.k.samples, x_times=split.times, y_times=fossil.ages, interval.sum=interval.sum)
     if(get.likelihood == TRUE){
         starting.rates <- exp(out$solution)
         lambda <- starting.rates[1] / (1 + starting.rates[2])
