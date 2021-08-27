@@ -349,11 +349,11 @@ AddKData <- function(data, k.samples, muhisse=FALSE){
 
 
 #data to play with:
-ntax=200
-true.psi=0.1
-try(sim.tab <- hisse::SimulateHisse(turnover=c(0.25,0.25), eps=rep(0.25,2), max.taxa=ntax, x0=0, transition.rates=matrix(c(NA, 0.005, 0.005, NA), nrow=2), nstart=2))
-phy <- SimToPhylo(sim.tab, include.extinct=TRUE)
-f <- hisse:::GetFossils(phy, psi=true.psi)
+# ntax=200
+# true.psi=0.1
+# try(sim.tab <- hisse::SimulateHisse(turnover=c(0.25,0.25), eps=rep(0.25,2), max.taxa=ntax, x0=0, transition.rates=matrix(c(NA, 0.005, 0.005, NA), nrow=2), nstart=2))
+# phy <- SimToPhylo(sim.tab, include.extinct=TRUE)
+# f <- hisse:::GetFossils(phy, psi=true.psi)
 
 
 #CheckPlot <- function(phy, extinct.samples, k.samples){
