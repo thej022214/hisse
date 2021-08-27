@@ -16,7 +16,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, sann=TRUE, sann.its=5000, sann.temp=5230, sann.seed=-100377, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1, expand.mode=FALSE){
+MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, sann=TRUE, sann.its=5000, sann.temp=5230, sann.seed=-100377, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1, expand.mode=FALSE){
     
     misse_start_time <- Sys.time()
     #This makes it easier to handle missegreedy with fixed values
@@ -109,29 +109,29 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     # Some new prerequisites #
     if(includes.fossils == TRUE){
         if(!is.null(k.samples)){
-            if(dim(k.samples)[2])==4){
+            phy.og <- phy
+            psi.type <- "m+k"
+            split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
+            k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
+            phy <- AddKNodes(phy, k.samples)
+            fix.type <- GetKSampleMRCA(phy, k.samples)
+            interval.sum <- NULL
+            no.k.samples <- length(k.samples[,1])
+        }else{
+            if(!is.null(strat.intervals)){
                 psi.type <- "m+k_int"
                 split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
-                interval_sum <- sum(k.samples[,3] - k.samples[,4])
+                interval.sum <- sum(k.samples[,3] - k.samples[,4])
                 fix.type <- NULL
                 no.k.samples <- 0
             }else{
                 phy.og <- phy
-                psi.type <- "m+k"
+                psi.type <- "m_only"
+                fix.type <- NULL
+                interval.sum <- NULL
                 split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
-                k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
-                phy <- AddKNodes(phy, k.samples)
-                fix.type <- GetKSampleMRCA(phy, k.samples)
-                interval_sum <- NULL
-                no.k.samples <- length(k.samples[,1])
+                no.k.samples <- 0
             }
-        }else{
-            phy.og <- phy
-            psi.type <- "m_only"
-            fix.type <- NULL
-            interval_sum <- NULL
-            split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
-            no.k.samples <- 0
         }
         gen <- FindGenerations(phy)
         dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
