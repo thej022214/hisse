@@ -121,7 +121,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             if(!is.null(strat.intervals)){
                 psi.type <- "m+k_int"
                 split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
-                interval.sum <- sum(k.samples[,3] - k.samples[,4])
+                interval.sum <- sum(strat.intervals[,3] - strat.intervals[,4])
                 fix.type <- NULL
                 no.k.samples <- 0
             }else{
