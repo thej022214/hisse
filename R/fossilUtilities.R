@@ -95,6 +95,7 @@ GetFossils <- function(phy, psi=0.1) {
     return(fossils)
 }
 
+
 GetStratigraphicIntervals <- function(f, phy) {
     f$edge_root_tip <- paste0(f$rootwardnode, "_", f$tipwardnode)
     strat_intervals <- data.frame(edge_root_tip=unique(f$edge_root_tip), rootwardnode=NA, tipwardnode=NA, startingtimefromroot=NA, endingtimefromroot=NA, intervallength=0, tipwardendisextant=FALSE)

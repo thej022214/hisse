@@ -1306,7 +1306,7 @@ PlotMisseSpace <- function(x, possible.combos=NULL, arrows.by.weight=FALSE, ...)
 
 ######################################################################################################################################
 ######################################################################################################################################
-### Adds Sampled Fossil Points to a Phylo Plot
+### Adds Sampled Fossil Points and Intervals to a Phylo Plot
 ######################################################################################################################################
 ######################################################################################################################################
 
@@ -1354,5 +1354,13 @@ AddFossilPoints <- function(phy, f, ...){
 }
 
 
+AddStratIntervals <- function(phy, strat.intervals, ...){
+    for(row.index in 1:dim(strat.intervals)[1]){
+        #Step 1: get Y coordinates for the tipward:
+        y.tip <- getphylo_y(phy, strat.intervals$tipwardnode[row.index])
+        #Step 2: Plot the segments:
+        segments(strat.intervals$startingtimefromroot[row.index], y.tip, strat.intervals$endingtimefromroot[row.index],  y.tip, ...)
+    }
+}
 
 
