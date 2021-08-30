@@ -437,7 +437,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         
         cat("\nResults so far\n")
         final.combos[] <- lapply(final.combos, function(x) {
-          if(is.logical(x)) as.numeric(as.character(x)) else x
+          if(!is.numeric(x)) as.numeric(as.character(x)) else x
         })
         print(round(final.combos,2))
         
