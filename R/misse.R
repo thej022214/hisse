@@ -436,6 +436,9 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         suppressWarnings(final.combos$predictedMinutes <- exp(predict(lm(logmin ~ nparam, data=data.for.fit), newdata=data.for.prediction)))
         
         cat("\nResults so far\n")
+        final.combos[] <- lapply(final.combos, function(x) {
+          if(is.logical(x)) as.numeric(as.character(x)) else x
+        })
         print(round(final.combos,2))
         
         if(!is.null(save.file)) {
