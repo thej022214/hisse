@@ -798,7 +798,7 @@ test_that("MiSSE_fossil_test1", {
     y_times <- fossil.ages
     k <- dim(pp$k.samples)[1]
     
-    starting.point.code <- hisse:::starting.point.generator.fossils(n.tax=n, k=1, samp.freq.tree=1, q.div=5, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=k, split.times=split.times, get.likelihood=TRUE)
+    starting.point.code <- hisse:::starting.point.generator.fossils(n.tax=n, k=1, samp.freq.tree=1, q.div=5, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=k, split.times=split.times, interval.sum=NULL, get.likelihood=TRUE)
     
     rho=1
     lambda <- starting.point.code[1]
@@ -836,7 +836,7 @@ test_that("MiSSE_fossil_test2", {
     y_times <- fossil.ages
     k <- dim(pp$k.samples)[1]
 
-    starting.point.code <- hisse:::starting.point.generator.fossils(n.tax=n, k=1, samp.freq.tree=1, q.div=5, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=k, split.times=split.times, get.likelihood=TRUE)
+    starting.point.code <- hisse:::starting.point.generator.fossils(n.tax=n, k=1, samp.freq.tree=1, q.div=5, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=k, split.times=split.times, interval.sum=NULL, get.likelihood=TRUE)
 
     rho=1
     lambda <- starting.point.code[1]
@@ -850,7 +850,7 @@ test_that("MiSSE_fossil_test2", {
     nb.node <- phy$Nnode
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(lambda+mu, mu/lambda, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0, interval.sum=NULL)#
     cache$psi = psi
     fossil.taxa <- which(dat.tab$branch.type == 1)
     gen <- hisse:::FindGenerations(phy)
@@ -885,7 +885,7 @@ test_that("MiSSE_fossil_test3", {
     y_times <- fossil.ages
     k <- 0
 
-    starting.point.code <- hisse:::starting.point.generator.fossils(n.tax=n, k=1, samp.freq.tree=1, q.div=5, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=k, split.times=split.times, get.likelihood=TRUE)
+    starting.point.code <- hisse:::starting.point.generator.fossils(n.tax=n, k=1, samp.freq.tree=1, q.div=5, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=k, split.times=split.times, interval.sum=NULL, get.likelihood=TRUE)
 
     rho=1
     lambda <- starting.point.code[1]
@@ -899,7 +899,7 @@ test_that("MiSSE_fossil_test3", {
     nb.node <- phy$Nnode
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2, includes.fossils=TRUE)
     model.vec <- c(lambda+mu, mu/lambda, lambda+mu, mu/lambda, rep(0,48), 0.01, psi)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0, interval.sum=NULL)#
     fossil.taxa <- which(dat.tab$branch.type == 1)
     gen <- hisse:::FindGenerations(phy)
     k.samples <- NULL
@@ -1015,7 +1015,7 @@ test_that("HiSSE_fossil_test1", {
 
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.extant, f=1, hidden.states=1, includes.fossils=FALSE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0, interval.sum=NULL)#
     cache$psi <- 0.0
     fossil.taxa <- which(dat.tab$branch.type == 1)
     gen <- hisse:::FindGenerations(phy.extant)
@@ -1071,7 +1071,7 @@ test_that("HiSSE_fossil_test2", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0, interval.sums=NULL)#
     cache$psi <- 0.01
     fossil.taxa <- which(dat.tab$branch.type == 1)
     gen <- hisse:::FindGenerations(phy)
@@ -1158,7 +1158,7 @@ test_that("MuHiSSE_fossil_test1", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0, interval.sum=NULL)#
     cache$psi <- 0.01
     fossil.taxa <- which(dat.tab$branch.type == 1)
     gen <- hisse:::FindGenerations(phy.k)
@@ -1195,7 +1195,7 @@ test_that("MuHiSSE_fossil_test1", {
     
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.extant, f=1, hidden.states=1, includes.fossils=FALSE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0, interval.sum=NULL)#
     cache$psi <- 0.0
     fossil.taxa <- which(dat.tab$branch.type == 1)
     gen <- hisse:::FindGenerations(phy.extant)
@@ -1275,7 +1275,7 @@ test_that("MuHiSSE_fossil_test2", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0, interval.sum=NULL)#
     cache$psi <- 0.01
     fossil.taxa <- which(dat.tab$branch.type == 1)
     gen <- hisse:::FindGenerations(phy)
@@ -1337,7 +1337,7 @@ test_that("MiSSE_fossil_test4", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=2, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, 0.2+0.03, 0.03/0.2, rep(0,48), 0.01, 0.02)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0, interval.sum=NULL)#
     fossil.taxa <- which(dat.tab$branch.type == 1)
     gen <- hisse:::FindGenerations(phy.k)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)

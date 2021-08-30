@@ -99,7 +99,7 @@ p_one <- function(x,lambda, mu, psi, rho){
 starting.point.tree.fossils <- function(x, rho, n, m, k, x_times, y_times, interval.sum){
     x <- exp(x)
     lambda <- x[1] / (1 + x[2])
-    mu <- x[2] * x[1] / (1 + x[2])
+    mu <- (x[2] * x[1]) / (1 + x[2])
     psi <- x[3]
     
     #Equation 5 from Stadler 2010, pg. 400 -- need to readjust the likelihood equation for logspace.
