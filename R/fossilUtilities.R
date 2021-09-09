@@ -70,21 +70,21 @@ GetFossils <- function(phy, psi=0.1) {
     fossils <- fossils[order(fossils$tipwardnode, fossils$order_on_branch, decreasing=TRUE),]
     fossils$has_sampled_descendant[duplicated(fossils$tipwardnode)] <- TRUE  # there's a more recent fossil on the same branch
 
-	# loop to find k fossils that have sampled descendants from branches that are extinct
-	for (i in sequence(nrow(fossils))) {
-		all_descendants <- phangorn::Descendants(phy, fossils$tipwardnode[i], type="all")
-#		all_descendants <- all_descendants[which(all_descendants>ape::Ntip(phy))] # so we only look at the internal nodes
-		other_fossils <- subset(fossils, fossils$tipwardnode!=fossils$tipwardnode[i])
-		if(length(all_descendants)>0) {
-			if(any(all_descendants %in% other_fossils$rootwardnode)) {
-				fossils$has_sampled_descendant[i] <- TRUE
-			}
+    # loop to find k fossils that have sampled descendants from branches that are extinct
+    for (i in sequence(nrow(fossils))) {
+        all_descendants <- phangorn::Descendants(phy, fossils$tipwardnode[i], type="all")
+#        all_descendants <- all_descendants[which(all_descendants>ape::Ntip(phy))] # so we only look at the internal nodes
+        other_fossils <- subset(fossils, fossils$tipwardnode!=fossils$tipwardnode[i])
+        if(length(all_descendants)>0) {
+            if(any(all_descendants %in% other_fossils$rootwardnode)) {
+                fossils$has_sampled_descendant[i] <- TRUE
+            }
             if(any(fossils$tipwardnode[i] %in% other_fossils$rootwardnode)) {
                 fossils$has_sampled_descendant[i] <- TRUE
             }
-		}
-	}
-	
+        }
+    }
+    
     #fossils$fossiltype_mk <- NA
     #fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_terminal")] <- "m"
     #fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_internal" & !fossils$has_sampled_descendant)] <- "m"
@@ -98,13 +98,19 @@ GetFossils <- function(phy, psi=0.1) {
 
 GetStratigraphicIntervals <- function(phy, f) {
     f$edge_root_tip <- paste0(f$rootwardnode, "_", f$tipwardnode)
-    strat_intervals <- data.frame(edge_root_tip=unique(f$edge_root_tip), rootwardnode=NA, tipwardnode=NA, startingtimefromroot=NA, endingtimefromroot=NA, intervallength=0, tipwardendisextant=FALSE)
+    strat_intervals <- data.frame(edge_root_tip=unique(f$edge_root_tip), rootwardnode=NA, tipwardnode=NA, startingtimefromroot=NA, endingtimefromroot=NA, intervallength=0, tipwardendisextant=FALSE, tipwardendisextinct=FALSE)
     for (i in sequence(nrow(strat_intervals))) {
-        matching_f <- subset(f,edge_root_tip== strat_intervals$edge_root_tip[i])
+        matching_f <- subset(f, f$edge_root_tip == strat_intervals$edge_root_tip[i])
         strat_intervals$rootwardnode[i] <- matching_f$rootwardnode[1]
         strat_intervals$tipwardnode[i] <- matching_f$tipwardnode[1]
         if(nrow(matching_f)==1 && matching_f$fossiltype_long[1]=="surviving_terminal") {
             strat_intervals$tipwardendisextant[i] <- TRUE
+        }else{
+            if(nrow(matching_f)==1 && matching_f$fossiltype_long[1]=="extinct_terminal" | matching_f$fossiltype_long[1] == "extinct_internal"){
+                if(matching_f$has_sampled_descendant == FALSE){
+                    strat_intervals$tipwardendisextinct[i] <- TRUE
+                }
+            }
         }
         strat_intervals$startingtimefromroot[i] <- min(matching_f$timefromroot)
         strat_intervals$endingtimefromroot[i] <- ifelse(strat_intervals$tipwardendisextant[i], max(node.depth.edgelength(phy)), max(matching_f$timefromroot))
@@ -114,7 +120,7 @@ GetStratigraphicIntervals <- function(phy, f) {
 }
 
 
-ProcessSimSample <- function(phy, f, strat.intervals=FALSE){
+ProcessSimSample <- function(phy, f){
     
     #Step 1: Get MRCA of K samples for table. We want MRCA1, MRCA2, TIMEFROMPRESENT, Trait
     k.samples <- f[which(f$has_sampled_descendant == TRUE),]
@@ -156,69 +162,66 @@ ProcessSimSample <- function(phy, f, strat.intervals=FALSE){
         }
     }
     
-    if(strat.intervals == TRUE){
-        strat <- hisse:::GetStratigraphicIntervals(phy, f)
-    }else{
-        #Step 3: Now process the k.sample table so that any added extinct taxa get listed as taxa whose MRCA is where subtending k.sample will be placed:
-        for(sample.index in sequence(length(k.samples$tipwardnode))){
-            samples.taxa <- tmp.k.samples[[sample.index]]
-            mrca <- getMRCA(phy, samples.taxa)
-            if(!is.null(mrca)){
-                if(k.samples$fossiltype_long[sample.index] == "extinct_terminal" | k.samples$fossiltype_long[sample.index] == "extinct_internal"){
-                    sister.taxa <- GetSister(phy, mrca)
-                    if(sister.taxa > Ntip(phy)){
-                        mrca <- mrca
-                    }else{
-                        mrca <- getMRCA(phy, c(phy$tip.label[sister.taxa], samples.taxa[1]))
-                    }
-                    all.desc <- phytools::getDescendants(phy, node=mrca)
-                    tips.only <- all.desc[all.desc<(Ntip(phy)+1)]
-                    tmp.k.samples[[sample.index]] <- phy$tip.label[tips.only]
+    #Step 3: Now process the k.sample table so that any added extinct taxa get listed as taxa whose MRCA is where subtending k.sample will be placed:
+    for(sample.index in sequence(length(k.samples$tipwardnode))){
+        samples.taxa <- tmp.k.samples[[sample.index]]
+        mrca <- getMRCA(phy, samples.taxa)
+        if(!is.null(mrca)){
+            if(k.samples$fossiltype_long[sample.index] == "extinct_terminal" | k.samples$fossiltype_long[sample.index] == "extinct_internal"){
+                sister.taxa <- GetSister(phy, mrca)
+                if(sister.taxa > Ntip(phy)){
+                    mrca <- mrca
                 }else{
-                    all.desc <- phytools::getDescendants(phy, node=mrca)
-                    tips.only <- all.desc[all.desc<(Ntip(phy)+1)]
-                    tmp.k.samples[[sample.index]] <- phy$tip.label[tips.only]
+                    mrca <- getMRCA(phy, c(phy$tip.label[sister.taxa], samples.taxa[1]))
                 }
+                all.desc <- phytools::getDescendants(phy, node=mrca)
+                tips.only <- all.desc[all.desc<(Ntip(phy)+1)]
+                tmp.k.samples[[sample.index]] <- phy$tip.label[tips.only]
             }else{
-                if(k.samples$fossiltype_long[sample.index] == "extinct_terminal" | k.samples$fossiltype_long[sample.index] == "extinct_internal"){
-                    new.extinct.sister <- GetSister(phy, samples.taxa)
-                    tmp.k.samples[[sample.index]] <- c(samples.taxa, phy$tip.label[new.extinct.sister])
-                }else{
-                    tmp.k.samples[[sample.index]] <- samples.taxa
-                }
+                all.desc <- phytools::getDescendants(phy, node=mrca)
+                tips.only <- all.desc[all.desc<(Ntip(phy)+1)]
+                tmp.k.samples[[sample.index]] <- phy$tip.label[tips.only]
             }
-        }
-        
-        #Step 4: Now prune down to extant and sampled fossils
-        fossil.tips <- geiger::is.extinct(phy,tol=.Machine$double.eps^.50)
-        extant.tips <- phy$tip.label[!(phy$tip.label %in% fossil.tips)]
-        sampled.tips <- c(extant.tips, new.fossil.names)
-        unsampled.tips <- fossil.tips[!(fossil.tips %in% sampled.tips)]
-        
-        new.tree <- ape::drop.tip(phy, unsampled.tips)
-        
-        #Step 5: Now make k table by taking the list of taxon names, removing those that were culled, and finding the two that define MRCA of subtending sample.
-        tmp <- c()
-        for(sample.index in sequence(length(k.samples$tipwardnode))){
-            samples.taxa <- tmp.k.samples[[sample.index]]
-            samples.taxa <- samples.taxa[which(samples.taxa %in% new.tree$tip.label)]
-            if(length(samples.taxa)==1){
-                tmp <- rbind(tmp, c(samples.taxa[1], samples.taxa[1], k.samples$timefrompresent[sample.index]))
+        }else{
+            if(k.samples$fossiltype_long[sample.index] == "extinct_terminal" | k.samples$fossiltype_long[sample.index] == "extinct_internal"){
+                new.extinct.sister <- GetSister(phy, samples.taxa)
+                tmp.k.samples[[sample.index]] <- c(samples.taxa, phy$tip.label[new.extinct.sister])
             }else{
-                tmp <- rbind(tmp, c(samples.taxa[1], samples.taxa[length(samples.taxa)], k.samples$timefrompresent[sample.index]))
-            }
-        }
-        
-        k.samples <- data.frame(taxon1=tmp[,1], taxon2=tmp[,2], timefrompresent=tmp[,3], stringsAsFactors=FALSE)
-        
-        keep.root.samples=FALSE
-        if(keep.root.samples == FALSE){
-            root.edge.samples <- which(as.numeric(k.samples[,3]) > max(node.depth.edgelength(new.tree)))
-            if(length(root.edge.samples)>0){
-                k.samples <- k.samples[-root.edge.samples,]
+                tmp.k.samples[[sample.index]] <- samples.taxa
             }
         }
     }
+        
+    #Step 4: Now prune down to extant and sampled fossils
+    fossil.tips <- geiger::is.extinct(phy,tol=.Machine$double.eps^.50)
+    extant.tips <- phy$tip.label[!(phy$tip.label %in% fossil.tips)]
+    sampled.tips <- c(extant.tips, new.fossil.names)
+    unsampled.tips <- fossil.tips[!(fossil.tips %in% sampled.tips)]
+        
+    new.tree <- ape::drop.tip(phy, unsampled.tips)
+        
+    #Step 5: Now make k table by taking the list of taxon names, removing those that were culled, and finding the two that define MRCA of subtending sample.
+    tmp <- c()
+    for(sample.index in sequence(length(k.samples$tipwardnode))){
+        samples.taxa <- tmp.k.samples[[sample.index]]
+        samples.taxa <- samples.taxa[which(samples.taxa %in% new.tree$tip.label)]
+        if(length(samples.taxa)==1){
+            tmp <- rbind(tmp, c(samples.taxa[1], samples.taxa[1], k.samples$timefrompresent[sample.index]))
+        }else{
+            tmp <- rbind(tmp, c(samples.taxa[1], samples.taxa[length(samples.taxa)], k.samples$timefrompresent[sample.index]))
+        }
+    }
+        
+    k.samples <- data.frame(taxon1=tmp[,1], taxon2=tmp[,2], timefrompresent=tmp[,3], stringsAsFactors=FALSE)
+    
+    keep.root.samples=FALSE
+    if(keep.root.samples == FALSE){
+        root.edge.samples <- which(as.numeric(k.samples[,3]) > max(node.depth.edgelength(new.tree)))
+        if(length(root.edge.samples)>0){
+            k.samples <- k.samples[-root.edge.samples,]
+        }
+    }
+    
     obj <- list(phy=new.tree, k.samples=k.samples)
     return(obj)
 }
@@ -378,6 +381,8 @@ AddKData <- function(data, k.samples, muhisse=FALSE){
 #These are all inputs for generating starting values:
 #fossil.taxa <- which(dat.tab$branch.type == 1)
 #fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
+
+
 
 
 
