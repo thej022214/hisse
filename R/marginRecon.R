@@ -802,7 +802,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -823,20 +823,39 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     # Some new prerequisites #
     if(includes.fossils == TRUE){
         if(!is.null(k.samples)){
+            #m and k fossils
             k.samples <- k.samples[order(as.numeric(k.samples[,3]), decreasing=FALSE),]
             phy <- AddKNodes(phy, k.samples)
             fix.type <- GetKSampleMRCA(phy, k.samples)
+            gen <- FindGenerations(phy)
+            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
+            edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+            fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
         }else{
-            fix.type <- NULL
+            if(!is.null(strat.intervals)){
+                #strat intervals
+                strat.cache <- GetStratInfo(strat.intervals=strat.intervals)
+                k.samples <- GetIntervalToK(strat.intervals, intervening.intervals=strat.cache$intervening.intervals)
+                phy <- AddKNodes(phy, k.samples)
+                fix.type <- GetKSampleMRCA(phy, k.samples, strat.intervals=TRUE)
+                gen <- FindGenerations(phy)
+                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
+                edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+                fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
+            }else{
+                #Just m fossils only.
+                fix.type <- NULL
+                gen <- FindGenerations(phy)
+                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
+                #These are all inputs for generating starting values:
+                edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+                fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
+            }
         }
-        gen <- FindGenerations(phy)
-        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
-        #These are all inputs for generating starting values:
-        fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{
         fix.type <- NULL
         gen <- FindGenerations(phy)
-        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
         fossil.taxa <- NULL
     }
 
@@ -874,7 +893,11 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
                 if(!is.null(k.samples)){
                     fix.type.tmp <- fix.type
                     fix.type.tmp <- rbind(fix.type.tmp, c(focal, "fix", j))
-                    marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type.tmp[,1]), state=as.numeric(fix.type.tmp[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type.tmp[,2]))
+                    if(!is.null(strat.intervals)){
+                        marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type.tmp[,1]), state=as.numeric(fix.type.tmp[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type.tmp[,2]) + (strat.cache$k*log(cache$psi)) + (cache$psi*strat.cache$l_s))
+                    }else{
+                        marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type.tmp[,1]), state=as.numeric(fix.type.tmp[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type.tmp[,2]))
+                    }
                 }else{
                     marginal.probs.tmp <- c(marginal.probs.tmp, DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=focal, state=j, fossil.taxa=fossil.taxa, fix.type="fix"))
                 }
@@ -915,7 +938,11 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
                 dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
             }
             if(!is.null(k.samples)){
-                marginal.probs.tmp[j] <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+                if(!is.null(strat.intervals)){
+                    marginal.probs.tmp[j] <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2]) + (strat.cache$k*log(cache$psi)) + (cache$psi*strat.cache$l_s)
+                }else{
+                    marginal.probs.tmp[j] <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+                }
             }else{
                 marginal.probs.tmp[j] <- DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
             }

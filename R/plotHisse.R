@@ -1354,7 +1354,8 @@ AddFossilPoints <- function(phy, f, ...){
 }
 
 
-AddStratIntervals <- function(phy, strat.intervals, ...){
+AddStratIntervals <- function(phy, f, ...){
+    strat.intervals <- GetStratigraphicIntervals(phy, f)
     for(row.index in 1:dim(strat.intervals)[1]){
         #Step 1: get Y coordinates for the tipward:
         y.tip <- getphylo_y(phy, strat.intervals$tipwardnode[row.index])

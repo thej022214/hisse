@@ -6,7 +6,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-GetSister <- function(tree,node,mode=c("number","label")){
+GetSister <- function(tree, node, mode=c("number","label")){
     mode <- mode[1]
     if(is.character(node)) node <- match(node,c(tree$tip.label,tree$node.label))
     sisters <- tree$edge[which(tree$edge[,1]==tree$edge[which(tree$edge[,2]==node),1]),2]
@@ -98,19 +98,13 @@ GetFossils <- function(phy, psi=0.1) {
 
 GetStratigraphicIntervals <- function(phy, f) {
     f$edge_root_tip <- paste0(f$rootwardnode, "_", f$tipwardnode)
-    strat_intervals <- data.frame(edge_root_tip=unique(f$edge_root_tip), rootwardnode=NA, tipwardnode=NA, startingtimefromroot=NA, endingtimefromroot=NA, intervallength=0, tipwardendisextant=FALSE, tipwardendisextinct=FALSE)
+    strat_intervals <- data.frame(edge_root_tip=unique(f$edge_root_tip), rootwardnode=NA, tipwardnode=NA, startingtimefromroot=NA, endingtimefromroot=NA, intervallength=0, tipwardendisextant=FALSE)
     for (i in sequence(nrow(strat_intervals))) {
         matching_f <- subset(f, f$edge_root_tip == strat_intervals$edge_root_tip[i])
         strat_intervals$rootwardnode[i] <- matching_f$rootwardnode[1]
         strat_intervals$tipwardnode[i] <- matching_f$tipwardnode[1]
         if(nrow(matching_f)==1 && matching_f$fossiltype_long[1]=="surviving_terminal") {
             strat_intervals$tipwardendisextant[i] <- TRUE
-        }else{
-            if(nrow(matching_f)==1 && matching_f$fossiltype_long[1]=="extinct_terminal" | matching_f$fossiltype_long[1] == "extinct_internal"){
-                if(matching_f$has_sampled_descendant == FALSE){
-                    strat_intervals$tipwardendisextinct[i] <- TRUE
-                }
-            }
         }
         strat_intervals$startingtimefromroot[i] <- min(matching_f$timefromroot)
         strat_intervals$endingtimefromroot[i] <- ifelse(strat_intervals$tipwardendisextant[i], max(node.depth.edgelength(phy)), max(matching_f$timefromroot))
@@ -227,6 +221,110 @@ ProcessSimSample <- function(phy, f){
 }
 
 
+ProcessSimStrat <- function(phy, f){
+    ## STEP 1: Prune f table to only include those that represent intervals:
+    f$edge_root_tip <- paste0(f$rootwardnode, "_", f$tipwardnode)
+    unique_edge_root_tip <- unique(f$edge_root_tip)
+    f.red <- as.data.frame(matrix(ncol=9, nrow=0))
+    colnames(f.red) <- c("rootwardnode", "tipwardnode", "timefromroot", "timefromrootwardnode", "timefrompresent", "fossiltype_short", "fossiltype_long", "order_on_branch", "has_sampled_descendant")
+    for (i in sequence(length(unique_edge_root_tip))) {
+        matching_f <- subset(f, f$edge_root_tip == unique_edge_root_tip[i])
+        if(dim(matching_f)[1] > 1){
+            #ok get y_i:
+            tmp.f.red <- matching_f[which.min(as.numeric(matching_f$timefromroot)),]
+            #now get o_i:
+            tmp.f.red <- rbind(tmp.f.red, matching_f[which.max(as.numeric(matching_f$timefromroot)),])
+        }else{
+            #so here, y_i is either a tip or this is a single k sample on a single edge.
+            tmp.f.red <- matching_f
+        }
+        f.red <- rbind(f.red, tmp.f.red)
+    }
+    f.red <- f.red[order(as.numeric(f.red$timefromroot),decreasing=TRUE),]
+    
+    ## STEP 2: Now process the remaining stuff:
+    points.added <- ProcessSimSample(phy, f.red)
+    
+    ## STEP 3: Now take this information and format for stat range evolution:
+    # taxon1 taxon2 timefrompresentrootward timefrompresenttipward type
+    strat.intervals <- as.data.frame(matrix(ncol=5, nrow=0))
+    colnames(strat.intervals) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
+    
+    k.samples <- points.added$k.samples
+    k.samples$mrca_taxa <- paste0(k.samples$taxon1, "_", k.samples$taxon2)
+    unique_mrca_taxa <- unique(k.samples$mrca_taxa)
+    for(mrca.index in 1:length(unique_mrca_taxa)){
+        matching_rows <- subset(k.samples, k.samples$mrca_taxa == unique_mrca_taxa[mrca.index])
+        if(dim(matching_rows)[1] > 1){
+            if(dim(matching_rows)[1] > 2){
+                #here means type is interval is a range and there are multiple ranges on this edge:
+                info.from.previous <- as.data.frame(matrix(ncol=2, nrow=dim(matching_rows)[1]))
+                for(tmp.index in 1:dim(matching_rows)[1]){
+                    tmp <- f.red[which(f.red$timefrompresent == matching_rows$timefrompresent[tmp.index]),]
+                    info.from.previous[tmp.index,] <- c(tmp$edge_root_tip, tmp$timefrompresent)
+                }
+                unique_edge_root_tip <- unique(info.from.previous[,1])
+                for(unique.index in 1:length(unique_edge_root_tip)){
+                    matching_tmp <- subset(info.from.previous, info.from.previous[,1] == unique_edge_root_tip[unique.index])
+                    if(dim(matching_tmp)[1] > 1){
+                        tmp <- as.data.frame(matrix(ncol=5, nrow=1))
+                        colnames(tmp) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
+                        tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], max(as.numeric(matching_tmp[,2])), min(as.numeric(matching_tmp[,2])), "R")
+                        strat.intervals <- rbind(strat.intervals, tmp)
+                    }else{
+                        #Singleton or Tip range
+                        if(unique.index == 1){
+                            if(matching_rows$taxon1[1] == matching_rows$taxon2[1]){
+                                #Tip Range
+                                tmp <- as.data.frame(matrix(ncol=5, nrow=1))
+                                colnames(tmp) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
+                                tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], as.numeric(matching_tmp[2]), 0, "R")
+                                strat.intervals <- rbind(strat.intervals, tmp)
+                            }else{
+                                #Singleton
+                                tmp <- as.data.frame(matrix(ncol=5, nrow=1))
+                                colnames(tmp) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
+                                tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], as.numeric(matching_tmp[2]), as.numeric(matching_tmp[2]), "S")
+                                strat.intervals <- rbind(strat.intervals, tmp)
+                            }
+                        }else{
+                            #Singleton behind another interval
+                            tmp <- as.data.frame(matrix(ncol=5, nrow=1))
+                            colnames(tmp) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
+                            tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], as.numeric(matching_tmp[2]), as.numeric(matching_tmp[2]), "S")
+                            strat.intervals <- rbind(strat.intervals, tmp)
+                        }
+                    }
+                }
+            }else{
+                #Interval is a range and there is only a single range on this edge:
+                tmp <- as.data.frame(matrix(ncol=5, nrow=1))
+                colnames(tmp) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
+                tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], max(as.numeric(matching_rows$timefrompresent)), min(as.numeric(matching_rows$timefrompresent)), "R")
+                strat.intervals <- rbind(strat.intervals, tmp)
+            }
+        }else{
+            #Interval type is a singleton fossil or tip range:
+            if(matching_rows$taxon1[1] == matching_rows$taxon2[1]){
+                #Tip range:
+                tmp <- as.data.frame(matrix(ncol=5, nrow=1))
+                colnames(tmp) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
+                tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], max(as.numeric(matching_rows$timefrompresent)), 0, "R")
+                strat.intervals <- rbind(strat.intervals, tmp)
+            }else{
+                #Singleton fossil:
+                tmp <- as.data.frame(matrix(ncol=5, nrow=1))
+                colnames(tmp) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
+                tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], max(as.numeric(matching_rows$timefrompresent)), min(as.numeric(matching_rows$timefrompresent)), "S")
+                strat.intervals <- rbind(strat.intervals, tmp)
+            }
+        }
+    }
+    obj <- list(phy=points.added$phy, strat.intervals=strat.intervals)
+    
+    return(obj)
+}
+
 
 ######################################################################################################################################
 ######################################################################################################################################
@@ -234,10 +332,14 @@ ProcessSimSample <- function(phy, f){
 ######################################################################################################################################
 ######################################################################################################################################
 
-GetKSampleMRCA <- function(phy, k.samples){
+GetKSampleMRCA <- function(phy, k.samples, strat.intervals=FALSE){
     k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
     mrca.ksamp <- phy$edge[which(phy$edge[,2] %in% k.sample.tip.no),1]
-    fix.info <- data.frame(node=mrca.ksamp, type="event", state=rep(0, length(mrca.ksamp)), stringsAsFactors=FALSE)
+    if(strat.intervals == TRUE){
+        fix.info <- data.frame(node=mrca.ksamp, type="interval", state=rep(0, length(mrca.ksamp)), stringsAsFactors=FALSE)
+    }else{
+        fix.info <- data.frame(node=mrca.ksamp, type="event", state=rep(0, length(mrca.ksamp)), stringsAsFactors=FALSE)
+    }
     return(fix.info)
 }
 
@@ -354,37 +456,66 @@ AddKData <- function(data, k.samples, muhisse=FALSE){
 }
 
 
+######################################################################################################################################
+######################################################################################################################################
+### Utility functions for dealing with stratigraphic intervals
+######################################################################################################################################
+######################################################################################################################################
 
-#data to play with:
-# ntax=200
-# true.psi=0.1
-# try(sim.tab <- hisse::SimulateHisse(turnover=c(0.25,0.25), eps=rep(0.25,2), max.taxa=ntax, x0=0, transition.rates=matrix(c(NA, 0.005, 0.005, NA), nrow=2), nstart=2))
-# phy <- SimToPhylo(sim.tab, include.extinct=TRUE)
-# f <- hisse:::GetFossils(phy, psi=true.psi)
+GetStratInfo <- function(strat.intervals){
+    #Step 1: Get the easy stuff first...
+    obj <- NULL
+    obj$k <- (length(strat.intervals$type[which(strat.intervals$type == "R")]) * 2) + length(strat.intervals$type[which(strat.intervals$type == "S")])
+    obj$l_s <- sum(as.numeric(strat.intervals$timefrompresentroot) - as.numeric(strat.intervals$timefrompresenttip))
+    
+    #Step 2: Get the hard stuff last...
+    intervening.intervals.tmp <- NULL
+    strat.intervals$mrca_taxa <- paste0(strat.intervals$taxon1, "_", strat.intervals$taxon2)
+    unique_mrca_taxa <- unique(strat.intervals$mrca_taxa)
+    for(unique.index in 1:length(unique_mrca_taxa)){
+        matching_rows <- subset(strat.intervals, strat.intervals$mrca_taxa == unique_mrca_taxa[unique.index])
+        if(dim(matching_rows)[1] > 1){
+            #Order so that they are decreasing -- in theory could have several intervals down a long edge:
+            matching_rows <- matching_rows[order(as.numeric(matching_rows$timefrompresenttip),decreasing=FALSE),]
+            intervening.intervals <- c()
+            for(index in 1:(dim(matching_rows)[1]-1)){
+                intervening.intervals.tmp <- rbind(intervening.intervals.tmp, c(matching_rows$taxon1[index], matching_rows$taxon2[index], as.numeric(matching_rows$timefrompresenttip[index+1]), as.numeric(matching_rows$timefrompresentroot[index]), matching_rows$type[index+1]))
+            }
+        }
+    }
+    if(!is.null(intervening.intervals.tmp)){
+        intervening.intervals <- data.frame(taxon1=intervening.intervals.tmp[,1], taxon2=intervening.intervals.tmp[,2], ya=as.numeric(intervening.intervals.tmp[,3]), o_i=as.numeric(intervening.intervals.tmp[,4]), ya_type=intervening.intervals.tmp[,5], stringsAsFactors=FALSE)
+        obj$intervening.intervals <- intervening.intervals
+    }
+    return(obj)
+}
 
 
-#CheckPlot <- function(phy, extinct.samples, k.samples){
-#    split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
-#    plot(phy, cex=.5)
-#    abline(v=as.numeric(extinct.samples[,5]), col="blue")
-#    abline(v=c(max(split.times) - as.numeric(k.samples[,3])), col="red")
-#}
-
-#phy <- pp$phy
-#k.info <- pp$k.samples
-#test <- AddKNodes(pp$phy, pp$k.samples)
-#extinct.samples <- f[which(f$fossiltype_long=="extinct_terminal" | f$fossiltype_long=="extinct_internal"),]
-#extinct.samples <- extinct.samples[which(extinct.samples$has_sampled_descendant == FALSE),]
-#CheckPlot(test, extinct.samples=extinct.samples, k.samples=k.info)
-
-#dat.tab <- hisse:::OrganizeDataMiSSE(phy=pp$phy, f=1, hidden.states=1)
-#These are all inputs for generating starting values:
-#fossil.taxa <- which(dat.tab$branch.type == 1)
-#fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
-
-
-
-
-
+GetIntervalToK <- function(strat.intervals, intervening.intervals=NULL){
+    #Step 1: Reduce table down to just R type fossils, R meaning ranges.
+    intervals.only <- subset(strat.intervals, strat.intervals$type == "R")
+    #Step 2: Loop down table and organize everything to match k sample input:
+    tmp <- c()
+    for(row.index in 1:dim(intervals.only)[1]){
+        tmp <- rbind(tmp, c(intervals.only$taxon1[row.index], intervals.only$taxon2[row.index], as.numeric(intervals.only$timefrompresenttip[row.index])))
+        tmp <- rbind(tmp, c(intervals.only$taxon1[row.index], intervals.only$taxon2[row.index], as.numeric(intervals.only$timefrompresentroot[row.index])))
+    }
+    
+    if(!is.null(intervening.intervals)){
+        extra.k.samples <- subset(intervening.intervals, intervening.intervals$ya_type == "S")
+        #If zero it will just fill row with NAs.
+        if(dim(extra.k.samples)[1] > 0){
+            for(extra.row.index in 1:dim(extra.k.samples)[1]){
+                tmp <- rbind(tmp, c(extra.k.samples$taxon1[extra.row.index], extra.k.samples$taxon2[extra.row.index], as.numeric(extra.k.samples$ya[extra.row.index])))
+            }
+        }
+    }
+    
+    k.samples <- data.frame(taxon1=as.character(tmp[,1]), taxon2=as.character(tmp[,2]), timefrompresent=as.numeric(tmp[,3]), stringsAsFactors=FALSE)
+    #Do not need end of interval if it is a tip.
+    k.samples <- k.samples[-which(k.samples$timefrompresent == 0),]
+    k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
+    return(k.samples)
+}
 
 

@@ -81,10 +81,14 @@ c2 <- function(lambda, mu, psi, rho){
 }
 
 #This is Master equation from Stalder 2010, pg. 398.
-p_0 <- function(x, lambda, mu, psi, rho){
+p_0 <- function(x, lambda, mu, psi, rho, log=TRUE){
     c1_val <- c1(lambda=lambda, mu=mu, psi=psi)
     c2_val <- c2(lambda=lambda, mu=mu, psi=psi, rho=rho)
-    return(log((lambda + mu + psi + c1_val * ((exp(-c1_val*x) * (1-c2_val)-(1+c2_val))/(exp(-c1_val*x) * (1-c2_val)+(1+c2_val))))/(2*lambda)))
+    if(log == TRUE){
+        return(log((lambda + mu + psi + c1_val * ((exp(-c1_val*x) * (1-c2_val)-(1+c2_val))/(exp(-c1_val*x) * (1-c2_val)+(1+c2_val))))/(2*lambda)))
+    }else{
+        return((lambda + mu + psi + c1_val * ((exp(-c1_val*x) * (1-c2_val)-(1+c2_val))/(exp(-c1_val*x) * (1-c2_val)+(1+c2_val))))/(2*lambda))
+    }
 }
 
 
@@ -113,6 +117,117 @@ starting.point.tree.fossils <- function(x, rho, n, m, k, x_times, y_times){
 starting.point.generator.fossils <- function(n.tax, k, samp.freq.tree, q.div=5, fossil.taxa, fossil.ages, no.k.samples, split.times, get.likelihood=FALSE) {
     opts <- list("algorithm" = "NLOPT_LN_NELDERMEAD", "maxeval" = 100000, "ftol_rel" = .Machine$double.eps^.5)
     out <- nloptr(x0=log(c(0.1, 0.2, 0.01)), eval_f=starting.point.tree.fossils, ub=log(c(10, 0.99, 1)), lb=c(-21,-21, -21), opts=opts, rho=samp.freq.tree, n=n.tax, m=length(fossil.taxa), k=no.k.samples, x_times=split.times, y_times=fossil.ages)
+    if(get.likelihood == TRUE){
+        starting.rates <- exp(out$solution)
+        lambda <- starting.rates[1] / (1 + starting.rates[2])
+        mu <- (starting.rates[1] * starting.rates[2]) / (1 + starting.rates[2])
+        psi <- starting.rates[3]
+        return(c(lambda, mu, psi, out$objective))
+    }else{
+        starting.rates <- exp(out$solution)
+        lambda <- starting.rates[1] / (1 + starting.rates[2])
+        mu <- (starting.rates[1] * starting.rates[2]) / (1 + starting.rates[2])
+        psi <- starting.rates[3]
+        r <- if( lambda > mu )
+        (lambda - mu) else lambda
+        p <- c(rep(c(c(lambda, mu), r / q.div), c(k, k, k * (k-1))), psi)
+        names(p) <- NULL
+        return(p)
+    }
+}
+
+
+######################################################################################################################################
+######################################################################################################################################
+### Generates starting parameter values for HiSSE, MuHiSSE, and MiSSE with stratigraphic intervals
+######################################################################################################################################
+######################################################################################################################################
+
+#This is Eq. 4 from Stadler et al 2018, pg. 46
+q_t <- function(t, lambda, mu, psi, rho){
+    c1_val <- c1(lambda=lambda, mu=mu, psi=psi)
+    c2_val <- c2(lambda=lambda, mu=mu, psi=psi, rho=rho)
+    qt_val <- (4*exp(-c1_val*t)) / ((exp(-c1_val*t) * (1 - c2_val) + (1 + c2_val))^2)
+    return(qt_val)
+}
+
+#This is Eq. from Stadler et al 2018, pg. 51
+q_sym_tilde <- function(t, lambda, mu, psi, rho){
+    q_sym_val <- exp(-(lambda + mu + psi)*t)
+    return(q_sym_val)
+}
+
+#This is Eq. from Stadler et al 2018, pg. 51
+q_sym_ratio <- function(si, ei, lambda, mu, psi, rho){
+    q_sym_val1 <- exp(-(lambda + mu + psi)*si)
+    q_sym_val2 <- exp(-(lambda + mu + psi)*ei)
+    q_sym_hat_val <- q_sym_val1 / q_sym_val2
+    return(q_sym_hat_val)
+}
+
+#This is Eq. from Stadler et al 2018, pg. 51
+q_ratio <- function(si, ei, lambda, mu, psi, rho){
+    q_val1 <- q_t(t=si, lambda=lambda, mu=mu, psi=psi, rho=rho)
+    q_val2 <- q_t(t=ei, lambda=lambda, mu=mu, psi=psi, rho=rho)
+    q_sym_hat_val <- q_val1 / q_val2
+    return(q_sym_hat_val)
+}
+
+#This is Eq. from Stadler et al 2018, pg. 51
+GetB_i <- function(x, lambda, mu, psi, rho){
+    res <- numeric(dim(x)[1])
+    for(index in 1:dim(x)[1]){
+        if(x$branch.type[index] == 3){
+            res[index] <- q_sym_ratio(si=x$RootwardAge[index], ei=x$TipwardAge[index], lambda=lambda, mu=mu, psi=psi, rho=rho)
+        }else{
+            res[index] <- q_ratio(si=x$RootwardAge[index], ei=x$TipwardAge[index], lambda=lambda, mu=mu, psi=psi, rho=rho)
+        }
+    }
+    return(res)
+}
+
+#This is right hand most product from corollary 13 from Stadler et al 2018, pg. 51
+GetUnobsSpecEventProbs <- function(x, lambda, mu, psi, rho){
+    res <- numeric(dim(x)[1])
+    for(index  in 1:dim(x)[1]){
+        first.ratio <- q_t(t=x[index,4], lambda=lambda, mu=mu, psi=psi, rho=rho) / q_sym_tilde(t=x[index,4],lambda=lambda, mu=mu, psi=psi, rho=rho)
+        second.ratio <- q_sym_tilde(t=x[index,3], lambda=lambda, mu=mu, psi=psi, rho=rho)/ q_t(t=x[index,3],lambda=lambda, mu=mu, psi=psi, rho=rho)
+        res[index] <- 1 - (first.ratio * second.ratio)
+    }
+    return(res)
+}
+
+
+starting.point.tree.intervals <- function(x, n.tax, rho, seg_map, x_times, y_times, strat.cache){
+    x <- exp(x)
+    lambda <- x[1] / (1 + x[2])
+    mu <- (x[2] * x[1]) / (1 + x[2])
+    psi <- x[3]
+    k <- strat.cache$k
+    intervening.intervals <- strat.cache$intervening.intervals
+    l_s <- strat.cache$l_s
+    
+    #STEP 1: Get branch-wise probs:
+    branch.segs <- GetB_i(x=seg_map, lambda=lambda, mu=mu, psi=psi, rho=rho)
+    #STEP 2: Get extinct starting probs:
+    extinct.starts <- p_0(x=y_times, lambda=lambda, mu=mu, psi=psi, rho=rho, log=FALSE)
+    #STEP 3: Get double interval segs probs:
+    if(!is.null(intervening.intervals)){
+        unobs.spec <- GetUnobsSpecEventProbs(x=intervening.intervals, lambda=lambda, mu=mu, psi=psi, rho=rho)
+    }else{
+        unobs.spec <- 1
+    }
+    
+    #STEP 4: Get likelihood:
+    loglik <- (l_s * psi) + sum(log(unobs.spec)) + sum(log(branch.segs)) + sum(log(extinct.starts*psi)) + (n.tax * log(rho)) + (length(x_times) * log(lambda)) + k*log(psi) - (log(1-p_0(x=max(x_times),lambda=lambda,mu=mu,psi=psi,rho=rho,log=FALSE))*2 + log(lambda))
+    
+    return(-loglik)
+}
+
+
+starting.point.generator.intervals <- function(k, samp.freq.tree, q.div=5, n.tax, seg_map, split.times, fossil.ages, strat.cache, get.likelihood=FALSE) {
+    opts <- list("algorithm" = "NLOPT_LN_NELDERMEAD", "maxeval" = 100000, "ftol_rel" = .Machine$double.eps^.5)
+    out <- nloptr(x0=log(c(0.1, 0.2, 0.01)), eval_f=starting.point.tree.intervals, ub=log(c(10, 0.99, 1)), lb=c(-21,-21, -21), opts=opts, n.tax=n.tax, rho=samp.freq.tree, seg_map=seg_map, x_times=split.times, y_times=fossil.ages, strat.cache=strat.cache)
     if(get.likelihood == TRUE){
         starting.rates <- exp(out$solution)
         lambda <- starting.rates[1] / (1 + starting.rates[2])

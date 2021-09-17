@@ -5,13 +5,14 @@
  and Extinction) on a phylogeny.}
 \usage{
 MiSSE(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE,
-root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, sann=TRUE, 
-sann.its=5000, sann.temp=5230, sann.seed=-100377, bounded.search=TRUE, 
-max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, 
-trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1, expand.mode=FALSE)
+root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, 
+strat.intervals=NULL, sann=TRUE, sann.its=5000, sann.temp=5230, sann.seed=-100377, 
+bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, 
+turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, 
+dt.threads=1, expand.mode=FALSE)
 }
 \arguments{
-\item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
+\item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format. If \code{includes.fossils=TRUE} then the input phy object must include extinct tips.}
 \item{f}{the estimated proportion of extant species included in the phylogeny. A value of
   0.50 means that 50 percent of species are contained in the. By default all species are assumed
   to be sampled.}
@@ -27,7 +28,8 @@ trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1, expand.mode=FALSE)
 \item{root.p}{a vector indicating fixed root state probabilities. The
   default is \code{NULL}.}
 \item{includes.fossils}{a logical indicating whether the tree contains fossil taxa. The default is \code{FALSE}.}
-\item{k.samples}{a table of extinct individuals with sampled descendants. See details for how the table must be formatted.}
+\item{k.samples}{a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.}
+\item{strat.intervals}{a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.}
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using

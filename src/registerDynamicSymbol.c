@@ -38,6 +38,7 @@ extern void fnotclasse_more_derivs(void *, void *, void *, void *, void *, void 
 extern void fclasse_geosse_equivalent_derivs(void *, void *, void *, void *, void *, void *);
 extern void fnotclasse_derivs(void *, void *, void *, void *, void *, void *);
 extern void misse_derivs(void *, void *, void *, void *, void *, void *);
+extern void misse_strat_derivs(void *, void *, void *, void *, void *, void *);
 extern void maddison_DE_fbisse(void *, void *, void *, void *, void *, void *);
 extern void maddison_DE_fhisse(void *, void *, void *, void *, void *, void *);
 
@@ -76,6 +77,7 @@ static const R_CMethodDef CEntries[] = {
     {"fclasse_geosse_equivalent_derivs",(DL_FUNC) &fclasse_geosse_equivalent_derivs,6},
     {"fnotclasse_derivs",               (DL_FUNC) &fnotclasse_derivs,               6},
     {"misse_derivs",                    (DL_FUNC) &misse_derivs,                    6},
+    {"misse_strat_derivs",              (DL_FUNC) &misse_strat_derivs,                    6},
     {"maddison_DE_fbisse",              (DL_FUNC) &maddison_DE_fbisse,              6},
     {"maddison_DE_fhisse",              (DL_FUNC) &maddison_DE_fhisse,              6},
     {"set_birth_bisse_void",            (DL_FUNC) &set_birth_bisse_void,           29},

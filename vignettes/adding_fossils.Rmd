@@ -17,7 +17,7 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=75),tidy=TRUE)
 ```
 
 
-As of version 2.1.1, we have added the ability for HiSSE, MuHiSSE, and MiSSE to handle fossils. Our fossilized birth-death model (FBD) closely follows that of Stadler (2010), and includes a new parameter, $\psi$, that estimates the rate of fossils preservation in a birth-death model. We have extended Stadler's basic model to the SSE equations of Maddison et al. (2007), the details of which will be included in a forthcoming paper (Beaulieu and O'Meara, In prep). Below I will demonstrate how to set up HiSSE, MuHiSSE, and MiSSE models when the tree and data contain fossils. I will mainly focus on MiSSE, as it is the most straightforward and because it can be used to demonstrate that both the HiSSE and MuHiSSE likelihoods are correct. 
+As of version 2.1.1, we have added the ability for HiSSE, MuHiSSE, and MiSSE to handle fossils and stratigraphic ranges. Our fossilized birth-death model (FBD) closely follows that of Stadler (2010), and includes a new parameter, $\psi$, that estimates the rate of fossils preservation in a birth-death model. We have extended Stadler's basic model to the SSE equations of Maddison et al. (2007), the details of which will be included in a forthcoming paper (Beaulieu and O'Meara, In prep). Below I will demonstrate how to set up HiSSE, MuHiSSE, and MiSSE models when the tree and data contain fossils. I will mainly focus on MiSSE, as it is the most straightforward and because it can be used to demonstrate that both the HiSSE and MuHiSSE likelihoods are correct. 
 
 Before getting started, be sure to load the `hisse` and `TreeSim` packages:
 ```{r, eval=TRUE}
@@ -105,7 +105,7 @@ margin.test <- MarginReconMuHiSSE(phy=fbd.tree$phy, data=data, f=c(1,1,1,1), par
 The easiest way to check that the likelihoods calculated by `MiSSE()`, `hisse()`, and `MuHiSSE()` are correct is to take the likelihood calculated by `MiSSE()` and add this to the likelihood of a simple Markov transition model. As described in Caetano et al. (2018), an SSE model jointly maximizes the probability of the observed states at the tips *and* the observed tree, given the model. Thus, if the character is completely disassociated from the rate differences in the tree (with what we call a character independent model) then this test should work. 
 
 I will show this test here. First, I will calculate the likelihood of a simple BiSSE model, where the diversification rates are the same for states 0 and 1, on a simulated dataset that contains fossils:
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 library(diversitree)
 pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
 set.seed(4)
@@ -139,7 +139,7 @@ hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", co
 ```
 
 Next we will calculate the likelihood of _just_ the tree using `MiSSE()`:
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
@@ -150,20 +150,20 @@ MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condi
 ```
 
 Finally, I will use `corHMM` to calculate the likelihood of _just_ character data:
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 library(corHMM)
 char.logL <- corHMM(phy.k, data, rate.cat=1, model = "ER", node.states = "none", fixed.nodes=FALSE, p=0.01, root.p="maddfitz")
 ```
 
 We can compare the likelihoods obtained from `hisse()` against the sum of the tree *and* the character:
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 tot.logL <- char.logL$loglik + MiSSE.logL
 comparison <- identical(round(hisse.full,3), round(tot.logL,3))
 comparison 
 ```
 
 This confirms that the calculations are correct. I will show the same using `MuHiSSE()`:
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 library(diversitree)
 pars <- c(.1,  .15,  .2, .1,
          .03, .045, .06, 0.03,
