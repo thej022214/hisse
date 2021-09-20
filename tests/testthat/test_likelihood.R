@@ -785,9 +785,10 @@ test_that("MiSSE_fossil_test1", {
     pp <- hisse:::ProcessSimSample(phy, f)
     
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=pp$phy, f=1, hidden.states=1)
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     #This is for starting values:
-    fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
+    fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
     #Drop all k.samples to get split times:
     k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
     phy.no.k <- drop.tip(pp$phy, k.sample.tip.no)
@@ -823,9 +824,10 @@ test_that("MiSSE_fossil_test2", {
     pp <- hisse:::ProcessSimSample(phy, f)
 
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=pp$phy, f=1, hidden.states=1)
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     #This is for starting values:
-    fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
+    fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
     #Drop all k.samples to get split times:
     k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
     phy.no.k <- drop.tip(pp$phy, k.sample.tip.no)
@@ -852,7 +854,7 @@ test_that("MiSSE_fossil_test2", {
     model.vec <- c(lambda+mu, mu/lambda, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi = psi
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy)
     k.samples <- hisse:::GetKSampleMRCA(phy, k.samples)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=k.samples$node, fix.type=k.samples$type)
@@ -872,9 +874,10 @@ test_that("MiSSE_fossil_test3", {
     pp <- hisse:::ProcessSimSample(phy, f)
 
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=pp$phy, f=1, hidden.states=2)
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     #This is for starting values:
-    fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
+    fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
     #Drop all k.samples to get split times:
     k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
     phy.no.k <- drop.tip(pp$phy, k.sample.tip.no)
@@ -900,7 +903,7 @@ test_that("MiSSE_fossil_test3", {
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2)
     model.vec <- c(lambda+mu, mu/lambda, lambda+mu, mu/lambda, rep(0,48), 0.01, psi)
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy)
     k.samples <- NULL
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=NULL, fix.type=NULL)
@@ -924,6 +927,8 @@ test_that("Placing_m_k_fossils", {
 
     phy.k <- hisse:::AddKNodes(pp$phy, pp$k.samples)
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
     k.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 2)]
     split.times <- paleotree::dateNodes(phy.k, rootAge=max(node.depth.edgelength(phy.k)))
@@ -985,7 +990,9 @@ test_that("HiSSE_fossil_test1", {
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
+    #This is for starting values:
     gen <- hisse:::FindGenerations(phy.k)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
     
@@ -996,7 +1003,6 @@ test_that("HiSSE_fossil_test1", {
     
     comparison1 <- identical(round(hisse.full,3), round(tot.logL,3))
     expect_true(comparison1)
-
 
     #Same test, but fossils removed:
     extinct.tip.no <- grep("ex*", x=phy$tip.label)
@@ -1017,7 +1023,8 @@ test_that("HiSSE_fossil_test1", {
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.0
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy.extant)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=NULL, node=NULL, fix.type=NULL)
 
@@ -1073,7 +1080,8 @@ test_that("HiSSE_fossil_test2", {
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=NULL, fix.type=NULL)
     
@@ -1160,7 +1168,8 @@ test_that("MuHiSSE_fossil_test1", {
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy.k)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
     
@@ -1171,7 +1180,6 @@ test_that("MuHiSSE_fossil_test1", {
     
     comparison1 <- identical(round(muhisse.full,3), round(tot.logL,3))
     expect_true(comparison1)
-    
     
     #Same test, but fossils removed:
     extinct.tip.no <- grep("ex*", x=phy$tip.label)
@@ -1197,7 +1205,8 @@ test_that("MuHiSSE_fossil_test1", {
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.0
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy.extant)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=NULL, node=NULL, fix.type=NULL)
     
@@ -1277,7 +1286,8 @@ test_that("MuHiSSE_fossil_test2", {
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
     
@@ -1338,7 +1348,8 @@ test_that("MiSSE_fossil_test4", {
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=2)
     model.vec <- c(0.1+0.03, 0.03/0.1, 0.2+0.03, 0.03/0.2, rep(0,48), 0.01, 0.02)
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
-    fossil.taxa <- which(dat.tab$branch.type == 1)
+    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy.k)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
     
@@ -1460,9 +1471,9 @@ test_that("MiSSE_interval_test1", {
     fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
     
     cols <- c("FocalNode","DesNode", "RootwardAge", "TipwardAge", "branch.type")
-    seg.map <- dat.tab[, ..cols]
+    seg.map <- dat.tab[, cols, with=FALSE]
     #remove k tips -- we do not do anything with them.
-    data.table::setkey(seg.map, branch.type)
+    setkey(seg.map, branch.type)
     seg.map <- seg.map[branch.type != 2]
     
     logLikLogSpace <- -hisse:::starting.point.tree.intervals(x=log(c(turnover, eps, psi)), n.tax=3, rho=1, seg_map=seg.map, x_times=split.times, y_times=fossil.ages, strat.cache=strat.cache)
@@ -1511,9 +1522,9 @@ test_that("MiSSE_interval_test2", {
     fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
     
     cols <- c("FocalNode","DesNode", "RootwardAge", "TipwardAge", "branch.type")
-    seg.map <- dat.tab[, ..cols]
+    seg.map <- dat.tab[, cols, with=FALSE]
     #remove k tips -- we do not do anything with them.
-    data.table::setkey(seg.map, branch.type)
+    setkey(seg.map, branch.type)
     seg.map <- seg.map[branch.type != 2]
     
     logLikLogSpace <- -hisse:::starting.point.tree.intervals(x=log(c(turnover, eps, psi)), n.tax=3, rho=1, seg_map=seg.map, x_times=split.times, y_times=fossil.ages, strat.cache=strat.cache)
@@ -1563,9 +1574,9 @@ test_that("MiSSE_interval_test3", {
     fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
     
     cols <- c("FocalNode","DesNode", "RootwardAge", "TipwardAge", "branch.type")
-    seg.map <- dat.tab[, ..cols]
+    seg.map <- dat.tab[, cols, with=FALSE]
     #remove k tips -- we do not do anything with them.
-    data.table::setkey(seg.map, branch.type)
+    setkey(seg.map, branch.type)
     seg.map <- seg.map[branch.type != 2]
     
     logLikLogSpace <- -hisse:::starting.point.tree.intervals(x=log(c(turnover, eps, psi)), n.tax=3, rho=1, seg_map=seg.map, x_times=split.times, y_times=fossil.ages, strat.cache=strat.cache)
@@ -1607,9 +1618,9 @@ test_that("MiSSE_interval_test4", {
     fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
     
     cols <- c("FocalNode","DesNode", "RootwardAge", "TipwardAge", "branch.type")
-    seg.map <- dat.tab[, ..cols]
+    seg.map <- dat.tab[, cols, with=FALSE]
     #remove k tips -- we do not do anything with them.
-    data.table::setkey(seg.map, branch.type)
+    setkey(seg.map, branch.type)
     #drop the k.tips because we do not do calculation on these zero length edges:
     seg.map <- seg.map[branch.type != 2]
     #######################
@@ -1632,3 +1643,4 @@ test_that("MiSSE_interval_test4", {
 
     expect_true(comparison)
 }
+

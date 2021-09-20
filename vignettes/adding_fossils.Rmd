@@ -105,7 +105,7 @@ margin.test <- MarginReconMuHiSSE(phy=fbd.tree$phy, data=data, f=c(1,1,1,1), par
 The easiest way to check that the likelihoods calculated by `MiSSE()`, `hisse()`, and `MuHiSSE()` are correct is to take the likelihood calculated by `MiSSE()` and add this to the likelihood of a simple Markov transition model. As described in Caetano et al. (2018), an SSE model jointly maximizes the probability of the observed states at the tips *and* the observed tree, given the model. Thus, if the character is completely disassociated from the rate differences in the tree (with what we call a character independent model) then this test should work. 
 
 I will show this test here. First, I will calculate the likelihood of a simple BiSSE model, where the diversification rates are the same for states 0 and 1, on a simulated dataset that contains fossils:
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 library(diversitree)
 pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
 set.seed(4)
@@ -139,12 +139,13 @@ hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", co
 ```
 
 Next we will calculate the likelihood of _just_ the tree using `MiSSE()`:
-```{r, eval=FALSE}
-dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
+```{r, eval=TRUE}
+dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
 cache$psi <- 0.01
-fossil.taxa <- which(dat.tab$branch.type == 1)
+edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
 gen <- hisse:::FindGenerations(phy.k)
 MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
 ```
@@ -235,13 +236,14 @@ muhisse.full <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, root.type
 
 ## Trait independent model should be loglik_tree + loglik_character ##
 #Part 1: MiSSE loglik:
-dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
+dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, 
                                       nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), 
                                       ode.eps=0)#
 cache$psi <- 0.01
-fossil.taxa <- which(dat.tab$branch.type == 1)
+edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
 gen <- hisse:::FindGenerations(phy.k)
 MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, 
                                     root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa,

@@ -1,15 +1,5 @@
 
 
-#library(ape)
-#library(deSolve)
-#library(subplex)
-#library(phytools)
-#library(nloptr)
-#library(GenSA)
-#library(data.table)
-#dyn.load("misse-ext-derivs.so")
-#dyn.load("birthdeath-ext-derivs.so")
-
 ######################################################################################################################################
 ######################################################################################################################################
 ### MiSSE -- Examines shifts in diversification in relation to hidden states ONLY
@@ -113,6 +103,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             phy.og <- phy
             psi.type <- "m+k"
             split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
+            strat.cache <- NULL
             k.samples <- k.samples[order(as.numeric(k.samples[,3]), decreasing=FALSE),]
             phy <- AddKNodes(phy, k.samples)
             fix.type <- GetKSampleMRCA(phy, k.samples)
@@ -145,6 +136,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
                 psi.type <- "m_only"
                 fix.type <- NULL
                 split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
+                strat.cache <- NULL
                 no.k.samples <- 0
                 gen <- FindGenerations(phy)
                 dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
@@ -163,6 +155,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         fossil.taxa <- NULL
         fix.type <- NULL
         psi.type <- NULL
+        strat.cache <- NULL
     }
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
