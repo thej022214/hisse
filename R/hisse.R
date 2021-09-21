@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -25,7 +25,6 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         }else{
             ## All good:
             root.p <- root.p / sum(root.p)
-            
         }
     }
     
@@ -167,29 +166,57 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
     # Some new prerequisites #
     if(includes.fossils == TRUE){
         if(!is.null(k.samples)){
+            phy.og <- phy
             psi.type <- "m+k"
             split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
-            #in simulation ordering of the k samples mattered:
-            k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
+            strat.cache <- NULL
+            k.samples <- k.samples[order(as.numeric(k.samples[,3]), decreasing=FALSE),]
             phy <- AddKNodes(phy, k.samples)
             fix.type <- GetKSampleMRCA(phy, k.samples)
-            data <- AddKData(data, k.samples)
             no.k.samples <- length(k.samples[,1])
+            gen <- FindGenerations(phy)
+            dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
+            #These are all inputs for generating starting values:
+            edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+            fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
+            fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
+            n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
+            data <- AddKData(data, k.samples)
         }else{
-            psi.type <- "m_only"
-            split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
-            fix.type <- NULL
-            no.k.samples <- 0
+            if(!is.null(strat.intervals)){
+                phy.og <- phy
+                psi.type <- "m+int"
+                split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
+                strat.cache <- GetStratInfo(strat.intervals=strat.intervals)
+                k.samples <- GetIntervalToK(strat.intervals, intervening.intervals=strat.cache$intervening.intervals)
+                phy <- AddKNodes(phy, k.samples)
+                fix.type <- GetKSampleMRCA(phy, k.samples, strat.intervals=TRUE)
+                gen <- FindGenerations(phy)
+                dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
+                #These are all inputs for generating starting values:
+                edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+                fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
+                fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
+                data <- AddKData(data, k.samples)
+                n.tax.starting <- Ntip(phy)-length(fossil.taxa)-dim(fix.type)[1]
+            }else{
+                phy.og <- phy
+                psi.type <- "m_only"
+                fix.type <- NULL
+                split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
+                strat.cache <- NULL
+                no.k.samples <- 0
+                gen <- FindGenerations(phy)
+                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
+                #These are all inputs for generating starting values:
+                edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+                fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
+                fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
+                n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
+            }
         }
-        gen <- FindGenerations(phy)
-        data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
-        data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
-        #These are all inputs for generating starting values:
-        fossil.taxa <- which(dat.tab$branch.type == 1)
-        fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
-        n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
     }else{
+        phy.og <- phy
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
@@ -197,6 +224,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         fossil.taxa <- NULL
         fix.type <- NULL
         psi.type <- NULL
+        strat.cache <- NULL
     }
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
@@ -226,7 +254,18 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             }
         }else{
             if(includes.fossils == TRUE){
-                init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+                if(!is.null(strat.intervals)){
+                    branch.type = NULL
+                    cols <- c("FocalNode","DesNode", "RootwardAge", "TipwardAge", "branch.type")
+                    seg.map <- dat.tab[, cols, with=FALSE]
+                    #remove k tips -- we do not do anything with them.
+                    setkey(seg.map, branch.type)
+                    #drop the k.tips because we do not do calculation on these zero length edges:
+                    seg.map <- seg.map[branch.type != 2]
+                    init.pars <- starting.point.generator.intervals(k=2, samp.freq.tree, n.tax=n.tax.starting, seg_map=seg.map, split.times=split.times, fossil.ages=fossil.ages, strat.cache=strat.cache)
+                }else{
+                    init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+                }
                 psi.start <- init.pars[length(init.pars)]
             }else{
                 init.pars <- starting.point.generator(phy, k=2, samp.freq.tree, yule=FALSE)
@@ -294,13 +333,13 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+            out = nloptr(x0=ip, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizefHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+            out = subplex(ip, fn=DevOptimizefHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
@@ -308,10 +347,11 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
         opts <- list("algorithm"="NLOPT_GD_STOGO", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out.sann = GenSA(ip, fn=DevOptimizefHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+        out.sann = GenSA(ip, fn=DevOptimizefHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+        sann.counts <- out.sann$counts
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, f=f, fossil.taxa=fossil.taxa, fix.type=fix.type)
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, f=f, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         
@@ -322,7 +362,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
     
     cat("Finished. Summarizing results...", "\n")
     
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, fix.type=fix.type, psi.type=psi.type)
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy.og, phy.w.k=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, k.samples=k.samples, strat.intervals=strat.intervals, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
     class(obj) <- append(class(obj), "hisse.fit")
     return(obj)
     
@@ -337,7 +377,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
 ######################################################################################################################################
 
 #Function used for optimizing parameters:
-DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, f, ode.eps, fossil.taxa, fix.type) {
+DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, f, ode.eps, fossil.taxa, fix.type, strat.cache) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
     ## print(p.new)
@@ -345,7 +385,11 @@ DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.ti
     model.vec[] <- c(p.new, 0)[pars]
     cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
     if(!is.null(fix.type)){
-        logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+        if(!is.null(strat.cache)){
+            logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2]) + (strat.cache$k*log(cache$psi)) + (cache$psi*strat.cache$l_s)
+        }else{
+            logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+        }
     }else{
         logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
     }
@@ -359,7 +403,7 @@ DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.ti
 ######################################################################################################################################
 ######################################################################################################################################
 
-OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.fossils=FALSE){
+OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.fossils=FALSE, includes.intervals=FALSE, intervening.intervals=NULL){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     
@@ -404,23 +448,19 @@ OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.fossils=FALS
         }
     }
     
-    table.info <- GetTreeTable(phy, root.age=NULL)
-    k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
-    branch.type <- rep(0, dim(table.info)[1])
-    for(row.index in 1:dim(table.info)[1]){
-        if(table.info[row.index,5]<=nb.tip){
-            if(table.info[row.index,2] > .Machine$double.eps^.50){
-                if(includes.fossils==TRUE){
-                    branch.type[row.index] <- 1
-                }
-            }
-            if(any(phy$edge[row.index,2]==k.sample.tip.no)){
-                branch.type[row.index] <- 2
-            }
-        }
-    }
-    
-    tmp.df <- cbind(table.info, 0, matrix(0, nrow(table.info), ncol(compD)), matrix(0, nrow(table.info), ncol(compE)), branch.type)
+    #This seems stupid but I cannot figure out how to get data.table to not make this column a factor. When a factor this is not right. For posterity, let it be known Jeremy would rather just retain the character instead of this mess:
+    edge_details <- GetEdgeDetails(phy, includes.intervals=includes.intervals, intervening.intervals=intervening.intervals)
+    branch.type <- edge_details$type
+    branch.type[which(branch.type == "extant_tip")] <- 0
+    branch.type[which(branch.type == "internal")] <- 0
+    branch.type[which(branch.type == "extinct_tip")] <- 1
+    branch.type[which(branch.type == "k_tip")] <- 2
+    branch.type[which(branch.type == "k_k_interval")] <- 3
+    branch.type[which(branch.type == "k_extinct_interval")] <- 3
+    branch.type[which(branch.type == "k_extant_interval")] <- 3
+    branch.type[which(branch.type == "intervening_interval")] <- 4
+
+    tmp.df <- cbind(edge_details[,1:5], 0, matrix(0, nrow(edge_details), ncol(compD)), matrix(0, nrow(edge_details), ncol(compE)), as.numeric(branch.type))
     colnames(tmp.df) <- c("RootwardAge", "TipwardAge", "BranchLength", "FocalNode", "DesNode", "comp", paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"), "branch.type")
     dat.tab <- as.data.table(tmp.df)
     setkey(dat.tab, DesNode)
@@ -448,15 +488,19 @@ SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time
         }else{
             times=c(start.time, end.time)
         }
-        runSilent <- function() {
+        runSilent <- function(branch.type) {
             options(warn = -1)
             on.exit(options(warn = 0))
-            capture.output(res <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            if(branch.type == 3){
+                capture.output(res <- lsoda(yini, times, func = "maddison_DE_strat_fhisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            }else{
+                capture.output(res <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            }
             res
         }
         #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dll = "fhisse-ext-derivs", rtol=1e-8, atol=1e-8)
         #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-        prob.subtree.cal.full <- runSilent()
+        prob.subtree.cal.full <- runSilent(branch.type=branch.type)
     }else{
         yini <-c(E0=compE[1], E1=compE[2], D0=compD[1], D1=compD[2])
         if(branch.type == 2){
@@ -464,15 +508,19 @@ SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time
         }else{
             times=c(start.time, end.time)
         }
-        runSilent <- function() {
+        runSilent <- function(branch.type) {
             options(warn = -1)
             on.exit(options(warn = 0))
-            capture.output(res <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            if(branch.type == 3){
+                capture.output(res <- lsoda(yini, times, func = "maddison_DE_strat_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            }else{
+                capture.output(res <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+            }
             res
         }
         #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dll = "fbisse-ext-derivs", rtol=1e-8, atol=1e-8)
         #prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
-        prob.subtree.cal.full <- runSilent()
+        prob.subtree.cal.full <- runSilent(branch.type=branch.type)
     }
     ######## THIS CHECKS TO ENSURE THAT THE INTEGRATION WAS SUCCESSFUL ###########
     if(attributes(prob.subtree.cal.full)$istate[1] < 0){
@@ -502,7 +550,27 @@ SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time
                     prob.subtree.cal[3:4] <- prob.subtree.cal[1:2] * compD
                 }
             }else{
-                prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+                if(branch.type == 4){
+                    if(cache$hidde.states == TRUE){
+                        prob.subtree.cal.wevents <- prob.subtree.cal.full[-1,-1]
+                        prob.subtree.cal.full <- runSilent(branch.type=3)
+                        prob.subtree.cal.noevents <- prob.subtree.cal.full[-1,-1]
+                        unobs.spec.probs <- 1 - (prob.subtree.cal.noevents[9:16]/prob.subtree.cal.wevents[9:16])
+                        prob.subtree.cal.wevents[9:16] <- prob.subtree.cal.wevents[9:16] * unobs.spec.probs
+                        prob.subtree.cal.wevents[which(is.na(prob.subtree.cal.wevents))] <- 0
+                        prob.subtree.cal <- prob.subtree.cal.wevents
+                    }else{
+                        prob.subtree.cal.wevents <- prob.subtree.cal.full[-1,-1]
+                        prob.subtree.cal.full <- runSilent(branch.type=3)
+                        prob.subtree.cal.noevents <- prob.subtree.cal.full[-1,-1]
+                        unobs.spec.probs <- 1 - (prob.subtree.cal.noevents[3:4]/prob.subtree.cal.wevents[3:4])
+                        prob.subtree.cal.wevents[3:4] <- prob.subtree.cal.wevents[3:4] * unobs.spec.probs
+                        prob.subtree.cal.wevents[which(is.na(prob.subtree.cal.wevents))] <- 0
+                        prob.subtree.cal <- prob.subtree.cal.wevents
+                    }
+                }else{
+                    prob.subtree.cal <- prob.subtree.cal.full[-1,-1]
+                }
             }
         }
     }
@@ -565,9 +633,15 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
                         #The initial condition for a k.sample is D(t)*psi
                         v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
                     }else{
-                        fixer = numeric(8)
-                        fixer[cache$state[fix.index]] = 1
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                        if(cache$fix.type[fix.index] == "interval"){
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
+                        }else{
+                            fixer = numeric(8)
+                            fixer[cache$state[fix.index]] = 1
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                        }
                     }
                 }
             }
@@ -599,9 +673,15 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
                         #The initial condition for a k.sample is D(t)*psi
                         v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
                     }else{
-                        fixer = numeric(2)
-                        fixer[cache$state[fix.index]] = 1
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                        if(cache$fix.type[fix.index] == "interval"){
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
+                        }else{
+                            fixer = numeric(2)
+                            fixer[cache$state[fix.index]] = 1
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                        }
                     }
                 }
             }
@@ -648,9 +728,15 @@ GetRootProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
                         #The initial condition for a k.sample is D(t)*psi
                         v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
                     }else{
-                        fixer = numeric(8)
-                        fixer[cache$state[fix.index]] = 1
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                        if(cache$fix.type[fix.index] == "interval"){
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
+                        }else{
+                            fixer = numeric(8)
+                            fixer[cache$state[fix.index]] = 1
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                        }
                     }
                 }
             }
@@ -670,9 +756,15 @@ GetRootProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
                         #The initial condition for a k.sample is D(t)*psi
                         v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
                     }else{
-                        fixer = numeric(2)
-                        fixer[cache$state[fix.index]] = 1
-                        v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                        if(cache$fix.type[fix.index] == "interval"){
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] / lambdas.check
+                        }else{
+                            fixer = numeric(2)
+                            fixer[cache$state[fix.index]] = 1
+                            v.mat[which(generations == cache$node[fix.index]),] <- v.mat[which(generations == cache$node[fix.index]),] * fixer
+                        }
                     }
                 }
             }
@@ -695,7 +787,7 @@ GetFossilInitialsHiSSE <- function(cache, pars, lambdas, dat.tab, fossil.taxa){
         fossils <- data.table(c(fossil.taxa))
         setkey(dat.tab, DesNode)
         CurrentGenData <- dat.tab[fossils]
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:14], z[15:22], 0, z[2], z[23])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:14], z[15:22], 0, z[2], 1)))
         tmp.probs <- matrix(tmp[,9:16], length(fossil.taxa), 8) * cache$psi
         phi.mat <- matrix(tmp[,1:8], length(fossil.taxa), 8)
         setkey(dat.tab, DesNode)
@@ -711,7 +803,7 @@ GetFossilInitialsHiSSE <- function(cache, pars, lambdas, dat.tab, fossil.taxa){
         fossils <- data.table(c(fossil.taxa))
         setkey(dat.tab, DesNode)
         CurrentGenData <- dat.tab[fossils]
-        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:8], z[9:10], 0, z[2], z[11])))
+        tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:8], z[9:10], 0, z[2], 1)))
         tmp.probs <- matrix(tmp[,3:4], length(fossil.taxa), 2) * cache$psi
         phi.mat <- matrix(tmp[,1:2], length(fossil.taxa), 2)
         
@@ -809,23 +901,25 @@ DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type,
     }
     
     if(!is.null(fossil.taxa)){
-        if(cache$hidden.states == TRUE){
-            pars[length(pars)] <- 0
-            cache$psi <- 0
-            init.d <- rep(cache$f, 4)
-            init.e <- rep(1-cache$f, 4)
-            phi.mat <- SingleChildProbHiSSE(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
-            compE.root <- matrix(phi.mat[1:8], 1, 8)
-        }else{
-            pars[length(pars)] <- 0
-            cache$psi <- 0
-            init.d <- cache$f
-            init.e <- 1-cache$f
-            phi.mat <- SingleChildProbHiSSE(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
-            compE.root <- matrix(phi.mat[1:2], 1, 2)
+        if(all(fix.type == "event")){
+            if(cache$hidden.states == TRUE){
+                pars[length(pars)] <- 0
+                cache$psi <- 0
+                init.d <- rep(cache$f, 4)
+                init.e <- rep(1-cache$f, 4)
+                phi.mat <- SingleChildProbHiSSE(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
+                compE.root <- matrix(phi.mat[1:8], 1, 8)
+            }else{
+                pars[length(pars)] <- 0
+                cache$psi <- 0
+                init.d <- cache$f
+                init.e <- 1-cache$f
+                phi.mat <- SingleChildProbHiSSE(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
+                compE.root <- matrix(phi.mat[1:2], 1, 2)
+            }
         }
     }
-    if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
+    if(is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
         return(log(cache$bad.likelihood)^13)
     }else{
         if(root.type == "madfitz" | root.type == "herr_als"){
