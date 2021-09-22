@@ -475,6 +475,7 @@ GetStratInfo <- function(strat.intervals){
     for(unique.index in 1:length(unique_mrca_taxa)){
         matching_rows <- subset(strat.intervals, strat.intervals$mrca_taxa == unique_mrca_taxa[unique.index])
         if(dim(matching_rows)[1] > 1){
+            print(unique.index)
             #Order so that they are decreasing -- in theory could have several intervals down a long edge:
             matching_rows <- matching_rows[order(as.numeric(matching_rows$timefrompresenttip),decreasing=FALSE),]
             intervening.intervals <- c()
@@ -507,6 +508,14 @@ GetIntervalToK <- function(strat.intervals, intervening.intervals=NULL){
         if(dim(extra.k.samples)[1] > 0){
             for(extra.row.index in 1:dim(extra.k.samples)[1]){
                 tmp <- rbind(tmp, c(extra.k.samples$taxon1[extra.row.index], extra.k.samples$taxon2[extra.row.index], as.numeric(extra.k.samples$ya[extra.row.index])))
+            }
+        }
+        extra.k.samples2 <- subset(intervening.intervals, intervening.intervals$ya_type == "R")
+        time.match <- which(round(as.numeric(strat.intervals$timefrompresenttip),10) %in% round(extra.k.samples2$o_i,10))
+        tmp.intervals <- strat.intervals[time.match,]
+        if(dim(tmp.intervals)[1] > 0){
+            for(extra.row.index in 1:dim(tmp.intervals)[1]){
+                tmp <- rbind(tmp, c(tmp.intervals$taxon1[extra.row.index], tmp.intervals$taxon2[extra.row.index], as.numeric(tmp.intervals$timefrompresenttip[extra.row.index])))
             }
         }
     }
