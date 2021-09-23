@@ -358,14 +358,14 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
         #These are all inputs for generating starting values:
         fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
         fossil.taxa <- NULL
         fix.type <- NULL
     }

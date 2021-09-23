@@ -177,7 +177,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             gen <- FindGenerations(phy)
             dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
             #These are all inputs for generating starting values:
-            edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+            edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
             fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
             fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
             n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
@@ -186,15 +186,20 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             if(!is.null(strat.intervals)){
                 phy.og <- phy
                 psi.type <- "m+int"
-                split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
+                split.times.plus.tips <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
+                split.times <- split.times.plus.tips[-c(1:Ntip(phy))]
                 strat.cache <- GetStratInfo(strat.intervals=strat.intervals)
                 k.samples <- GetIntervalToK(strat.intervals, intervening.intervals=strat.cache$intervening.intervals)
+                extinct.tips <- which(round(k.samples$timefrompresent,8) %in% round(split.times.plus.tips[c(1:Ntip(phy))],8))
+                if(length(extinct.tips > 0)){
+                    k.samples <- k.samples[-extinct.tips,]
+                }
                 phy <- AddKNodes(phy, k.samples)
                 fix.type <- GetKSampleMRCA(phy, k.samples, strat.intervals=TRUE)
                 gen <- FindGenerations(phy)
                 dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
                 #These are all inputs for generating starting values:
-                edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
                 fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
                 data <- AddKData(data, k.samples)
@@ -209,7 +214,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
                 gen <- FindGenerations(phy)
                 dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
                 #These are all inputs for generating starting values:
-                edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
                 fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
@@ -220,7 +225,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
         fossil.taxa <- NULL
         fix.type <- NULL
         psi.type <- NULL
@@ -403,7 +408,7 @@ DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.ti
 ######################################################################################################################################
 ######################################################################################################################################
 
-OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.fossils=FALSE, includes.intervals=FALSE, intervening.intervals=NULL){
+OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FALSE, intervening.intervals=NULL){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     

@@ -227,7 +227,7 @@ starting.point.tree.intervals <- function(x, n.tax, rho, seg_map, x_times, y_tim
 
 starting.point.generator.intervals <- function(k, samp.freq.tree, q.div=5, n.tax, seg_map, split.times, fossil.ages, strat.cache, get.likelihood=FALSE) {
     opts <- list("algorithm" = "NLOPT_LN_NELDERMEAD", "maxeval" = 100000, "ftol_rel" = .Machine$double.eps^.5)
-    out <- nloptr(x0=log(c(0.1, 0.2, 0.01)), eval_f=starting.point.tree.intervals, ub=log(c(10, 0.99, 1)), lb=c(-21,-21, -21), opts=opts, n.tax=n.tax, rho=samp.freq.tree, seg_map=seg_map, x_times=split.times, y_times=fossil.ages, strat.cache=strat.cache)
+    out <- nloptr(x0=log(c(0.1, 0.2, 0.01)), eval_f=starting.point.tree.intervals, ub=log(c(10, 0.99, 2)), lb=c(-21,-21, -21), opts=opts, n.tax=n.tax, rho=samp.freq.tree, seg_map=seg_map, x_times=split.times, y_times=fossil.ages, strat.cache=strat.cache)
     if(get.likelihood == TRUE){
         starting.rates <- exp(out$solution)
         lambda <- starting.rates[1] / (1 + starting.rates[2])

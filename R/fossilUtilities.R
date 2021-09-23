@@ -155,22 +155,35 @@ ProcessSimSample <- function(phy, f){
             }
         }
     }
-    
+
+    split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
     #Step 3: Now process the k.sample table so that any added extinct taxa get listed as taxa whose MRCA is where subtending k.sample will be placed:
     for(sample.index in sequence(length(k.samples$tipwardnode))){
+        #obtains the list of taxa whose subtending branch is where the k sample is located:
         samples.taxa <- tmp.k.samples[[sample.index]]
+        #now get the MRCA of of these samples:
         mrca <- getMRCA(phy, samples.taxa)
+        #if not null we are in the tree:
         if(!is.null(mrca)){
+            #Are they on an eventually extinct branch?
             if(k.samples$fossiltype_long[sample.index] == "extinct_terminal" | k.samples$fossiltype_long[sample.index] == "extinct_internal"){
+                #Get the sister taxa for this set of taxa:
                 sister.taxa <- GetSister(phy, mrca)
+                #Is the sister taxon a node or a tip?
                 if(sister.taxa > Ntip(phy)){
                     mrca <- mrca
                 }else{
-                    mrca <- getMRCA(phy, c(phy$tip.label[sister.taxa], samples.taxa[1]))
+                    mrca.new <- getMRCA(phy, c(phy$tip.label[sister.taxa], samples.taxa[1]))
+                    if(k.samples$timefrompresent[sample.index] < unname(split.times[mrca.new])){
+                        mrca <- mrca
+                    }else{
+                        mrca <- mrca.new
+                    }
                 }
                 all.desc <- phytools::getDescendants(phy, node=mrca)
                 tips.only <- all.desc[all.desc<(Ntip(phy)+1)]
                 tmp.k.samples[[sample.index]] <- phy$tip.label[tips.only]
+
             }else{
                 all.desc <- phytools::getDescendants(phy, node=mrca)
                 tips.only <- all.desc[all.desc<(Ntip(phy)+1)]
@@ -185,7 +198,6 @@ ProcessSimSample <- function(phy, f){
             }
         }
     }
-        
     #Step 4: Now prune down to extant and sampled fossils
     fossil.tips <- geiger::is.extinct(phy,tol=.Machine$double.eps^.50)
     extant.tips <- phy$tip.label[!(phy$tip.label %in% fossil.tips)]
@@ -244,6 +256,7 @@ ProcessSimStrat <- function(phy, f){
     
     ## STEP 2: Now process the remaining stuff:
     points.added <- ProcessSimSample(phy, f.red)
+    split.times <- paleotree::dateNodes(points.added$phy, rootAge=max(node.depth.edgelength(points.added$phy)))
     
     ## STEP 3: Now take this information and format for stat range evolution:
     # taxon1 taxon2 timefrompresentrootward timefrompresenttipward type
@@ -278,7 +291,7 @@ ProcessSimStrat <- function(phy, f){
                                 #Tip Range
                                 tmp <- as.data.frame(matrix(ncol=5, nrow=1))
                                 colnames(tmp) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
-                                tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], as.numeric(matching_tmp[2]), 0, "R")
+                                tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], as.numeric(matching_tmp[2]), split.times[which(points.added$phy$tip.label == matching_rows$taxon1[1])], "R")
                                 strat.intervals <- rbind(strat.intervals, tmp)
                             }else{
                                 #Singleton
@@ -309,7 +322,7 @@ ProcessSimStrat <- function(phy, f){
                 #Tip range:
                 tmp <- as.data.frame(matrix(ncol=5, nrow=1))
                 colnames(tmp) <- c("taxon1", "taxon2", "timefrompresentroot", "timefrompresenttip", "type")
-                tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], max(as.numeric(matching_rows$timefrompresent)), 0, "R")
+                tmp[1,] <- c(matching_rows$taxon1[1], matching_rows$taxon2[1], max(as.numeric(matching_rows$timefrompresent)), split.times[which(points.added$phy$tip.label == matching_rows$taxon1[1])], "R")
                 strat.intervals <- rbind(strat.intervals, tmp)
             }else{
                 #Singleton fossil:
@@ -475,7 +488,6 @@ GetStratInfo <- function(strat.intervals){
     for(unique.index in 1:length(unique_mrca_taxa)){
         matching_rows <- subset(strat.intervals, strat.intervals$mrca_taxa == unique_mrca_taxa[unique.index])
         if(dim(matching_rows)[1] > 1){
-            print(unique.index)
             #Order so that they are decreasing -- in theory could have several intervals down a long edge:
             matching_rows <- matching_rows[order(as.numeric(matching_rows$timefrompresenttip),decreasing=FALSE),]
             intervening.intervals <- c()
@@ -503,26 +515,42 @@ GetIntervalToK <- function(strat.intervals, intervening.intervals=NULL){
     }
     
     if(!is.null(intervening.intervals)){
+        #check to see if any S types in intervening.intervals should be retained so we can demarcate intervening intervals:
         extra.k.samples <- subset(intervening.intervals, intervening.intervals$ya_type == "S")
         #If zero it will just fill row with NAs.
         if(dim(extra.k.samples)[1] > 0){
+            #loop over the the set of S types:
             for(extra.row.index in 1:dim(extra.k.samples)[1]){
-                tmp <- rbind(tmp, c(extra.k.samples$taxon1[extra.row.index], extra.k.samples$taxon2[extra.row.index], as.numeric(extra.k.samples$ya[extra.row.index])))
+                #Match the tipward time first. If matches that means the o_i of intervening interval is an S fossil (rare, but possible).
+                time.match <- which(round(as.numeric(tmp[,3]),10) %in% round(extra.k.samples$o_i[extra.row.index],10))
+                if(length(time.match) > 0){
+                    #Means that the o_i is an R type range.
+                    tmp <- rbind(tmp, c(extra.k.samples$taxon1[extra.row.index], extra.k.samples$taxon2[extra.row.index], as.numeric(extra.k.samples$ya[extra.row.index])))
+                }else{
+                    #Means that the o_i is an S type range. So retain both.
+                    tmp <- rbind(tmp, c(extra.k.samples$taxon1[extra.row.index], extra.k.samples$taxon2[extra.row.index], as.numeric(extra.k.samples$o_i[extra.row.index])))
+                    tmp <- rbind(tmp, c(extra.k.samples$taxon1[extra.row.index], extra.k.samples$taxon2[extra.row.index], as.numeric(extra.k.samples$ya[extra.row.index])))
+                }
             }
         }
+        
+        #Now let us check some of the ya R intervening intervals to check if the o_i is an S type fossil:
         extra.k.samples2 <- subset(intervening.intervals, intervening.intervals$ya_type == "R")
-        time.match <- which(round(as.numeric(strat.intervals$timefrompresenttip),10) %in% round(extra.k.samples2$o_i,10))
-        tmp.intervals <- strat.intervals[time.match,]
-        if(dim(tmp.intervals)[1] > 0){
-            for(extra.row.index in 1:dim(tmp.intervals)[1]){
-                tmp <- rbind(tmp, c(tmp.intervals$taxon1[extra.row.index], tmp.intervals$taxon2[extra.row.index], as.numeric(tmp.intervals$timefrompresenttip[extra.row.index])))
+        if(dim(extra.k.samples2)[1] > 0){
+            for(extra.row.index in 1:dim(extra.k.samples2)[1]){
+                #Match the tipward time first. If matches that means front part of intervening interval is already in our set of retained S fossils
+                time.match <- which(round(as.numeric(tmp[,3]),10) %in% round(extra.k.samples2$o_i[extra.row.index],10))
+                if(length(time.match) == 0){
+                    #if it does not match then it is not included and we should include it.
+                    tmp <- rbind(tmp, c(extra.k.samples2$taxon1[extra.row.index], extra.k.samples2$taxon2[extra.row.index], as.numeric(extra.k.samples2$o_i[extra.row.index])))
+                }
             }
         }
     }
     
     k.samples <- data.frame(taxon1=as.character(tmp[,1]), taxon2=as.character(tmp[,2]), timefrompresent=as.numeric(tmp[,3]), stringsAsFactors=FALSE)
     #Do not need end of interval if it is a tip.
-    k.samples <- k.samples[-which(k.samples$timefrompresent == 0),]
+    k.samples <- k.samples[-which(as.numeric(k.samples$timefrompresent) < .Machine$double.eps^.50),]
     k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
     return(k.samples)
 }
