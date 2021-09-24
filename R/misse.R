@@ -1013,12 +1013,12 @@ DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type,
         
     if(!is.null(fossil.taxa)){
         #this overrides the post order traversal E and recalculates assuming psi=0. See pg. 400 Stadler 2010.
-        if(all(fix.type == "event")){
+        #if(all(fix.type == "event")){ ## not sure yet for intervals. This is unclear in Stadler et al 2018.
             pars[length(pars)] <- 0
             cache$psi <- 0
             phi.mat <- SingleChildProbMiSSE(cache, pars, c(as.matrix(dat.tab[1,7:32])), c(as.matrix(dat.tab[1, 33:58])),  0, max(dat.tab$RootwardAge), 0)
             compE.root <- matrix(phi.mat[1:26], 1, 26)
-        }
+        #}
     }
     if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
         return(log(cache$bad.likelihood)^13)

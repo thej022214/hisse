@@ -108,7 +108,7 @@ starting.point.tree.fossils <- function(x, rho, n, m, k, x_times, y_times){
     
     #Equation 5 from Stadler 2010, pg. 400 -- need to readjust the likelihood equation for logspace.
     #loglik <- log( (((lambda^(n+m-2)) * (psi^m))/(1-p_0(max(x_times),lambda,mu,psi,rho))^2) * p_one(max(x_times), lambda, mu, psi, rho) * prod(p_one(x_times, lambda,mu,psi,rho)) * prod(p_0(y_times,lambda,mu,psi,rho)/p_one(y_times,lambda,mu,psi,rho)) )
-    loglik <- (((n+m-2) * log(lambda)) + ((k+m) * log(psi))) - log(1-exp(p_0(max(x_times),lambda,mu,psi=0,rho)))*2 + p_one(max(x_times), lambda, mu, psi, rho) + sum(p_one(x_times, lambda,mu,psi,rho)) + (sum(p_0(y_times,lambda,mu,psi,rho)) - sum(p_one(y_times,lambda,mu,psi,rho)))
+    loglik <- (((n+m-2) * log(lambda)) + ((k+m) * log(psi))) - log(1-p_0(max(x_times),lambda,mu,psi=0,rho, log=FALSE))*2 + p_one(max(x_times), lambda, mu, psi, rho) + sum(p_one(x_times, lambda,mu,psi,rho)) + (sum(p_0(y_times,lambda,mu,psi,rho)) - sum(p_one(y_times,lambda,mu,psi,rho)))
     
     return(-loglik)
 }
@@ -219,7 +219,7 @@ starting.point.tree.intervals <- function(x, n.tax, rho, seg_map, x_times, y_tim
     }
     
     #STEP 4: Get likelihood:
-    loglik <- (l_s * psi) + sum(log(unobs.spec)) + sum(log(branch.segs)) + sum(log(extinct.starts*psi)) + (n.tax * log(rho)) + (length(x_times) * log(lambda)) + k*log(psi) - (log(1-p_0(x=max(x_times),lambda=lambda,mu=mu,psi=psi,rho=rho,log=FALSE))*2 + log(lambda))
+    loglik <- (l_s * psi) + sum(log(unobs.spec)) + sum(log(branch.segs)) + sum(log(extinct.starts*psi)) + (n.tax * log(rho)) + (length(x_times) * log(lambda)) + k*log(psi) - (log(1-p_0(x=max(x_times),lambda=lambda,mu=mu,psi=0,rho=rho,log=FALSE))*2 + log(lambda))
     
     return(-loglik)
 }
