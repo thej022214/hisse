@@ -478,7 +478,7 @@ AddKData <- function(data, k.samples, muhisse=FALSE){
 GetStratInfo <- function(strat.intervals){
     #Step 1: Get the easy stuff first...
     obj <- NULL
-    obj$k <- (length(strat.intervals$type[which(strat.intervals$type == "R")]) * 2) + length(strat.intervals$type[which(strat.intervals$type == "S")])
+    obj$k <- (length(strat.intervals$type[which(strat.intervals$type == "R")]) * 2) + length(strat.intervals$type[which(strat.intervals$type == "S")]) - length(which(as.numeric(strat.intervals$timefrompresenttip) < .Machine$double.eps^.50))
     obj$l_s <- sum(as.numeric(strat.intervals$timefrompresentroot) - as.numeric(strat.intervals$timefrompresenttip))
     
     #Step 2: Get the hard stuff last...
