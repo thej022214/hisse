@@ -666,32 +666,40 @@ GetEdgeDetails <- function(phy, includes.intervals=FALSE, intervening.intervals=
             }
         }
         
-        #checks any tip intervals that are actually subtended by a k_k interval:
-        for(check.index in 1:dim(edges_detail)[1]){
-            if(edges_detail$type[check.index] == "k_extant_interval"){
-                sister.taxa <- GetSister(phy, edges_detail$rootward_node[check.index])
-                if(edges_detail$type[which(edges_detail$tipward_node==sister.taxa)] == "k_tip"){
-                    edges_detail$type[check.index] <- "extant_tip"
-                }
-            }
-        }
-
-        #checks any extinct tip intervals that are actually subtended by a k_k interval:
-        for(check.index in 1:dim(edges_detail)[1]){
-            if(edges_detail$type[check.index] == "k_extinct_interval"){
-                sister.taxa <- GetSister(phy, edges_detail$rootward_node[check.index])
-                if(edges_detail$type[which(edges_detail$tipward_node==sister.taxa)] == "k_tip"){
-                    edges_detail$type[check.index] <- "extinct_tip"
-                }
-            }
-        }
-        
-        #Finally go and find the intervening intervals. Should be k_k_intervals, so use intervening interval table to find and replace:
+        #First go and find the intervening intervals. Should be k_k_intervals, so use intervening interval table to find and replace:
         if(!is.null(intervening.intervals)){
             tmp <- which(round(edges_detail$tipward_age,10) %in% round(intervening.intervals$o_i,10))
             for(match.index in 1:length(tmp)){
                 if(edges_detail[tmp[match.index],]$type == "k_k_interval"){
                     edges_detail[tmp[match.index],]$type <- "intervening_interval"
+                }
+            }
+        }
+        
+        #Next, check any tip intervals that are actually subtended by a k_k interval:
+        for(check.index in 1:dim(edges_detail)[1]){
+            if(edges_detail$type[check.index] == "k_extant_interval"){
+                sister.taxa <- GetSister(phy, edges_detail$rootward_node[check.index])
+                if(edges_detail$type[which(edges_detail$tipward_node==sister.taxa)] == "k_tip"){
+                    rootward.of.sister.taxa <- edges_detail$rootward_node[which(edges_detail$tipward_node==sister.taxa)]
+                    tmp <- edges_detail[which(edges_detail$rootward_node==rootward.of.sister.taxa),]
+                    if(any(tmp$type == "k_k_interval")){
+                        edges_detail$type[check.index] <- "extant_tip"
+                    }
+                }
+            }
+        }
+
+        #Finally, check any extinct tip intervals that are actually subtended by a k_k interval:
+        for(check.index in 1:dim(edges_detail)[1]){
+            if(edges_detail$type[check.index] == "k_extinct_interval"){
+                sister.taxa <- GetSister(phy, edges_detail$rootward_node[check.index])
+                if(edges_detail$type[which(edges_detail$tipward_node==sister.taxa)] == "k_tip"){
+                    rootward.of.sister.taxa <- edges_detail$rootward_node[which(edges_detail$tipward_node==sister.taxa)]
+                    tmp <- edges_detail[which(edges_detail$rootward_node==rootward.of.sister.taxa),]
+                    if(any(tmp$type == "k_k_interval")){
+                        edges_detail$type[check.index] <- "extinct_tip"
+                    }
                 }
             }
         }

@@ -1593,6 +1593,59 @@ test_that("MiSSE_interval_test3", {
 test_that("MiSSE_interval_test4", {
     skip_on_cran()
     
+    s <- "(A:20,(ex_1:4,C:12):8):0;"
+    cat(s, file = "ex.tre", sep = "\n")
+    phy <- read.tree(s, file="ex.tre", sep="\n")
+    strat.intervals <- data.frame(taxon1=c("A", "ex_1", "A", "ex_1"), taxon2=c("A", "ex_1", "A", "C"), timefrompresentroot=c(10, 11, 14, 17), timefrompresenttip=c(0, 8, 12, 15), type=c("R", "R", "R", "R"), stringsAsFactors=FALSE)
+    
+    rho = 1
+    turnover = .2 + .1
+    eps = .1 / .2
+    psi = 0.05
+    
+    phy.og <- phy
+    
+    split.times.all <- paleotree::dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
+    split.times <- split.times.all[-c(1:Ntip(phy))]
+    strat.cache <- hisse:::GetStratInfo(strat.intervals)
+    k.samples <- hisse:::GetIntervalToK(strat.intervals, intervening.intervals=strat.cache$intervening.intervals)
+    k.samples <- k.samples[-1,]
+    phy <- hisse:::AddKNodes(phy, k.samples)
+    fix.type <- hisse:::GetKSampleMRCA(phy, k.samples, strat.intervals=TRUE)
+    edge_details <- hisse:::GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
+    
+    gen <- hisse:::FindGenerations(phy)
+    dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
+    
+    #These are all inputs for generating starting values:
+    fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
+    fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
+    
+    cols <- c("FocalNode","DesNode", "RootwardAge", "TipwardAge", "branch.type")
+    seg.map <- dat.tab[, cols, with=FALSE]
+    #remove k tips -- we do not do anything with them.
+    data.table::setkey(seg.map, branch.type)
+    seg.map <- seg.map[branch.type != 2]
+    
+    logLikLogSpace <- -hisse:::starting.point.tree.intervals(x=log(c(turnover, eps, psi)), n.tax=3, rho=1, seg_map=seg.map, x_times=split.times, y_times=fossil.ages, strat.cache=strat.cache)
+    
+    nb.tip <- Ntip(phy)
+    nb.node <- phy$Nnode
+    model.vec <- c(turnover, eps, rep(0,51))
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache$psi <- psi
+    
+    MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type) + (strat.cache$k*log(psi)) + (psi*strat.cache$l_s)
+    
+    comparison <- identical(round(logLikLogSpace,4), round(MiSSE.logL,4))
+    
+    expect_true(comparison)
+}
+
+
+test_that("MiSSE_interval_test5", {
+    skip_on_cran()
+    
     ntax=200
     true.psi=0.1
     set.seed(4)

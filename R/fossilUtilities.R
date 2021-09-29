@@ -374,7 +374,7 @@ AddKNodes <- function(phy, k.info){
             mrca.list[[og.index]] <- mrca
         }
     }
-    
+
     #Step 2:
     for(sample.index in sequence(length(k.info[,1]))){
         tip.name <- paste("Ksamp", sample.index, sep="_")
@@ -550,7 +550,10 @@ GetIntervalToK <- function(strat.intervals, intervening.intervals=NULL){
     
     k.samples <- data.frame(taxon1=as.character(tmp[,1]), taxon2=as.character(tmp[,2]), timefrompresent=as.numeric(tmp[,3]), stringsAsFactors=FALSE)
     #Do not need end of interval if it is a tip.
-    k.samples <- k.samples[-which(as.numeric(k.samples$timefrompresent) < .Machine$double.eps^.50),]
+    tip.samples <- which(as.numeric(k.samples$timefrompresent) < .Machine$double.eps^.50)
+    if(length(tip.samples) > 0){
+        k.samples <- k.samples[-tip.samples,]
+    }
     k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
     return(k.samples)
 }
