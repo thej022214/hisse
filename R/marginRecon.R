@@ -824,31 +824,38 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     if(includes.fossils == TRUE){
         if(!is.null(k.samples)){
             #m and k fossils
+            strat.cache <- NULL
             k.samples <- k.samples[order(as.numeric(k.samples[,3]), decreasing=FALSE),]
             phy <- AddKNodes(phy, k.samples)
             fix.type <- GetKSampleMRCA(phy, k.samples)
             gen <- FindGenerations(phy)
             dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
-            edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+            edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
             fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
         }else{
             if(!is.null(strat.intervals)){
                 #strat intervals
+                split.times.plus.tips <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
                 strat.cache <- GetStratInfo(strat.intervals=strat.intervals)
                 k.samples <- GetIntervalToK(strat.intervals, intervening.intervals=strat.cache$intervening.intervals)
+                extinct.tips <- which(round(k.samples$timefrompresent,8) %in% round(split.times.plus.tips[c(1:Ntip(phy))],8))
+                if(length(extinct.tips > 0)){
+                    k.samples <- k.samples[-extinct.tips,]
+                }
                 phy <- AddKNodes(phy, k.samples)
                 fix.type <- GetKSampleMRCA(phy, k.samples, strat.intervals=TRUE)
                 gen <- FindGenerations(phy)
                 dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
-                edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
             }else{
                 #Just m fossils only.
                 fix.type <- NULL
+                strat.cache <- NULL
                 gen <- FindGenerations(phy)
                 dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
                 #These are all inputs for generating starting values:
-                edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
             }
         }

@@ -64,13 +64,13 @@ AdaptiveConfidenceIntervalSamplingMiSSE <- function(par, lower, upper, desired.d
             gen <- FindGenerations(phy)
             dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
             #These are all inputs for generating starting values:
-            edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+            edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
             fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
         }else{
             gen <- FindGenerations(phy)
             dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
             #These are all inputs for generating starting values:
-            edge_details <- GetEdgeDetails(phy, intervening.intervals=NULL)
+            edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
             fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
         }
     }else{
