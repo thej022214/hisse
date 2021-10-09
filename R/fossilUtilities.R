@@ -34,9 +34,6 @@ GetEdgeCombined <- function(phy) {
         ancestral_nodes <- phangorn::Ancestors(phy, node=living_taxa_indices[i])
         edge_combined$livingdescendants[edge_combined[,2] %in% ancestral_nodes] <- TRUE
     }
-    if(length(living_taxa_indices)>0) {
-        edge_combined$livingdescendants[edge_combined[,1]==max(edge_combined[,1])] <- TRUE
-    }
     edge_combined <- cbind(edge_combined, phytools::nodeHeights(phy))
     colnames(edge_combined) <- c("rootwardnode", "tipwardnode", "edge.length",  "livingdescendants", "rootwardheight", "tipwardheight")
     edge_combined$istip <- FALSE
@@ -73,7 +70,6 @@ GetFossils <- function(phy, psi=0.1) {
     # loop to find k fossils that have sampled descendants from branches that are extinct
     for (i in sequence(nrow(fossils))) {
         all_descendants <- phangorn::Descendants(phy, fossils$tipwardnode[i], type="all")
-#        all_descendants <- all_descendants[which(all_descendants>ape::Ntip(phy))] # so we only look at the internal nodes
         other_fossils <- subset(fossils, fossils$tipwardnode!=fossils$tipwardnode[i])
         if(length(all_descendants)>0) {
             if(any(all_descendants %in% other_fossils$rootwardnode)) {
@@ -84,11 +80,6 @@ GetFossils <- function(phy, psi=0.1) {
             }
         }
     }
-    
-    #fossils$fossiltype_mk <- NA
-    #fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_terminal")] <- "m"
-    #fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_internal" & !fossils$has_sampled_descendant)] <- "m"
-    #fossils$fossiltype_mk[which(fossils$fossiltype_long=="extinct_internal" & fossils$has_sampled_descendant)] <- "k"
     
     fossils <- fossils[order(fossils$timefrompresent),]
     
@@ -156,7 +147,7 @@ ProcessSimSample <- function(phy, f){
         }
     }
 
-    split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
+    split.times <- paleotree::dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
     #Step 3: Now process the k.sample table so that any added extinct taxa get listed as taxa whose MRCA is where subtending k.sample will be placed:
     for(sample.index in sequence(length(k.samples$tipwardnode))){
         #obtains the list of taxa whose subtending branch is where the k sample is located:
