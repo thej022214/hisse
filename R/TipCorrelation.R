@@ -6,10 +6,10 @@ TipCorrelation <- function(phy, tip.rate, trait, log=TRUE, remove.cherries=TRUE,
   if(!inherits(phy, "phylo")) {
     stop("Arguments 'phy' should be of class phylo.")
   }
-  if(!identical(phy$tip.label, names(tip.rate))) {
+  if(!setequal(phy$tip.label, names(tip.rate))) {
     stop("Names in tree and tip.rate don't match.")
   }
-  if(!identical(phy$tip.label, names(trait))) {
+  if(!setequal(phy$tip.label, names(trait))) {
     stop("Names in tree and trait don't match.")
   }
   
@@ -36,7 +36,7 @@ TipCorrelation <- function(phy, tip.rate, trait, log=TRUE, remove.cherries=TRUE,
   internals <- ape::Ntip(phy) + sequence(ape::Nnode(phy))
   ndescendants <- rep(NA, length(internals))
   for (i in seq_along(internals)) {
-    ndescendants[i] <- length(phytools::getDescendants(tree_pruned, node=internals[i]))
+    ndescendants[i] <- length(phytools::getDescendants(phy, node=internals[i]))
   }
   cherry_internals <- internals[ndescendants==2]
   # Remove cherries #-------------
@@ -48,13 +48,15 @@ TipCorrelation <- function(phy, tip.rate, trait, log=TRUE, remove.cherries=TRUE,
   r0Pic[which(t0Pic < 0)] <- -1 * r0Pic[which(t0Pic < 0)]
   t0Pic <- abs(t0Pic)
   }
+  trait = t0Pic
+  tip.rate = r0Pic
   if(use.lmorigin){
-    picModel <- lm(r0Pic ~ 0 + t0Pic)
+    picModel <- lm(tip.rate ~ 0 + trait)
     result <- ape::lmorigin(picModel, picModel$model, origin=TRUE, nperm=999)
   } else {
-    result <- lm(r0Pic ~ t0Pic)
+    result <- lm(tip.rate ~ trait)
   }
-  all_results <- list(result, r0Pic, t0Pic)
+  all_results <- list(result, tip.rate, trait)
   names(all_results) <- c("correlation","tip.rate PIC","trait PIC")
   return(all_results)
 }
