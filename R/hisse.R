@@ -556,7 +556,7 @@ SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time
                 }
             }else{
                 if(branch.type == 4){
-                    if(cache$hidde.states == TRUE){
+                    if(cache$hidden.states == TRUE){
                         prob.subtree.cal.wevents <- prob.subtree.cal.full[-1,-1]
                         prob.subtree.cal.full <- runSilent(branch.type=3)
                         prob.subtree.cal.noevents <- prob.subtree.cal.full[-1,-1]
