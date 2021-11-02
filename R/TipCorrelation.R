@@ -12,7 +12,7 @@ TipCorrelation <- function(phy, tip.rate, trait, log=TRUE, remove.cherries=TRUE,
   if(!setequal(phy$tip.label, names(trait))) {
     stop("Names in tree and trait don't match.")
   }
-  
+  phy$node.label <- NULL
   # Few lines to guarantee data is in the same order #-------------
   is_tip <- phy$edge[,2] <= length(phy$tip.label)
   ordered_tips <- phy$edge[is_tip, 2]
@@ -29,8 +29,6 @@ TipCorrelation <- function(phy, tip.rate, trait, log=TRUE, remove.cherries=TRUE,
   # PICs #-------------
   t0Pic <- ape::pic(t0, phy, scaled = scaled)
   r0Pic <- ape::pic(r0, phy, scaled = scaled)
-  names(t0Pic) <- (ape::Ntip(phy) + 1) : (ape::Ntip(phy) + (ape::Ntip(phy) - 1))
-  names(r0Pic) <- (ape::Ntip(phy) + 1) : (ape::Ntip(phy) + (ape::Ntip(phy) - 1))
   if(remove.cherries) {
   # Identifying cherries #-------------
   internals <- ape::Ntip(phy) + sequence(ape::Nnode(phy))
