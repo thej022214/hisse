@@ -13,15 +13,14 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(cache=FALSE)
-knitr::opts_chunk$set(tidy.opts=list(width.cutoff=75),tidy=TRUE)
 ```
 
 
-As of version 2.1.1, we have added the ability for HiSSE, MuHiSSE, and MiSSE to handle fossils and stratigraphic ranges. Our fossilized birth-death model (FBD) closely follows that of Stadler (2010), and includes a new parameter, $\psi$, that estimates the rate of fossils preservation in a birth-death model. We have extended Stadler's basic model to the SSE equations of Maddison et al. (2007), the details of which will be included in a forthcoming paper (Beaulieu and O'Meara, In prep). Below I will demonstrate how to set up HiSSE, MuHiSSE, and MiSSE models when the tree and data contain fossils. I will mainly focus on MiSSE, as it is the most straightforward and because it can be used to demonstrate that both the HiSSE and MuHiSSE likelihoods are correct. 
+As of version 2.1.1, we have added the ability for HiSSE, MuHiSSE, and MiSSE to handle fossils as well as stratigraphic ranges. Our fossilized birth-death model (FBD) closely follows that of Stadler (2010), and includes a new parameter, $\psi$, that estimates the rate of fossils preservation in a birth-death model. We have extended Stadler's basic model to the SSE equations of Maddison et al. (2007), the details of which will be included in a forthcoming paper (Beaulieu and O'Meara, In prep). Below I will demonstrate how to set up HiSSE, MuHiSSE, and MiSSE models when the tree and data contain fossils. I will mainly focus on MiSSE, as it is the most straightforward and because it can be used to demonstrate that both the HiSSE and MuHiSSE likelihoods are correct. 
 
 Before getting started, be sure to load the `hisse` and `TreeSim` packages:
 ```{r, eval=TRUE}
-suppressWarnings(library(hisse))
+suppressPackageStartupMessages(library(hisse))
 ```
 
 Also, there are two important terms that need to be understood. Under the FBD there are actually two types of fossils that are sampled. The first are referred to as _m_ fossils, which represent extinct tips -- that is, they represent distinct branches that went extinct before the present. The second are referred _k_ fossils, which represent samples of lineages that eventually made it to the present. In most cases, both fossil types must be present for the FBD to work well, though having _k_ fossils is not absolutely critical for _hisse_ whereas _m_ fossils are. 
@@ -48,12 +47,14 @@ head(fbd.tree$k.samples)
 
 Internally, MiSSE will assume that the two taxa specified has an MRCA that is subtended by the branch where these edge fossils are located. The time from the present will know at what point on this branch this sample was taken. Note that if the branch from which a sample was taken is a tip branch, simply list the tip taxon twice (e.g., taxon1="sp12", taxon2="sp12"). Internally, MiSSE will place these fossils for you. For `hisse()` this table requires the state (if they are present):
 ```{r, eval=FALSE}
-k.samples <- data.frame(taxon1="sp12", taxon2="sp12", timefrompresent=3.164384, state=1, stringsAsFactors=FALSE)
+k.samples <- data.frame(taxon1="sp12", taxon2="sp12", timefrompresent=3.164384, 
+          state=1, stringsAsFactors=FALSE)
 ```
 
 and `MuHiSSE()`,
 ```{r, eval=FALSE}
-k.samples <- data.frame(taxon1="sp12", taxon2="sp12", timefrompresent=3.164384, state1=0, state2=1, stringsAsFactors=FALSE)
+k.samples <- data.frame(taxon1="sp12", taxon2="sp12", timefrompresent=3.164384,
+          state1=0, state2=1, stringsAsFactors=FALSE)
 ```
 
 
@@ -64,20 +65,23 @@ Running `MiSSE()` (or `hisse()`, and `MuHiSSE()`) is essentially the same as bef
 turnover <- c(1)
 eps <- c(1)
 one.rate <- MiSSE(fbd.tree$phy, f=1, turnover=turnover, eps=eps, 
-                  includes.fossils=TRUE, k.samples=fdb.tree$k.samples, sann=TRUE, sann.its=1000)
+          includes.fossils=TRUE, k.samples=fdb.tree$k.samples, sann=TRUE, 
+          sann.its=1000)
 ```
 
 Note that the only two additions to the function call are `includes.fossils=TRUE`, which indicates that the tree contains at least _m_ fossils, and `k.samples=` that takes the table of edge samples. If no edge samples exist, this can be set to `NULL`,
 ```{r, eval=FALSE}
 one.rate <- MiSSE(fbd.tree$phy, f=1, turnover=turnover, eps=eps, 
-                  includes.fossils=TRUE, k.samples=NULL, sann=TRUE, sann.its=1000)
+          includes.fossils=TRUE, k.samples=NULL, sann=TRUE, sann.its=1000)
 ```
 
 and the estimate of $\psi$ will reflect sampling of extinct tips _only_. This actually has a pronounced effect on the parameter estimates generally and is a general violation of the fossilized birth-death model of Stadler (2010).
 
 When reconstructing rates and/or states on the tree, the `MarginReconMiSSE()` also requires the same inputs:
 ```{r, eval=FALSE}
-margin.test <- MarginReconMiSSE(phy=fbd.tree$phy, f=1, pars=one.rate$solution, hidden.states=1, includes.fossils=TRUE, k.samples=fbd.tree$k.samples, aic=one.rate$AIC)
+margin.test <- MarginReconMiSSE(phy=fbd.tree$phy, f=1, pars=one.rate$solution, 
+          hidden.states=1, includes.fossils=TRUE, k.samples=fbd.tree$k.samples, 
+          aic=one.rate$AIC)
 ```
 
 ## Using HiSSE and MuHiSSE
@@ -87,22 +91,88 @@ The general structure for running `hisse()` and `MuHiSSE()` is identical to runn
 HiSSE:
 ```{r, eval=FALSE}
 trans.rate <- TransMatMakerHiSSE()
-pp <- hisse(phy=fbd.tree$phy, data, f=c(1,1), turnover=c(1,1), eps=c(1,1), trans.rate=trans.rate,  k.samples=fbd.tree$k.samples, includes.fossils=TRUE)
-margin.test <- MarginReconHiSSE(phy=fbd.tree$phy, data=data, f=c(1,1), pars=pp$solution, hidden.states=1, 
-                                includes.fossils=TRUE, k.samples=fbd.tree$k.samples)
+pp <- hisse(phy=fbd.tree$phy, data, f=c(1,1), turnover=c(1,1), eps=c(1,1),
+            trans.rate=trans.rate,  k.samples=fbd.tree$k.samples, 
+            includes.fossils=TRUE)
+margin.test <- MarginReconHiSSE(phy=fbd.tree$phy, data=data, f=c(1,1), 
+            pars=pp$solution, hidden.states=1, includes.fossils=TRUE, 
+            k.samples=fbd.tree$k.samples)
 ```
 
 MuHiSSE:
 ```{r, eval=FALSE}
 trans.rate <- TransMatMakerMuHiSSE()
-pp <- MuHiSSE(phy=fbd.tree$phy, data, f=c(1,1,1,1), turnover=c(1,1,1,1), eps=c(1,1,1,1), trans.rate=trans.rate, k.samples=k.samples, includes.fossils=TRUE)
-margin.test <- MarginReconMuHiSSE(phy=fbd.tree$phy, data=data, f=c(1,1,1,1), pars=pp$solution, hidden.states=1, 
-                                  includes.fossils=TRUE, k.samples=fbd.tree$k.samples)
+pp <- MuHiSSE(phy=fbd.tree$phy, data, f=c(1,1,1,1), turnover=c(1,1,1,1), 
+            eps=c(1,1,1,1), trans.rate=trans.rate, k.samples=k.samples, 
+            includes.fossils=TRUE)
+margin.test <- MarginReconMuHiSSE(phy=fbd.tree$phy, data=data, f=c(1,1,1,1), 
+            pars=pp$solution, hidden.states=1, includes.fossils=TRUE,
+            k.samples=fbd.tree$k.samples)
+```
+
+## Stratigraphic ranges
+
+We have also implemented the FBD model with stratigraphic ranges and I will show how to set up a standard run using the simulated data above. The first step is to take the fossil set sampled above and convert them to stratigraphic ranges. This can be done using a custom function within `hisse`:
+```{r, eval=TRUE}
+strat.tree <- ProcessSimStrat(phy, f)
+```
+
+As with the `ProcessSimSample()`, `ProcessSimStrat()` takes the sampled fossil set and provides a phylogeny that contains sampled extinct tips and a table that contains the location of each stratigraphic range. The table of stratigraphic ranges requires a particular format:
+```{r, eval=TRUE}
+names(strat.tree)
+head(strat.tree$strat.intervals)
+```
+
+The columns `taxon1` and `taxon2` are two taxa specified whose MRCA is subtended by the branch where the stratigraphic range is located. The `timefrompresentroot` is the time at the rootward end stratigraphic range (denoted by $o_{i}$ by Stadler et al. 2018) and `timefrompresenttip` is the time at the tipward end of range (denoted by $y_{i}$). Finally, the column `type` contains either an R for true stratigraphic ranges (i.e., o_{i} - y_{i} > 0) or an S for singleton fossils (i.e., o_{i} - y_{i} = 0). Note, as with the canoical FBD implementation above, if the branch from which a range was sampled is a tip branch, simply list the tip taxon twice (e.g., taxon1="sp12", taxon2="sp12").
+
+A run proceeds exactly as before, except instead we supply the stratigraphic range table to the "strat.interval" option in the function call:
+```{r, eval=FALSE}
+turnover <- c(1)
+eps <- c(1)
+one.rate <- MiSSE(strat.tree$phy, f=1, turnover=turnover, eps=eps, 
+            includes.fossils=TRUE, k.samples=NULL, 
+            strat.intervals=strat.tree$strat.intervals, sann=TRUE, 
+            sann.its=5000)
+```
+
+When reconstructing rates and/or states on the tree, the `MarginReconMiSSE()` also requires the same inputs:
+```{r, eval=FALSE}
+margin.test <- MarginReconMiSSE(phy=strat.tree$phy, f=1, pars=one.rate$solution, 
+          hidden.states=1, includes.fossils=TRUE, k.samples=NULL, 
+          strat.intervals=strat.tree$strat.intervals, aic=one.rate$AIC)
+```
+
+
+## Plotting simulated data sets
+
+Plotting functions of the reconstructions work as they did before and do not require any additional arguments. However, we have added functionality for overlaying the fossil set and stratigraphic ranges obtained from our simulation functions. For example, here I will plot the full simulated tree from above, and then add the *m* and *k* fossils as points onto of the phylogeny:
+```{r, eval=TRUE}
+plot(ladderize(phy), show.tip.label=FALSE, edge.width=0.75)
+### Split the table into m and k for the points ###
+extinct.samples <- f[which(f$fossiltype_long=="extinct_terminal" | 
+            f$fossiltype_long=="extinct_internal"),]
+k.samples.tmp <- extinct.samples[which(extinct.samples$has_sampled_descendant == TRUE),]
+extinct.samples <- extinct.samples[which(extinct.samples$has_sampled_descendant == FALSE),]
+k.samples <- f[which(f$fossiltype_long == "surviving_terminal" | 
+            f$fossiltype_long == "surviving_internal"),]
+k.samples <- rbind(k.samples, k.samples.tmp)
+AddFossilPoints(ladderize(phy), f=extinct.samples, pch=19, cex=0.8, 
+            col="#0D79F2")
+AddFossilPoints(ladderize(phy), f=k.samples, pch=19, cex=0.8, col="#F25E0D")
+```
+
+We can also overaly the lines designating stratigraphic ranges:
+```{r, eval=TRUE}
+plot(ladderize(phy), show.tip.label=FALSE, edge.width=0.75)
+AddFossilPoints(ladderize(phy), f=extinct.samples, pch=19, cex=0.8, 
+            col="#0D79F2")
+AddFossilPoints(ladderize(phy), f=k.samples, pch=19, cex=0.8, col="#F25E0D")
+AddStratIntervals(ladderize(phy), f=f, pch=19, cex=0.8, col="purple", lwd=2)
 ```
 
 ## Checking the MiSSE, HiSSE, and MuHiSSE likelihoods
 
-The easiest way to check that the likelihoods calculated by `MiSSE()`, `hisse()`, and `MuHiSSE()` are correct is to take the likelihood calculated by `MiSSE()` and add this to the likelihood of a simple Markov transition model. As described in Caetano et al. (2018), an SSE model jointly maximizes the probability of the observed states at the tips *and* the observed tree, given the model. Thus, if the character is completely disassociated from the rate differences in the tree (with what we call a character independent model) then this test should work. 
+The easiest way to check that the likelihoods calculated by `MiSSE()`, `hisse()`, and `MuHiSSE()` for the standard FBD are correct is to take the likelihood calculated by `MiSSE()` and add this to the likelihood of a simple Markov transition model. As described in Caetano et al. (2018), an SSE model jointly maximizes the probability of the observed states at the tips *and* the observed tree, given the model. Thus, if the character is completely disassociated from the rate differences in the tree (with what we call a character independent model) then this test should work. 
 
 I will show this test here. First, I will calculate the likelihood of a simple BiSSE model, where the diversification rates are the same for states 0 and 1, on a simulated dataset that contains fossils:
 ```{r, eval=TRUE}
@@ -113,7 +183,8 @@ phy <- NULL
 while( is.null( phy ) ){
   phy <- tree.bisse(pars, max.t=30, x0=0, include.extinct=TRUE)
 }
-k.samples <- data.frame(taxon1="sp12", taxon2="sp12", timefrompresent=3.164384, state=1, stringsAsFactors=FALSE)
+k.samples <- data.frame(taxon1="sp12", taxon2="sp12", timefrompresent=3.164384, 
+            state=1, stringsAsFactors=FALSE)
 hidden.states=FALSE
 phy.k <- hisse:::AddKNodes(phy, k.samples)
 fix.type <- hisse:::GetKSampleMRCA(phy.k, k.samples)
@@ -121,49 +192,62 @@ nb.tip <- Ntip(phy.k)
 nb.node <- phy.k$Nnode
 gen <- hisse:::FindGenerations(phy.k)
     
-data <- data.frame(taxon=names(phy$tip.state), phy$tip.state, stringsAsFactors=FALSE)
+data <- data.frame(taxon=names(phy$tip.state), phy$tip.state, 
+           stringsAsFactors=FALSE)
 data <- hisse:::AddKData(data, k.samples)
 data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
 data.new <- data.new[phy.k$tip.label,]
     
-dat.tab <- hisse:::OrganizeDataHiSSE(data.new, phy=phy.k, f=c(1,1), hidden.states=FALSE)
-edge_details <- hisse:::GetEdgeDetails(phy=phy.k, intervening.intervals=strat.cache$intervening.intervals)
+dat.tab <- hisse:::OrganizeDataHiSSE(data.new, phy=phy.k, f=c(1,1), 
+             hidden.states=FALSE)
+edge_details <- hisse:::GetEdgeDetails(phy=phy.k, 
+            intervening.intervals=strat.cache$intervening.intervals)
 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
 pars.bisse <- c(0.1+0.03, 0.1+0.03, 0.03/0.1, 0.03/0.1, 0.01, 0.01)
  
 model.vec <- numeric(48)
 model.vec[1:6] = pars.bisse
 phy$node.label = NULL
-cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=-300, f=c(1,1), ode.eps=0)
+cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, 
+            nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=-300, 
+            f=c(1,1), ode.eps=0)
 cache$psi <- 0.01
-hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, node=fix.type$node, state=fix.type$state, fossil.taxa=fossil.taxa, fix.type=fix.type$type)
+hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", 
+            condition.on.survival=TRUE, root.p=NULL, node=fix.type$node, 
+            state=fix.type$state, fossil.taxa=fossil.taxa, 
+            fix.type=fix.type$type)
 ```
 
 Next we will calculate the likelihood of _just_ the tree using `MiSSE()`:
 ```{r, eval=TRUE}
 dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), ode.eps=0)#
+cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, 
+            fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, 
+            bad.likelihood=exp(-500), ode.eps=0)#
 cache$psi <- 0.01
 gen <- hisse:::FindGenerations(phy.k)
-MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
+MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, 
+            condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, 
+            fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
 ```
 
 Finally, I will use `corHMM` to calculate the likelihood of _just_ character data:
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 library(corHMM)
-char.logL <- corHMM(phy.k, data, rate.cat=1, model = "ER", node.states = "none", fixed.nodes=FALSE, p=0.01, root.p="maddfitz")
+char.logL <- corHMM(phy.k, data, rate.cat=1, model = "ER", node.states = "none", 
+           fixed.nodes=FALSE, p=0.01, root.p="maddfitz")
 ```
 
 We can compare the likelihoods obtained from `hisse()` against the sum of the tree *and* the character:
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 tot.logL <- char.logL$loglik + MiSSE.logL
 comparison <- identical(round(hisse.full,3), round(tot.logL,3))
 comparison 
 ```
 
 This confirms that the calculations are correct. I will show the same using `MuHiSSE()`:
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 library(diversitree)
 pars <- c(.1,  .15,  .2, .1,
          .03, .045, .06, 0.03,
@@ -220,37 +304,38 @@ pars.muhisse <- c(rep(0.1+0.03,4), rep(0.03/.1, 4), 0.05,0.05,0, 0.05,0,0.05,
 model.vec = rep(0,384)
 model.vec[1:20] = pars.muhisse
 cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=FALSE, 
-                                         nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), 
-                                         bad.likelihood=exp(-500), f=c(1,1,1,1), ode.eps=0)
+            nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=exp(-500), 
+            f=c(1,1,1,1), ode.eps=0)
 cache$psi <- 0.01
 gen <- hisse:::FindGenerations(phy.k)
-dat.tab <- hisse:::OrganizeData(data.new, phy.k, f=c(1,1,1,1), hidden.states=FALSE, 
-                                includes.fossils=TRUE)
+dat.tab <- hisse:::OrganizeData(data.new, phy.k, f=c(1,1,1,1), 
+            hidden.states=FALSE, includes.fossils=TRUE)
 fossil.taxa <- which(dat.tab$branch.type == 1)
     
-muhisse.full <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, root.type="madfitz", 
-                                        condition.on.survival=TRUE, root.p=NULL, 
-                                        node=fix.type$node, state=fix.type$state, 
-                                        fossil.taxa=fossil.taxa, fix.type=fix.type$type)
+muhisse.full <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, 
+            root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, 
+            node=fix.type$node, state=fix.type$state, fossil.taxa=fossil.taxa, 
+            fix.type=fix.type$type)
 
 ## Trait independent model should be loglik_tree + loglik_character ##
 #Part 1: MiSSE loglik:
 dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, 
-                                      nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-500), 
-                                      ode.eps=0)#
+cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, 
+            fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, 
+            bad.likelihood=exp(-500), ode.eps=0)#
 cache$psi <- 0.01
-edge_details <- hisse:::GetEdgeDetails(phy=phy.k, intervening.intervals=strat.cache$intervening.intervals)
+edge_details <- hisse:::GetEdgeDetails(phy=phy.k, 
+            intervening.intervals=strat.cache$intervening.intervals)
 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
 gen <- hisse:::FindGenerations(phy.k)
-MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, 
-                                    root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa,
-                                    node=fix.type$node, fix.type=fix.type$type)
+MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, 
+            condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, 
+            fossil.taxa=fossil.taxa,node=fix.type$node, fix.type=fix.type$type)
     
 #Part 2: corHMM loglik:
 char.logL <- corHMM(phy.k, data, rate.cat=1, model = "ER", node.states = "none", 
-                    fixed.nodes=FALSE, p=0.05, root.p="maddfitz")
+            fixed.nodes=FALSE, p=0.05, root.p="maddfitz")
 tot.logL <- char.logL$loglik + MiSSE.logL
     
 comparison <- identical(round(muhisse.full,3), round(tot.logL,3))
@@ -264,6 +349,7 @@ Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. (2018). Hidden state models impr
 
 Stadler, T. (2010). Sampling-through-time in birth-death trees. Journal of Theoretical Biology, 267:396-404.
 
+Stadler T., Gavryushkina A., Warnock R.C.M., Drummond A.J., Heath T.A. 2018. The fossilized birth-death model for analysis of stratigraphic range data under different speciation modes. Journal of Theoretical Biology 447:41-55.
 
 
 
