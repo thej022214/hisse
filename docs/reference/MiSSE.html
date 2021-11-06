@@ -73,7 +73,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.4</span>
       </span>
     </div>
 
@@ -148,8 +148,9 @@
     </div>
 
     <pre class="usage"><span class='fu'>MiSSE</span><span class='op'>(</span><span class='va'>phy</span>, f<span class='op'>=</span><span class='fl'>1</span>, turnover<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>2</span><span class='op'>)</span>, eps<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>2</span><span class='op'>)</span>, fixed.eps<span class='op'>=</span><span class='cn'>NULL</span>, condition.on.survival<span class='op'>=</span><span class='cn'>TRUE</span>,
-root.type<span class='op'>=</span><span class='st'>"madfitz"</span>, root.p<span class='op'>=</span><span class='cn'>NULL</span>, includes.fossils<span class='op'>=</span><span class='cn'>FALSE</span>, k.samples<span class='op'>=</span><span class='cn'>NULL</span>, sann<span class='op'>=</span><span class='cn'>TRUE</span>, 
-sann.its<span class='op'>=</span><span class='fl'>1000</span>, bounded.search<span class='op'>=</span><span class='cn'>TRUE</span>, max.tol<span class='op'>=</span><span class='va'>.Machine</span><span class='op'>$</span><span class='va'>double.eps</span><span class='op'>^</span><span class='fl'>.50</span>, starting.vals<span class='op'>=</span><span class='cn'>NULL</span>,
+root.type<span class='op'>=</span><span class='st'>"madfitz"</span>, root.p<span class='op'>=</span><span class='cn'>NULL</span>, includes.fossils<span class='op'>=</span><span class='cn'>FALSE</span>, k.samples<span class='op'>=</span><span class='cn'>NULL</span>, 
+strat.intervals<span class='op'>=</span><span class='cn'>NULL</span>, sann<span class='op'>=</span><span class='cn'>TRUE</span>, sann.its<span class='op'>=</span><span class='fl'>5000</span>, sann.temp<span class='op'>=</span><span class='fl'>5230</span>, sann.seed<span class='op'>=</span><span class='op'>-</span><span class='fl'>100377</span>, 
+bounded.search<span class='op'>=</span><span class='cn'>TRUE</span>, max.tol<span class='op'>=</span><span class='va'>.Machine</span><span class='op'>$</span><span class='va'>double.eps</span><span class='op'>^</span><span class='fl'>.50</span>, starting.vals<span class='op'>=</span><span class='cn'>NULL</span>, 
 turnover.upper<span class='op'>=</span><span class='fl'>10000</span>, eps.upper<span class='op'>=</span><span class='fl'>3</span>, trans.upper<span class='op'>=</span><span class='fl'>100</span>, restart.obj<span class='op'>=</span><span class='cn'>NULL</span>, ode.eps<span class='op'>=</span><span class='fl'>0</span>, 
 dt.threads<span class='op'>=</span><span class='fl'>1</span>, expand.mode<span class='op'>=</span><span class='cn'>FALSE</span><span class='op'>)</span></pre>
 
@@ -158,7 +159,7 @@ dt.threads<span class='op'>=</span><span class='fl'>1</span>, expand.mode<span c
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>phy</th>
-      <td><p>a phylogenetic tree, in <code>ape</code> &#8220;phylo&#8221; format.</p></td>
+      <td><p>a phylogenetic tree, in <code>ape</code> &#8220;phylo&#8221; format. If <code>includes.fossils=TRUE</code> then the input phy object must include extinct tips.</p></td>
     </tr>
     <tr>
       <th>f</th>
@@ -201,7 +202,11 @@ dt.threads<span class='op'>=</span><span class='fl'>1</span>, expand.mode<span c
     </tr>
     <tr>
       <th>k.samples</th>
-      <td><p>a table of extinct individuals with sampled descendants. See details for how the table must be formatted.</p></td>
+      <td><p>a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.</p></td>
+    </tr>
+    <tr>
+      <th>strat.intervals</th>
+      <td><p>a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.</p></td>
     </tr>
     <tr>
       <th>sann</th>
@@ -214,6 +219,14 @@ dt.threads<span class='op'>=</span><span class='fl'>1</span>, expand.mode<span c
       <th>sann.its</th>
       <td><p>a numeric indicating the number of times the simulated
   annealing algorithm should call the objective function.</p></td>
+    </tr>
+    <tr>
+      <th>sann.temp</th>
+      <td><p>the starting temperature for the simulated annealing. Higher temperatures results in the chain sampling a much wider space initially. The default of 5320 is based on the default of the GenSA package. For larger trees setting this value higher in conjunction with more sann.its can drastically improve performance.</p></td>
+    </tr>
+    <tr>
+      <th>sann.seed</th>
+      <td><p>the seed number for the simulated annealing algorithm. This value must be negative and an odd number.</p></td>
     </tr>
     <tr>
       <th>bounded.search</th>
@@ -366,7 +379,7 @@ Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Jeremy Beaulieu, Brian O'Meara, Daniel Caetano, James Boyko.</p>
+  <p>Developed by Jeremy Beaulieu, Brian O'Meara, Daniel Caetano, James Boyko, Thais Vasconcelos.</p>
 </div>
 
 <div class="pkgdown">

@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.4</span>
       </span>
     </div>
 
@@ -90,7 +90,7 @@
 
       
 
-      </header><script src="Clade-specific-sampling_files/header-attrs-2.8/header-attrs.js"></script><div class="row">
+      </header><script src="Clade-specific-sampling_files/header-attrs-2.11.3/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>The Problem with Clade-specific Sampling Fractions</h1>
@@ -111,8 +111,8 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">GetProbs</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span> <span class="op">{</span>
     <span class="va">times</span> <span class="op">=</span> <span class="va">times</span>
-    <span class="va">prob.subtree.cal.full</span> <span class="op">&lt;-</span> <span class="fu">lsoda</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span>, func <span class="op">=</span> <span class="st">"maddison_DE_bisse"</span>, 
-        <span class="va">padded.pars</span>, initfunc <span class="op">=</span> <span class="st">"initmod_bisse"</span>, dllname <span class="op">=</span> <span class="st">"hisse"</span>, 
+    <span class="va">prob.subtree.cal.full</span> <span class="op">&lt;-</span> <span class="fu">lsoda</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span>, func <span class="op">=</span> <span class="st">"maddison_DE_bisse"</span>,
+        <span class="va">padded.pars</span>, initfunc <span class="op">=</span> <span class="st">"initmod_bisse"</span>, dllname <span class="op">=</span> <span class="st">"hisse"</span>,
         rtol <span class="op">=</span> <span class="fl">1e-08</span>, atol <span class="op">=</span> <span class="fl">1e-08</span><span class="op">)</span>
     <span class="va">probs.out</span> <span class="op">&lt;-</span> <span class="va">prob.subtree.cal.full</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>
     <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">probs.out</span><span class="op">)</span>
@@ -132,9 +132,10 @@
 <span class="va">right.subA.probs</span> <span class="op">&lt;-</span> <span class="fu">GetProbs</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span>
 <span class="va">right.subB.probs</span> <span class="op">&lt;-</span> <span class="fu">GetProbs</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span>
 
-<span class="va">nodeR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">right.subA.probs</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">*</span> <span class="va">right.subB.probs</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.1</span>, 
+<span class="va">nodeR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">right.subA.probs</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">*</span> <span class="va">right.subB.probs</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.1</span>,
     <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span>
-<span class="co"># Arbritarily using the extinction probabilities from side A:</span>
+<span class="co"># Arbritarily using the extinction probabilities from side</span>
+<span class="co"># A:</span>
 <span class="va">phi_A</span> <span class="op">&lt;-</span> <span class="va">right.subA.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></code></pre></div>
 <p>But, from here we simply use these probabilities as the initial conditions when calculating probabilities for the subtending branch representing the remaining 10 time units down to the root:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -146,7 +147,7 @@
 ## 0.3453536 0.1793776</code></pre>
 <p>As expected, the probabilities of the left and right lineages converge to the same extinction probabilities (note, there may be slight precision issues due to our reliance on ode integration):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">left.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">right.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, 
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">left.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">right.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,
     <span class="fl">4</span><span class="op">)</span></code></pre></div>
 <pre><code>##   E0   E1 
 ## TRUE TRUE</code></pre>
@@ -156,10 +157,10 @@
 <span class="va">yini</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>E0 <span class="op">=</span> <span class="fl">1</span> <span class="op">-</span> <span class="fl">0.25</span>, E1 <span class="op">=</span> <span class="fl">1</span> <span class="op">-</span> <span class="fl">0.25</span>, D0 <span class="op">=</span> <span class="fl">0.25</span>, D1 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>
 <span class="va">right.subA.probs</span> <span class="op">&lt;-</span> <span class="fu">GetProbs</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span>
 <span class="va">right.subB.probs</span> <span class="op">&lt;-</span> <span class="fu">GetProbs</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span>
-<span class="va">nodeR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">right.subA.probs</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">*</span> <span class="va">right.subB.probs</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.1</span>, 
+<span class="va">nodeR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">right.subA.probs</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">*</span> <span class="va">right.subB.probs</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.1</span>,
     <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span>
-<span class="co"># Again, arbritarily using the extinction probabilities from</span>
-<span class="co"># side A:</span>
+<span class="co"># Again, arbritarily using the extinction probabilities</span>
+<span class="co"># from side A:</span>
 <span class="va">phi_A</span> <span class="op">&lt;-</span> <span class="va">right.subA.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>
 
 <span class="va">times</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span>
@@ -173,7 +174,7 @@
 <pre><code>##        E0        E1 
 ## 0.3453536 0.1793777</code></pre>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">left.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">right.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, 
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">left.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">4</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">right.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,
     <span class="fl">4</span><span class="op">)</span></code></pre></div>
 <pre><code>##    E0    E1 
 ## FALSE FALSE</code></pre>
@@ -197,7 +198,7 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Jeremy Beaulieu, Brian O'Meara, Daniel Caetano, James Boyko.</p>
+  <p>Developed by Jeremy Beaulieu, Brian O'Meara, Daniel Caetano, James Boyko, Thais Vasconcelos.</p>
 </div>
 
 <div class="pkgdown">

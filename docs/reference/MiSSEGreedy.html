@@ -73,7 +73,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.4</span>
       </span>
     </div>
 
@@ -147,19 +147,21 @@
  and Extinction) on a phylogeny, varying the number of parameters for turnover and extinction fraction and stopping when models stop being very good.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>MiSSEGreedy</span><span class='op'>(</span><span class='va'>phy</span>, f<span class='op'>=</span><span class='fl'>1</span>, possible.combos <span class='op'>=</span> <span class='fu'><a href='generateMiSSEGreedyCombinations.html'>generateMiSSEGreedyCombinations</a></span><span class='op'>(</span><span class='op'>)</span>,
-stop.deltaAICc<span class='op'>=</span><span class='fl'>10</span>, save.file<span class='op'>=</span><span class='cn'>NULL</span>, n.cores<span class='op'>=</span><span class='cn'>NULL</span>, chunk.size<span class='op'>=</span><span class='cn'>NULL</span>,
-condition.on.survival<span class='op'>=</span><span class='cn'>TRUE</span>, root.type<span class='op'>=</span><span class='st'>"madfitz"</span>, root.p<span class='op'>=</span><span class='cn'>NULL</span>, includes.fossils<span class='op'>=</span><span class='cn'>FALSE</span>,
-k.samples<span class='op'>=</span><span class='cn'>NULL</span>, sann<span class='op'>=</span><span class='cn'>TRUE</span>, sann.its<span class='op'>=</span><span class='fl'>10000</span>, bounded.search<span class='op'>=</span><span class='cn'>TRUE</span>, 
-max.tol<span class='op'>=</span><span class='va'>.Machine</span><span class='op'>$</span><span class='va'>double.eps</span><span class='op'>^</span><span class='fl'>.50</span>, starting.vals<span class='op'>=</span><span class='cn'>NULL</span>, turnover.upper<span class='op'>=</span><span class='fl'>10000</span>, eps.upper<span class='op'>=</span><span class='fl'>3</span>, 
-trans.upper<span class='op'>=</span><span class='fl'>100</span>, restart.obj<span class='op'>=</span><span class='cn'>NULL</span>, ode.eps<span class='op'>=</span><span class='fl'>0</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>MiSSEGreedy</span><span class='op'>(</span><span class='va'>phy</span>, f<span class='op'>=</span><span class='fl'>1</span>, possible.combos <span class='op'>=</span> 
+<span class='fu'><a href='generateMiSSEGreedyCombinations.html'>generateMiSSEGreedyCombinations</a></span><span class='op'>(</span>shuffle.start<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>, stop.deltaAICc<span class='op'>=</span><span class='fl'>10</span>, save.file<span class='op'>=</span><span class='cn'>NULL</span>, 
+n.cores<span class='op'>=</span><span class='cn'>NULL</span>, chunk.size<span class='op'>=</span><span class='fl'>10</span>, check.fits<span class='op'>=</span><span class='cn'>FALSE</span>, remove.bad<span class='op'>=</span><span class='cn'>FALSE</span>, n.tries<span class='op'>=</span><span class='fl'>2</span>, 
+condition.on.survival<span class='op'>=</span><span class='cn'>TRUE</span>, root.type<span class='op'>=</span><span class='st'>"madfitz"</span>, root.p<span class='op'>=</span><span class='cn'>NULL</span>, includes.fossils<span class='op'>=</span><span class='cn'>FALSE</span>, 
+k.samples<span class='op'>=</span><span class='cn'>NULL</span>, strat.intervals<span class='op'>=</span><span class='cn'>NULL</span>, sann<span class='op'>=</span><span class='cn'>TRUE</span>, sann.its<span class='op'>=</span><span class='fl'>5000</span>, sann.temp<span class='op'>=</span><span class='fl'>5230</span>, 
+sann.seed<span class='op'>=</span><span class='op'>-</span><span class='fl'>100377</span>,bounded.search<span class='op'>=</span><span class='cn'>TRUE</span>, max.tol<span class='op'>=</span><span class='va'>.Machine</span><span class='op'>$</span><span class='va'>double.eps</span><span class='op'>^</span><span class='fl'>.50</span>, 
+starting.vals<span class='op'>=</span><span class='cn'>NULL</span>, turnover.upper<span class='op'>=</span><span class='fl'>10000</span>, eps.upper<span class='op'>=</span><span class='fl'>3</span>, trans.upper<span class='op'>=</span><span class='fl'>100</span>, restart.obj<span class='op'>=</span><span class='cn'>NULL</span>, 
+ode.eps<span class='op'>=</span><span class='fl'>0</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>phy</th>
-      <td><p>a phylogenetic tree, in <code>ape</code> &#8220;phylo&#8221; format.</p></td>
+      <td><p>a phylogenetic tree, in <code>ape</code> &#8220;phylo&#8221; format. If <code>includes.fossils=TRUE</code> then the input phy object must include extinct tips.</p></td>
     </tr>
     <tr>
       <th>f</th>
@@ -188,6 +190,18 @@ trans.upper<span class='op'>=</span><span class='fl'>100</span>, restart.obj<spa
       <td><p>how many models to run before checking to make sure there are no improvements. See 'Details'.</p></td>
     </tr>
     <tr>
+      <th>check.fits</th>
+      <td><p>a logical indicating whether a secondary check to ensure optimization performed well. See <code>FindAndRerun</code></p></td>
+    </tr>
+    <tr>
+      <th>remove.bad</th>
+      <td><p>a logical indicating whether bad models identified as poorly fit should be removed. Only invoked when <code>FindAndRerun=TRUE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>n.tries</th>
+      <td><p>maximum number of retries for a given model when <code>check.fits=TRUE</code>.</p></td>
+    </tr>
+    <tr>
       <th>condition.on.survival</th>
       <td><p>a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
@@ -199,8 +213,7 @@ trans.upper<span class='op'>=</span><span class='fl'>100</span>, restart.obj<spa
     </tr>
     <tr>
       <th>root.p</th>
-      <td><p>a vector indicating fixed root state probabilities. The
-  default is <code>NULL</code>.</p></td>
+      <td><p>a vector indicating fixed root state probabilities. The default is <code>NULL</code>.</p></td>
     </tr>
     <tr>
       <th>includes.fossils</th>
@@ -208,7 +221,11 @@ trans.upper<span class='op'>=</span><span class='fl'>100</span>, restart.obj<spa
     </tr>
     <tr>
       <th>k.samples</th>
-      <td><p>a table of extinct individuals with sampled descendants. See details for how the table must be formatted.</p></td>
+      <td><p>a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.</p></td>
+    </tr>
+    <tr>
+      <th>strat.intervals</th>
+      <td><p>a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.</p></td>
     </tr>
     <tr>
       <th>sann</th>
@@ -221,6 +238,14 @@ trans.upper<span class='op'>=</span><span class='fl'>100</span>, restart.obj<spa
       <th>sann.its</th>
       <td><p>a numeric indicating the number of times the simulated
   annealing algorithm should call the objective function.</p></td>
+    </tr>
+    <tr>
+      <th>sann.temp</th>
+      <td><p>the starting temperature for the simulated annealing. Higher temperatures results in the chain sampling a much wider space initially. The default of 5320 is based on the default of the GenSA package. For larger trees setting this value higher in conjunction with more sann.its can drastically improve performance.</p></td>
+    </tr>
+    <tr>
+      <th>sann.seed</th>
+      <td><p>the seed number for the simulated annealing algorithm. This value must be negative and an odd number.</p></td>
     </tr>
     <tr>
       <th>bounded.search</th>
@@ -271,7 +296,7 @@ trans.upper<span class='op'>=</span><span class='fl'>100</span>, restart.obj<spa
 
     <p>See the <code>MiSSE</code> function for description of the method overall. It requires a set number of hidden state categories, but finding the best number of categories can be hard. For example, one could 1 to 26 different turnover categories and 1 to 26 possible extinction fraction categories. For most cases, we suspect that it makes sense to have the number of extinction fraction categories either equal to the number of turnover categories or set to the same category over the tree, but there are actually a lot of possibilities: have turnover=c(1,2,3) and eps=c(1,2,1), for example, or turnover=c(1,1,1) and eps=c(1,2,3). This uses the generateMiSSEGreedyCombinations function to generate a very large set of these possible models, then runs them in increasing complexity. By default, it stops when the models stop getting being reasonable in AICc. This is NOT where the models stop being significant (if you're looking for significance, note you don't get that from AICc), but where they probably will not contribute much to the model averaged parameter estimates and so may not be worth the bother of searching further. However, there's no guarantee that this is a wise decision: you could stop with 10 turnover rates, and 11 and 12 are far worse for AICc, but it could be that 13 turnover rates are much better than anything else (for that matter, the best number of turnover rates could be 42, even though MiSSe's current code can only go up to 26). And of course, in reality, the truth is that there is an infinite set of hidden rate parameters: a passing cloud blocks a tiny bit of energy for photosynthesis, so for that moment the rate of extinction for plants underneath the shadow is a tiny bit higher. You should not be using this to test hypotheses about how many hidden factors there are, but rather as a way to get a good enough model to estimate rates on a tree.</p>
 <p>You can change how quickly the function stops trying new models with stop.deltaAICc. Once it runs a chunk of models where the best gets a model that is at least stop.deltaAICc worse than the *current* best model, it stops running new models. Since this is based on current best AICc, and we start with simple models, there's an asymmetry: a terrible model with no rate variation is always included, but a slightly less terrible model with 26 turnover rates might never be run.</p>
-<p>This works MUCH faster when run in parallel. To do so, set n.cores to the number of available cores on your machine (for example, for a modern Mac laptop, this would be 4). An easy way to do this automatically is to use n.cores=parallel::detectCores(). The default is one core; if running this function on a cluster, a default of parallel::detectCores() might take over an entire compute node when you're supposed to be using just one core, and get you in trouble. Since we run many models, the most natural approach is to run one model per core, see if at least one of the models are still ok, then send out the next models out to all the cores. Setting n.cores to the number of parallel jobs you want, and leaving chunk.size set to NULL, will do this. However, this is slightly inefficient -- the odds are that some cores will finish earlier than others, and will be waiting until all finish. So a different approach is to set a chunk.size greater than n.cores -- it will still use no more than n.cores at a time, but once one model in the set finishes it will send off the next until all models in the chunk are run. This keeps the computer even busier, but then it won't stop to check to make sure the models are still feasible as often, and it only saves intermediate results after each chunk of models finishes. Our recommendation is to use n.cores=parallel::detectCores() if you're on a machine where you can use all the cores and leave chunk.size unspecified (so it will also default to n.cores), but it's up to you.</p>
+<p>This works MUCH faster when run in parallel. To do so, set n.cores to the number of available cores on your machine (for example, for a modern Mac laptop, this would be 4). An easy way to do this automatically is to use n.cores=parallel::detectCores(). The default is one core; if running this function on a cluster, a default of parallel::detectCores() might take over an entire compute node when you're supposed to be using just one core, and get you in trouble. Since we run many models, the most natural approach is to run one model per core, see if at least one of the models are still ok, then send out the next models out to all the cores. Setting n.cores to the number of parallel jobs you want, and setting chunk.size to NULL, will do this. However, this is slightly inefficient -- the odds are that some cores will finish earlier than others, and will be waiting until all finish. So a different approach is to set a chunk.size greater than n.cores -- it will still use no more than n.cores at a time, but once one model in the set finishes it will send off the next until all models in the chunk are run. This keeps the computer even busier, but then it won't stop to check to make sure the models are still feasible as often, and it only saves intermediate results after each chunk of models finishes. Our recommendation is to use n.cores=parallel::detectCores() if you're on a machine where you can use all the cores. By default, we set chunk.size=10 so it looks at ten models before deciding none of them have a good enough AICc to keep looking at all models. If chunk.size is smaller, say, 2, it will look at only two models and if neither is within stop.deltaAICc of the best model, it will stop looking at the next chunk of models.</p>
 <p>After every chunk of models are done, this function will display the status: what models have been run, what the likelihoods and AICs are, etc. It will also predict how long future runs will check (based on a linear regression between the number of free parameters and log(minutes to run)). These are just estimates based on the runs so far, but it's a stochastic search and can take more or less time.</p>
 <p>Saving output while this goes is highly recommended -- you can see how things are going and salvage something if a run fails (then, start again, deleting the models that worked from possible.combos and USING A DIFFERENT FILE TO SAVE TO SO YOU DON'T OVERWRITE THE OLD ONE. You can so this by giving a file name (including path, if you want) as the save.file argument. This will save the list of finished models (misse.list) and the possible.combos data.frame with additional information.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
@@ -296,259 +321,57 @@ Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.</p>
   <span class='va'>potential.combos</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generateMiSSEGreedyCombinations.html'>generateMiSSEGreedyCombinations</a></span><span class='op'>(</span>max.param<span class='op'>=</span><span class='fl'>4</span>, vary.both<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
 
   <span class='co'>#run on one core:</span>
-  <span class='va'>result</span> <span class='op'>&lt;-</span> <span class='fu'>MiSSEGreedy</span><span class='op'>(</span><span class='va'>phy</span>, <span class='va'>potential.combos</span>, n.cores<span class='op'>=</span><span class='fl'>1</span>, f<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span> 
-</div><div class='output co'>#&gt; Starting at 2021-06-22 11:09:30
+  <span class='va'>result</span> <span class='op'>&lt;-</span> <span class='fu'>MiSSEGreedy</span><span class='op'>(</span><span class='va'>phy</span>, possible.combos<span class='op'>=</span><span class='va'>potential.combos</span>, n.cores<span class='op'>=</span><span class='fl'>1</span>, f<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span> 
+</div><div class='output co'>#&gt; Starting at 2021-11-06 15:17:51
 #&gt;  running on 1 cores.
 #&gt;   turnover eps fixed.eps
-#&gt; 1        1   0         0
+#&gt; 1        1   1        NA
+#&gt; 2        3   1        NA
+#&gt; 3        2   1        NA
+#&gt; 4        1   2        NA
+#&gt; 5        2   2        NA
+#&gt; 6        1   3        NA
 #&gt; 
+#&gt; Initializing... 
+#&gt; Finished. Beginning simulated annealing... 
+#&gt; Finished. Refining using subplex routine... 
+#&gt; Finished. Summarizing results... 
+#&gt; Initializing... 
+#&gt; Finished. Beginning simulated annealing... 
+#&gt; Finished. Refining using subplex routine... 
+#&gt; Finished. Summarizing results... 
+#&gt; Initializing... 
+#&gt; Finished. Beginning simulated annealing... 
+#&gt; Finished. Refining using subplex routine... 
+#&gt; Finished. Summarizing results... 
+#&gt; Initializing... 
+#&gt; Finished. Beginning simulated annealing... 
+#&gt; Finished. Refining using subplex routine... 
+#&gt; Finished. Summarizing results... 
+#&gt; Initializing... 
+#&gt; Finished. Beginning simulated annealing... 
+#&gt; Finished. Refining using subplex routine... 
+#&gt; Finished. Summarizing results... 
 #&gt; Initializing... 
 #&gt; Finished. Beginning simulated annealing... 
 #&gt; Finished. Refining using subplex routine... 
 #&gt; Finished. Summarizing results... 
 #&gt; 
 #&gt; Results so far
-#&gt;    turnover eps fixed.eps   lnL    AIC  AICc deltaAICc elapsedMinutes
-#&gt; 1         1   0       0.0 45.19 -88.39 -88.3         0          14.58
-#&gt; 2         1   0       0.9    NA     NA    NA        NA             NA
-#&gt; 3         2   0       0.0    NA     NA    NA        NA             NA
-#&gt; 4         2   0       0.9    NA     NA    NA        NA             NA
-#&gt; 5         1   1        NA    NA     NA    NA        NA             NA
-#&gt; 6         3   0       0.0    NA     NA    NA        NA             NA
-#&gt; 7         3   0       0.9    NA     NA    NA        NA             NA
-#&gt; 8         2   1        NA    NA     NA    NA        NA             NA
-#&gt; 9         1   2        NA    NA     NA    NA        NA             NA
-#&gt; 10        4   0       0.0    NA     NA    NA        NA             NA
-#&gt; 11        4   0       0.9    NA     NA    NA        NA             NA
-#&gt; 12        3   1        NA    NA     NA    NA        NA             NA
-#&gt; 13        2   2        NA    NA     NA    NA        NA             NA
-#&gt; 14        1   3        NA    NA     NA    NA        NA             NA
-#&gt;    predictedMinutes
-#&gt; 1             14.58
-#&gt; 2             14.58
-#&gt; 3             14.58
-#&gt; 4             14.58
-#&gt; 5             14.58
-#&gt; 6             14.58
-#&gt; 7             14.58
-#&gt; 8             14.58
-#&gt; 9             14.58
-#&gt; 10            14.58
-#&gt; 11            14.58
-#&gt; 12            14.58
-#&gt; 13            14.58
-#&gt; 14            14.58
-#&gt; [1] "Best AICc in this set of parallel runs was 0 which is less than the cutoff to stop running (10), so starting another set of parallel runs"
-#&gt; Starting at 2021-06-22 11:24:05
-#&gt;  running on 1 cores.
-#&gt;   turnover eps fixed.eps
-#&gt; 2        1   0       0.9
-#&gt; 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; 
-#&gt; Results so far
-#&gt;    turnover eps fixed.eps   lnL     AIC    AICc deltaAICc elapsedMinutes
-#&gt; 1         1   0       0.0 45.19  -88.39  -88.30     32.54          14.58
-#&gt; 2         1   0       0.9 61.46 -120.92 -120.84      0.00          14.85
-#&gt; 3         2   0       0.0    NA      NA      NA        NA             NA
-#&gt; 4         2   0       0.9    NA      NA      NA        NA             NA
-#&gt; 5         1   1        NA    NA      NA      NA        NA             NA
-#&gt; 6         3   0       0.0    NA      NA      NA        NA             NA
-#&gt; 7         3   0       0.9    NA      NA      NA        NA             NA
-#&gt; 8         2   1        NA    NA      NA      NA        NA             NA
-#&gt; 9         1   2        NA    NA      NA      NA        NA             NA
-#&gt; 10        4   0       0.0    NA      NA      NA        NA             NA
-#&gt; 11        4   0       0.9    NA      NA      NA        NA             NA
-#&gt; 12        3   1        NA    NA      NA      NA        NA             NA
-#&gt; 13        2   2        NA    NA      NA      NA        NA             NA
-#&gt; 14        1   3        NA    NA      NA      NA        NA             NA
-#&gt;    predictedMinutes
-#&gt; 1             14.71
-#&gt; 2             14.71
-#&gt; 3             14.71
-#&gt; 4             14.71
-#&gt; 5             14.71
-#&gt; 6             14.71
-#&gt; 7             14.71
-#&gt; 8             14.71
-#&gt; 9             14.71
-#&gt; 10            14.71
-#&gt; 11            14.71
-#&gt; 12            14.71
-#&gt; 13            14.71
-#&gt; 14            14.71
-#&gt; [1] "Best AICc in this set of parallel runs was 0 which is less than the cutoff to stop running (10), so starting another set of parallel runs"
-#&gt; Starting at 2021-06-22 11:38:56
-#&gt;  running on 1 cores.
-#&gt;   turnover eps fixed.eps
-#&gt; 3        2   0         0
-#&gt; 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; 
-#&gt; Results so far
-#&gt;    turnover eps fixed.eps   lnL     AIC    AICc deltaAICc elapsedMinutes
-#&gt; 1         1   0       0.0 45.19  -88.39  -88.30     32.54          14.58
-#&gt; 2         1   0       0.9 61.46 -120.92 -120.84      0.00          14.85
-#&gt; 3         2   0       0.0 59.05 -112.11 -111.58      9.25          14.96
-#&gt; 4         2   0       0.9    NA      NA      NA        NA             NA
-#&gt; 5         1   1        NA    NA      NA      NA        NA             NA
-#&gt; 6         3   0       0.0    NA      NA      NA        NA             NA
-#&gt; 7         3   0       0.9    NA      NA      NA        NA             NA
-#&gt; 8         2   1        NA    NA      NA      NA        NA             NA
-#&gt; 9         1   2        NA    NA      NA      NA        NA             NA
-#&gt; 10        4   0       0.0    NA      NA      NA        NA             NA
-#&gt; 11        4   0       0.9    NA      NA      NA        NA             NA
-#&gt; 12        3   1        NA    NA      NA      NA        NA             NA
-#&gt; 13        2   2        NA    NA      NA      NA        NA             NA
-#&gt; 14        1   3        NA    NA      NA      NA        NA             NA
-#&gt;    predictedMinutes
-#&gt; 1             14.71
-#&gt; 2             14.71
-#&gt; 3             14.96
-#&gt; 4             14.96
-#&gt; 5             14.96
-#&gt; 6             15.22
-#&gt; 7             15.22
-#&gt; 8             15.22
-#&gt; 9             15.22
-#&gt; 10            15.47
-#&gt; 11            15.47
-#&gt; 12            15.47
-#&gt; 13            15.47
-#&gt; 14            15.47
-#&gt; [1] "Best AICc in this set of parallel runs was 9.25 which is less than the cutoff to stop running (10), so starting another set of parallel runs"
-#&gt; Starting at 2021-06-22 11:53:54
-#&gt;  running on 1 cores.
-#&gt;   turnover eps fixed.eps
-#&gt; 4        2   0       0.9
-#&gt; 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; 
-#&gt; Results so far
-#&gt;    turnover eps fixed.eps   lnL     AIC    AICc deltaAICc elapsedMinutes
-#&gt; 1         1   0       0.0 45.19  -88.39  -88.30     32.54          14.58
-#&gt; 2         1   0       0.9 61.46 -120.92 -120.84      0.00          14.85
-#&gt; 3         2   0       0.0 59.05 -112.11 -111.58      9.25          14.96
-#&gt; 4         2   0       0.9 62.98 -119.97 -119.44      1.39          14.85
-#&gt; 5         1   1        NA    NA      NA      NA        NA             NA
-#&gt; 6         3   0       0.0    NA      NA      NA        NA             NA
-#&gt; 7         3   0       0.9    NA      NA      NA        NA             NA
-#&gt; 8         2   1        NA    NA      NA      NA        NA             NA
-#&gt; 9         1   2        NA    NA      NA      NA        NA             NA
-#&gt; 10        4   0       0.0    NA      NA      NA        NA             NA
-#&gt; 11        4   0       0.9    NA      NA      NA        NA             NA
-#&gt; 12        3   1        NA    NA      NA      NA        NA             NA
-#&gt; 13        2   2        NA    NA      NA      NA        NA             NA
-#&gt; 14        1   3        NA    NA      NA      NA        NA             NA
-#&gt;    predictedMinutes
-#&gt; 1             14.71
-#&gt; 2             14.71
-#&gt; 3             14.91
-#&gt; 4             14.91
-#&gt; 5             14.91
-#&gt; 6             15.10
-#&gt; 7             15.10
-#&gt; 8             15.10
-#&gt; 9             15.10
-#&gt; 10            15.30
-#&gt; 11            15.30
-#&gt; 12            15.30
-#&gt; 13            15.30
-#&gt; 14            15.30
-#&gt; [1] "Best AICc in this set of parallel runs was 1.39 which is less than the cutoff to stop running (10), so starting another set of parallel runs"
-#&gt; Starting at 2021-06-22 12:08:45
-#&gt;  running on 1 cores.
-#&gt;   turnover eps fixed.eps
-#&gt; 5        1   1        NA
-#&gt; 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; 
-#&gt; Results so far
-#&gt;    turnover eps fixed.eps   lnL     AIC    AICc deltaAICc elapsedMinutes
-#&gt; 1         1   0       0.0 45.19  -88.39  -88.30     33.60          14.58
-#&gt; 2         1   0       0.9 61.46 -120.92 -120.84      1.06          14.85
-#&gt; 3         2   0       0.0 59.05 -112.11 -111.58     10.32          14.96
-#&gt; 4         2   0       0.9 62.98 -119.97 -119.44      2.45          14.85
-#&gt; 5         1   1        NA 63.08 -122.15 -121.90      0.00          12.63
-#&gt; 6         3   0       0.0    NA      NA      NA        NA             NA
-#&gt; 7         3   0       0.9    NA      NA      NA        NA             NA
-#&gt; 8         2   1        NA    NA      NA      NA        NA             NA
-#&gt; 9         1   2        NA    NA      NA      NA        NA             NA
-#&gt; 10        4   0       0.0    NA      NA      NA        NA             NA
-#&gt; 11        4   0       0.9    NA      NA      NA        NA             NA
-#&gt; 12        3   1        NA    NA      NA      NA        NA             NA
-#&gt; 13        2   2        NA    NA      NA      NA        NA             NA
-#&gt; 14        1   3        NA    NA      NA      NA        NA             NA
-#&gt;    predictedMinutes
-#&gt; 1             14.71
-#&gt; 2             14.71
-#&gt; 3             14.10
-#&gt; 4             14.10
-#&gt; 5             14.10
-#&gt; 6             13.52
-#&gt; 7             13.52
-#&gt; 8             13.52
-#&gt; 9             13.52
-#&gt; 10            12.96
-#&gt; 11            12.96
-#&gt; 12            12.96
-#&gt; 13            12.96
-#&gt; 14            12.96
-#&gt; [1] "Best AICc in this set of parallel runs was 0 which is less than the cutoff to stop running (10), so starting another set of parallel runs"
-#&gt; Starting at 2021-06-22 12:21:22
-#&gt;  running on 1 cores.
-#&gt;   turnover eps fixed.eps
-#&gt; 6        3   0         0
-#&gt; 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; 
-#&gt; Results so far
-#&gt;    turnover eps fixed.eps   lnL     AIC    AICc deltaAICc elapsedMinutes
-#&gt; 1         1   0       0.0 45.19  -88.39  -88.30     33.60          14.58
-#&gt; 2         1   0       0.9 61.46 -120.92 -120.84      1.06          14.85
-#&gt; 3         2   0       0.0 59.05 -112.11 -111.58     10.32          14.96
-#&gt; 4         2   0       0.9 62.98 -119.97 -119.44      2.45          14.85
-#&gt; 5         1   1        NA 63.08 -122.15 -121.90      0.00          12.63
-#&gt; 6         3   0       0.0 59.13 -110.26 -109.37     12.53          13.49
-#&gt; 7         3   0       0.9    NA      NA      NA        NA             NA
-#&gt; 8         2   1        NA    NA      NA      NA        NA             NA
-#&gt; 9         1   2        NA    NA      NA      NA        NA             NA
-#&gt; 10        4   0       0.0    NA      NA      NA        NA             NA
-#&gt; 11        4   0       0.9    NA      NA      NA        NA             NA
-#&gt; 12        3   1        NA    NA      NA      NA        NA             NA
-#&gt; 13        2   2        NA    NA      NA      NA        NA             NA
-#&gt; 14        1   3        NA    NA      NA      NA        NA             NA
-#&gt;    predictedMinutes
-#&gt; 1             14.72
-#&gt; 2             14.72
-#&gt; 3             14.10
-#&gt; 4             14.10
-#&gt; 5             14.10
-#&gt; 6             13.50
-#&gt; 7             13.50
-#&gt; 8             13.50
-#&gt; 9             13.50
-#&gt; 10            12.93
-#&gt; 11            12.93
-#&gt; 12            12.93
-#&gt; 13            12.93
-#&gt; 14            12.93
-#&gt; [1] "Best AICc in this set of parallel runs was 12.53 which is greater than the cutoff to stop running (10), so stopping here"</div><div class='input'>
+#&gt;   turnover eps fixed.eps runorder deltaAICc    AICc predictedAICc   lnL     AIC
+#&gt; 1        1   1        NA        1      0.00 -121.90            NA 63.08 -122.15
+#&gt; 2        3   1        NA        1      3.80 -118.10            NA 64.73 -119.46
+#&gt; 3        2   1        NA        1      1.44 -120.46            NA 64.68 -121.35
+#&gt; 4        1   2        NA        1      2.07 -119.83            NA 64.36 -120.72
+#&gt; 5        2   2        NA        1      2.29 -119.61            NA 65.48 -120.97
+#&gt; 6        1   3        NA        1      3.77 -118.13            NA 64.75 -119.50
+#&gt;   elapsedMinutes predictedMinutes
+#&gt; 1           9.29             8.27
+#&gt; 2          10.27            10.10
+#&gt; 3           8.34             9.14
+#&gt; 4           7.93             9.14
+#&gt; 5          11.10            10.10
+#&gt; 6          10.14            10.10</div><div class='input'>
   <span class='co'>#run on all available cores: (commented out because CRAN does not allow this in examples)</span>
   <span class='co'>#result &lt;- MiSSEGreedy(phy, potential.combos, n.cores=parallel::detectCores(), f=1)</span>
 
@@ -573,7 +396,7 @@ Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Jeremy Beaulieu, Brian O'Meara, Daniel Caetano, James Boyko.</p>
+  <p>Developed by Jeremy Beaulieu, Brian O'Meara, Daniel Caetano, James Boyko, Thais Vasconcelos.</p>
 </div>
 
 <div class="pkgdown">

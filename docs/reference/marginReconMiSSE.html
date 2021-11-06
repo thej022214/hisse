@@ -74,7 +74,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.4</span>
       </span>
     </div>
 
@@ -150,7 +150,8 @@
 
     <pre class="usage"><span class='fu'>MarginReconMiSSE</span><span class='op'>(</span><span class='va'>phy</span>, <span class='va'>f</span>, <span class='va'>pars</span>, hidden.states<span class='op'>=</span><span class='fl'>1</span>, fixed.eps<span class='op'>=</span><span class='cn'>NULL</span>,
 condition.on.survival<span class='op'>=</span><span class='cn'>TRUE</span>,  root.type<span class='op'>=</span><span class='st'>"madfitz"</span>, root.p<span class='op'>=</span><span class='cn'>NULL</span>, includes.fossils<span class='op'>=</span><span class='cn'>FALSE</span>, 
-k.samples<span class='op'>=</span><span class='cn'>NULL</span>, AIC<span class='op'>=</span><span class='cn'>NULL</span>, get.tips.only<span class='op'>=</span><span class='cn'>FALSE</span>, verbose<span class='op'>=</span><span class='cn'>TRUE</span>, n.cores<span class='op'>=</span><span class='cn'>NULL</span>, dt.threads<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span></pre>
+k.samples<span class='op'>=</span><span class='cn'>NULL</span>, strat.intervals<span class='op'>=</span><span class='cn'>NULL</span>, AIC<span class='op'>=</span><span class='cn'>NULL</span>, get.tips.only<span class='op'>=</span><span class='cn'>FALSE</span>, verbose<span class='op'>=</span><span class='cn'>TRUE</span>, 
+n.cores<span class='op'>=</span><span class='cn'>NULL</span>, dt.threads<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -196,6 +197,10 @@ k.samples<span class='op'>=</span><span class='cn'>NULL</span>, AIC<span class='
     <tr>
       <th>k.samples</th>
       <td><p>a table of extinct individuals with sampled descendants. See details for how the table must be formatted.</p></td>
+    </tr>
+    <tr>
+      <th>strat.intervals</th>
+      <td><p>a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.</p></td>
     </tr>
     <tr>
       <th>AIC</th>
@@ -254,7 +259,7 @@ resolved phylogenies. Syst. Biol. 58:595-611.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Jeremy Beaulieu, Brian O'Meara, Daniel Caetano, James Boyko.</p>
+  <p>Developed by Jeremy Beaulieu, Brian O'Meara, Daniel Caetano, James Boyko, Thais Vasconcelos.</p>
 </div>
 
 <div class="pkgdown">
