@@ -322,7 +322,7 @@ Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.</p>
 
   <span class='co'>#run on one core:</span>
   <span class='va'>result</span> <span class='op'>&lt;-</span> <span class='fu'>MiSSEGreedy</span><span class='op'>(</span><span class='va'>phy</span>, possible.combos<span class='op'>=</span><span class='va'>potential.combos</span>, n.cores<span class='op'>=</span><span class='fl'>1</span>, f<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span> 
-</div><div class='output co'>#&gt; Starting at 2021-11-06 15:17:51
+</div><div class='output co'>#&gt; Starting at 2021-11-06 16:37:46
 #&gt;  running on 1 cores.
 #&gt;   turnover eps fixed.eps
 #&gt; 1        1   1        NA
@@ -366,12 +366,12 @@ Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.</p>
 #&gt; 5        2   2        NA        1      2.29 -119.61            NA 65.48 -120.97
 #&gt; 6        1   3        NA        1      3.77 -118.13            NA 64.75 -119.50
 #&gt;   elapsedMinutes predictedMinutes
-#&gt; 1           9.29             8.27
-#&gt; 2          10.27            10.10
-#&gt; 3           8.34             9.14
-#&gt; 4           7.93             9.14
-#&gt; 5          11.10            10.10
-#&gt; 6          10.14            10.10</div><div class='input'>
+#&gt; 1           8.74             9.00
+#&gt; 2           9.62            10.11
+#&gt; 3          10.31             9.54
+#&gt; 4           9.39             9.54
+#&gt; 5          10.22            10.11
+#&gt; 6          10.20            10.11</div><div class='input'>
   <span class='co'>#run on all available cores: (commented out because CRAN does not allow this in examples)</span>
   <span class='co'>#result &lt;- MiSSEGreedy(phy, potential.combos, n.cores=parallel::detectCores(), f=1)</span>
 
