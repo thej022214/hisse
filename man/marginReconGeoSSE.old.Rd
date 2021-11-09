@@ -47,11 +47,6 @@ See help for \dQuote{GeoHiSSE.old} for more on other parameters for this functio
 \item{$rate.mat}{a matrix that details the rates for each state combination. This is used by the plotting function.}
 \item{$phy}{a phylogenetic tree in the \dQuote{phylo} format that contains the states with the highest marginal probability at each internal node.}
 }
-\examples{
-\donttest{
-## Need some examples here.
-}
-}
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 

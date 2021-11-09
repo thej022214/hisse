@@ -86,25 +86,6 @@ Finally, the options \dQuote{.beta} and \dQuote{timeslice} are included, but nei
 \item{$upper.bounds}{the vector of upper limits to the optimization search.}
 \item{$lower.bounds}{the vector of lower limits to the optimization search.}
 }
-\examples{
-\donttest{
-library(diversitree)
-pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
-set.seed(4) 
-phy <- tree.bisse(pars, max.t=30, x0=0)
-sim.dat <- data.frame(names(phy$tip.state), phy$tip.state)
-## Fit BiSSE equivalent:
-trans.rates.bisse <- TransMatMaker.old(hidden.states=FALSE)
-pp.bisse <- hisse.old(phy, sim.dat, hidden.states=FALSE, turnover.anc=c(1,2,0,0), 
-eps.anc=c(1,2,0,0), trans.rate=trans.rates.bisse)
-
-## Now fit HiSSE equivalent with a hidden state for state 1:
-trans.rates.hisse <- TransMatMaker.old(hidden.states=TRUE)
-trans.rates.hisse <- ParDrop(trans.rates.hisse, c(2,3,5,7,8,9,10,12))
-pp.hisse <- hisse.old(phy, sim.dat, hidden.states=TRUE, turnover.anc=c(1,2,0,3), 
-eps.anc=c(1,2,0,3), trans.rate=trans.rates.hisse)
-}
-}
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601. 
 

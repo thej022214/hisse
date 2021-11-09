@@ -75,29 +75,6 @@ After every chunk of models are done, this function will display the status: wha
 
 Saving output while this goes is highly recommended -- you can see how things are going and salvage something if a run fails (then, start again, deleting the models that worked from possible.combos and USING A DIFFERENT FILE TO SAVE TO SO YOU DON'T OVERWRITE THE OLD ONE. You can so this by giving a file name (including path, if you want) as the save.file argument. This will save the list of finished models (misse.list) and the possible.combos data.frame with additional information.
 }
-
-\examples{
-\donttest{
-  library(ape)
-  phy <- rcoal(50)
-  potential.combos <- generateMiSSEGreedyCombinations(max.param=4, vary.both=TRUE)
-
-  #run on one core:
-  result <- MiSSEGreedy(phy, possible.combos=potential.combos, n.cores=1, f=1) 
-
-  #run on all available cores: (commented out because CRAN does not allow this in examples)
-  #result <- MiSSEGreedy(phy, potential.combos, n.cores=parallel::detectCores(), f=1)
-
-
-
-  AICc <- unlist(lapply(result, "[[", "AICc"))
-  deltaAICc <- AICc-min(AICc)
-  print(length(result))
-
-  # Yes, [[ is a function you can lapply, and the name of elements within each list
-  # object can be arguments. Life is awesome.
-}
-}
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models
 of trait-dependent speciation and extinction. Syst. Biol. 65:583-601.

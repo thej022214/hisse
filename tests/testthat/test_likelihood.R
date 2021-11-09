@@ -517,6 +517,8 @@ test_that("MiSSE_test2", {
 
 
 test_that("MiSSE_test3", {
+    skip_on_cran()
+
     load("CID2_MiSSE_check.Rsave")
     
     fix.type <- NULL
@@ -542,7 +544,6 @@ test_that("MiSSE_test3", {
 
 
 test_that("BiSSE_fHiSSE_test1", {
-
     skip_on_cran()
 
     library(diversitree)
@@ -574,7 +575,6 @@ test_that("BiSSE_fHiSSE_test1", {
 
 
 test_that("BiSSE_fHiSSE_test2", {
-
     skip_on_cran()
 
     library(diversitree)
@@ -1160,7 +1160,7 @@ test_that("MuHiSSE_fossil_test1", {
     ## Trait independent model should be loglik_tree + loglik_character ##
 
     #Part 1: MiSSE loglik:
-    dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
+    dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
@@ -1197,7 +1197,7 @@ test_that("MuHiSSE_fossil_test1", {
     cache$psi <- 0
     muhisse.full <- hisse:::DownPassMuHisse(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL)
     
-    dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.extant, f=1, hidden.states=1, includes.fossils=FALSE)
+    dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.extant, f=1, hidden.states=1)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.0
@@ -1278,7 +1278,7 @@ test_that("MuHiSSE_fossil_test2", {
     ## Trait independent model should be loglik_tree + loglik_character ##
     
     #Part 1: MiSSE loglik:
-    dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.fossils=TRUE)
+    dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
@@ -1390,7 +1390,7 @@ test_that("interval_branch_test1", {
     comparison <- identical(round(unname(strat.range.calc[27]),4), round(stad.1,4))
     
     expect_true(comparison)
-}
+})
 
 
 test_that("interval_branch_test2", {
@@ -1433,7 +1433,7 @@ test_that("interval_branch_test2", {
     comparison <- identical(round(unname(strat.intervene.calc[27]),4), round(stad.2,4))
     
     expect_true(comparison)
-}
+})
 
 
 test_that("MiSSE_interval_test1", {
@@ -1485,7 +1485,7 @@ test_that("MiSSE_interval_test1", {
     comparison <- identical(round(logLikLogSpace,4), round(MiSSE.logL,4))
     
     expect_true(comparison)
-}
+})
 
 
 test_that("MiSSE_interval_test2", {
@@ -1535,7 +1535,7 @@ test_that("MiSSE_interval_test2", {
     comparison <- identical(round(logLikLogSpace,4), round(MiSSE.logL,4))
 
     expect_true(comparison)
-}
+})
 
 
 test_that("MiSSE_interval_test3", {
@@ -1587,7 +1587,7 @@ test_that("MiSSE_interval_test3", {
     comparison <- identical(round(logLikLogSpace,4), round(MiSSE.logL,4))
     
     expect_true(comparison)
-}
+})
 
 
 test_that("MiSSE_interval_test4", {
@@ -1640,7 +1640,7 @@ test_that("MiSSE_interval_test4", {
     comparison <- identical(round(logLikLogSpace,4), round(MiSSE.logL,4))
     
     expect_true(comparison)
-}
+})
 
 
 test_that("MiSSE_interval_test5", {
@@ -1693,5 +1693,5 @@ test_that("MiSSE_interval_test5", {
     comparison <- identical(round(-start.points[4],3), round(MiSSE.logL,3))
 
     expect_true(comparison)
-}
+})
 
