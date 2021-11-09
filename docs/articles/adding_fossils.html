@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.5</span>
       </span>
     </div>
 
@@ -225,7 +225,7 @@
 <a href="#plotting-simulated-data-sets" class="anchor"></a>Plotting simulated data sets</h2>
 <p>Plotting functions of the reconstructions work as they did before and do not require any additional arguments. However, we have added functionality for overlaying the fossil set and stratigraphic ranges obtained from our simulation functions. For example, here I will plot the full simulated tree from above, and then add the <em>m</em> and <em>k</em> fossils as points onto of the phylogeny:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/ladderize.html">ladderize</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, show.tip.label<span class="op">=</span><span class="cn">FALSE</span>, edge.width<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu">ladderize</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, show.tip.label<span class="op">=</span><span class="cn">FALSE</span>, edge.width<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span>
 <span class="co">### Split the table into m and k for the points ###</span>
 <span class="va">extinct.samples</span> <span class="op">&lt;-</span> <span class="va">f</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">f</span><span class="op">$</span><span class="va">fossiltype_long</span><span class="op">==</span><span class="st">"extinct_terminal"</span> <span class="op">|</span> 
             <span class="va">f</span><span class="op">$</span><span class="va">fossiltype_long</span><span class="op">==</span><span class="st">"extinct_internal"</span><span class="op">)</span>,<span class="op">]</span>
@@ -234,17 +234,17 @@
 <span class="va">k.samples</span> <span class="op">&lt;-</span> <span class="va">f</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">f</span><span class="op">$</span><span class="va">fossiltype_long</span> <span class="op">==</span> <span class="st">"surviving_terminal"</span> <span class="op">|</span> 
             <span class="va">f</span><span class="op">$</span><span class="va">fossiltype_long</span> <span class="op">==</span> <span class="st">"surviving_internal"</span><span class="op">)</span>,<span class="op">]</span>
 <span class="va">k.samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">k.samples</span>, <span class="va">k.samples.tmp</span><span class="op">)</span>
-<span class="fu"><a href="../reference/AddFossilPoints.html">AddFossilPoints</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/ladderize.html">ladderize</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">extinct.samples</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, 
+<span class="fu"><a href="../reference/AddFossilPoints.html">AddFossilPoints</a></span><span class="op">(</span><span class="fu">ladderize</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">extinct.samples</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, 
             col<span class="op">=</span><span class="st">"#0D79F2"</span><span class="op">)</span>
-<span class="fu"><a href="../reference/AddFossilPoints.html">AddFossilPoints</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/ladderize.html">ladderize</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">k.samples</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, col<span class="op">=</span><span class="st">"#F25E0D"</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="../reference/AddFossilPoints.html">AddFossilPoints</a></span><span class="op">(</span><span class="fu">ladderize</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">k.samples</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, col<span class="op">=</span><span class="st">"#F25E0D"</span><span class="op">)</span></code></pre></div>
 <p><img src="adding_fossils_files/figure-html/unnamed-chunk-16-1.png" width="700"></p>
 <p>We can also overaly the lines designating stratigraphic ranges:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/ladderize.html">ladderize</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, show.tip.label<span class="op">=</span><span class="cn">FALSE</span>, edge.width<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span>
-<span class="fu"><a href="../reference/AddFossilPoints.html">AddFossilPoints</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/ladderize.html">ladderize</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">extinct.samples</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, 
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="fu">ladderize</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, show.tip.label<span class="op">=</span><span class="cn">FALSE</span>, edge.width<span class="op">=</span><span class="fl">0.75</span><span class="op">)</span>
+<span class="fu"><a href="../reference/AddFossilPoints.html">AddFossilPoints</a></span><span class="op">(</span><span class="fu">ladderize</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">extinct.samples</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, 
             col<span class="op">=</span><span class="st">"#0D79F2"</span><span class="op">)</span>
-<span class="fu"><a href="../reference/AddFossilPoints.html">AddFossilPoints</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/ladderize.html">ladderize</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">k.samples</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, col<span class="op">=</span><span class="st">"#F25E0D"</span><span class="op">)</span>
-<span class="fu"><a href="../reference/AddStratIntervals.html">AddStratIntervals</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/ladderize.html">ladderize</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">f</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, col<span class="op">=</span><span class="st">"purple"</span>, lwd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
+<span class="fu"><a href="../reference/AddFossilPoints.html">AddFossilPoints</a></span><span class="op">(</span><span class="fu">ladderize</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">k.samples</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, col<span class="op">=</span><span class="st">"#F25E0D"</span><span class="op">)</span>
+<span class="fu"><a href="../reference/AddStratIntervals.html">AddStratIntervals</a></span><span class="op">(</span><span class="fu">ladderize</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, f<span class="op">=</span><span class="va">f</span>, pch<span class="op">=</span><span class="fl">19</span>, cex<span class="op">=</span><span class="fl">0.8</span>, col<span class="op">=</span><span class="st">"purple"</span>, lwd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
 <p><img src="adding_fossils_files/figure-html/unnamed-chunk-17-1.png" width="700"></p>
 </div>
 <div id="checking-the-misse-hisse-and-muhisse-likelihoods" class="section level2">
@@ -265,7 +265,7 @@
 <span class="va">hidden.states</span><span class="op">=</span><span class="cn">FALSE</span>
 <span class="va">phy.k</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">AddKNodes</span><span class="op">(</span><span class="va">phy</span>, <span class="va">k.samples</span><span class="op">)</span>
 <span class="va">fix.type</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">GetKSampleMRCA</span><span class="op">(</span><span class="va">phy.k</span>, <span class="va">k.samples</span><span class="op">)</span>
-<span class="va">nb.tip</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html">Ntip</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>
+<span class="va">nb.tip</span> <span class="op">&lt;-</span> <span class="fu">Ntip</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>
 <span class="va">nb.node</span> <span class="op">&lt;-</span> <span class="va">phy.k</span><span class="op">$</span><span class="va">Nnode</span>
 <span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">FindGenerations</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>
     
@@ -286,7 +286,7 @@
 <span class="va">model.vec</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span> <span class="op">=</span> <span class="va">pars.bisse</span>
 <span class="va">phy</span><span class="op">$</span><span class="va">node.label</span> <span class="op">=</span> <span class="cn">NULL</span>
 <span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">ParametersToPassfHiSSE</span><span class="op">(</span><span class="va">model.vec</span>, hidden.states<span class="op">=</span><span class="va">hidden.states</span>, 
-            nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html">Ntip</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html">Nnode</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, bad.likelihood<span class="op">=</span><span class="op">-</span><span class="fl">300</span>, 
+            nb.tip<span class="op">=</span><span class="fu">Ntip</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu">Nnode</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, bad.likelihood<span class="op">=</span><span class="op">-</span><span class="fl">300</span>, 
             f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span>
 <span class="va">cache</span><span class="op">$</span><span class="va">psi</span> <span class="op">&lt;-</span> <span class="fl">0.01</span>
 <span class="va">hisse.full</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">DownPassHiSSE</span><span class="op">(</span><span class="va">dat.tab</span>, <span class="va">gen</span>, <span class="va">cache</span>, root.type<span class="op">=</span><span class="st">"madfitz"</span>, 
@@ -310,19 +310,21 @@
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">corHMM</span><span class="op">)</span>
 <span class="va">char.logL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/corHMM/man/corHMM.html">corHMM</a></span><span class="op">(</span><span class="va">phy.k</span>, <span class="va">data</span>, rate.cat<span class="op">=</span><span class="fl">1</span>, model <span class="op">=</span> <span class="st">"ER"</span>, node.states <span class="op">=</span> <span class="st">"none"</span>, 
            fixed.nodes<span class="op">=</span><span class="cn">FALSE</span>, p<span class="op">=</span><span class="fl">0.01</span>, root.p<span class="op">=</span><span class="st">"maddfitz"</span><span class="op">)</span></code></pre></div>
-<pre><code>## You specified 'fixed.nodes=FALSE' but included a phy object with node labels. These node labels have been removed.
-## State distribution in data:
+<pre><code>## You specified 'fixed.nodes=FALSE' but included a phy object with node labels. These node labels have been removed.</code></pre>
+<pre><code>## Warning in corHMM(phy.k, data, rate.cat = 1, model = "ER", node.states =
+## "none", : Branch lengths of 0 detected. Adding 1e-5 to these branches.</code></pre>
+<pre><code>## State distribution in data:
 ## States:  1   2   
 ## Counts:  2   17  
 ## Calculating likelihood from a set of fixed parameters</code></pre>
 <p>We can compare the likelihoods obtained from <code><a href="../reference/hisse.html">hisse()</a></code> against the sum of the tree <em>and</em> the character:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">tot.logL</span> <span class="op">&lt;-</span> <span class="va">char.logL</span><span class="op">$</span><span class="va">loglik</span> <span class="op">+</span> <span class="va">MiSSE.logL</span>
 <span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/identical.html">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">hisse.full</span>,<span class="fl">3</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">tot.logL</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>
 <span class="va">comparison</span> </code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 <p>This confirms that the calculations are correct. I will show the same using <code><a href="../reference/MuHiSSE.html">MuHiSSE()</a></code>:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://www.zoology.ubc.ca/prog/diversitree/">diversitree</a></span><span class="op">)</span>
 <span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">.1</span>,  <span class="fl">.15</span>,  <span class="fl">.2</span>, <span class="fl">.1</span>,
          <span class="fl">.03</span>, <span class="fl">.045</span>, <span class="fl">.06</span>, <span class="fl">0.03</span>,
@@ -340,7 +342,7 @@
     
 <span class="va">phy.k</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">AddKNodes</span><span class="op">(</span><span class="va">phy</span>, <span class="va">k.samples</span><span class="op">)</span>
 <span class="va">fix.type</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">GetKSampleMRCA</span><span class="op">(</span><span class="va">phy.k</span>, <span class="va">k.samples</span><span class="op">)</span>
-<span class="va">nb.tip</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html">Ntip</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>
+<span class="va">nb.tip</span> <span class="op">&lt;-</span> <span class="fu">Ntip</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>
 <span class="va">nb.node</span> <span class="op">&lt;-</span> <span class="va">phy.k</span><span class="op">$</span><span class="va">Nnode</span>
 <span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">FindGenerations</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>
 
@@ -349,7 +351,7 @@
 row.names<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span><span class="op">)</span><span class="op">)</span>
 <span class="va">states</span> <span class="op">&lt;-</span> <span class="va">states</span><span class="op">[</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.label</span>,<span class="op">]</span>
 <span class="va">states.trans</span> <span class="op">&lt;-</span> <span class="va">states</span>
-<span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html">Ntip</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
+<span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu">Ntip</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
     <span class="kw">if</span><span class="op">(</span><span class="va">states</span><span class="op">[</span><span class="va">i</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">{</span>
         <span class="va">states.trans</span><span class="op">[</span><span class="va">i</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">=</span> <span class="fl">0</span>
         <span class="va">states.trans</span><span class="op">[</span><span class="va">i</span>,<span class="fl">2</span><span class="op">]</span> <span class="op">=</span> <span class="fl">0</span>
@@ -379,7 +381,7 @@ row.names<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/ba
 <span class="va">model.vec</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">384</span><span class="op">)</span>
 <span class="va">model.vec</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">]</span> <span class="op">=</span> <span class="va">pars.muhisse</span>
 <span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">ParametersToPassMuHiSSE</span><span class="op">(</span>model.vec<span class="op">=</span><span class="va">model.vec</span>, hidden.states<span class="op">=</span><span class="cn">FALSE</span>, 
-            nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html">Ntip</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html">Nnode</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">500</span><span class="op">)</span>, 
+            nb.tip<span class="op">=</span><span class="fu">Ntip</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu">Nnode</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">500</span><span class="op">)</span>, 
             f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span>
 <span class="va">cache</span><span class="op">$</span><span class="va">psi</span> <span class="op">&lt;-</span> <span class="fl">0.01</span>
 <span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">FindGenerations</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>
@@ -411,12 +413,14 @@ row.names<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/ba
 <span class="co">#Part 2: corHMM loglik:</span>
 <span class="va">char.logL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/corHMM/man/corHMM.html">corHMM</a></span><span class="op">(</span><span class="va">phy.k</span>, <span class="va">data</span>, rate.cat<span class="op">=</span><span class="fl">1</span>, model <span class="op">=</span> <span class="st">"ER"</span>, node.states <span class="op">=</span> <span class="st">"none"</span>, 
             fixed.nodes<span class="op">=</span><span class="cn">FALSE</span>, p<span class="op">=</span><span class="fl">0.05</span>, root.p<span class="op">=</span><span class="st">"maddfitz"</span><span class="op">)</span></code></pre></div>
-<pre><code>## You specified 'fixed.nodes=FALSE' but included a phy object with node labels. These node labels have been removed.
-## State distribution in data:
+<pre><code>## You specified 'fixed.nodes=FALSE' but included a phy object with node labels. These node labels have been removed.</code></pre>
+<pre><code>## Warning in corHMM(phy.k, data, rate.cat = 1, model = "ER", node.states =
+## "none", : Branch lengths of 0 detected. Adding 1e-5 to these branches.</code></pre>
+<pre><code>## State distribution in data:
 ## States:  1   2   3   4   
 ## Counts:  12  21  6   3   
 ## Calculating likelihood from a set of fixed parameters</code></pre>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">tot.logL</span> <span class="op">&lt;-</span> <span class="va">char.logL</span><span class="op">$</span><span class="va">loglik</span> <span class="op">+</span> <span class="va">MiSSE.logL</span>
     
 <span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/identical.html">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">muhisse.full</span>,<span class="fl">3</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">tot.logL</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span>
