@@ -441,7 +441,6 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         final.combos$deltaAICc[all.examined] <- deltaAICc
         final.combos$elapsedMinutes[all.examined] <- unlist(lapply(misse.list, "[[", "elapsed.minutes"))
 		final.combos$runorder[focal.models] <- batch_index
-		save(final.combos, file="~/Downloads/final.combos.Rsave")
         
         data.for.fit <- data.frame(nparam=(final.combos$eps+final.combos$turnover)[all.examined], logmin=log(final.combos$elapsedMinutes[all.examined]))
         data.for.prediction <- data.frame(nparam=(final.combos$eps+final.combos$turnover))
