@@ -73,7 +73,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">2.1.5</span>
       </span>
     </div>
 
@@ -314,77 +314,6 @@ Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.</p>
 
     <p>Brian C. O'Meara</p>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># \donttest{</span>
-  <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://ape-package.ird.fr/'>ape</a></span><span class='op'>)</span>
-  <span class='va'>phy</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/pkg/ape/man/rtree.html'>rcoal</a></span><span class='op'>(</span><span class='fl'>50</span><span class='op'>)</span>
-  <span class='va'>potential.combos</span> <span class='op'>&lt;-</span> <span class='fu'><a href='generateMiSSEGreedyCombinations.html'>generateMiSSEGreedyCombinations</a></span><span class='op'>(</span>max.param<span class='op'>=</span><span class='fl'>4</span>, vary.both<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
-
-  <span class='co'>#run on one core:</span>
-  <span class='va'>result</span> <span class='op'>&lt;-</span> <span class='fu'>MiSSEGreedy</span><span class='op'>(</span><span class='va'>phy</span>, possible.combos<span class='op'>=</span><span class='va'>potential.combos</span>, n.cores<span class='op'>=</span><span class='fl'>1</span>, f<span class='op'>=</span><span class='fl'>1</span><span class='op'>)</span> 
-</div><div class='output co'>#&gt; Starting at 2021-11-06 16:37:46
-#&gt;  running on 1 cores.
-#&gt;   turnover eps fixed.eps
-#&gt; 1        1   1        NA
-#&gt; 2        3   1        NA
-#&gt; 3        2   1        NA
-#&gt; 4        1   2        NA
-#&gt; 5        2   2        NA
-#&gt; 6        1   3        NA
-#&gt; 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; Initializing... 
-#&gt; Finished. Beginning simulated annealing... 
-#&gt; Finished. Refining using subplex routine... 
-#&gt; Finished. Summarizing results... 
-#&gt; 
-#&gt; Results so far
-#&gt;   turnover eps fixed.eps runorder deltaAICc    AICc predictedAICc   lnL     AIC
-#&gt; 1        1   1        NA        1      0.00 -121.90            NA 63.08 -122.15
-#&gt; 2        3   1        NA        1      3.80 -118.10            NA 64.73 -119.46
-#&gt; 3        2   1        NA        1      1.44 -120.46            NA 64.68 -121.35
-#&gt; 4        1   2        NA        1      2.07 -119.83            NA 64.36 -120.72
-#&gt; 5        2   2        NA        1      2.29 -119.61            NA 65.48 -120.97
-#&gt; 6        1   3        NA        1      3.77 -118.13            NA 64.75 -119.50
-#&gt;   elapsedMinutes predictedMinutes
-#&gt; 1           8.74             9.00
-#&gt; 2           9.62            10.11
-#&gt; 3          10.31             9.54
-#&gt; 4           9.39             9.54
-#&gt; 5          10.22            10.11
-#&gt; 6          10.20            10.11</div><div class='input'>
-  <span class='co'>#run on all available cores: (commented out because CRAN does not allow this in examples)</span>
-  <span class='co'>#result &lt;- MiSSEGreedy(phy, potential.combos, n.cores=parallel::detectCores(), f=1)</span>
-
-
-
-  <span class='va'>AICc</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/unlist.html'>unlist</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>result</span>, <span class='st'>"[["</span>, <span class='st'>"AICc"</span><span class='op'>)</span><span class='op'>)</span>
-  <span class='va'>deltaAICc</span> <span class='op'>&lt;-</span> <span class='va'>AICc</span><span class='op'>-</span><span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>min</a></span><span class='op'>(</span><span class='va'>AICc</span><span class='op'>)</span>
-  <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>result</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 6</div><div class='input'>
-  <span class='co'># Yes, [[ is a function you can lapply, and the name of elements within each list</span>
-  <span class='co'># object can be arguments. Life is awesome.</span>
-<span class='co'># }</span>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

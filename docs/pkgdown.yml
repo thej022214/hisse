@@ -1,4 +1,4 @@
-pandoc: '2.12'
+pandoc: 2.14.2
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
@@ -10,5 +10,5 @@ articles:
   hisse-fisse-type1-vignette: hisse-fisse-type1-vignette.html
   hisse-new-vignette: hisse-new-vignette.html
   hisse-vignette: hisse-vignette.html
-last_built: 2021-11-06T20:37Z
+last_built: 2021-11-09T19:50Z
 
