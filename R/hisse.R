@@ -339,12 +339,14 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
             out = nloptr(x0=ip, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+            sann.counts <- NULL
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
             out = subplex(ip, fn=DevOptimizefHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+            sann.counts <- NULL
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
             loglik = -out$value
