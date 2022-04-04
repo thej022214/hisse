@@ -41,8 +41,6 @@ SupportRegionMiSSE <- function(misse.obj, n.points=1000, scale.int=0.1, desired.
     interval.results.final <- cbind(interval.results[,1], interval.results.final)
     interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
     if(class(interval.results.in[1])=="numeric"){
-        stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
-    }else{
         ci.interval = apply(interval.results.in, 2, quantile)
         colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
         obj = NULL
@@ -51,6 +49,8 @@ SupportRegionMiSSE <- function(misse.obj, n.points=1000, scale.int=0.1, desired.
         obj$all.points = interval.results.final
         class(obj) = "misse.support"
         return(obj)
+    }else{
+        stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
     }
 }
 
