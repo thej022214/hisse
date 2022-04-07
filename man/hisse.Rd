@@ -8,7 +8,7 @@ on a phylogeny and character distribution.}
 hisse(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), 
 hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, 
-strat.intervals=NULL, sann=TRUE, sann.its=1000, bounded.search=TRUE, 
+strat.intervals=NULL, sann=TRUE, sann.its=5000, bounded.search=TRUE, 
 max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3,
 trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1)
 }       

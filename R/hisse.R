@@ -10,6 +10,11 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
+    if(!is.ultrametric(phy) & includes.fossils == FALSE){
+        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
+        phy <- force.ultrametric(phy)
+    }
+    
     if(!is.null(root.p)) {
         if(hidden.states ==TRUE){
             if( length( root.p ) == 2 ){

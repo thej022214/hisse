@@ -36,6 +36,11 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         f[which(f==0)] <- 1
     }
     
+    if(!is.ultrametric(phy) & includes.fossils == FALSE){
+        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
+        phy <- force.ultrametric(phy)
+    }
+    
     if(sann == FALSE & is.null(starting.vals)){
         warning("You have chosen to rely on the internal starting points that generally work but does not guarantee finding the MLE.")
     }
