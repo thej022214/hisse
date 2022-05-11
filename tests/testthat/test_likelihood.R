@@ -1164,7 +1164,7 @@ test_that("MuHiSSE_fossil_test1", {
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
-    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    edge_details <- hisse:::GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
     fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy.k)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
@@ -1201,7 +1201,7 @@ test_that("MuHiSSE_fossil_test1", {
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.0
-    edge_details <- GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    edge_details <- hisse:::GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
     fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy.extant)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=NULL, node=NULL, fix.type=NULL)
