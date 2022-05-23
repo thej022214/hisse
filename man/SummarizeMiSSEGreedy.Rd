@@ -3,9 +3,7 @@
 \title{Summarize Results of the Greedy Algorithm}
 \description{This provides an overview of all the examined models, including (optionally) a reconstruction of the diversification parameters across the models.}
 \usage{
-SummarizeMiSSEGreedy(greedy.result, min.weight=0.01, n.cores=1, recon=TRUE) {
-
-}
+SummarizeMiSSEGreedy(greedy.result, min.weight=0.01, n.cores=1, recon=TRUE) }
 \arguments{
 \item{greedy.result}{a list of misse.fit objects, returned from MiSSEGreedy or just a list of misse results more generally}
 \item{min.weight}{what proportion of the AICc weight a model must have to be included in the model average}

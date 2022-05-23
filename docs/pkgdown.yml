@@ -1,5 +1,5 @@
-pandoc: 2.14.2
-pkgdown: 1.6.1
+pandoc: 2.16.2
+pkgdown: 2.0.3
 pkgdown_sha: ~
 articles:
   Clade-specific-sampling: Clade-specific-sampling.html
@@ -10,5 +10,5 @@ articles:
   hisse-fisse-type1-vignette: hisse-fisse-type1-vignette.html
   hisse-new-vignette: hisse-new-vignette.html
   hisse-vignette: hisse-vignette.html
-last_built: 2021-11-09T19:50Z
+last_built: 2022-05-23T16:30Z
 
