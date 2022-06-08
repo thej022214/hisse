@@ -90,7 +90,8 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Running a Multistate HiSSE model</h1>
-                        <h4 data-toc-skip class="author">Jeremy M. Beaulieu</h4>
+                        <h4 data-toc-skip class="author">Jeremy M.
+Beaulieu</h4>
             
       
       
@@ -103,10 +104,57 @@
 <div class="section level2">
 <h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
 </h2>
-<p>This tutorial gives some basic information on how to set up and execute parameter estimates when using MuHiSSE (Nakov et al., 2018).</p>
-<p>In Nakov et al. (2018), we extended the HiSSE and CID model framework to handle a four-state case, representing correlated evolution between two binary characters. Note that a mulitstate version of HiSSE is available in RevBayes (based on its manual and conversations with Sebastian Höhna), in <code>SecSSE</code> (Herrera-Alsina et al., 2018), and as part of the model set described in Caetano et al. (2018). Our character state combinations were comprised of marine and planktonic (MP, or state combination <span class="math inline">\(00\)</span>), marine and benthic (MB, or <span class="math inline">\(01\)</span>), freshwater and planktonic (FP, or <span class="math inline">\(10\)</span>), and freshwater and benthic (FB, or <span class="math inline">\(11\)</span>). As with <code>hisse</code>, rather than optimizing <span class="math inline">\(\lambda_i\)</span> and <span class="math inline">\(\mu_i\)</span> separately, <code>MuHiSSE</code> optimizes transformations of these variables. Again, we let <span class="math inline">\(\tau_i = \lambda_i+\mu_i\)</span> define “net turnover”, and we let <span class="math inline">\(\epsilon_i = \mu_i / \lambda_i\)</span> define the “extinction fraction”. This reparameterization alleviates problems associated with over-fitting when <span class="math inline">\(\lambda_i\)</span> and <span class="math inline">\(\mu_i\)</span> are highly correlated, but both matter in explaining the diversity pattern (see discussion of this issue in Beaulieu and O’Meara 2016). The number of free parameters in the model for both net turnover and extinction fraction are specified as index vectors provided to the function call. Each vector contains four entries that correspond to rates associated with the observed states (0 or 1) and the hidden states (A or B). They are always ordered as follows for a given hidden state, <span class="math inline">\(i\)</span>: <span class="math inline">\(00_i\)</span>, <span class="math inline">\(01_i\)</span>, <span class="math inline">\(10_i\)</span>, <span class="math inline">\(11_i\)</span>.</p>
-<p>The set of models included range from (1) the “trivial null” model that assume no variation in diversification, to (2) a multistate speciation and extinction model (MuSSE; FitzJohn 2012) that linked diversification rates to the four character states, but assumed no variation within regimes, to (3) multistate-dependent speciation and extinction models with hidden traits (MuHiSSE) and (4) a set of multistate character-independent models (MuCID) with increasing numbers of hidden traits (MuCID2 through MuCID8). The most complex MuCID8 model has, at it’s most complex, eight parameters for turnover and eight parameters for extinction fraction, matching the complexity of the MuHiSSE model, but with diversification parameters unlinked to the observed character states. For any model, we allow the transition rates between alternative state combinations to differ (e.g., <span class="math inline">\(q_{MB\rightarrow MP} \ne q_{MP\rightarrow MB}\)</span>), or constrained to be equal (e.g., <span class="math inline">\(q_{MB\rightarrow MP} = q_{MP\rightarrow MB}\)</span>). In the analyses presented in Nakov et al. (2018), we disallowed dual transitions (e.g., <span class="math inline">\(q_{MB\rightarrow FP} = 0\)</span>), though this need not always be the case.</p>
-<p>Below I will demonstrate how to set up various models, and how the likelihoods compare against those from <code>diversitree</code> whenever possible. In the end, I will also show how a three-state model can be set up from MuHiSSE and compare the likelihoods against the three-state MuSSE implemented in GeoHiSSE. However, before getting started, be sure to load the <code>hisse</code> and <code>diversitree</code> packages:</p>
+<p>This tutorial gives some basic information on how to set up and
+execute parameter estimates when using MuHiSSE (Nakov et al., 2018).</p>
+<p>In Nakov et al. (2018), we extended the HiSSE and CID model framework
+to handle a four-state case, representing correlated evolution between
+two binary characters. Note that a mulitstate version of HiSSE is
+available in RevBayes (based on its manual and conversations with
+Sebastian Höhna), in <code>SecSSE</code> (Herrera-Alsina et al., 2018),
+and as part of the model set described in Caetano et al. (2018). Our
+character state combinations were comprised of marine and planktonic
+(MP, or state combination <span class="math inline">\(00\)</span>),
+marine and benthic (MB, or <span class="math inline">\(01\)</span>),
+freshwater and planktonic (FP, or <span class="math inline">\(10\)</span>), and freshwater and benthic (FB, or
+<span class="math inline">\(11\)</span>). As with <code>hisse</code>,
+rather than optimizing <span class="math inline">\(\lambda_i\)</span>
+and <span class="math inline">\(\mu_i\)</span> separately,
+<code>MuHiSSE</code> optimizes transformations of these variables.
+Again, we let <span class="math inline">\(\tau_i =
+\lambda_i+\mu_i\)</span> define “net turnover”, and we let <span class="math inline">\(\epsilon_i = \mu_i / \lambda_i\)</span> define the
+“extinction fraction”. This reparameterization alleviates problems
+associated with over-fitting when <span class="math inline">\(\lambda_i\)</span> and <span class="math inline">\(\mu_i\)</span> are highly correlated, but both
+matter in explaining the diversity pattern (see discussion of this issue
+in Beaulieu and O’Meara 2016). The number of free parameters in the
+model for both net turnover and extinction fraction are specified as
+index vectors provided to the function call. Each vector contains four
+entries that correspond to rates associated with the observed states (0
+or 1) and the hidden states (A or B). They are always ordered as follows
+for a given hidden state, <span class="math inline">\(i\)</span>: <span class="math inline">\(00_i\)</span>, <span class="math inline">\(01_i\)</span>, <span class="math inline">\(10_i\)</span>, <span class="math inline">\(11_i\)</span>.</p>
+<p>The set of models included range from (1) the “trivial null” model
+that assume no variation in diversification, to (2) a multistate
+speciation and extinction model (MuSSE; FitzJohn 2012) that linked
+diversification rates to the four character states, but assumed no
+variation within regimes, to (3) multistate-dependent speciation and
+extinction models with hidden traits (MuHiSSE) and (4) a set of
+multistate character-independent models (MuCID) with increasing numbers
+of hidden traits (MuCID2 through MuCID8). The most complex MuCID8 model
+has, at it’s most complex, eight parameters for turnover and eight
+parameters for extinction fraction, matching the complexity of the
+MuHiSSE model, but with diversification parameters unlinked to the
+observed character states. For any model, we allow the transition rates
+between alternative state combinations to differ (e.g., <span class="math inline">\(q_{MB\rightarrow MP} \ne q_{MP\rightarrow
+MB}\)</span>), or constrained to be equal (e.g., <span class="math inline">\(q_{MB\rightarrow MP} = q_{MP\rightarrow
+MB}\)</span>). In the analyses presented in Nakov et al. (2018), we
+disallowed dual transitions (e.g., <span class="math inline">\(q_{MB\rightarrow FP} = 0\)</span>), though this
+need not always be the case.</p>
+<p>Below I will demonstrate how to set up various models, and how the
+likelihoods compare against those from <code>diversitree</code> whenever
+possible. In the end, I will also show how a three-state model can be
+set up from MuHiSSE and compare the likelihoods against the three-state
+MuSSE implemented in GeoHiSSE. However, before getting started, be sure
+to load the <code>hisse</code> and <code>diversitree</code>
+packages:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hisse</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## Loading required package: ape</span></code></pre>
@@ -120,7 +168,8 @@
 <div class="section level2">
 <h2 id="simulating-a-practice-data-set">Simulating a practice data set<a class="anchor" aria-label="anchor" href="#simulating-a-practice-data-set"></a>
 </h2>
-<p>Here I will simulate a simple four-state model using <code>diversitree</code>.</p>
+<p>Here I will simulate a simple four-state model using
+<code>diversitree</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>,  <span class="fl">.15</span>,  <span class="fl">.2</span>, <span class="fl">.1</span>, <span class="co"># lambda 1, 2, 3, 4</span>
 <span class="fl">.03</span>, <span class="fl">.045</span>, <span class="fl">.06</span>, <span class="fl">0.03</span>, <span class="co"># mu 1, 2, 3, 4</span>
@@ -131,14 +180,19 @@
 <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span>
 <span class="va">phy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/diversitree/man/simulate.html" class="external-link">tree.musse</a></span><span class="op">(</span><span class="va">pars</span>, <span class="fl">30</span>, x0<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
 <span class="va">states</span> <span class="op">&lt;-</span> <span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span></code></pre></div>
-<p>Now let’s get the likelihood using the same parameters we used to simulate the data:</p>
+<p>Now let’s get the likelihood using the same parameters we used to
+simulate the data:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">lik</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/diversitree/man/make.musse.html" class="external-link">make.musse</a></span><span class="op">(</span><span class="va">phy</span>, <span class="va">states</span>, <span class="fl">4</span><span class="op">)</span>
 <span class="co">#lik &lt;- make.musse(phy, states, 3)</span>
 <span class="va">diversitree.free</span> <span class="op">=</span> <span class="fu">lik</span><span class="op">(</span><span class="va">pars</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">diversitree.free</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] -102.4265</span></code></pre>
-<p>Now we can use machinery inside MuHiSSE to demonstrate that we generate the same likelihood. Unfortunately, it takes a little bit of code to get everything into the right format to run properly. This is what is shown below. Note, too, that I am transforming <span class="math inline">\(\lambda_i\)</span> and <span class="math inline">\(\mu_i\)</span> into turnover and extinction fraction:</p>
+<p>Now we can use machinery inside MuHiSSE to demonstrate that we
+generate the same likelihood. Unfortunately, it takes a little bit of
+code to get everything into the right format to run properly. This is
+what is shown below. Note, too, that I am transforming <span class="math inline">\(\lambda_i\)</span> and <span class="math inline">\(\mu_i\)</span> into turnover and extinction
+fraction:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">states</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span>, <span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span>, 
                      row.names<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span><span class="op">)</span><span class="op">)</span>
@@ -180,7 +234,10 @@
 <span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hisse.constrained</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">diversitree.free</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] TRUE</span></code></pre>
-<p>The implementation is correct. However, in the above case, we did not actually use any hidden states. We can also show that the likelihoods are identical to MuSSE so as long as the dynamics are the same among all included hidden states. Here we will just use hidden states A and B:</p>
+<p>The implementation is correct. However, in the above case, we did not
+actually use any hidden states. We can also show that the likelihoods
+are identical to MuSSE so as long as the dynamics are the same among all
+included hidden states. Here we will just use hidden states A and B:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pars.hisse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">pars</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">+</span><span class="va">pars</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">+</span><span class="va">pars</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">+</span><span class="va">pars</span><span class="op">[</span><span class="fl">7</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span><span class="op">+</span><span class="va">pars</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span>, 
                 <span class="va">pars</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">/</span><span class="va">pars</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span><span class="op">/</span><span class="va">pars</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">7</span><span class="op">]</span><span class="op">/</span><span class="va">pars</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span><span class="op">/</span><span class="va">pars</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span>, 
@@ -202,17 +259,37 @@
 <span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hisse.constrained</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">diversitree.free</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] TRUE</span></code></pre>
-<p>Again, the likelihoods are identical and the implementation is correct. Note that the likelihood can also be calculated using the root likelihood summary procedure described by Herrera-Alsina et al. (2018). This is specified by doing <code>root.type="herr_als"</code>. Note, however, that in our testing the likelihood differences are subtle, and in simulation the parameter estimates are nearly indistinguishable from the original root summary implementation of FitzJohn et al. (2009).</p>
+<p>Again, the likelihoods are identical and the implementation is
+correct. Note that the likelihood can also be calculated using the root
+likelihood summary procedure described by Herrera-Alsina et al. (2018).
+This is specified by doing <code>root.type="herr_als"</code>. Note,
+however, that in our testing the likelihood differences are subtle, and
+in simulation the parameter estimates are nearly indistinguishable from
+the original root summary implementation of FitzJohn et al. (2009).</p>
 </div>
 <div class="section level2">
 <h2 id="setting-up-a-musse-model-using-muhisse">Setting up a MuSSE model using MuHiSSE<a class="anchor" aria-label="anchor" href="#setting-up-a-musse-model-using-muhisse"></a>
 </h2>
-<p>As mentioned above, the number of free parameters in the model for both net turnover and extinction fraction are specified as index vectors provided to the function call. Each vector contains four entries that correspond to rates associated with the observed states (0 or 1) and the hidden states (A or B). They are always ordered as follows for a given hidden state, <span class="math inline">\(i\)</span>: <span class="math inline">\(00_i\)</span>, <span class="math inline">\(01_i\)</span>, <span class="math inline">\(10_i\)</span>, <span class="math inline">\(11_i\)</span>. However, in this case we do not want any hidden states. But first let’s set up the “dull null” – i.e., turnover and extinction fraction are the same for all observed state combinations. Note the “f” represents the sampling fraction for each observed state combination, which is a vector ordered in the same manner as for turnover and extinction fraction vectors:</p>
+<p>As mentioned above, the number of free parameters in the model for
+both net turnover and extinction fraction are specified as index vectors
+provided to the function call. Each vector contains four entries that
+correspond to rates associated with the observed states (0 or 1) and the
+hidden states (A or B). They are always ordered as follows for a given
+hidden state, <span class="math inline">\(i\)</span>: <span class="math inline">\(00_i\)</span>, <span class="math inline">\(01_i\)</span>, <span class="math inline">\(10_i\)</span>, <span class="math inline">\(11_i\)</span>. However, in this case we do not
+want any hidden states. But first let’s set up the “dull null” – i.e.,
+turnover and extinction fraction are the same for all observed state
+combinations. Note the “f” represents the sampling fraction for each
+observed state combination, which is a vector ordered in the same manner
+as for turnover and extinction fraction vectors:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
 <span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
 <span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></code></pre></div>
-<p>Next, we have to set up a transition matrix. There is a function provided to make this easy, and allows users to customize the matrix to fit particular hypotheses. Be sure to look at the options on this function call, for allowing diagonals and for customizing the matrix when you have character independent model.</p>
+<p>Next, we have to set up a transition matrix. There is a function
+provided to make this easy, and allows users to customize the matrix to
+fit particular hypotheses. Be sure to look at the options on this
+function call, for allowing diagonals and for customizing the matrix
+when you have character independent model.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">0</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate</span><span class="op">)</span></code></pre></div>
@@ -221,13 +298,16 @@
 <span class="co">## (01)    1   NA    0    7</span>
 <span class="co">## (10)    2    0   NA    8</span>
 <span class="co">## (11)    0    4    6   NA</span></code></pre>
-<p>Now, we can call MuHiSSE and estimate the parameters under this model using the default settings:</p>
+<p>Now, we can call MuHiSSE and estimate the parameters under this model
+using the default settings:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">states.trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.label</span>, <span class="va">states.trans</span><span class="op">)</span>
 <span class="va">dull.null</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MuHiSSE.html">MuHiSSE</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">states.trans</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, 
                      eps<span class="op">=</span><span class="va">extinction.fraction</span>, hidden.states<span class="op">=</span><span class="cn">FALSE</span>, 
                      trans.rate<span class="op">=</span><span class="va">trans.rate</span><span class="op">)</span></code></pre></div>
-<p>If you wanted to set up a true MuSSE model, where the turnover rate parameters are unlinked across the observed state combinations, you would simply do the following:</p>
+<p>If you wanted to set up a true MuSSE model, where the turnover rate
+parameters are unlinked across the observed state combinations, you
+would simply do the following:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span><span class="op">)</span>
 <span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
@@ -238,12 +318,20 @@
 <div class="section level2">
 <h2 id="setting-up-a-character-dependent-muhisse-model">Setting up a character-dependent MuHiSSE model<a class="anchor" aria-label="anchor" href="#setting-up-a-character-dependent-muhisse-model"></a>
 </h2>
-<p>Setting up a character-dependent MuHiSSE model is relatively straightforward, and relies on all the same tools as above. One important thing to bear in mind, is that again, the states are ordered by state combination within each hidden state. For example, if you want two hidden states, A and B, the order of the parameters in the model is 00A, 01A, 10A, 11A, 00B, 01B, 10B, and 11B. So, in this case, we just need to specify the free parameters we want for diversification. Here we are just going assume turnover varies across the different states:</p>
+<p>Setting up a character-dependent MuHiSSE model is relatively
+straightforward, and relies on all the same tools as above. One
+important thing to bear in mind, is that again, the states are ordered
+by state combination within each hidden state. For example, if you want
+two hidden states, A and B, the order of the parameters in the model is
+00A, 01A, 10A, 11A, 00B, 01B, 10B, and 11B. So, in this case, we just
+need to specify the free parameters we want for diversification. Here we
+are just going assume turnover varies across the different states:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span>,<span class="fl">6</span>,<span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span>
 <span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">8</span><span class="op">)</span> 
 <span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></code></pre></div>
-<p>We also have to extend the transition rate matrix. This is done by specifying the number of hidden states:</p>
+<p>We also have to extend the transition rate matrix. This is done by
+specifying the number of hidden states:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate</span><span class="op">)</span></code></pre></div>
@@ -265,12 +353,20 @@
 <div class="section level2">
 <h2 id="setting-up-a-character-independent-muhisse-model">Setting up a character-independent MuHiSSE model<a class="anchor" aria-label="anchor" href="#setting-up-a-character-independent-muhisse-model"></a>
 </h2>
-<p>Remember, for any character-independent model, the diversification rates <em>must</em> be decoupled from the observed states. So, to do this, we simply set the diversification rates to be equal for all states for a given hidden state. Below, I will show how to do this for a character-independent model with two rate shifts in the tree:</p>
+<p>Remember, for any character-independent model, the diversification
+rates <em>must</em> be decoupled from the observed states. So, to do
+this, we simply set the diversification rates to be equal for all states
+for a given hidden state. Below, I will show how to do this for a
+character-independent model with two rate shifts in the tree:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span>
 <span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">8</span><span class="op">)</span> 
 <span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></code></pre></div>
-<p>For the transition rate matrix, I included a setting called <code>make.null</code> that simply replicates the transition model across the hidden states. This way the transition rates are not impacted by changes in the diversification rate regime – that is, <span class="math inline">\(q_{MB,A\rightarrow MP,A} = q_{MB,B\rightarrow MP,B}\)</span>.</p>
+<p>For the transition rate matrix, I included a setting called
+<code>make.null</code> that simply replicates the transition model
+across the hidden states. This way the transition rates are not impacted
+by changes in the diversification rate regime – that is, <span class="math inline">\(q_{MB,A\rightarrow MP,A} = q_{MB,B\rightarrow
+MP,B}\)</span>.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">1</span>, make.null<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate</span><span class="op">)</span></code></pre></div>
@@ -283,7 +379,8 @@
 <span class="co">## (01B)    NA     9    NA    NA     1    NA     0     7</span>
 <span class="co">## (10B)    NA    NA     9    NA     2     0    NA     8</span>
 <span class="co">## (11B)    NA    NA    NA     9     0     4     6    NA</span></code></pre>
-<p>Here is a how you would set up the diversification rates for models with three hidden state all the way to eight hidden states:</p>
+<p>Here is a how you would set up the diversification rates for models
+with three hidden state all the way to eight hidden states:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">## Three hidden states</span>
 <span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span>
@@ -318,9 +415,16 @@
 <span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">7</span>, make.null<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="relationship-of-muhisse-to-a-three-state-geosse-without-cladogenetic-changes">Relationship of MuHiSSE to a three-state GeoSSE without cladogenetic changes<a class="anchor" aria-label="anchor" href="#relationship-of-muhisse-to-a-three-state-geosse-without-cladogenetic-changes"></a>
+<h2 id="relationship-of-muhisse-to-a-three-state-geosse-without-cladogenetic-changes">Relationship of MuHiSSE to a three-state GeoSSE without cladogenetic
+changes<a class="anchor" aria-label="anchor" href="#relationship-of-muhisse-to-a-three-state-geosse-without-cladogenetic-changes"></a>
 </h2>
-<p>As of June 2017, I have implemented a three-state MuSSE model as part of the model set for GeoHiSSE (see Caetano et al., 2018). If cladogenetic changes are disallowed, then the geographic model essentially reverts back to three-state MuSSE model. Below I will show how the likelihoods are equivalent between <code>diversitree</code>, <code>GeoHiSSE</code>, and <code>MuHiSSE</code> in the three-state case.</p>
+<p>As of June 2017, I have implemented a three-state MuSSE model as part
+of the model set for GeoHiSSE (see Caetano et al., 2018). If
+cladogenetic changes are disallowed, then the geographic model
+essentially reverts back to three-state MuSSE model. Below I will show
+how the likelihoods are equivalent between <code>diversitree</code>,
+<code>GeoHiSSE</code>, and <code>MuHiSSE</code> in the three-state
+case.</p>
 <p>First, let’s simulate a three-state model:</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>,  <span class="fl">.15</span>,  <span class="fl">.2</span>,  <span class="co"># lambda 1, 2, 3</span>
@@ -335,12 +439,14 @@
 <span class="va">lik.base</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/diversitree/man/constrain.html" class="external-link">constrain</a></span><span class="op">(</span><span class="va">lik</span>, <span class="va">lambda2</span> <span class="op">~</span> <span class="va">lambda1</span>, <span class="va">lambda3</span> <span class="op">~</span> <span class="va">lambda1</span>,
 <span class="va">mu2</span> <span class="op">~</span> <span class="va">mu1</span>, <span class="va">mu3</span> <span class="op">~</span> <span class="va">mu1</span>,
 <span class="va">q13</span> <span class="op">~</span> <span class="fl">0</span>, <span class="va">q21</span> <span class="op">~</span> <span class="va">q12</span>, <span class="va">q23</span> <span class="op">~</span> <span class="va">q12</span>, <span class="va">q31</span> <span class="op">~</span> <span class="fl">0.03</span>, <span class="va">q32</span> <span class="op">~</span> <span class="va">q12</span><span class="op">)</span></code></pre></div>
-<p>Here is the likelihood for a maximally constrained model using <code>diversitree</code>:</p>
+<p>Here is the likelihood for a maximally constrained model using
+<code>diversitree</code>:</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">diversitree.constrained</span> <span class="op">=</span> <span class="fu">lik.base</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>, <span class="fl">.03</span>, <span class="fl">.05</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">diversitree.constrained</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] -111.1472</span></code></pre>
-<p>Now, let’s compare the likelihood using a three-state model in <code>GeoHiSSE</code>:</p>
+<p>Now, let’s compare the likelihood using a three-state model in
+<code>GeoHiSSE</code>:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">states</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span>, <span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span>, row.names<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span><span class="op">)</span><span class="op">)</span>
 <span class="va">states</span> <span class="op">&lt;-</span> <span class="va">states</span><span class="op">[</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.label</span>,<span class="op">]</span>
@@ -356,7 +462,9 @@
 <span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">geosse.constrained</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">diversitree.constrained</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] TRUE</span></code></pre>
-<p>We can show that you can obtain the same likelihood using <code>MuHiSSE</code>. Warning: as before it’s a bit convoluted to format the data properly, but it can be done:</p>
+<p>We can show that you can obtain the same likelihood using
+<code>MuHiSSE</code>. Warning: as before it’s a bit convoluted to format
+the data properly, but it can be done:</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">states.trans</span> <span class="op">&lt;-</span> <span class="va">states</span>
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span><span class="op">)</span><span class="op">{</span>
@@ -392,14 +500,22 @@
 <span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">muhisse.constrained</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">diversitree.constrained</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] TRUE</span></code></pre>
-<p>As you can see, in the absence of hidden states, all three implementations provide identical likelihoods.</p>
-<p>It is also easy to show how you would set up a three-state model using MuHiSSE. This may be beneficial with rather large trees. With <code>MuHiSSE</code>, as well as <code>fGeoHiSSE</code>, I’ve implemented a much more efficient and rather fast tree traversal algorithm. Eventually, both functions will allow for multicore processing during the tree traversal stage.</p>
-<p>For this example, note that we are going to assume we do not have a fourth state (i.e., <span class="math inline">\(11\)</span>).</p>
+<p>As you can see, in the absence of hidden states, all three
+implementations provide identical likelihoods.</p>
+<p>It is also easy to show how you would set up a three-state model
+using MuHiSSE. This may be beneficial with rather large trees. With
+<code>MuHiSSE</code>, as well as <code>fGeoHiSSE</code>, I’ve
+implemented a much more efficient and rather fast tree traversal
+algorithm. Eventually, both functions will allow for multicore
+processing during the tree traversal stage.</p>
+<p>For this example, note that we are going to assume we do not have a
+fourth state (i.e., <span class="math inline">\(11\)</span>).</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">0</span><span class="op">)</span>
 <span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>
 <span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span></code></pre></div>
-<p>Next, we have to generate, and then modify the transition rate matrix:</p>
+<p>Next, we have to generate, and then modify the transition rate
+matrix:</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">0</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate</span><span class="op">)</span></code></pre></div>
@@ -408,7 +524,8 @@
 <span class="co">## (01)    1   NA    0    7</span>
 <span class="co">## (10)    2    0   NA    8</span>
 <span class="co">## (11)    0    4    6   NA</span></code></pre>
-<p>We can use the <code><a href="../reference/transMat.html">ParDrop()</a></code> function to remove transitions to and from the fourth state in the model:</p>
+<p>We can use the <code><a href="../reference/transMat.html">ParDrop()</a></code> function to remove transitions
+to and from the fourth state in the model:</p>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">trans.rate.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMat.html">ParDrop</a></span><span class="op">(</span><span class="va">trans.rate</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">6</span>,<span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate.mod</span><span class="op">)</span></code></pre></div>
@@ -422,7 +539,8 @@
 <code class="sourceCode R"><span class="va">MuHiSSE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MuHiSSE.html">MuHiSSE</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">states.trans</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, 
                      eps<span class="op">=</span><span class="va">extinction.fraction</span>, hidden.states<span class="op">=</span><span class="cn">FALSE</span>, 
                      trans.rate<span class="op">=</span><span class="va">trans.rate.mod</span><span class="op">)</span></code></pre></div>
-<p>If you wanted to set up a three-state model, but include hidden states, you would do the following:</p>
+<p>If you wanted to set up a three-state model, but include hidden
+states, you would do the following:</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">0</span>, <span class="fl">4</span>,<span class="fl">5</span>,<span class="fl">6</span>,<span class="fl">0</span><span class="op">)</span>
 <span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span>, <span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>
@@ -433,8 +551,29 @@
 <div class="section level2">
 <h2 id="other-considerations">Other considerations<a class="anchor" aria-label="anchor" href="#other-considerations"></a>
 </h2>
-<p>Like with <code>hisse</code> and <code>GeoHiSSE</code>, there are functions available to obtain model averages (i.e., <code><a href="../reference/modelAveRates.html">GetModelAveRates()</a></code>), generate estimates of the uncertainty in the parameter estimates (i.e., <code><a href="../reference/supportRegionMuHiSSE.html">SupportRegionMuHiSSE()</a></code>), calculate the marginal probabilities for states at nodes (i.e., <code><a href="../reference/marginReconMuHiSSE.html">MarginReconMuHiSSE()</a></code>), plotting the rate variation on the tree (i.e., <code><a href="../reference/plotMuHiSSE.html">plot.muhisse.states()</a></code>), and model-averaging the rates based on the equilibrium frequencies (i.e., <code>GetModelAveEqFreqs()</code>). Users are encouraged to read other vignettes and help pages provided for more information. For more conceptual discussions of these functions and ideas, readers are also encouraged to read Caetano et al. (2018).</p>
-<p>One additional item that is worth mentioning. I would recommend users try multiple random starting points when optimizing any given model with <code>MuHiSSE</code>. In Nakov et al. (2018), we found that the default starting values often did not return the highest log likelihood. To alleviate this issue, we performed <span class="math inline">\(\ge\)</span> 50 maximum likelihood optimizations for each model, each initiated from a distinct starting point. All functions with <code>hisse</code> are provided with <code>starting.vals</code> option for these purposes. In the case of Nakov et al. (2018), we wrote our own custom function, which I have provided below using a MuCID3 model. Note that the following function was designed for multicore use:</p>
+<p>Like with <code>hisse</code> and <code>GeoHiSSE</code>, there are
+functions available to obtain model averages (i.e.,
+<code><a href="../reference/modelAveRates.html">GetModelAveRates()</a></code>), generate estimates of the uncertainty
+in the parameter estimates (i.e., <code><a href="../reference/supportRegionMuHiSSE.html">SupportRegionMuHiSSE()</a></code>),
+calculate the marginal probabilities for states at nodes (i.e.,
+<code><a href="../reference/marginReconMuHiSSE.html">MarginReconMuHiSSE()</a></code>), plotting the rate variation on the
+tree (i.e., <code><a href="../reference/plotMuHiSSE.html">plot.muhisse.states()</a></code>), and model-averaging the
+rates based on the equilibrium frequencies (i.e.,
+<code>GetModelAveEqFreqs()</code>). Users are encouraged to read other
+vignettes and help pages provided for more information. For more
+conceptual discussions of these functions and ideas, readers are also
+encouraged to read Caetano et al. (2018).</p>
+<p>One additional item that is worth mentioning. I would recommend users
+try multiple random starting points when optimizing any given model with
+<code>MuHiSSE</code>. In Nakov et al. (2018), we found that the default
+starting values often did not return the highest log likelihood. To
+alleviate this issue, we performed <span class="math inline">\(\ge\)</span> 50 maximum likelihood optimizations
+for each model, each initiated from a distinct starting point. All
+functions with <code>hisse</code> are provided with
+<code>starting.vals</code> option for these purposes. In the case of
+Nakov et al. (2018), we wrote our own custom function, which I have
+provided below using a MuCID3 model. Note that the following function
+was designed for multicore use:</p>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">StartingValueTry</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">phy</span>, <span class="va">data</span>, <span class="va">f</span>, <span class="va">trans.rate</span><span class="op">)</span><span class="op">{</span>
 
@@ -462,11 +601,20 @@
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<p>Caetano, D.S., B.C. O’Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, 72:2308-2324.</p>
-<p>FitzJohn R., W.P. Maddison, and S.P. Otto. 2009. Estimating trait-dependent speciation and extinction rates from incompletely resolved phylogenies, Systematic Biology, 58: 595-611.</p>
-<p>FitzJohn R.G. 2012. Diversitree: comparative phylogenetic analyses of diversification in R. Methods in Ecology and Evolution 3:1084-1092.</p>
-<p>Herrera-Alsina, L., P. van Els, and R.S. Etienne. 2018. Detecting the dependence of diversification on multiples traits from phylogenetic trees and trait data. Systematic Biology, 68:317-328.</p>
-<p>Nakov, T., Beaulieu, J.M., and Alverson, A.J. 2019. Diatoms diversify and turn over faster in freshwater than marine environments. Evolution, doi: <a href="https://doi.org/10.1111/evo.13832" class="external-link uri">https://doi.org/10.1111/evo.13832</a>.</p>
+<p>Caetano, D.S., B.C. O’Meara, and J.M. Beaulieu. 2018. Hidden state
+models improve state-dependent diversification approaches, including
+biogeographic models. Evolution, 72:2308-2324.</p>
+<p>FitzJohn R., W.P. Maddison, and S.P. Otto. 2009. Estimating
+trait-dependent speciation and extinction rates from incompletely
+resolved phylogenies, Systematic Biology, 58: 595-611.</p>
+<p>FitzJohn R.G. 2012. Diversitree: comparative phylogenetic analyses of
+diversification in R. Methods in Ecology and Evolution 3:1084-1092.</p>
+<p>Herrera-Alsina, L., P. van Els, and R.S. Etienne. 2018. Detecting the
+dependence of diversification on multiples traits from phylogenetic
+trees and trait data. Systematic Biology, 68:317-328.</p>
+<p>Nakov, T., Beaulieu, J.M., and Alverson, A.J. 2019. Diatoms diversify
+and turn over faster in freshwater than marine environments. Evolution,
+doi: <a href="https://doi.org/10.1111/evo.13832" class="external-link uri">https://doi.org/10.1111/evo.13832</a>.</p>
 </div>
   </div>
 
