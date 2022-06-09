@@ -538,8 +538,8 @@ SummarizeMiSSEGreedy <- function(greedy.result, min.weight=0.01, n.cores=1, reco
 				}
 				
 			}
-			rates.tips.avg <- hisse:::ConvertManyToRate(recons, rate.param, "tip.mat")
-			rates.internal.avg <- hisse:::ConvertManyToRate(recons, rate.param, "node.mat")
+			rates.tips.avg <- ConvertManyToRate(recons, rate.param, "tip.mat")
+			rates.internal.avg <- ConvertManyToRate(recons, rate.param, "node.mat")
 			rates[,param_index,1+length(good_enough)] <- c(rates.tips.avg, rates.internal.avg)
 		}
 	}
