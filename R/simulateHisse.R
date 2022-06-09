@@ -179,9 +179,9 @@ CheckKeepRunning <- function(results, max.taxa=Inf, max.t=Inf, max.wall.time=Inf
 
 SimToPhylo <- function(results, include.extinct=FALSE, drop.stem=TRUE) {
     living <- descendants <- NULL
-    if(class(results)!="data.frame") {
+    if(!inherits(results, what="data.frame")) {
 		try(results <- 	results$results)
-		if(class(results)!="data.frame") {
+		if(!inherits(results, what="data.frame")) {
 			stop("This requires a dataframe with simulation results")	
 		}
 	}

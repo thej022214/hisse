@@ -6,7 +6,7 @@
 ######################################################################################################################################
 
 SupportRegion.old <- function(hisse.old.obj, n.points=1000, scale.int=0.1, desired.delta=2, min.number.points=10, output.type="turnover", hidden.states=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, verbose=TRUE){
-    if(class(hisse.old.obj) == "hisse.null4.fit"){
+    if(inherits(hisse.old.obj, what="hisse.null4.fit")){
         phy <- hisse.old.obj$phy
         data <- hisse.old.obj$data
         data.new<-data.frame(data[,2], data[,2], row.names=data[,1])
@@ -121,7 +121,7 @@ SupportRegion.old <- function(hisse.old.obj, n.points=1000, scale.int=0.1, desir
             interval.results.final[,17] <- mu.1D
         }
         interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
-        if(class(interval.results.in)=="numeric"){
+        if(inherits(interval.results.in, what="numeric")){
             stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
         }else{
             ci.interval = apply(interval.results.in, 2, quantile)
@@ -202,12 +202,12 @@ SupportRegion.old <- function(hisse.old.obj, n.points=1000, scale.int=0.1, desir
             interval.results.final[,9] <- mu.1B
         }
         interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
-        if(class(interval.results.in)=="numeric"){
+        if(inherits(interval.results.in, what="numeric")){
             stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
         }else{
             ci.interval = apply(interval.results.in, 2, quantile)
             colnames(interval.results.final) <- colnames(interval.results.in) <- colnames(ci.interval) <- interval.names
-            if(class(interval.results.in)=="numeric"){
+            if(inherits(interval.results.in, what="numeric")){
                 stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
             }else{
                 obj = NULL

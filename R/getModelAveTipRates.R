@@ -36,7 +36,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
     ## If hisse.results is a list of model reconstructions, then test if they have $AIC. Return error message otherwise.
     ## There is no need for the $AIC element if AIC.weigths argument is provided.
     ## AIC.weights is a substitute for AIC. See help page.
-    if(class(hisse.results) == "list"){
+    if(inherits(hisse.results, what="list")){
         if( is.null( AIC.weights ) ){
             empty.AIC <- sapply(hisse.results, function(x) !is.null(x$AIC) )
 
@@ -94,19 +94,19 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         averaged.tip.rates <- CheckReconBounds(x=list(rates.tips.turnover, rates.tips.net.div, rates.tips.speciation, rates.tips.extinct.fraction, rates.tips.extinction), n.models = length(hisse.results), AIC.weights, bound.par.matrix)
         
         ## Objects will always be of list class here.
-        if(class(hisse.results[[1]])=="hisse.states"){
+        if(inherits(hisse.results[[1]], what="hisse.states")){
             states.tips <- ConvertManyToBinaryState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
         }
      
-        if(class(hisse.results[[1]])=="hisse.geosse.states"){
+        if(inherits(hisse.results[[1]], what="hisse.geosse.states")){
             states.tips <- ConvertManyToMultiState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
         }
 
-        if(class(hisse.results[[1]])=="muhisse.states"){
+        if(inherits(hisse.results[[1]], what="muhisse.states")){
             states.tips <- ConvertManyToMultiState(hisse.results, which.element="tip.mat", AIC.weights=AIC.weights)
         }
 
-        if(class(hisse.results[[1]])=="misse.states"){
+        if(inherits(hisse.results[[1]], what="misse.states")){
             states.tips <- rep(0, dim(hisse.results[[1]][["tip.mat"]])[1])
         }
 
@@ -130,19 +130,19 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         averaged.node.rates <- CheckReconBounds(x=list(rates.nodes.turnover, rates.nodes.net.div, rates.nodes.speciation, rates.nodes.extinct.fraction, rates.nodes.extinction), n.models = length(hisse.results), AIC.weights, bound.par.matrix)
         
         ## Objects will always be of list class here.
-        if(class(hisse.results[[1]])=="hisse.states"){
+        if(inherits(hisse.results[[1]], what="hisse.states")){
             states.internal <- ConvertManyToBinaryState(hisse.results, which.element="node.mat", AIC.weights=AIC.weights)
         }
 
-        if(class(hisse.results[[1]])=="hisse.geosse.states"){
+        if(inherits(hisse.results[[1]], what="hisse.geosse.states")){
             states.internal <- ConvertManyToMultiState(hisse.results, which.element="node.mat", AIC.weights=AIC.weights)
         }
 
-        if(class(hisse.results[[1]])=="muhisse.states"){
+        if(inherits(hisse.results[[1]], what="muhisse.states")){
             states.internal <- ConvertManyToMultiState(hisse.results, which.element="node.mat", AIC.weights=AIC.weights)
         }
 
-        if(class(hisse.results[[1]])=="misse.states"){
+        if(inherits(hisse.results[[1]], what="misse.states")){
             states.internal <- rep(0, dim(hisse.results[[1]][["node.mat"]])[1])
         }
 

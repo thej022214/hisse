@@ -41,7 +41,7 @@ SupportRegionGeoSSE.old <- function(geohisse.old.obj, n.points=1000, scale.int=0
     }
     interval.results.final <- cbind(interval.results[,1], interval.results.final)
     interval.results.in <- interval.results.final[which(interval.results.final[,1] - min(interval.results.final[,1])<=desired.delta),]
-    if(class(interval.results.in)=="numeric"){
+    if(inherits(interval.results.in, what="numeric")){
         stop("Only the MLE is in the desired range. Try reducing scale.int.", call.=FALSE)
     }else{
         ci.interval = apply(interval.results.in, 2, quantile)

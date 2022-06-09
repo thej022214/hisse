@@ -1241,7 +1241,7 @@ ConvertManyToMultiState <- function(hisse.results, which.element, AIC.weights=NU
 
 
 GetAICWeights <- function(hisse.results, criterion="AIC") {
-    if(class(hisse.results)=="misse.states") {
+    if(inherits(hisse.results, what="misse.states")) {
         hisse.results <- list(hisse.results)
     }
     AIC.vector <- sapply(hisse.results, "[[", criterion)
@@ -1254,7 +1254,7 @@ GetAICWeights <- function(hisse.results, criterion="AIC") {
 
 GetRateRange <- function(x, rate.param) {
     hisse.results <- x
-    if(class(hisse.results)=="hisse.states") { #we have to make a list so we can run this generally
+    if(inherits(hisse.results, what="hisse.states")) { #we have to make a list so we can run this generally
         tmp.list <- list()
         tmp.list[[1]] <- hisse.results
         hisse.results <- tmp.list
