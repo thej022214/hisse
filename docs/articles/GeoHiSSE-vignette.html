@@ -90,7 +90,8 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Running GeoHiSSE</h1>
-                        <h4 data-toc-skip class="author">Daniel Caetano and Jeremy M. Beaulieu</h4>
+                        <h4 data-toc-skip class="author">Daniel Caetano
+and Jeremy M. Beaulieu</h4>
             
       
       
@@ -100,26 +101,90 @@
 
     
     
-<p>As of version 1.8.7, we provide a new set of functions that execute more complex and potentially faster version of the GeoHiSSE model described by Caetano et al. (2018). One of the main differences here is that the model allows up to 10 hidden categories, and implements a more efficient means of carrying out branch calculations. Specifically, we break up the tree into sets of branches whose branch calculations are independent of one another. We then carry out all descendent branch calculations simultaneously, combine the probabilities based on their shared ancestry, then repeat for the next set of descendent branches. In testing, we’ve found that as the number of taxa increases, the calculation becomes much more efficient. For instance, with 100,000 tips, a single tree traversal with the canonical GeoSSE model in the original code took 10 minutes, whereas in <code>GeoHiSSE</code> the same traversal took about 30 seconds. Note this function now replaces the original version of <code>GeoHiSSE</code>, but we retained its functionality (see <code><a href="../reference/GeoHiSSE.old.html">GeoHiSSE.old()</a></code>).</p>
-<p>There are a couple major differences with this version of <code><a href="../reference/GeoHiSSE.html">GeoHiSSE()</a></code> that users should be aware. First, while this version allows for cladogenetic events to be turned off (i.e., <code>assume.cladogenetic=FALSE</code>), it does not revert to a three-state MuSSE model as it does in <code>GeoHiSSE</code>. Instead, no lineage speciation and extinction are allowed in the widespread state, only transitions out of it. If a three-state MuSSE model is needed, we direct users to read the vignette on how to generate a three-state model in MuHiSSE (see <em>Running a Multistate HiSSE model</em> vignette).</p>
-<p>The other main difference is that, like <code>hisse</code>, we employ a modified optimization procedure. Rather than optimizing birth and death separately, <code>GeoHisse</code> optimizes orthogonal transformations of these variables: we let <span class="math inline">\(\tau\)</span> define net turnover, and we let <span class="math inline">\(\epsilon\)</span> define the extinction fraction. However, these transformations are slightly more complicated due to the dynamics associated with the widespread taxa. For a geographic-based model, we define turnover as,</p>
-<p><span class="math display">\[\tau_{00i} = s_{00i} + x_{00i}\]</span> <span class="math display">\[\tau_{11i} = s_{11i} + s_{11i}\]</span> <span class="math display">\[\tau_{01i} = s_{00i} + s_{11i} + s_{01i}\]</span></p>
+<p>As of version 1.8.7, we provide a new set of functions that execute
+more complex and potentially faster version of the GeoHiSSE model
+described by Caetano et al. (2018). One of the main differences here is
+that the model allows up to 10 hidden categories, and implements a more
+efficient means of carrying out branch calculations. Specifically, we
+break up the tree into sets of branches whose branch calculations are
+independent of one another. We then carry out all descendent branch
+calculations simultaneously, combine the probabilities based on their
+shared ancestry, then repeat for the next set of descendent branches. In
+testing, we’ve found that as the number of taxa increases, the
+calculation becomes much more efficient. For instance, with 100,000
+tips, a single tree traversal with the canonical GeoSSE model in the
+original code took 10 minutes, whereas in <code>GeoHiSSE</code> the same
+traversal took about 30 seconds. Note this function now replaces the
+original version of <code>GeoHiSSE</code>, but we retained its
+functionality (see <code><a href="../reference/GeoHiSSE.old.html">GeoHiSSE.old()</a></code>).</p>
+<p>There are a couple major differences with this version of
+<code><a href="../reference/GeoHiSSE.html">GeoHiSSE()</a></code> that users should be aware. First, while this
+version allows for cladogenetic events to be turned off (i.e.,
+<code>assume.cladogenetic=FALSE</code>), it does not revert to a
+three-state MuSSE model as it does in <code>GeoHiSSE</code>. Instead, no
+lineage speciation and extinction are allowed in the widespread state,
+only transitions out of it. If a three-state MuSSE model is needed, we
+direct users to read the vignette on how to generate a three-state model
+in MuHiSSE (see <em>Running a Multistate HiSSE model</em> vignette).</p>
+<p>The other main difference is that, like <code>hisse</code>, we employ
+a modified optimization procedure. Rather than optimizing birth and
+death separately, <code>GeoHisse</code> optimizes orthogonal
+transformations of these variables: we let <span class="math inline">\(\tau\)</span> define net turnover, and we let
+<span class="math inline">\(\epsilon\)</span> define the extinction
+fraction. However, these transformations are slightly more complicated
+due to the dynamics associated with the widespread taxa. For a
+geographic-based model, we define turnover as,</p>
+<p><span class="math display">\[\tau_{00i} = s_{00i} + x_{00i}\]</span>
+<span class="math display">\[\tau_{11i} = s_{11i} + s_{11i}\]</span>
+<span class="math display">\[\tau_{01i} = s_{00i} + s_{11i} +
+s_{01i}\]</span></p>
 <p>We define extinction fraction as</p>
-<p><span class="math display">\[\epsilon_{00i} = x_{00i} /  s_{00i}\]</span> <span class="math display">\[\epsilon_{11i} = x_{11i} /  s_{11i}\]</span></p>
-<p>and because there is no lineage extinction for widespread ranges, <span class="math inline">\(\epsilon_{01i} = 0\)</span>.</p>
-<p>It is straightforward to convert back to original speciation and extinction, <span class="math inline">\(s\)</span> and <span class="math inline">\(x\)</span>, respectively:</p>
-<p><span class="math display">\[s_{00i} = \tau_{00i} / (1 + \epsilon_{00i})\]</span> <span class="math display">\[s_{11i} = \tau_{11i} / (1 + \epsilon_{11i})\]</span> <span class="math display">\[s_{01i} = \tau_{01i} - s_{00i} - s_{11i}\]</span></p>
-<p><span class="math display">\[x_{00i} = (\tau_{00i}*\epsilon_{00i}) / (1 + \epsilon_{00i})\]</span> <span class="math display">\[x_{11i} = (\tau_{11i}*\epsilon_{11i}) / (1 + \epsilon_{11i})\]</span></p>
-<p>Also, note that the output from <code>GeoHiSSE</code> can be used and processed using available functions. For example, the output can automatically be used to obtain model averages (i.e., <code><a href="../reference/modelAveRates.html">GetModelAveRates()</a></code>), generate estimates of the uncertainty in the parameter estimates (i.e., <code><a href="../reference/supportRegionGeoSSE.html">SupportRegionGeoSSE()</a></code>), calculate the marginal probabilities for states at nodes (i.e., <code><a href="../reference/marginReconGeoSSE.html">MarginReconGeoSSE()</a></code>), and plotting the rate variation on the tree (i.e., <code><a href="../reference/plotGeoHiSSE.html">plot.geohisse.states()</a></code>). Users are encouraged to read other vignettes and help pages provided for more information. For more conceptual discussions of these functions and ideas, readers are also encouraged to read Caetano et al. (2018).</p>
+<p><span class="math display">\[\epsilon_{00i} = x_{00i}
+/  s_{00i}\]</span> <span class="math display">\[\epsilon_{11i} =
+x_{11i} /  s_{11i}\]</span></p>
+<p>and because there is no lineage extinction for widespread ranges,
+<span class="math inline">\(\epsilon_{01i} = 0\)</span>.</p>
+<p>It is straightforward to convert back to original speciation and
+extinction, <span class="math inline">\(s\)</span> and <span class="math inline">\(x\)</span>, respectively:</p>
+<p><span class="math display">\[s_{00i} = \tau_{00i} / (1 +
+\epsilon_{00i})\]</span> <span class="math display">\[s_{11i} =
+\tau_{11i} / (1 + \epsilon_{11i})\]</span> <span class="math display">\[s_{01i} = \tau_{01i} - s_{00i} -
+s_{11i}\]</span></p>
+<p><span class="math display">\[x_{00i} = (\tau_{00i}*\epsilon_{00i}) /
+(1 + \epsilon_{00i})\]</span> <span class="math display">\[x_{11i} =
+(\tau_{11i}*\epsilon_{11i}) / (1 + \epsilon_{11i})\]</span></p>
+<p>Also, note that the output from <code>GeoHiSSE</code> can be used and
+processed using available functions. For example, the output can
+automatically be used to obtain model averages (i.e.,
+<code><a href="../reference/modelAveRates.html">GetModelAveRates()</a></code>), generate estimates of the uncertainty
+in the parameter estimates (i.e., <code><a href="../reference/supportRegionGeoSSE.html">SupportRegionGeoSSE()</a></code>),
+calculate the marginal probabilities for states at nodes (i.e.,
+<code><a href="../reference/marginReconGeoSSE.html">MarginReconGeoSSE()</a></code>), and plotting the rate variation on
+the tree (i.e., <code><a href="../reference/plotGeoHiSSE.html">plot.geohisse.states()</a></code>). Users are
+encouraged to read other vignettes and help pages provided for more
+information. For more conceptual discussions of these functions and
+ideas, readers are also encouraged to read Caetano et al. (2018).</p>
 <div class="section level2">
 <h2 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h2>
-<p>The GeoHiSSE models can be used to infer ancestral ranges, rates of dispersion and extirpation, as well as testing hypotheses about range-dependent diversification processes. The main difference between GeoSSE and GeoHiSSE is that here we implement models that allow for diversification rate variation both within and between geographical areas. Such models are more adequate to empirical data then homogeneous diversification rates implied by GeoSSE (as well as BiSSE). The GeoHiSSE models belong to the same category of Hidden-Markov models as HiSSE. Thus, the concepts will be familiar to you if you have some experience with HiSSE (and vice-versa).</p>
-<p>The best place to install the package with the new functions provided here is from our github repository using the package <code>devtools</code>:</p>
+<p>The GeoHiSSE models can be used to infer ancestral ranges, rates of
+dispersion and extirpation, as well as testing hypotheses about
+range-dependent diversification processes. The main difference between
+GeoSSE and GeoHiSSE is that here we implement models that allow for
+diversification rate variation both within and between geographical
+areas. Such models are more adequate to empirical data then homogeneous
+diversification rates implied by GeoSSE (as well as BiSSE). The GeoHiSSE
+models belong to the same category of Hidden-Markov models as HiSSE.
+Thus, the concepts will be familiar to you if you have some experience
+with HiSSE (and vice-versa).</p>
+<p>The best place to install the package with the new functions provided
+here is from our github repository using the package
+<code>devtools</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span> <span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span> <span class="op">)</span>
 <span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span>repo <span class="op">=</span> <span class="st">"thej022214/hisse"</span>, ref <span class="op">=</span> <span class="st">"master"</span><span class="op">)</span></code></pre></div>
-<p>Before getting started, be sure to load the <code>hisse</code> and <code>diversitree</code> packages:</p>
+<p>Before getting started, be sure to load the <code>hisse</code> and
+<code>diversitree</code> packages:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hisse</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## Loading required package: ape</span></code></pre>
@@ -133,8 +198,15 @@
 <div class="section level2">
 <h2 id="simulating-a-range-independent-process">Simulating a range-independent process<a class="anchor" aria-label="anchor" href="#simulating-a-range-independent-process"></a>
 </h2>
-<p>We will simulate a phylogenetic tree using neutral geographical ranges, and incorporate two different rates of diversification. Thus, the correct process here is: “rates of diversification vary independently of the geographic ranges”.</p>
-<p>We use a simulation here just because it is an easy way to produce data and because we know the underlying diversification process. Otherwise, if you have an empiricial dataset, all the steps we show here apply. Just make sure to substitute the phylogeny and data with your datatset.</p>
+<p>We will simulate a phylogenetic tree using neutral geographical
+ranges, and incorporate two different rates of diversification. Thus,
+the correct process here is: “rates of diversification vary
+independently of the geographic ranges”.</p>
+<p>We use a simulation here just because it is an easy way to produce
+data and because we know the underlying diversification process.
+Otherwise, if you have an empiricial dataset, all the steps we show here
+apply. Just make sure to substitute the phylogeny and data with your
+datatset.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">## Generate a list with the parameters of the model:</span>
 <span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SimulateGeoHiSSE.html">SimulateGeoHiSSE</a></span><span class="op">(</span>hidden.traits <span class="op">=</span> <span class="fl">1</span>, return.GeoHiSSE_pars <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
@@ -166,7 +238,10 @@
 <span class="co">## </span>
 <span class="co">## attr(,"class")</span>
 <span class="co">## [1] "list"          "GeoHiSSE_pars"</span></code></pre>
-<p>The object <code>pars</code> is a list with all the parameter values for this model in the correct order and format, but all values are 0. Thus, we need to populate these parameters with numbers in order to perform the simulation.</p>
+<p>The object <code>pars</code> is a list with all the parameter values
+for this model in the correct order and format, but all values are 0.
+Thus, we need to populate these parameters with numbers in order to
+perform the simulation.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">pars</span><span class="op">$</span><span class="va">model.pars</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.03</span>, <span class="fl">0.03</span>, <span class="fl">0.05</span>, <span class="fl">0.05</span><span class="op">)</span>
 <span class="va">pars</span><span class="op">$</span><span class="va">model.pars</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.03</span>, <span class="fl">0.03</span>, <span class="fl">0.05</span>, <span class="fl">0.05</span><span class="op">)</span>
@@ -201,8 +276,12 @@
 <span class="co">## </span>
 <span class="co">## attr(,"class")</span>
 <span class="co">## [1] "list"          "GeoHiSSE_pars"</span></code></pre>
-<p>Now we can use the parameters with the same function we applied before <code>SimulateGeoHiSSE</code> to generate both the data and the phylogeny.</p>
-<p>Here we will set the seed for the simulation, so the outcome of the simulation is always the same. Note that you can change the seed or skip this lines to generate a different, random, dataset.</p>
+<p>Now we can use the parameters with the same function we applied
+before <code>SimulateGeoHiSSE</code> to generate both the data and the
+phylogeny.</p>
+<p>Here we will set the seed for the simulation, so the outcome of the
+simulation is always the same. Note that you can change the seed or skip
+this lines to generate a different, random, dataset.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span>
 <span class="va">sim.geohisse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/SimulateGeoHiSSE.html">SimulateGeoHiSSE</a></span><span class="op">(</span>pars<span class="op">=</span><span class="va">pars</span>, hidden.traits <span class="op">=</span> <span class="fl">1</span>, x0 <span class="op">=</span> <span class="st">"01A"</span>, max.taxa <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></code></pre></div>
@@ -216,9 +295,24 @@
 <div class="section level2">
 <h2 id="setting-up-the-models">Setting up the models<a class="anchor" aria-label="anchor" href="#setting-up-the-models"></a>
 </h2>
-<p>We will fit a total of four models. Two models with a range-indendent diversification process and two other models in which the range have an effect on the diversification rate of the lineages (each with either one or two rate classes).</p>
-<p>Note that the function to estimate the parameters of the model is commented out below. Just uncomment and run to perform the estimate of the models. Here we will load results from a previous estimate.</p>
-<p>Models 1 and 2 below do not include hidden classes. For model 1 (mod1), we are assuming equal rates regardless of biogeographic region. This requires a particular set up of the turnover rate with respect to the widespread range, which involves removing it from the model. However, if <code>assume.cladogenetic=TRUE</code>, this does not mean that we are excluding it from the model. Internally, <code><a href="../reference/GeoHiSSE.html">GeoHiSSE()</a></code> will recognize this and set the speciation rate for, <span class="math inline">\(s_{01}\)</span>, to be equal to the rate of <span class="math inline">\(s_{00}\)</span> and <span class="math inline">\(s_{11}\)</span>. Removing the turnover rate for the widespread range like this is required for any model where the diversification rates are independent of range evolution:</p>
+<p>We will fit a total of four models. Two models with a range-indendent
+diversification process and two other models in which the range have an
+effect on the diversification rate of the lineages (each with either one
+or two rate classes).</p>
+<p>Note that the function to estimate the parameters of the model is
+commented out below. Just uncomment and run to perform the estimate of
+the models. Here we will load results from a previous estimate.</p>
+<p>Models 1 and 2 below do not include hidden classes. For model 1
+(mod1), we are assuming equal rates regardless of biogeographic region.
+This requires a particular set up of the turnover rate with respect to
+the widespread range, which involves removing it from the model.
+However, if <code>assume.cladogenetic=TRUE</code>, this does not mean
+that we are excluding it from the model. Internally,
+<code><a href="../reference/GeoHiSSE.html">GeoHiSSE()</a></code> will recognize this and set the speciation rate
+for, <span class="math inline">\(s_{01}\)</span>, to be equal to the
+rate of <span class="math inline">\(s_{00}\)</span> and <span class="math inline">\(s_{11}\)</span>. Removing the turnover rate for
+the widespread range like this is required for any model where the
+diversification rates are independent of range evolution:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">## Model 1 - Dispersal parameters vary only, no range-dependent diversification.</span>
 <span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>
@@ -229,7 +323,10 @@
                   turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span>,
                   hidden.states<span class="op">=</span><span class="cn">FALSE</span>, trans.rate<span class="op">=</span><span class="va">trans.rate.mod</span>, 
                   turnover.upper<span class="op">=</span><span class="fl">100</span>, trans.upper<span class="op">=</span><span class="fl">10</span><span class="op">)</span></code></pre></div>
-<p>To conduct a canonical GeoSSE model, where range evolution affects diversification, we add back the turnover rate for the widespread range, such that there are three turnover parameters and two extinction fraction parameters estimated:</p>
+<p>To conduct a canonical GeoSSE model, where range evolution affects
+diversification, we add back the turnover rate for the widespread range,
+such that there are three turnover parameters and two extinction
+fraction parameters estimated:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">## Model 2. Canonical GeoSSE model, range effect on diversification</span>
 <span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>
@@ -240,7 +337,13 @@
                   turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span>,
                   hidden.states<span class="op">=</span><span class="cn">FALSE</span>, trans.rate<span class="op">=</span><span class="va">trans.rate.mod</span>,
                   turnover.upper<span class="op">=</span><span class="fl">100</span>, trans.upper<span class="op">=</span><span class="fl">10</span><span class="op">)</span></code></pre></div>
-<p>Models 3 and 4 below each have 2 hidden states. In this case the models will be more complex. First, we will show how to set up a range-independent model of diversification. Remember, as with mod1 above, if diversification is independent of range-evolution we must remove the turnover rate for the widespread range. Again, internally, <code>GeoSSE()</code> will recognize this (if <code>assume.cladogenetic=TRUE</code>) and simply set <span class="math inline">\(s_{01}\)</span> to be equal the rate for <span class="math inline">\(s_{00}\)</span> and <span class="math inline">\(s_{11}\)</span>.</p>
+<p>Models 3 and 4 below each have 2 hidden states. In this case the
+models will be more complex. First, we will show how to set up a
+range-independent model of diversification. Remember, as with mod1
+above, if diversification is independent of range-evolution we must
+remove the turnover rate for the widespread range. Again, internally,
+<code>GeoSSE()</code> will recognize this (if
+<code>assume.cladogenetic=TRUE</code>) and simply set <span class="math inline">\(s_{01}\)</span> to be equal the rate for <span class="math inline">\(s_{00}\)</span> and <span class="math inline">\(s_{11}\)</span>.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">## Model 3. GeoHiSSE model with 1 hidden trait, no range-dependent diversification.</span>
 <span class="co">## Note below how parameters vary among hidden classes but are the same within each</span>
@@ -253,7 +356,8 @@
                   turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span>,
                   hidden.states<span class="op">=</span><span class="cn">TRUE</span>, trans.rate<span class="op">=</span><span class="va">trans.rate.mod</span>,
                   turnover.upper<span class="op">=</span><span class="fl">100</span>, trans.upper<span class="op">=</span><span class="fl">10</span><span class="op">)</span></code></pre></div>
-<p>Finally, if we want to fit a GeoHiSSE model we would do the following:</p>
+<p>Finally, if we want to fit a GeoHiSSE model we would do the
+following:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">## Model 4. GeoHiSSE model with 1 hidden trait, range-dependent diversification.</span>
 <span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span>,<span class="fl">6</span><span class="op">)</span>
@@ -264,7 +368,11 @@
                   turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span>,
                   hidden.states<span class="op">=</span><span class="cn">TRUE</span>, trans.rate<span class="op">=</span><span class="va">trans.rate.mod</span>,
                   turnover.upper<span class="op">=</span><span class="fl">100</span>, trans.upper<span class="op">=</span><span class="fl">10</span><span class="op">)</span></code></pre></div>
-<p>We will also show how to fit a complementary set of models that remove the cladogenetic effect entirely, such that all changes occur along branches (i.e., anagenetic change). This requires the removal of the turnover rate for lineages in the widespread range and ensuring that range contraction is distinct from the extinction of endemics:</p>
+<p>We will also show how to fit a complementary set of models that
+remove the cladogenetic effect entirely, such that all changes occur
+along branches (i.e., anagenetic change). This requires the removal of
+the turnover rate for lineages in the widespread range and ensuring that
+range contraction is distinct from the extinction of endemics:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">## Model 5. MuSSE-like model with no hidden trait, no cladogenetic effects.</span>
 <span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">0</span><span class="op">)</span>
@@ -278,14 +386,23 @@
                   hidden.states<span class="op">=</span><span class="cn">FALSE</span>, trans.rate<span class="op">=</span><span class="va">trans.rate.mod</span>,
                   turnover.upper<span class="op">=</span><span class="fl">100</span>, trans.upper<span class="op">=</span><span class="fl">10</span>, sann<span class="op">=</span><span class="cn">FALSE</span>, 
                   assume.cladogenetic <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
-<p>An explicit three-state MuSSE/MuHiSSE model can, and <strong>probably should</strong>, be included in the set of models. This can be done by using the <code><a href="../reference/MuHiSSE.html">MuHiSSE()</a></code> function. The details for doing so can be found in the <em>Running a Multistate HiSSE model</em> vignette.</p>
+<p>An explicit three-state MuSSE/MuHiSSE model can, and <strong>probably
+should</strong>, be included in the set of models. This can be done by
+using the <code><a href="../reference/MuHiSSE.html">MuHiSSE()</a></code> function. The details for doing so can
+be found in the <em>Running a Multistate HiSSE model</em> vignette.</p>
 </div>
 <div class="section level2">
 <h2 id="computing-akaike-weights-">Computing Akaike Weights.<a class="anchor" aria-label="anchor" href="#computing-akaike-weights-"></a>
 </h2>
-<p>Akaike weights are important to evaluate the relative importance of each of the models to explain the variation observed in the data. This quantity takes into account pennalties associated to the number of free parametes.</p>
-<p>Models with higher weight show better fit to the data and, as a result, have more weight when performing model averaging (see below).</p>
-<p>To compute model weight we can use one of the functions of the package. This will work with both HiSSE and GeoHiSSE objects.</p>
+<p>Akaike weights are important to evaluate the relative importance of
+each of the models to explain the variation observed in the data. This
+quantity takes into account pennalties associated to the number of free
+parametes.</p>
+<p>Models with higher weight show better fit to the data and, as a
+result, have more weight when performing model averaging (see
+below).</p>
+<p>To compute model weight we can use one of the functions of the
+package. This will work with both HiSSE and GeoHiSSE objects.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span> <span class="st">"geohisse_new_vignette.Rsave"</span> <span class="op">)</span>
 <span class="fu"><a href="../reference/GetAICWeights.html">GetAICWeights</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>model1 <span class="op">=</span> <span class="va">mod1</span>, model2 <span class="op">=</span> <span class="va">mod2</span>, model3 <span class="op">=</span> <span class="va">mod3</span>, model4 <span class="op">=</span> <span class="va">mod4</span><span class="op">)</span>, criterion<span class="op">=</span><span class="st">"AIC"</span><span class="op">)</span></code></pre></div>
@@ -302,9 +419,14 @@
 <div class="section level2">
 <h2 id="model-averaging-and-plotting-">Model averaging and plotting.<a class="anchor" aria-label="anchor" href="#model-averaging-and-plotting-"></a>
 </h2>
-<p>Now we can model average the results. Note that this step will reflect the Akaike model weights that we computed above.</p>
-<p>For this we need first to perform a marginal reconstruction for each of the models in the set. This will reconstruct the hidden states at the nodes of the phylogeny. Then we can use this information to compute the model average for the rates.</p>
-<p>These can take a while to run. We will load the results of previous analyses. Uncomment the code below to perform the reconstructions.</p>
+<p>Now we can model average the results. Note that this step will
+reflect the Akaike model weights that we computed above.</p>
+<p>For this we need first to perform a marginal reconstruction for each
+of the models in the set. This will reconstruct the hidden states at the
+nodes of the phylogeny. Then we can use this information to compute the
+model average for the rates.</p>
+<p>These can take a while to run. We will load the results of previous
+analyses. Uncomment the code below to perform the reconstructions.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">recon.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/marginReconGeoSSE.html">MarginReconGeoSSE</a></span><span class="op">(</span>phy <span class="op">=</span> <span class="va">mod1</span><span class="op">$</span><span class="va">phy</span>, data <span class="op">=</span> <span class="va">mod1</span><span class="op">$</span><span class="va">data</span>, f <span class="op">=</span> <span class="va">mod1</span><span class="op">$</span><span class="va">f</span>,
                                  pars <span class="op">=</span> <span class="va">mod1</span><span class="op">$</span><span class="va">solution</span>, hidden.states <span class="op">=</span> <span class="fl">1</span>,
@@ -325,11 +447,18 @@
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">## Load previous results:</span>
 <span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span> <span class="st">"geohisse_recons_new_vignette.Rsave"</span> <span class="op">)</span></code></pre></div>
-<p>Now that we have the AIC associated with each model and their reconstruction across the nodes of the tree we can compute the model average:</p>
+<p>Now that we have the AIC associated with each model and their
+reconstruction across the nodes of the tree we can compute the model
+average:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">recon.models</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">recon.mod1</span>, <span class="va">recon.mod2</span>, <span class="va">recon.mod3</span>, <span class="va">recon.mod4</span><span class="op">)</span>
 <span class="va">model.ave.rates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelAveRates.html">GetModelAveRates</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">recon.models</span>, type <span class="op">=</span> <span class="st">"tips"</span><span class="op">)</span></code></pre></div>
-<p>The result of the reconstrution is a matrix with the parameter estimates for each of the tips species averaged over all models. Note that for the GeoSSE model there is no “extinction” parameter associated with widespread (01) lineages. Also not that one can change the type of model averaging (between tips, nodes, and both) when callin the <code>GetModelAveRates</code> function.</p>
+<p>The result of the reconstrution is a matrix with the parameter
+estimates for each of the tips species averaged over all models. Note
+that for the GeoSSE model there is no “extinction” parameter associated
+with widespread (01) lineages. Also not that one can change the type of
+model averaging (between tips, nodes, and both) when callin the
+<code>GetModelAveRates</code> function.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span> <span class="va">model.ave.rates</span> <span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##   taxon state.00 state.11 state.01  turnover   net.div speciation extinct.frac</span>
@@ -346,7 +475,8 @@
 <span class="co">## 4 0.04291541</span>
 <span class="co">## 5 0.04290481</span>
 <span class="co">## 6 0.04273072</span></code></pre>
-<p>Finally, we can plot the use the resulting data matrix to make a plot of the results.</p>
+<p>Finally, we can plot the use the resulting data matrix to make a plot
+of the results.</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/plotGeoHiSSE.html">plot.geohisse.states</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">recon.models</span>, rate.param <span class="op">=</span> <span class="st">"net.div"</span>, type <span class="op">=</span> <span class="st">"fan"</span>,
                      show.tip.label <span class="op">=</span> <span class="cn">FALSE</span>, legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
@@ -370,7 +500,9 @@
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<p>Caetano, D.S., B.C. O’Meara, and J.M. Beaulieu. 2018. Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, 72:2308-2324.</p>
+<p>Caetano, D.S., B.C. O’Meara, and J.M. Beaulieu. 2018. Hidden state
+models improve state-dependent diversification approaches, including
+biogeographic models. Evolution, 72:2308-2324.</p>
 </div>
   </div>
 
