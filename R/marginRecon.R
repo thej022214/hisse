@@ -331,6 +331,14 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
+    if(!is.ultrametric(phy) & includes.fossils == FALSE){
+        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
+        edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+        if(any(edge_details$type == "extinct_tip")){
+            phy <- force.ultrametric(phy)
+        }
+    }
+
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
@@ -500,6 +508,14 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
+    if(!is.ultrametric(phy) & includes.fossils == FALSE){
+        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
+        edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+        if(any(edge_details$type == "extinct_tip")){
+            phy <- force.ultrametric(phy)
+        }
+    }
+
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
@@ -806,6 +822,14 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
+    if(!is.ultrametric(phy) & includes.fossils == FALSE){
+        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
+        edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+        if(any(edge_details$type == "extinct_tip")){
+            phy <- force.ultrametric(phy)
+        }
+    }
+
     if(!is.null(root.p)) {
         root.type="user"
         root.p <- root.p / sum(root.p)
