@@ -585,6 +585,8 @@ OrganizeData <- function(data, phy, f, hidden.states, includes.fossils=FALSE){
                 }
             }
         }
+    }else{
+        branch.type <- rep(0, dim(table.info)[1])
     }
 
     tmp.df <- cbind(table.info, 0, matrix(0, nrow(table.info), ncol(compD)), matrix(0, nrow(table.info), ncol(compE)), branch.type)
