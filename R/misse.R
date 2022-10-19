@@ -50,13 +50,13 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     
     setDTthreads(threads=dt.threads)
     
-    if(!is.ultrametric(phy) & includes.fossils == FALSE){
-        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
-        edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
-        if(any(edge_details$type == "extinct_tip")){
-            phy <- force.ultrametric(phy)
-        }
-    }
+    #if(!is.ultrametric(phy) & includes.fossils == FALSE){
+    #    warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
+    #    edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+    #    if(any(edge_details$type == "extinct_tip")){
+    #        phy <- force.ultrametric(phy)
+    #    }
+    #}
     
     if(sann == FALSE & is.null(starting.vals)){
         warning("You have chosen to rely on the internal starting points that generally work but does not guarantee finding the MLE.")

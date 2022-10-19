@@ -452,7 +452,7 @@ AddKData <- function(data, k.samples, muhisse=FALSE){
         if(muhisse == TRUE){
             new.data <- c(paste("Ksamp", event.index, sep="_"), k.samples$state1[event.index], k.samples$state2[event.index])
         }else{
-            new.data <- c(paste("Ksamp", event.index, sep="_"), rep(k.samples$state[event.index],2))
+            new.data <- c(paste("Ksamp", event.index, sep="_"), k.samples$state[event.index])
         }
         data <- rbind(data, new.data)
     }

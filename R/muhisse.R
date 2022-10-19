@@ -36,13 +36,13 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         f[which(f==0)] <- 1
     }
     
-    if(!is.ultrametric(phy) & includes.fossils == FALSE){
-        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
-        edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
-        if(any(edge_details$type == "extinct_tip")){
-            phy <- force.ultrametric(phy)
-        }
-    }
+    #if(!is.ultrametric(phy) & includes.fossils == FALSE){
+    #    warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
+    #    edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+    #    if(any(edge_details$type == "extinct_tip")){
+    #        phy <- force.ultrametric(phy)
+    #    }
+    #}
 
     if(sann == FALSE & is.null(starting.vals)){
         warning("You have chosen to rely on the internal starting points that generally work but does not guarantee finding the MLE.")
@@ -570,21 +570,23 @@ OrganizeData <- function(data, phy, f, hidden.states, includes.fossils=FALSE){
     }
     
     table.info <- GetTreeTable(phy, root.age=NULL)
-    k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
-    branch.type <- rep(0, dim(table.info)[1])
-    for(row.index in 1:dim(table.info)[1]){
-        if(table.info[row.index,5]<=nb.tip){
-            if(table.info[row.index,2] > .Machine$double.eps^.50){
-                if(includes.fossils == TRUE){
-                    branch.type[row.index] <- 1
+    if(includes.fossils == TRUE){
+        k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
+        branch.type <- rep(0, dim(table.info)[1])
+        for(row.index in 1:dim(table.info)[1]){
+            if(table.info[row.index,5]<=nb.tip){
+                if(table.info[row.index,2] > .Machine$double.eps^.50){
+                    if(includes.fossils == TRUE){
+                        branch.type[row.index] <- 1
+                    }
                 }
-            }
-            if(any(phy$edge[row.index,2]==k.sample.tip.no)){
-                branch.type[row.index] <- 2
+                if(any(phy$edge[row.index,2]==k.sample.tip.no)){
+                    branch.type[row.index] <- 2
+                }
             }
         }
     }
-    
+
     tmp.df <- cbind(table.info, 0, matrix(0, nrow(table.info), ncol(compD)), matrix(0, nrow(table.info), ncol(compE)), branch.type)
     colnames(tmp.df) <- c("RootwardAge", "TipwardAge", "BranchLength", "FocalNode", "DesNode", "comp", paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"), "branch.type")
     dat.tab <- as.data.table(tmp.df)
