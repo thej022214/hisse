@@ -199,7 +199,7 @@ data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
 data.new <- data.new[phy.k$tip.label,]
     
 dat.tab <- hisse:::OrganizeDataHiSSE(data.new, phy=phy.k, f=c(1,1), 
-             hidden.states=FALSE)
+             hidden.states=FALSE, includes.fossils=TRUE)
 edge_details <- hisse:::GetEdgeDetails(phy=phy.k, 
             intervening.intervals=strat.cache$intervening.intervals)
 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
@@ -220,7 +220,7 @@ hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz",
 
 Next we will calculate the likelihood of _just_ the tree using `MiSSE()`:
 ```{r, eval=TRUE}
-dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
+dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, 
             fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, 
@@ -319,7 +319,7 @@ muhisse.full <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache,
 
 ## Trait independent model should be loglik_tree + loglik_character ##
 #Part 1: MiSSE loglik:
-dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1)
+dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1,   includes.fossils=TRUE)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, 
             fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, 

@@ -61,7 +61,7 @@ AdaptiveConfidenceIntervalSamplingfHiSSE <- function(par, lower, upper, desired.
     
     # Some new prerequisites #
     gen <- FindGenerations(phy)
-    dat.tab <- OrganizeDataHiSSE(data=data, phy=phy, f=f, hidden.states=hidden.states)
+    dat.tab <- OrganizeDataHiSSE(data=data, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
     if(includes.fossils == TRUE){
         fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{

@@ -183,7 +183,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             fix.type <- GetKSampleMRCA(phy, k.samples)
             no.k.samples <- length(k.samples[,1])
             gen <- FindGenerations(phy)
-            dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
+            dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
             #These are all inputs for generating starting values:
             edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
             fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
@@ -205,7 +205,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
                 phy <- AddKNodes(phy, k.samples)
                 fix.type <- GetKSampleMRCA(phy, k.samples, strat.intervals=TRUE)
                 gen <- FindGenerations(phy)
-                dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
+                dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, includes.fossils=includes.fossils)
                 #These are all inputs for generating starting values:
                 edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
@@ -220,7 +220,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
                 strat.cache <- NULL
                 no.k.samples <- 0
                 gen <- FindGenerations(phy)
-                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
+                dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
                 #These are all inputs for generating starting values:
                 edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
@@ -233,7 +233,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
         fix.type <- NULL
         psi.type <- NULL
@@ -418,7 +418,7 @@ DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.ti
 ######################################################################################################################################
 ######################################################################################################################################
 
-OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FALSE, intervening.intervals=NULL){
+OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=FALSE){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     
@@ -465,16 +465,20 @@ OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FA
     
     #This seems stupid but I cannot figure out how to get data.table to not make this column a factor. When a factor this is not right. For posterity, let it be known Jeremy would rather just retain the character instead of this mess:
     edge_details <- GetEdgeDetails(phy, includes.intervals=includes.intervals, intervening.intervals=intervening.intervals)
-    branch.type <- edge_details$type
-    branch.type[which(branch.type == "extant_tip")] <- 0
-    branch.type[which(branch.type == "internal")] <- 0
-    branch.type[which(branch.type == "extinct_tip")] <- 1
-    branch.type[which(branch.type == "k_tip")] <- 2
-    branch.type[which(branch.type == "k_k_interval")] <- 3
-    branch.type[which(branch.type == "k_extinct_interval")] <- 3
-    branch.type[which(branch.type == "k_extant_interval")] <- 3
-    branch.type[which(branch.type == "intervening_interval")] <- 4
-
+    if(includes.fossils == TRUE){
+        branch.type <- edge_details$type
+        branch.type[which(branch.type == "extant_tip")] <- 0
+        branch.type[which(branch.type == "internal")] <- 0
+        branch.type[which(branch.type == "extinct_tip")] <- 1
+        branch.type[which(branch.type == "k_tip")] <- 2
+        branch.type[which(branch.type == "k_k_interval")] <- 3
+        branch.type[which(branch.type == "k_extinct_interval")] <- 3
+        branch.type[which(branch.type == "k_extant_interval")] <- 3
+        branch.type[which(branch.type == "intervening_interval")] <- 4
+    }else{
+        branch.type <- rep(0, length(edge_details$type))
+    }
+    
     tmp.df <- cbind(edge_details[,1:5], 0, matrix(0, nrow(edge_details), ncol(compD)), matrix(0, nrow(edge_details), ncol(compE)), as.numeric(branch.type))
     colnames(tmp.df) <- c("RootwardAge", "TipwardAge", "BranchLength", "FocalNode", "DesNode", "comp", paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"), "branch.type")
     dat.tab <- as.data.table(tmp.df)
