@@ -5,24 +5,24 @@
 
 
 /* .C calls */
-extern void initmod_bisse();
-extern void initmod_hisse();
-extern void initmod_hisse_null();
-extern void initmod_geosse();
-extern void initmod_geohisse();
-extern void initmod_noclass();
-extern void initmod_hinoclass();
+extern void initmod_bisse(void);
+extern void initmod_hisse(void);
+extern void initmod_hisse_null(void);
+extern void initmod_geosse(void);
+extern void initmod_geohisse(void);
+extern void initmod_noclass(void);
+extern void initmod_hinoclass(void);
 
 /* Introduced with new version with new models */
-extern void initmod_musse();
-extern void initmod_muhisse();
-extern void initmod_fgeohisse();
-extern void initmod_fhinoclass();
-extern void initmod_fgeosse();
-extern void initmod_fnoclass();
-extern void initmod_misse();
-extern void initmod_fbisse();
-extern void initmod_fhisse();
+extern void initmod_musse(void);
+extern void initmod_muhisse(void);
+extern void initmod_fgeohisse(void);
+extern void initmod_fhinoclass(void);
+extern void initmod_fgeosse(void);
+extern void initmod_fnoclass(void);
+extern void initmod_misse(void);
+extern void initmod_fbisse(void);
+extern void initmod_fhisse(void);
 
 extern void maddison_DE_bisse(void *, void *, void *, void *, void *, void *);
 extern void maddison_DE_hisse(void *, void *, void *, void *, void *, void *);
