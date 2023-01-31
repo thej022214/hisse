@@ -5,24 +5,24 @@
 
 
 /* .C calls */
-extern void initmod_bisse(void);
-extern void initmod_hisse(void);
-extern void initmod_hisse_null(void);
-extern void initmod_geosse(void);
-extern void initmod_geohisse(void);
-extern void initmod_noclass(void);
-extern void initmod_hinoclass(void);
+extern void initmod_bisse(void (* odeparms)(int *, double *));
+extern void initmod_hisse(void (* odeparms)(int *, double *));
+extern void initmod_hisse_null(void (* odeparms)(int *, double *));
+extern void initmod_geosse(void (* odeparms)(int *, double *));
+extern void initmod_geohisse(void (* odeparms)(int *, double *));
+extern void initmod_noclass(void (* odeparms)(int *, double *));
+extern void initmod_hinoclass(void (* odeparms)(int *, double *));
 
 /* Introduced with new version with new models */
-extern void initmod_musse(void);
-extern void initmod_muhisse(void);
-extern void initmod_fgeohisse(void);
-extern void initmod_fhinoclass(void);
-extern void initmod_fgeosse(void);
-extern void initmod_fnoclass(void);
-extern void initmod_misse(void);
-extern void initmod_fbisse(void);
-extern void initmod_fhisse(void);
+extern void initmod_musse(void (* odeparms)(int *, double *));
+extern void initmod_muhisse(void (* odeparms)(int *, double *));
+extern void initmod_fgeohisse(void (* odeparms)(int *, double *));
+extern void initmod_fhinoclass(void (* odeparms)(int *, double *));
+extern void initmod_fgeosse(void (* odeparms)(int *, double *));
+extern void initmod_fnoclass(void (* odeparms)(int *, double *));
+extern void initmod_misse(void (* odeparms)(int *, double *));
+extern void initmod_fbisse(void (* odeparms)(int *, double *));
+extern void initmod_fhisse(void (* odeparms)(int *, double *));
 
 extern void maddison_DE_bisse(void *, void *, void *, void *, void *, void *);
 extern void maddison_DE_hisse(void *, void *, void *, void *, void *, void *);
@@ -49,21 +49,21 @@ extern void set_birth_hisse_null_void(void *, void *, void *, void *, void *, vo
 extern void set_birth_hisse_void(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 
 static const R_CMethodDef CEntries[] = {
-    {"initmod_bisse",                   (DL_FUNC) &initmod_bisse,                   0},
-    {"initmod_hisse",                   (DL_FUNC) &initmod_hisse,                   0},
-    {"initmod_hisse_null",              (DL_FUNC) &initmod_hisse_null,              0},
-    {"initmod_geosse",		            (DL_FUNC) &initmod_geosse,                  0},
-    {"initmod_geohisse",		        (DL_FUNC) &initmod_geohisse,                0},
-    {"initmod_noclass",		            (DL_FUNC) &initmod_noclass,                 0},
-    {"initmod_hinoclass",		        (DL_FUNC) &initmod_hinoclass,               0},
-    {"initmod_musse",		            (DL_FUNC) &initmod_musse,                   0},
-    {"initmod_muhisse",		            (DL_FUNC) &initmod_muhisse,                 0},
-    {"initmod_fgeohisse",		        (DL_FUNC) &initmod_fgeohisse,               0},
-    {"initmod_fhinoclass",		        (DL_FUNC) &initmod_fhinoclass,              0},
-    {"initmod_fgeosse",		            (DL_FUNC) &initmod_fgeosse,                 0},
-    {"initmod_fnoclass",		        (DL_FUNC) &initmod_fnoclass,                0},
-    {"initmod_misse",		            (DL_FUNC) &initmod_misse,                   0},
-    {"initmod_fbisse",                  (DL_FUNC) &initmod_fbisse,                  0},
+    {"initmod_bisse",                   (DL_FUNC) &initmod_bisse,                   1},
+    {"initmod_hisse",                   (DL_FUNC) &initmod_hisse,                   1},
+    {"initmod_hisse_null",              (DL_FUNC) &initmod_hisse_null,              1},
+    {"initmod_geosse",		            (DL_FUNC) &initmod_geosse,                  1},
+    {"initmod_geohisse",		        (DL_FUNC) &initmod_geohisse,                1},
+    {"initmod_noclass",		            (DL_FUNC) &initmod_noclass,                 1},
+    {"initmod_hinoclass",		        (DL_FUNC) &initmod_hinoclass,               1},
+    {"initmod_musse",		            (DL_FUNC) &initmod_musse,                   1},
+    {"initmod_muhisse",		            (DL_FUNC) &initmod_muhisse,                 1},
+    {"initmod_fgeohisse",		        (DL_FUNC) &initmod_fgeohisse,               1},
+    {"initmod_fhinoclass",		        (DL_FUNC) &initmod_fhinoclass,              1},
+    {"initmod_fgeosse",		            (DL_FUNC) &initmod_fgeosse,                 1},
+    {"initmod_fnoclass",		        (DL_FUNC) &initmod_fnoclass,                1},
+    {"initmod_misse",		            (DL_FUNC) &initmod_misse,                   1},
+    {"initmod_fbisse",                  (DL_FUNC) &initmod_fbisse,                  1},
     {"initmod_fhisse",                  (DL_FUNC) &initmod_fhisse,                  0},
     {"maddison_DE_bisse",               (DL_FUNC) &maddison_DE_bisse,               6},
     {"maddison_DE_hisse",               (DL_FUNC) &maddison_DE_hisse,               6},
