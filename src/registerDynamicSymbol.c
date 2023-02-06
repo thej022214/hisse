@@ -64,7 +64,7 @@ static const R_CMethodDef CEntries[] = {
     {"initmod_fnoclass",		        (DL_FUNC) &initmod_fnoclass,                1},
     {"initmod_misse",		            (DL_FUNC) &initmod_misse,                   1},
     {"initmod_fbisse",                  (DL_FUNC) &initmod_fbisse,                  1},
-    {"initmod_fhisse",                  (DL_FUNC) &initmod_fhisse,                  0},
+    {"initmod_fhisse",                  (DL_FUNC) &initmod_fhisse,                  1},
     {"maddison_DE_bisse",               (DL_FUNC) &maddison_DE_bisse,               6},
     {"maddison_DE_hisse",               (DL_FUNC) &maddison_DE_hisse,               6},
     {"maddison_DE_hisse_null",          (DL_FUNC) &maddison_DE_hisse_null,          6},

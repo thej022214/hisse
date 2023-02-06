@@ -1,8 +1,8 @@
 citHeader("To cite hisse in publications use:")
 
-citEntry(entry = "Article",
+bibentry(bibtype = "Article",
   title        = "Detecting hidden diversification shifts in models of trait-dependent speciation and extinction.",
-  author       = personList(as.person("Jeremy M. Beaulieu"),
+  author       = c(as.person("Jeremy M. Beaulieu"),
                    as.person("Brian C. O'Meara")),
   journal      = "Systematic Biology",
   year         = "2016",
