@@ -28,10 +28,12 @@ load("cladeSamplingVariables.Rsave")
 
 We can demonstrate this behavior using a slightly involved but straightforward example. Here we will use a three-taxon tree to show that even after combining probabilities at a nested node, under ideal conditions, $E_i(t)$ for a L and R descedant branches should converge at a node. We will assume the tree has a total height of 20 time units, and we will also assume that the character states of the unsampled species are unknown completely, which means $f_i$ simply reflects the number of extant species sampled. We will use the following function to conduct our branch calculations: 
 
-```{r, eval=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
+```{r, eval=TRUE}
 GetProbs <- function(yini, times){
         times=times
-        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", padded.pars, initfunc="initmod_bisse", dllname = "hisse", rtol=1e-8, atol=1e-8)
+        prob.subtree.cal.full <- lsoda(yini, times, func = "maddison_DE_bisse", 
+          padded.pars, initfunc="initmod_bisse", dllname = "hisse", rtol=1e-8, 
+          atol=1e-8)
         probs.out <- prob.subtree.cal.full[-1,-1]
     return(probs.out)
 }
@@ -39,7 +41,7 @@ GetProbs <- function(yini, times){
 
 In the case of a global sampling fraction of 50%, we can calculate the probability of the left lineage, L, which is a single branch of length 20, the extinction probabilities would be:
 
-```{r, eval=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
+```{r, eval=TRUE}
 times=c(0, 20)
 yini <-c(E0=1-0.5, E1=1-0.5, D0=0.5, D1=0)
 left.branch.probs <- GetProbs(yini, times)
@@ -48,7 +50,7 @@ left.branch.probs[1:2]
 
 The calculation of the extinction probabilities for the right clade, which contains two taxa that coalesce at 10 time units, is a bit more involved. We first have to combine the probabilities of the two tip branches at node R:
 
-```{r, eval=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
+```{r, eval=TRUE}
 times=c(0, 10)
 yini <-c(E0=1-0.5, E1=1-0.5, D0=0.5, D1=0)
 right.subA.probs <- GetProbs(yini, times)
@@ -70,13 +72,13 @@ right.branch.probs[1:2]
 
 As expected, the probabilities of the left and right lineages converge to the same extinction probabilities (note, there may be slight precision issues due to our reliance on ode integration):
 
-```{r, eval=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
+```{r, eval=TRUE}
 round(left.branch.probs[1:2],4) == round(right.branch.probs[1:2],4)
 ```
 
 Let's assume that the right clade is actually sampled at 25%, and the left clade is still sampled at 50%:
 
-```{r, eval=TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
+```{r, eval=TRUE}
 times=c(0, 10)
 yini <-c(E0=1-0.25, E1=1-0.25, D0=0.25, D1=0)
 right.subA.probs <- GetProbs(yini, times)
