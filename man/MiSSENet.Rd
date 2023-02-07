@@ -38,7 +38,7 @@ It is normally invoked within \code{MiSSEGreedy}, but it can also be used as a s
 to simply identify poorly identify models and/or rerun them.
 }
 \references{
-Vascancelos, T, B.C. O'Meara, and J.M. Beaulieu. In prep.
+Vasconcelos, T., B.C. O'Meara, and J.M. Beaulieu. 2022. A flexible method for estimating tip diversification rates across a range of speciation and extinction scenarios. Evolution, 76:1420-1433.
 }
 \author{Jeremy M. Beaulieu}
 \keyword{models}

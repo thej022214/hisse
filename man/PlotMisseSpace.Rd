@@ -19,7 +19,7 @@ of their AIC weights. If only the \dQuote{possible.combos} is input, and \code{x
 will be plotted but with each vertex having the same size.
 }
 \references{
-Vascancelos, T, B.C. O'Meara, and J.M. Beaulieu. In prep.
+Vasconcelos, T., B.C. O'Meara, and J.M. Beaulieu. 2022. A flexible method for estimating tip diversification rates across a range of speciation and extinction scenarios. Evolution, 76:1420-1433.
 }
 \author{Jeremy M. Beaulieu}
 \keyword{plotting}

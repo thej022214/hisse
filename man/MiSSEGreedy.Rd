@@ -89,6 +89,8 @@ speciation and extinction. Syst. Biol. 56:701-710.
 
 Nee S., May R.M., and Harvey P.H. 1994. The reconstructed evolutionary process. Philos.
 Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.
+
+Vasconcelos, T., B.C. O'Meara, and J.M. Beaulieu. 2022. A flexible method for estimating tip diversification rates across a range of speciation and extinction scenarios. Evolution, 76:1420-1433.
 }
 
 \author{Brian C. O'Meara}
