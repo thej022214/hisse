@@ -183,13 +183,15 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             fix.type <- GetKSampleMRCA(phy, k.samples)
             no.k.samples <- length(k.samples[,1])
             gen <- FindGenerations(phy)
-            dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
+            data <- AddKData(data, k.samples)
+            data.new <- data.frame(data[,2], data[,2], row.names=data[,1], stringsAsFactors=FALSE)
+            data.new <- data.new[phy$tip.label,]
+            dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
             #These are all inputs for generating starting values:
             edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
             fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
             fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
             n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
-            data <- AddKData(data, k.samples)
         }else{
             if(!is.null(strat.intervals)){
                 phy.og <- phy
@@ -205,12 +207,14 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
                 phy <- AddKNodes(phy, k.samples)
                 fix.type <- GetKSampleMRCA(phy, k.samples, strat.intervals=TRUE)
                 gen <- FindGenerations(phy)
-                dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, includes.fossils=includes.fossils)
+                data <- AddKData(data, k.samples)
+                data.new <- data.frame(data[,2], data[,2], row.names=data[,1], stringsAsFactors=FALSE)
+                data.new <- data.new[phy$tip.label,]
+                dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, includes.fossils=includes.fossils)
                 #These are all inputs for generating starting values:
                 edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
                 fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
-                data <- AddKData(data, k.samples)
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-dim(fix.type)[1]
             }else{
                 phy.og <- phy
@@ -220,7 +224,10 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
                 strat.cache <- NULL
                 no.k.samples <- 0
                 gen <- FindGenerations(phy)
-                dat.tab <- OrganizeDataHiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
+                data <- AddKData(data, k.samples)
+                data.new <- data.frame(data[,2], data[,2], row.names=data[,1], stringsAsFactors=FALSE)
+                data.new <- data.new[phy$tip.label,]
+                dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
                 #These are all inputs for generating starting values:
                 edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
@@ -231,7 +238,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
     }else{
         phy.og <- phy
         gen <- FindGenerations(phy)
-        data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+        data.new <- data.frame(data[,2], data[,2], row.names=data[,1], stringsAsFactors=FALSE)
         data.new <- data.new[phy$tip.label,]
         dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
