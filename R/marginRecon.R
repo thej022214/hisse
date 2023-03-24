@@ -330,22 +330,22 @@ MarginReconGeoSSE.old <- function(phy, data, f, pars, hidden.areas=TRUE, assume.
 MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
-    if(!is.ultrametric(phy) & includes.fossils == FALSE){
-        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
-        edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
-        if(any(edge_details$type == "extinct_tip")){
-            phy <- force.ultrametric(phy)
-        }
-    }
 
     if(!is.null(root.p)) {
-        root.type="user"
-        root.p <- root.p / sum(root.p)
-        if(hidden.states > 1 & length(root.p)==2){
-            root.p <- rep(root.p, hidden.states)
+        if(hidden.states  > 1){
+            if( length( root.p ) == 2 ){
+                root.p <- rep(root.p, 4)
+                root.p <- root.p / sum(root.p)
+                warning("For hidden states, you need to specify the root.p for all hidden states. We have adjusted it so that there's equal chance among all hidden states.")
+            } else{
+                root.p.new <- numeric(8)
+                root.p.new[which(root.p > 0)] <- root.p[which(root.p > 0)]
+                root.p <- root.p.new
+                root.p <- root.p / sum(root.p)
+            }
+        }else{
+            ## All good:
             root.p <- root.p / sum(root.p)
-            warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for each of the specified hidden states")
         }
     }
     
@@ -398,9 +398,21 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     NodeEval <- function(node){
         if(node == cache$nb.tip+1){
             if(!is.null(k.samples)){
-                marginal.probs <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=as.numeric(fix.type[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type[,2], get.phi=TRUE)$root.p
+                root.information <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=as.numeric(fix.type[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type[,2], get.phi=TRUE)
+                if(is.null(root.p)){
+                    marginal.probs <- root.information$root.p
+                }else{
+                    #Recalculate based on user defined root.probs:
+                    marginal.probs <- (root.information$root.p * root.information$compD.root)/ sum((root.information$root.p * root.information$compD.root))
+                }
             }else{
-                marginal.probs <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, fossil.taxa=fossil.taxa, fix.type=NULL, get.phi=TRUE)$root.p
+                root.information <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, fossil.taxa=fossil.taxa, fix.type=NULL, get.phi=TRUE)
+                if(is.null(root.p)){
+                    marginal.probs <- root.information$root.p
+                }else{
+                    #Recalculate based on user defined root.probs:
+                    marginal.probs <- (root.information$root.p * root.information$compD.root)/ sum((root.information$root.p * root.information$compD.root))
+                }
             }
         }else{
             focal <- node
@@ -508,24 +520,24 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
-    if(!is.ultrametric(phy) & includes.fossils == FALSE){
-        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
-        edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
-        if(any(edge_details$type == "extinct_tip")){
-            phy <- force.ultrametric(phy)
+    if(!is.null(root.p)) {
+        if(hidden.states  > 1){
+            if( length( root.p ) == 4 ){
+                root.p <- rep(root.p, 8)
+                root.p <- root.p / sum(root.p)
+                warning("For hidden states, you need to specify the root.p for all hidden states. We have adjusted it so that there's equal chance among all hidden states.")
+            } else{
+                root.p.new <- numeric(32)
+                root.p.new[which(root.p > 0)] <- root.p[which(root.p > 0)]
+                root.p <- root.p.new
+                root.p <- root.p / sum(root.p)
+            }
+        }else{
+            ## All good:
+            root.p <- root.p / sum(root.p)
         }
     }
 
-    if(!is.null(root.p)) {
-        root.type="user"
-        root.p <- root.p / sum(root.p)
-        if(hidden.states > 1 & length(root.p)==4){
-            root.p <- rep(root.p, hidden.states)
-            root.p <- root.p / sum(root.p)
-            warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for each of the specified hidden states")
-        }
-    }
-    
     setDTthreads(threads=dt.threads)
     
     model.vec <- pars
@@ -576,9 +588,21 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     NodeEval <- function(node){
         if(node == cache$nb.tip+1){
             if(!is.null(k.samples)){
-                marginal.probs <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=as.numeric(fix.type[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type[,2], get.phi=TRUE)$root.p
+                root.information <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=as.numeric(fix.type[,3]), fossil.taxa=fossil.taxa, fix.type=fix.type[,2], get.phi=TRUE)
+                if(is.null(root.p)){
+                    marginal.probs <- root.information$root.p
+                }else{
+                    #Recalculate based on user defined root.probs:
+                    marginal.probs <- (root.information$root.p * root.information$compD.root)/ sum((root.information$root.p * root.information$compD.root))
+                }
             }else{
-                marginal.probs <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, fossil.taxa=fossil.taxa, fix.type=NULL, get.phi=TRUE)$root.p
+                root.information <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, fossil.taxa=fossil.taxa, fix.type=NULL, get.phi=TRUE)
+                if(is.null(root.p)){
+                    marginal.probs <- root.information$root.p
+                }else{
+                    #Recalculate based on user defined root.probs:
+                    marginal.probs <- (root.information$root.p * root.information$compD.root)/ sum((root.information$root.p * root.information$compD.root))
+                }
             }
         }else{
             focal <- node
@@ -683,17 +707,25 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
 MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladogenetic=TRUE, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
+        
     if(!is.null(root.p)) {
-        root.type="user"
-        root.p <- root.p / sum(root.p)
-        if(hidden.states ==TRUE & length(root.p)==3){
-            root.p <- rep(root.p, 3)
+        if(hidden.states  > 1){
+            if( length( root.p ) == 3 ){
+                root.p <- rep(root.p, 10)
+                root.p <- root.p / sum(root.p)
+                warning("For hidden states, you need to specify the root.p for all hidden states. We have adjusted it so that there's equal chance among all hidden states.")
+            } else{
+                root.p.new <- numeric(30)
+                root.p.new[which(root.p > 0)] <- root.p[which(root.p > 0)]
+                root.p <- root.p.new
+                root.p <- root.p / sum(root.p)
+            }
+        }else{
+            ## All good:
             root.p <- root.p / sum(root.p)
-            warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for 0A as 0B, and for 1A as 1B")
         }
     }
-    
+
     setDTthreads(threads=dt.threads)
     
     model.vec = pars
@@ -723,7 +755,13 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
     
     NodeEval <- function(node){
         if(node == cache$nb.tip+1){
-            marginal.probs <- DownPassGeoHissefast(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)$root.p
+            root.information <- DownPassGeoHissefast(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, get.phi=TRUE)
+            if(is.null(root.p)){
+                marginal.probs <- root.information$root.p
+            }else{
+                #Recalculate based on user defined root.probs:
+                marginal.probs <- (root.information$root.p * root.information$compD.root)/ sum((root.information$root.p * root.information$compD.root))
+            }
         }else{
             focal <- node
             marginal.probs.tmp <- c()
@@ -821,25 +859,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
 MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
-    if(!is.ultrametric(phy) & includes.fossils == FALSE){
-        warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
-        edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
-        if(any(edge_details$type == "extinct_tip")){
-            phy <- force.ultrametric(phy)
-        }
-    }
 
-    if(!is.null(root.p)) {
-        root.type="user"
-        root.p <- root.p / sum(root.p)
-        if(hidden.states ==TRUE & length(root.p)==2){
-            root.p <- rep(root.p, 2)
-            root.p <- root.p / sum(root.p)
-            warning("For hidden states, you need to specify the root.p for all possible hidden states. We have adjusted it so that there's equal chance for each of the specified hidden states")
-        }
-    }
-    
     setDTthreads(threads=dt.threads)
     
     model.vec = pars

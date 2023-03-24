@@ -23,7 +23,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             if( length( root.p ) == 2 ){
                 root.p <- rep(root.p, 4)
                 root.p <- root.p / sum(root.p)
-                warning("For hidden states, you need to specify the root.p for all hidden states. We have adjusted it so that there's equal chance for among all hidden states.")
+                warning("For hidden states, you need to specify the root.p for all hidden states. We have adjusted it so that there's equal chance among all hidden states.")
             } else{
                 root.p.new <- numeric(8)
                 root.p.new[1:length(root.p)] <- root.p
@@ -653,11 +653,19 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
-                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                        lambdas.check <- lambdas
-                        lambdas.check[which(lambdas==0)] <- 1
-                        #The initial condition for a k.sample is D(t)*psi
-                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                        if(cache$psi == 0){
+                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here -- when psi=0, then we got fake taxa for fixing states.
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            #The initial condition for a k.sample is D(t)*psi
+                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+                        }else{
+                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            #The initial condition for a k.sample is D(t)*psi
+                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                            }
                     }else{
                         if(cache$fix.type[fix.index] == "interval"){
                             lambdas.check <- lambdas
@@ -693,11 +701,19 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
-                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                        lambdas.check <- lambdas
-                        lambdas.check[which(lambdas==0)] <- 1
-                        #The initial condition for a k.sample is D(t)*psi
-                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                        if(cache$psi == 0){
+                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here -- when psi=0, then we got fake taxa for fixing states.
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            #The initial condition for a k.sample is D(t)*psi
+                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+                        }else{
+                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            #The initial condition for a k.sample is D(t)*psi
+                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                        }
                     }else{
                         if(cache$fix.type[fix.index] == "interval"){
                             lambdas.check <- lambdas
@@ -748,11 +764,19 @@ GetRootProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
-                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                        lambdas.check <- lambdas
-                        lambdas.check[which(lambdas==0)] <- 1
-                        #The initial condition for a k.sample is D(t)*psi
-                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                        if(cache$psi == 0){
+                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here -- when psi=0, then we got fake taxa for fixing states.
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            #The initial condition for a k.sample is D(t)*psi
+                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+                        }else{
+                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            #The initial condition for a k.sample is D(t)*psi
+                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                        }
                     }else{
                         if(cache$fix.type[fix.index] == "interval"){
                             lambdas.check <- lambdas
@@ -776,11 +800,19 @@ GetRootProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
-                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                        lambdas.check <- lambdas
-                        lambdas.check[which(lambdas==0)] <- 1
-                        #The initial condition for a k.sample is D(t)*psi
-                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                        if(cache$psi == 0){
+                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            #The initial condition for a k.sample is D(t)*psi
+                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+                        }else{
+                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+                            lambdas.check <- lambdas
+                            lambdas.check[which(lambdas==0)] <- 1
+                            #The initial condition for a k.sample is D(t)*psi
+                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                        }
                     }else{
                         if(cache$fix.type[fix.index] == "interval"){
                             lambdas.check <- lambdas
@@ -989,7 +1021,9 @@ DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type,
         obj = NULL
         obj$compD.root = compD.root/sum(compD.root)
         obj$compE = compE.root
+        print(root.p)
         obj$root.p = root.p
+        print(obj)
         return(obj)
     }else{
         return(loglik)
