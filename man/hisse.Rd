@@ -14,11 +14,9 @@ trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
-\item{data}{a matrix (or dataframe) with three columns. The first column 
-  containing the species names and the second and third containing the binary 
-  character information. Character "0" is on column 2 and chracter "1" is on 
-  column 3. A value of 0 means character absent and a value of 1 character 
-  present. The input of data follows a Pagel model. See 'Details'.}
+\item{data}{a matrix (or dataframe) with two columns. The first column 
+  containing the species names and the second contains the binary 
+  character information. See 'Details'.}
 \item{f}{vector of length 2 with the estimated proportion of extant species in 
   state 0 and 1 that are included in the phylogeny. A value of c(0.25, 0.5) means 
   that 25 percent of species in state 0 and 50 percent of species in state 1 are 
