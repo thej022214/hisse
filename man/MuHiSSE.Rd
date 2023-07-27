@@ -15,7 +15,7 @@ dt.threads=1)
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
 \item{data}{a matrix (or dataframe) with three columns. The first column 
   containing the species names and the second and third containing the binary 
-  character information. Character "0" is on column 2 and chracter "1" is on 
+  character information. Character "0" is on column 2 and character "1" is on 
   column 3. A value of 0 means character absent and a value of 1 character 
   present. The input of data follows a Pagel model. See 'Details'.}
 \item{f}{vector of length 4 with the estimated proportion of extant
@@ -50,7 +50,7 @@ dt.threads=1)
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using
-  \code{subplex}. The default is \code{FALSE}.}
+  \code{subplex}. The default is \code{TRUE}.}
 \item{sann.its}{a numeric indicating the number of times the simulated
   annealing algorithm should call the objective function.}
 \item{bounded.search}{a logical indicating whether or not bounds should
@@ -79,7 +79,7 @@ descendent branch calculations simultaneously, combine the probabilities based o
 shared ancestry, then repeat for the next set of descendents. In testing, we've found that 
 as the number of taxa increases, the calculation becomes much more efficient. In future 
 versions, we will likely allow for multicore processing of these calculations to further 
-improve speed. We also note that there is vignette tha describes more details for running
+improve speed. We also note that there is vignette that describes more details for running
 this particular function.
 
 As for data file format, \code{MuHiSSE} expects a three column matrix or data frame, with 

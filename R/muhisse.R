@@ -14,7 +14,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     if(!is.null(root.p)) {
         if(hidden.states ==TRUE){
             if( length( root.p ) == 4 ){
-                root.p <- rep(root.p, 4)
+                root.p <- rep(root.p, 8)
                 root.p <- root.p / sum(root.p)
                 warning("For hidden states, you need to specify the root.p for all hidden states. We have adjusted it so that there's equal chance for among all hidden states.")
             } else{

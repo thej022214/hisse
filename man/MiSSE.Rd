@@ -33,7 +33,7 @@ dt.threads=1, expand.mode=FALSE)
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using
-  \code{subplex}. The default is \code{FALSE}.}
+  \code{subplex}. The default is \code{TRUE}.}
 \item{sann.its}{a numeric indicating the number of times the simulated
   annealing algorithm should call the objective function.}
 \item{sann.temp}{the starting temperature for the simulated annealing. Higher temperatures results in the chain sampling a much wider space initially. The default of 5320 is based on the default of the GenSA package. For larger trees setting this value higher in conjunction with more sann.its can drastically improve performance.}

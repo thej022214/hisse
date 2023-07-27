@@ -148,9 +148,6 @@ TransMatMakerHiSSE <- function(hidden.traits=0, make.null=FALSE, cat.trans.vary=
 }
 
 
-
-
-
 GetAllDiags <- function(inmat, sorted = TRUE) {
     Range <- ncol(inmat) - 1
     Range <- -Range:Range
