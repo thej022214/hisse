@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -75,17 +75,20 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">SimToPhylo</span><span class="op">(</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">FALSE</span>, drop.stem<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">SimToPhylo</span><span class="op">(</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">FALSE</span>, drop.stem<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>results</dt>
 <dd><p>dataframe of results from SimulateHisse.</p></dd>
+
 <dt>include.extinct</dt>
 <dd><p>include (TRUE) or delete (FALSE) extinct terminal taxa.</p></dd>
+
 <dt>drop.stem</dt>
 <dd><p>include the lineage leading to the first saved speciation even (FALSE) or cull it (TRUE).</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -95,6 +98,7 @@
     <h2>Value</h2>
     <dl><dt>phylo</dt>
 <dd><p>a phylo object in cladewise order.</p></dd>
+
 </dl></div>
     <div id="references">
     <h2>References</h2>
@@ -107,14 +111,14 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"><span class="va">simulated.result</span> <span class="op">&lt;-</span> <span class="fu"><a href="simulateHisse.html">SimulateHisse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.3</span>, <span class="fl">.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>, <span class="fl">0</span><span class="op">)</span>, </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">0.2</span>, <span class="fl">.3</span>, <span class="cn">NA</span><span class="op">)</span>, nrow<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, max.taxa<span class="op">=</span><span class="fl">35</span>, x0<span class="op">=</span><span class="fl">1</span><span class="op">)</span>  </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfcol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">SimToPhylo</span><span class="op">(</span><span class="va">simulated.result</span><span class="op">$</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">SimToPhylo</span><span class="op">(</span><span class="va">simulated.result</span><span class="op">$</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="va">simulated.result</span> <span class="op">&lt;-</span> <span class="fu"><a href="simulateHisse.html">SimulateHisse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.3</span>, <span class="fl">.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>, <span class="fl">0</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">0.2</span>, <span class="fl">.3</span>, <span class="cn">NA</span><span class="op">)</span>, nrow<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, max.taxa<span class="op">=</span><span class="fl">35</span>, x0<span class="op">=</span><span class="fl">1</span><span class="op">)</span>  </span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfcol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">SimToPhylo</span><span class="op">(</span><span class="va">simulated.result</span><span class="op">$</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">SimToPhylo</span><span class="op">(</span><span class="va">simulated.result</span><span class="op">$</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="simToPhylo-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="co"># }   </span></span>
+<span class="r-in"><span><span class="co"># }   </span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -129,7 +133,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

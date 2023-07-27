@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -146,14 +146,14 @@ except there is no need to set up a transition model For the following
 example, we will use the cetacean phylogeny (e.g., whales and relatives)
 of Steeman et al. (2009).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hisse</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## Loading required package: ape</span></code></pre>
-<pre><code><span class="co">## Loading required package: deSolve</span></code></pre>
-<pre><code><span class="co">## Loading required package: GenSA</span></code></pre>
-<pre><code><span class="co">## Loading required package: subplex</span></code></pre>
-<pre><code><span class="co">## Loading required package: nloptr</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hisse</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Loading required package: ape</span></span></code></pre>
+<pre><code><span><span class="co">## Loading required package: deSolve</span></span></code></pre>
+<pre><code><span><span class="co">## Loading required package: GenSA</span></span></code></pre>
+<pre><code><span><span class="co">## Loading required package: subplex</span></span></code></pre>
+<pre><code><span><span class="co">## Loading required package: nloptr</span></span></code></pre>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">phy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ape/man/read.tree.html" class="external-link">read.tree</a></span><span class="op">(</span><span class="st">"whales_Steemanetal2009.tre"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">phy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ape/man/read.tree.html" class="external-link">read.tree</a></span><span class="op">(</span><span class="st">"whales_Steemanetal2009.tre"</span><span class="op">)</span></span></code></pre></div>
 <p>As with <code>hisse</code>, rather than optimizing <span class="math inline">\(\lambda_i\)</span> and <span class="math inline">\(\mu_i\)</span> separately, <code>MiSSE</code>
 optimizes transformations of these variables. We let <span class="math inline">\(\tau_i = \lambda_i+\mu_i\)</span> define “net
 turnover”, and we let <span class="math inline">\(\epsilon_i = \mu_i /
@@ -166,44 +166,44 @@ model for both net turnover and extinction fraction are specified as
 index vectors provided to the function call. First, let us fit a single
 rate model:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>
-<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>
-<span class="va">one.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">one.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span></code></pre></div>
 <p>Pretty simple. Now to fit a model that contains two rate classes, we
 will simply expand out the turnover vector:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>
-<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
-<span class="va">two.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">two.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span></code></pre></div>
 <p>Overall, <code>MiSSE</code> allows up to 26 possible hidden states in
 diversification (denoted by A-Z), and in this example since we fit two
 rate classes, we have two hidden states, A and B, impacting turnover
 rates. Here is the rest of the model set applied to the whale data
 set:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#rate classes A:C</span>
-<span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>
-<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
-<span class="va">three.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span>
-<span class="co">#rate classes A:D</span>
-<span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span><span class="op">)</span>
-<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
-<span class="va">four.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span>
-<span class="co">#rate classes A:E</span>
-<span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span>
-<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>
-<span class="va">five.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co">#rate classes A:C</span></span>
+<span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">three.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span>
+<span><span class="co">#rate classes A:D</span></span>
+<span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">four.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span>
+<span><span class="co">#rate classes A:E</span></span>
+<span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">five.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span></code></pre></div>
 <p>We can also let <span class="math inline">\(\epsilon_i\)</span> vary
 across the tree:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>
-<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>
-<span class="va">two.rate.weps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span>
-
-<span class="co">#rate classes A:C, but include eps as well:</span>
-<span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>
-<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>
-<span class="va">three.rate.weps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">two.rate.weps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#rate classes A:C, but include eps as well:</span></span>
+<span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">three.rate.weps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span></code></pre></div>
 <p>However, in the case of cetaceans, allowing extinction fraction to
 vary does not provide any additional information to the model as all
 rate classes return nearly identical estimates (not shown).</p>
@@ -237,30 +237,30 @@ file that contains the reconstructions and we can check that everything
 has loaded correctly and is of the proper <code>misse.states</code>
 class:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># two.rate.recon &lt;- MarginReconMiSSE(phy=phy, f=1,  hidden.states=2, </span>
-                <span class="co">#pars=two.rate$solution, n.cores=3, AIC=two.rate$AIC)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"misse.vignette.Rsave"</span><span class="op">)</span> <span class="co"># Line above shows the command to create this result.</span>
-<span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">two.rate.recon</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] "misse.states"</span></code></pre>
+<code class="sourceCode R"><span><span class="co"># two.rate.recon &lt;- MarginReconMiSSE(phy=phy, f=1,  hidden.states=2, </span></span>
+<span>                <span class="co">#pars=two.rate$solution, n.cores=3, AIC=two.rate$AIC)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"misse.vignette.Rsave"</span><span class="op">)</span> <span class="co"># Line above shows the command to create this result.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">two.rate.recon</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "misse.states"</span></span></code></pre>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">two.rate.recon</span></code></pre></div>
-<pre><code><span class="co">## </span>
-<span class="co">## Phylogenetic tree with 87 tips and 86 internal nodes.</span>
-<span class="co">## </span>
-<span class="co">## Tip labels:</span>
-<span class="co">##   Balaena_mysticetus, Eubalaena_australis, Eubalaena_glacialis, Eubalaena_japonica, Caperea_marginata, Eschrichtius_robustus, ...</span>
-<span class="co">## Node labels:</span>
-<span class="co">##   1, 1, 1, 1, 1, 1, ...</span>
-<span class="co">## </span>
-<span class="co">## Rooted; includes branch lengths.</span></code></pre>
+<code class="sourceCode R"><span><span class="va">two.rate.recon</span></span></code></pre></div>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">## Phylogenetic tree with 87 tips and 86 internal nodes.</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Tip labels:</span></span>
+<span><span class="co">##   Balaena_mysticetus, Eubalaena_australis, Eubalaena_glacialis, Eubalaena_japonica, Caperea_marginata, Eschrichtius_robustus, ...</span></span>
+<span><span class="co">## Node labels:</span></span>
+<span><span class="co">##   1, 1, 1, 1, 1, 1, ...</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Rooted; includes branch lengths.</span></span></code></pre>
 <p>Let’s take a look at the reconstruction for the <code>two.rate</code>
 model reconstruction. I will simply supply the reconstruction object if
 <code>misse.states</code> class to the plotting function,
 <code><a href="../reference/plotMiSSE.html">plot.misse.states()</a></code>, and plot net diversification (see
 Figure 2).</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotMiSSE.html">plot.misse.states</a></span><span class="op">(</span><span class="va">two.rate.recon</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">TRUE</span>, type<span class="op">=</span><span class="st">"phylogram"</span>,
-                  fsize<span class="op">=</span><span class="fl">.25</span>, legend<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotMiSSE.html">plot.misse.states</a></span><span class="op">(</span><span class="va">two.rate.recon</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">TRUE</span>, type<span class="op">=</span><span class="st">"phylogram"</span>,</span>
+<span>                  fsize<span class="op">=</span><span class="fl">.25</span>, legend<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="MiSSE-vignette_files/figure-html/unnamed-chunk-9-1.png" alt="A two-rate class MiSSE analysis and reconstruction of the cetacean phylogeny of Steeman et al. (2009) shows a clear increase in the net diversification rate within the Delphinidae (dolphins) relative to all other cetaceans; there also seems to be a slightly elevated rates in the sister group of Delphinidae, the Monodontidae+Phocenidae. Overall, this particular MiSSE model seems to correctly identify the source of 'trait-independent' diversification that can plague BiSSE analyses of simulated data sets on the cetacean tree (see Rabosky and Goldberg, 2015)." width="700"><p class="caption">
 A two-rate class MiSSE analysis and reconstruction of the cetacean
@@ -274,12 +274,12 @@ simulated data sets on the cetacean tree (see Rabosky and Goldberg,
 2015).
 </p>
 </div>
-<pre><code><span class="co">## $rate.tree</span>
-<span class="co">## Object of class "contMap" containing:</span>
-<span class="co">## </span>
-<span class="co">## (1) A phylogenetic tree with 87 tips and 86 internal nodes.</span>
-<span class="co">## </span>
-<span class="co">## (2) A mapped continuous trait on the range (0.074823, 0.205397).</span></code></pre>
+<pre><code><span><span class="co">## $rate.tree</span></span>
+<span><span class="co">## Object of class "contMap" containing:</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## (1) A phylogenetic tree with 87 tips and 86 internal nodes.</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## (2) A mapped continuous trait on the range (0.074823, 0.205397).</span></span></code></pre>
 <p>Of course, in this example we have a set of models that includes
 models that contain upwards of five rate classes. Also, we know from AIC
 that there are three model – the three-, four-, and five rate class
@@ -289,18 +289,18 @@ model-averaging of the rates at nodes and tips. To do this, we simply
 supply all reconstructions you want to average as elements in a list.
 There are many ways to generate a list, but here is one way:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">misse.results.list</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
-<span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">one.rate.recon</span>
-<span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">two.rate.recon</span>
-<span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">three.rate.recon</span>
-<span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">four.rate.recon</span>
-<span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">5</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">five.rate.recon</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">misse.results.list</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">one.rate.recon</span></span>
+<span><span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">two.rate.recon</span></span>
+<span><span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">three.rate.recon</span></span>
+<span><span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">four.rate.recon</span></span>
+<span><span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">5</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">five.rate.recon</span></span></code></pre></div>
 <p>And, as before, we simply supply this list to the plotting function,
 <code><a href="../reference/plotMiSSE.html">plot.misse.states()</a></code>, and plot net diversification (see
 Figure 3).</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plotMiSSE.html">plot.misse.states</a></span><span class="op">(</span><span class="va">misse.results.list</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">TRUE</span>, type<span class="op">=</span><span class="st">"phylogram"</span>,
-                  fsize<span class="op">=</span><span class="fl">.25</span>, legend<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotMiSSE.html">plot.misse.states</a></span><span class="op">(</span><span class="va">misse.results.list</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">TRUE</span>, type<span class="op">=</span><span class="st">"phylogram"</span>,</span>
+<span>                  fsize<span class="op">=</span><span class="fl">.25</span>, legend<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="MiSSE-vignette_files/figure-html/unnamed-chunk-12-1.png" alt="A model-averaged MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009) shows an apparent slow down in the net diversification through time." width="700"><p class="caption">
 A model-averaged MiSSE analysis of the cetacean phylogeny of Steeman et
@@ -308,12 +308,12 @@ al. (2009) shows an apparent slow down in the net diversification
 through time.
 </p>
 </div>
-<pre><code><span class="co">## $rate.tree</span>
-<span class="co">## Object of class "contMap" containing:</span>
-<span class="co">## </span>
-<span class="co">## (1) A phylogenetic tree with 87 tips and 86 internal nodes.</span>
-<span class="co">## </span>
-<span class="co">## (2) A mapped continuous trait on the range (0.047889, 0.229038).</span></code></pre>
+<pre><code><span><span class="co">## $rate.tree</span></span>
+<span><span class="co">## Object of class "contMap" containing:</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## (1) A phylogenetic tree with 87 tips and 86 internal nodes.</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## (2) A mapped continuous trait on the range (0.047889, 0.229038).</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="fixing-extinction-fraction">Fixing extinction fraction<a class="anchor" aria-label="anchor" href="#fixing-extinction-fraction"></a>
@@ -329,8 +329,8 @@ call. The first step is to setup a Yule-based <code><a href="../reference/MiSSE.
 by supplying a vector of zeros for <code>eps</code> that is of equal
 length to the number of turnover rate classes:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>
-<span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span></span></code></pre></div>
 <p>In the function call, there is an option called
 <code>fixed.eps</code>. Normally, this is set to <code>NULL</code>,
 which indicates that extinction fraction is to be estimated. When a
@@ -338,7 +338,7 @@ value is supplied to <code>fixed.eps</code> this will be the value used
 throughout the parameter search. Here we assume there are two rate
 classes and a fixed extinction fraction of 0.90:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">two.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span>, fixed.eps<span class="op">=</span><span class="fl">0.9</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">two.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span>, fixed.eps<span class="op">=</span><span class="fl">0.9</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="other-considerations">Other considerations<a class="anchor" aria-label="anchor" href="#other-considerations"></a>
@@ -374,29 +374,29 @@ used above, I attemped to fit a model with three, four, and five hidden
 states, A, B, and C, but the reconstructions indicated a rather
 complicated, and highly uncertain, diversification history:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">two.rate</span></code></pre></div>
-<pre><code><span class="co">## </span>
-<span class="co">## Fit </span>
-<span class="co">##             lnL             AIC            AICc          n.taxa n.hidden.states </span>
-<span class="co">##       -271.7681        551.5363        552.0241         87.0000          2.0000 </span>
-<span class="co">## </span>
-<span class="co">## Model parameters: </span>
-<span class="co">## </span>
-<span class="co">##   turnover0A        eps0A   turnover0B        eps0B           q0 </span>
-<span class="co">## 7.489769e-02 2.061154e-09 2.052022e-01 2.061154e-09 3.743782e-03</span></code></pre>
+<code class="sourceCode R"><span><span class="va">two.rate</span></span></code></pre></div>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">## Fit </span></span>
+<span><span class="co">##             lnL             AIC            AICc          n.taxa n.hidden.states </span></span>
+<span><span class="co">##       -271.7681        551.5363        552.0241         87.0000          2.0000 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Model parameters: </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##   turnover0A        eps0A   turnover0B        eps0B           q0 </span></span>
+<span><span class="co">## 7.489769e-02 2.061154e-09 2.052022e-01 2.061154e-09 3.743782e-03</span></span></code></pre>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">three.rate</span></code></pre></div>
-<pre><code><span class="co">## </span>
-<span class="co">## Fit </span>
-<span class="co">##             lnL             AIC            AICc          n.taxa n.hidden.states </span>
-<span class="co">##       -263.9931        537.9863        538.7270         87.0000          3.0000 </span>
-<span class="co">## </span>
-<span class="co">## Model parameters: </span>
-<span class="co">## </span>
-<span class="co">##  turnover0A       eps0A  turnover0B       eps0B  turnover0C       eps0C </span>
-<span class="co">## 0.008069096 0.275802793 0.008083110 0.275802793 0.340152955 0.275802793 </span>
-<span class="co">##          q0 </span>
-<span class="co">## 0.131447160</span></code></pre>
+<code class="sourceCode R"><span><span class="va">three.rate</span></span></code></pre></div>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">## Fit </span></span>
+<span><span class="co">##             lnL             AIC            AICc          n.taxa n.hidden.states </span></span>
+<span><span class="co">##       -263.9931        537.9863        538.7270         87.0000          3.0000 </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Model parameters: </span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">##  turnover0A       eps0A  turnover0B       eps0B  turnover0C       eps0C </span></span>
+<span><span class="co">## 0.008069096 0.275802793 0.008083110 0.275802793 0.340152955 0.275802793 </span></span>
+<span><span class="co">##          q0 </span></span>
+<span><span class="co">## 0.131447160</span></span></code></pre>
 <p>Note that the likelihood was a significant improvement from the two
 rate model, but the transition rate, <span class="math inline">\(q\)</span>, is roughly two orders of magnitude
 higher (<span class="math inline">\(q=0.131\)</span>) relative to the
@@ -406,27 +406,27 @@ mean? Well, we can convert this into the expected number of transitions
 by multiplying the rate by the sum of the branch lengths in the cetacean
 phylogeny:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">expected.transitions.two</span> <span class="op">&lt;-</span> <span class="fl">0.004</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">two.rate</span><span class="op">$</span><span class="va">phy</span><span class="op">$</span><span class="va">edge.length</span><span class="op">)</span>
-<span class="va">expected.transitions.two</span></code></pre></div>
-<pre><code><span class="co">## [1] 3.281109</span></code></pre>
+<code class="sourceCode R"><span><span class="va">expected.transitions.two</span> <span class="op">&lt;-</span> <span class="fl">0.004</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">two.rate</span><span class="op">$</span><span class="va">phy</span><span class="op">$</span><span class="va">edge.length</span><span class="op">)</span></span>
+<span><span class="va">expected.transitions.two</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 3.281109</span></span></code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">expected.transitions.three</span> <span class="op">&lt;-</span> <span class="fl">0.131</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">three.rate</span><span class="op">$</span><span class="va">phy</span><span class="op">$</span><span class="va">edge.length</span><span class="op">)</span>
-<span class="va">expected.transitions.three</span></code></pre></div>
-<pre><code><span class="co">## [1] 107.4563</span></code></pre>
+<code class="sourceCode R"><span><span class="va">expected.transitions.three</span> <span class="op">&lt;-</span> <span class="fl">0.131</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">three.rate</span><span class="op">$</span><span class="va">phy</span><span class="op">$</span><span class="va">edge.length</span><span class="op">)</span></span>
+<span><span class="va">expected.transitions.three</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 107.4563</span></span></code></pre>
 <p>At first glance, this might seem that something is off with the
 three-rate class model – e.g., 3 vs. 107 number of shifts among the
 different classes? However, examining the support region around the
 parameters can give an indication as to the overall reliability of these
 estimates:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"misse.support.Rsave"</span><span class="op">)</span>
-<span class="va">two.rate.support</span><span class="op">$</span><span class="va">ci</span><span class="op">[</span>,<span class="st">"q0"</span><span class="op">]</span></code></pre></div>
-<pre><code><span class="co">##           0%          25%          50%          75%         100% </span>
-<span class="co">## 0.0009535839 0.0036835840 0.0065180114 0.0106515654 0.0206332391</span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"misse.support.Rsave"</span><span class="op">)</span></span>
+<span><span class="va">two.rate.support</span><span class="op">$</span><span class="va">ci</span><span class="op">[</span>,<span class="st">"q0"</span><span class="op">]</span></span></code></pre></div>
+<pre><code><span><span class="co">##           0%          25%          50%          75%         100% </span></span>
+<span><span class="co">## 0.0009535839 0.0036835840 0.0065180114 0.0106515654 0.0206332391</span></span></code></pre>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">three.rate.support</span><span class="op">$</span><span class="va">ci</span><span class="op">[</span>,<span class="st">"q0"</span><span class="op">]</span></code></pre></div>
-<pre><code><span class="co">##         0%        25%        50%        75%       100% </span>
-<span class="co">## 0.06839226 0.11308939 0.13144716 0.15736921 0.22772718</span></code></pre>
+<code class="sourceCode R"><span><span class="va">three.rate.support</span><span class="op">$</span><span class="va">ci</span><span class="op">[</span>,<span class="st">"q0"</span><span class="op">]</span></span></code></pre></div>
+<pre><code><span><span class="co">##         0%        25%        50%        75%       100% </span></span>
+<span><span class="co">## 0.06839226 0.11308939 0.13144716 0.15736921 0.22772718</span></span></code></pre>
 <p>In the case of the two rate class model, even though the MLE
 indicates very few transitions among the rate classes, there is a model
 within 2 log likelihood units that suggests as many as 17 expected
@@ -484,40 +484,40 @@ to run). These are just estimates based on the runs so far, but it’s a
 stochastic search and can take more or less time. Here is a very
 straightforward <code><a href="../reference/MiSSEGreedy.html">MiSSEGreedy()</a></code> run:</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ape/man/rtree.html" class="external-link">rcoal</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span>
-<span class="va">potential.combos</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateMiSSEGreedyCombinations.html">generateMiSSEGreedyCombinations</a></span><span class="op">(</span>max.param<span class="op">=</span><span class="fl">4</span>, vary.both<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
-
-<span class="co">#run on one core:</span>
-<span class="va">model.set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSEGreedy.html">MiSSEGreedy</a></span><span class="op">(</span><span class="va">tree</span>, possible.combos<span class="op">=</span><span class="va">potential.combos</span>, n.cores<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
-
-<span class="co">#run on all available cores: (commented out because CRAN does not allow this in examples)</span>
-<span class="va">model.set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSEGreedy.html">MiSSEGreedy</a></span><span class="op">(</span><span class="va">phy</span>, <span class="va">potential.combos</span>, n.cores<span class="op">=</span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span>, f<span class="op">=</span><span class="fl">1</span><span class="op">)</span>
-
-<span class="va">AICc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">result</span>, <span class="st">"[["</span>, <span class="st">"AICc"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">deltaAICc</span> <span class="op">&lt;-</span> <span class="va">AICc</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">AICc</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co"># Yes, [[ is a function you can lapply, and the name of elements within each list</span>
-<span class="co"># object can be arguments. Life is awesome.</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ape/man/rtree.html" class="external-link">rcoal</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span>
+<span><span class="va">potential.combos</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateMiSSEGreedyCombinations.html">generateMiSSEGreedyCombinations</a></span><span class="op">(</span>max.param<span class="op">=</span><span class="fl">4</span>, vary.both<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#run on one core:</span></span>
+<span><span class="va">model.set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSEGreedy.html">MiSSEGreedy</a></span><span class="op">(</span><span class="va">tree</span>, possible.combos<span class="op">=</span><span class="va">potential.combos</span>, n.cores<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#run on all available cores: (commented out because CRAN does not allow this in examples)</span></span>
+<span><span class="va">model.set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSEGreedy.html">MiSSEGreedy</a></span><span class="op">(</span><span class="va">phy</span>, <span class="va">potential.combos</span>, n.cores<span class="op">=</span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span>, f<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">AICc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">result</span>, <span class="st">"[["</span>, <span class="st">"AICc"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">deltaAICc</span> <span class="op">&lt;-</span> <span class="va">AICc</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">AICc</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Yes, [[ is a function you can lapply, and the name of elements within each list</span></span>
+<span><span class="co"># object can be arguments. Life is awesome.</span></span></code></pre></div>
 <p>The output in <code>model.set</code> is a list of models evaluated.
 From there you can just loop over each model and do the rate class
 reconstruction:</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">model.recons</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">)</span><span class="op">)</span>
-<span class="kw">for</span> <span class="op">(</span><span class="va">model_index</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">nturnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">turnover</span><span class="op">)</span><span class="op">)</span>
-    <span class="va">neps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">eps</span><span class="op">)</span><span class="op">)</span>
-    <span class="va">misse_recon</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/marginReconMiSSE.html">MarginReconMiSSE</a></span><span class="op">(</span>phy <span class="op">=</span> <span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">phy</span>, f <span class="op">=</span> <span class="fl">1</span>, 
-                                    hidden.states <span class="op">=</span> <span class="va">nturnover</span>, 
-                                    pars <span class="op">=</span> <span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">solution</span>, 
-                                    AIC <span class="op">=</span> <span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">AIC</span><span class="op">)</span>
-    <span class="va">model.recons</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">misse_recon</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">model.recons</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">model_index</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">nturnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">turnover</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">neps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">eps</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">misse_recon</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/marginReconMiSSE.html">MarginReconMiSSE</a></span><span class="op">(</span>phy <span class="op">=</span> <span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">phy</span>, f <span class="op">=</span> <span class="fl">1</span>, </span>
+<span>                                    hidden.states <span class="op">=</span> <span class="va">nturnover</span>, </span>
+<span>                                    pars <span class="op">=</span> <span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">solution</span>, </span>
+<span>                                    AIC <span class="op">=</span> <span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">AIC</span><span class="op">)</span></span>
+<span>    <span class="va">model.recons</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">misse_recon</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p>As with any other function contained within <code>hisse</code>, the
 output from the character reconstruction can be used to obtain model
 averaged rates, such the estimated rates for each tip in the tree:</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">tip.rates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelAveRates.html">GetModelAveRates</a></span><span class="op">(</span><span class="va">model.recons</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tips"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">tip.rates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelAveRates.html">GetModelAveRates</a></span><span class="op">(</span><span class="va">model.recons</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tips"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>We recommend also taking a look at the function
 <code>generateMiSSEFGreedyCombinations()</code>, which we used in the
 <code><a href="../reference/MiSSEGreedy.html">MiSSEGreedy()</a></code> example above. This creates the set of
@@ -606,7 +606,7 @@ oceans. Syst. Biol. 58:573-585.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

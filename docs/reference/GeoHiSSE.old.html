@@ -19,7 +19,7 @@ character distribution."><!-- mathjax --><script src="https://cdnjs.cloudflare.c
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -79,12 +79,12 @@ character distribution.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">GeoHiSSE.old</span><span class="op">(</span><span class="va">phy</span>, <span class="va">data</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, speciation<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>, extirpation<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, 
-hidden.areas<span class="op">=</span><span class="cn">FALSE</span>, trans.rate<span class="op">=</span><span class="cn">NULL</span>, assume.cladogenetic<span class="op">=</span><span class="cn">TRUE</span>, 
-condition.on.survival<span class="op">=</span><span class="cn">TRUE</span>, root.type<span class="op">=</span><span class="st">"madfitz"</span>, root.p<span class="op">=</span><span class="cn">NULL</span>, sann<span class="op">=</span><span class="cn">TRUE</span>,
-sann.its<span class="op">=</span><span class="fl">1000</span>, bounded.search<span class="op">=</span><span class="cn">TRUE</span>,  max.tol<span class="op">=</span><span class="va">.Machine</span><span class="op">$</span><span class="va">double.eps</span><span class="op">^</span><span class="fl">.50</span>,
-mag.san.start<span class="op">=</span><span class="fl">0.5</span>, starting.vals<span class="op">=</span><span class="cn">NULL</span>, speciation.upper<span class="op">=</span><span class="fl">1000</span>, extirpation.upper<span class="op">=</span><span class="fl">1000</span>, 
-trans.upper<span class="op">=</span><span class="fl">100</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">GeoHiSSE.old</span><span class="op">(</span><span class="va">phy</span>, <span class="va">data</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, speciation<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span>, extirpation<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, </span>
+<span>hidden.areas<span class="op">=</span><span class="cn">FALSE</span>, trans.rate<span class="op">=</span><span class="cn">NULL</span>, assume.cladogenetic<span class="op">=</span><span class="cn">TRUE</span>, </span>
+<span>condition.on.survival<span class="op">=</span><span class="cn">TRUE</span>, root.type<span class="op">=</span><span class="st">"madfitz"</span>, root.p<span class="op">=</span><span class="cn">NULL</span>, sann<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>sann.its<span class="op">=</span><span class="fl">1000</span>, bounded.search<span class="op">=</span><span class="cn">TRUE</span>,  max.tol<span class="op">=</span><span class="va">.Machine</span><span class="op">$</span><span class="va">double.eps</span><span class="op">^</span><span class="fl">.50</span>,</span>
+<span>mag.san.start<span class="op">=</span><span class="fl">0.5</span>, starting.vals<span class="op">=</span><span class="cn">NULL</span>, speciation.upper<span class="op">=</span><span class="fl">1000</span>, extirpation.upper<span class="op">=</span><span class="fl">1000</span>, </span>
+<span>trans.upper<span class="op">=</span><span class="fl">100</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -92,11 +92,13 @@ trans.upper<span class="op">=</span><span class="fl">100</span>, ode.eps<span cl
     <dl><dt>phy</dt>
 <dd><p>a phylogenetic tree, in <code>ape</code> “phylo” format and
     with internal nodes labeled denoting the ancestral selective regimes.</p></dd>
+
 <dt>data</dt>
 <dd><p>a matrix (or dataframe) with two columns containing species
   information. First column has the species names and second column has
   area codes. Values for the areas need to be 0, 1, or 2, where 0 is the 
   widespread area '01', 1 is endemic area '0' and 2 is endemic area '1'. See 'Details'.</p></dd>
+
 <dt>f</dt>
 <dd><p>vector of length 3 with the estimated proportion of extant
   species in state 1 (area '0'), state 2 (area '1'), and state 0 (widespread area '01') 
@@ -104,6 +106,7 @@ trans.upper<span class="op">=</span><span class="fl">100</span>, ode.eps<span cl
   of species in areas '0' and '1' and 50 percent of species in area '01' are
   included in the phylogeny. By default all species are assumed to be
   sampled.</p></dd>
+
 <dt>speciation</dt>
 <dd><p>a numeric vector of length equal to 3+(number of
   <code>hidden.areas</code> * 3). A GeoSSE model has 3 speciation parameters:
@@ -111,6 +114,7 @@ trans.upper<span class="op">=</span><span class="fl">100</span>, ode.eps<span cl
 parameters: s0A, s1A, s01A, s0B, s1B, s01B. And so on. The length of the numeric
 vector needs to match the number of speciation parameters in the
 model. See 'Details'.</p></dd>
+
 <dt>extirpation</dt>
 <dd><p>a numeric vector of length equal to 2+(number of
   <code>hidden.areas</code> * 2). A GeoSSE model has 2 extirpation parameters:
@@ -118,61 +122,78 @@ model. See 'Details'.</p></dd>
 parameters: x0A, x1A, x0B, and x1B. And so on. The length of the numeric
 vector needs to match the number of extirpation parameters in the
 model. See 'Details'.</p></dd>
+
 <dt>hidden.areas</dt>
 <dd><p>a logical indicating whether the model includes a
   hidden area. The default is <code>FALSE</code>.</p></dd>
+ 
 <dt>trans.rate</dt>
 <dd><p>provides the transition rate model. See function
   <code>TransMatMakerGeoHiSSE.old</code>.</p></dd>
+
 <dt>assume.cladogenetic</dt>
 <dd><p>assumes that cladogenetic events occur at nodes. The 
 	default is <code>TRUE</code>.</p></dd>
+
 <dt>condition.on.survival</dt>
 <dd><p>a logical indicating whether the likelihood
   should be conditioned on the survival of two lineages and the
   speciation event subtending them (Nee et al. 1994). The default is <code>TRUE</code>.</p></dd>
+
 <dt>root.type</dt>
 <dd><p>indicates whether root summarization follow the procedure described by FitzJohn et al. 2009, “madfitz” or Herrera-Alsina et al. 2018, “herr_als”.</p></dd>
+
 <dt>root.p</dt>
 <dd><p>a vector indicating fixed root state probabilities. The
   default is <code>NULL</code>. Order of the areas in the vector need to follow:
   root.p[1] = 1 (endemic area '0'); root.p[2] = 2 (endemic
   area '1'); root.p[3] = 0 (widespread area '01').</p></dd>
+
 <dt>sann</dt>
 <dd><p>a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using
   <code>subplex</code>. The default is <code>TRUE</code>.</p></dd>
+
 <dt>sann.its</dt>
 <dd><p>a numeric indicating the number of times the simulated
   annealing algorithm should call the objective function.</p></dd>
+
 <dt>bounded.search</dt>
 <dd><p>a logical indicating whether or not bounds should
   be enforced during optimization. The default is is <code>TRUE</code>.</p></dd>
+
 <dt>max.tol</dt>
 <dd><p>supplies the relative optimization tolerance to
   <code>subplex</code>.</p></dd>
+
 <dt>mag.san.start</dt>
 <dd><p>Sets the extinction fraction to estimate the starting values 
   for the diversification parameters. The equation used is based on Magallon and 
   Sanderson (2001), and follows the procedure used in the original GeoSSE 
   implementation.</p></dd>
+
 <dt>starting.vals</dt>
 <dd><p>a numeric vector of length 3 with starting values for the
   model for all areas and hidden states. Position [1] sets turnover, [2]
   sets extinction fraction, and [3] dispersal rates.</p></dd>
+
 <dt>speciation.upper</dt>
 <dd><p>sets the upper bound for the speciation parameters.</p></dd>
+
 <dt>extirpation.upper</dt>
 <dd><p>sets the upper bound for the extirpation parameters.</p></dd>
+
 <dt>trans.upper</dt>
 <dd><p>sets the upper bound for the transition rate parameters.</p></dd>
+
 <dt>ode.eps</dt>
 <dd><p>sets the tolerance for the integration at the end of a
   branch. Essentially if the sum of compD is less than this tolerance,
   then it assumes the results are unstable and discards them. The
   default is set to zero, but in testing a value of 1e-8 can sometimes
   produce stable solutions for both easy and very difficult optimization problems.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -234,54 +255,76 @@ root options.</p>
     </div>
     <div id="value">
     <h2>Value</h2>
-    <p><code>GeoHiSSE</code> returns an object of class <code>geohisse.fit</code>. This is a list with 
+    
+
+<p><code>GeoHiSSE</code> returns an object of class <code>geohisse.fit</code>. This is a list with 
 elements:</p>
 <dl><dt>$loglik</dt>
 <dd><p>the maximum negative log-likelihood.</p></dd>
+
 <dt>$AIC</dt>
 <dd><p>Akaike information criterion.</p></dd>
+
 <dt>$AICc</dt>
 <dd><p>Akaike information criterion corrected for sample-size.</p></dd>
+
 <dt>$solution</dt>
 <dd><p>a matrix containing the maximum likelihood estimates of the model 
 parameters.</p></dd>
+
 <dt>$index.par</dt>
 <dd><p>an index matrix of the parameters being estimated.</p></dd>
+
 <dt>$f</dt>
 <dd><p>user-supplied sampling frequencies.</p></dd>
+
 <dt>$hidden.areas</dt>
 <dd><p>a logical indicating whether hidden areas were included in the 
 model.</p></dd>
+
 <dt>$assume.cladogenetic</dt>
 <dd><p>a logical indicating whether cladogenetic events were allowed
 at nodes.</p></dd>
+
 <dt>$condition.on.surivival</dt>
 <dd><p>a logical indicating whether the
   likelihood was conditioned on the survival of two lineages and the speciation event 
 subtending them.</p></dd>
+
 <dt>$root.type</dt>
 <dd><p>indicates the user-specified root prior assumption.</p></dd>
+
 <dt>$root.p</dt>
 <dd><p>indicates whether the user-specified fixed root probabilities.</p></dd>
+
 <dt>$timeslice</dt>
 <dd><p>indicates whether the user-specified timeslice that split the tree.</p></dd>
+
 <dt>$phy</dt>
 <dd><p>user-supplied tree</p></dd>
+
 <dt>$data</dt>
 <dd><p>user-supplied dataset</p></dd>
+
 <dt>$trans.matrix</dt>
 <dd><p>the user-supplied transition matrix</p></dd>
+
 <dt>$max.tol</dt>
 <dd><p>relative optimization tolerance.</p></dd>
+
 <dt>$starting.vals</dt>
 <dd><p>The starting values for the optimization.</p></dd>
+
 <dt>$upper.bounds</dt>
 <dd><p>the vector of upper limits to the optimization search.</p></dd>
+
 <dt>$lower.bounds</dt>
 <dd><p>the vector of lower limits to the optimization
   search.</p></dd>
+
 <dt>$ode.eps</dt>
 <dd><p>The ode.eps value used for the estimation.</p></dd>
+
 </dl></div>
     <div id="references">
     <h2>References</h2>
@@ -309,7 +352,7 @@ subtending them.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

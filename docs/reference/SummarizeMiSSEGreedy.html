@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -75,23 +75,29 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">SummarizeMiSSEGreedy</span><span class="op">(</span><span class="va">greedy.result</span>, min.weight<span class="op">=</span><span class="fl">0.01</span>, n.cores<span class="op">=</span><span class="fl">1</span>, recon<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">SummarizeMiSSEGreedy</span><span class="op">(</span><span class="va">greedy.result</span>, min.weight<span class="op">=</span><span class="fl">0.01</span>, n.cores<span class="op">=</span><span class="fl">1</span>, recon<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>greedy.result</dt>
 <dd><p>a list of misse.fit objects, returned from MiSSEGreedy or just a list of misse results more generally</p></dd>
+
 <dt>min.weight</dt>
 <dd><p>what proportion of the AICc weight a model must have to be included in the model average</p></dd>
+
 <dt>n.cores</dt>
 <dd><p>how many cores to use for parallelization</p></dd>
+
 <dt>recon</dt>
 <dd><p>Boolean on whether to do the rate reconstructions</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p><code>SummarizeMiSSEGreedy</code> returns a list of containing a data.frame with an overview of models (overview) and an array with rates (rates).</p>
+    
+
+<p><code>SummarizeMiSSEGreedy</code> returns a list of containing a data.frame with an overview of models (overview) and an array with rates (rates).</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -127,7 +133,7 @@ Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

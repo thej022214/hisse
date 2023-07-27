@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -75,21 +75,25 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">TransMatMaker.old</span><span class="op">(</span>hidden.states<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
-<span class="fu">ParDrop</span><span class="op">(</span>rate.mat.index<span class="op">=</span><span class="cn">NULL</span>, drop.par<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span>
-<span class="fu">ParEqual</span><span class="op">(</span>rate.mat.index<span class="op">=</span><span class="cn">NULL</span>, eq.par<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">TransMatMaker.old</span><span class="op">(</span>hidden.states<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu">ParDrop</span><span class="op">(</span>rate.mat.index<span class="op">=</span><span class="cn">NULL</span>, drop.par<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="fu">ParEqual</span><span class="op">(</span>rate.mat.index<span class="op">=</span><span class="cn">NULL</span>, eq.par<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>hidden.states</dt>
 <dd><p>a logical indicating whether the underlying model includes hidden states. The default is <code>FALSE</code>.</p></dd>
+ 
 <dt>rate.mat.index</dt>
 <dd><p>A user-supplied rate matrix index to be manipulated.</p></dd>
+
 <dt>drop.par</dt>
 <dd><p>a vector of transitions to be dropped from the model.</p></dd>
+
 <dt>eq.par</dt>
 <dd><p>a vector of transitions pairs to be set equal.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -97,7 +101,9 @@
     </div>
     <div id="value">
     <h2>Value</h2>
-    <p>Returns a rate matrix index</p>
+    
+
+<p>Returns a rate matrix index</p>
     </div>
 
   </div>
@@ -112,7 +118,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

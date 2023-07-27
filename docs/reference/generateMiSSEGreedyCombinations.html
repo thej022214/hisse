@@ -18,7 +18,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -77,24 +77,30 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">generateMiSSEGreedyCombinations</span><span class="op">(</span>max.param<span class="op">=</span><span class="fl">52</span>, turnover.tries<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sequence.html" class="external-link">sequence</a></span><span class="op">(</span><span class="fl">26</span><span class="op">)</span>, 
-eps.tries<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sequence.html" class="external-link">sequence</a></span><span class="op">(</span><span class="fl">26</span><span class="op">)</span>, fixed.eps.tries<span class="op">=</span><span class="cn">NA</span>, vary.both<span class="op">=</span><span class="cn">TRUE</span>, shuffle.start<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">generateMiSSEGreedyCombinations</span><span class="op">(</span>max.param<span class="op">=</span><span class="fl">52</span>, turnover.tries<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sequence.html" class="external-link">sequence</a></span><span class="op">(</span><span class="fl">26</span><span class="op">)</span>, </span>
+<span>eps.tries<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sequence.html" class="external-link">sequence</a></span><span class="op">(</span><span class="fl">26</span><span class="op">)</span>, fixed.eps.tries<span class="op">=</span><span class="cn">NA</span>, vary.both<span class="op">=</span><span class="cn">TRUE</span>, shuffle.start<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>max.param</dt>
 <dd><p>how many parameters to try estimating at the most.</p></dd>
+
 <dt>turnover.tries</dt>
 <dd><p>vector of number of free turnover parameters.</p></dd>
+
 <dt>eps.tries</dt>
 <dd><p>vector of number of free eps parameters.</p></dd>
+
 <dt>fixed.eps.tries</dt>
 <dd><p>fixed eps values to use. By default this is set to NA to allow estimating. However, a vector of values can supplied as fixed value for eps (and an NA to allow estimating, as well).</p></dd>
+
 <dt>vary.both</dt>
 <dd><p>if TRUE, allows models that have multiple parameters for turnover and eps; if FALSE, if turnover has multiple hidden states eps can only have one estimated value and vice versa.</p></dd>
+
 <dt>shuffle.start</dt>
 <dd><p>if TRUE, instead of generating models strictly by increasing complexity shuffles them around so that simpler models tend to be earlier but with some more complex models mixed in</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -106,7 +112,9 @@ eps.tries<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/ba
     </div>
     <div id="value">
     <h2>Value</h2>
-    <p><code>generateMiSSEGreedyCombinations</code> returns a data.frame to pass to MiSSEGreedy().</p>
+    
+
+<p><code>generateMiSSEGreedyCombinations</code> returns a data.frame to pass to MiSSEGreedy().</p>
     </div>
     <div id="references">
     <h2>References</h2>
@@ -138,7 +146,7 @@ Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

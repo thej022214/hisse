@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -75,50 +75,65 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">MiSSENet</span><span class="op">(</span><span class="va">misse.list</span>, n.tries<span class="op">=</span><span class="fl">2</span>, remove.bad<span class="op">=</span><span class="cn">TRUE</span>, dont.rerun<span class="op">=</span><span class="cn">FALSE</span>, save.file<span class="op">=</span><span class="cn">NULL</span>, 
-n.cores<span class="op">=</span><span class="fl">1</span>, sann<span class="op">=</span><span class="cn">TRUE</span>, sann.its<span class="op">=</span><span class="fl">5000</span>, sann.temp<span class="op">=</span><span class="fl">5230</span>, bounded.search<span class="op">=</span><span class="cn">TRUE</span>, 
-starting.vals<span class="op">=</span><span class="cn">NULL</span>, turnover.upper<span class="op">=</span><span class="fl">10000</span>, eps.upper<span class="op">=</span><span class="fl">3</span>, trans.upper<span class="op">=</span><span class="fl">100</span>, restart.obj<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">MiSSENet</span><span class="op">(</span><span class="va">misse.list</span>, n.tries<span class="op">=</span><span class="fl">2</span>, remove.bad<span class="op">=</span><span class="cn">TRUE</span>, dont.rerun<span class="op">=</span><span class="cn">FALSE</span>, save.file<span class="op">=</span><span class="cn">NULL</span>, </span>
+<span>n.cores<span class="op">=</span><span class="fl">1</span>, sann<span class="op">=</span><span class="cn">TRUE</span>, sann.its<span class="op">=</span><span class="fl">5000</span>, sann.temp<span class="op">=</span><span class="fl">5230</span>, bounded.search<span class="op">=</span><span class="cn">TRUE</span>, </span>
+<span>starting.vals<span class="op">=</span><span class="cn">NULL</span>, turnover.upper<span class="op">=</span><span class="fl">10000</span>, eps.upper<span class="op">=</span><span class="fl">3</span>, trans.upper<span class="op">=</span><span class="fl">100</span>, restart.obj<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>misse.list</dt>
 <dd><p>a <code>misse</code> list of model fits obtain from <code>MiSSEGreedy</code>.</p></dd>
+
 <dt>n.tries</dt>
 <dd><p>maximum number of retries for a given model.</p></dd>
+
 <dt>remove.bad</dt>
 <dd><p>a logical indicating whether models identified as poorly optimized (even after attempting to be refit) should be removed from <code>misse.list</code>.</p></dd>
+
 <dt>dont.rerun</dt>
 <dd><p>a logical indicating whether models identified as poorly optimized should be run. The default is <code>FALSE</code>, meaning they will be rerun. Note that if <code>dont.rerun=TRUE</code> and <code>remove.bad=TRUE</code>, the bad models will be removed from the input list; when <code>remove.bad=FALSE</code> only a vector of model numbers are provided.</p></dd>
+
 <dt>save.file</dt>
 <dd><p>file to use to save the full model fits before removing the poorly optimized ones.</p></dd>
+
 <dt>n.cores</dt>
 <dd><p>how many cores to run this on in parallel.</p></dd>
+
 <dt>sann</dt>
 <dd><p>a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using
   <code>subplex</code>. The default is <code>FALSE</code>.</p></dd>
+
 <dt>sann.its</dt>
 <dd><p>a numeric indicating the number of times the simulated
   annealing algorithm should call the objective function.</p></dd>
+
 <dt>sann.temp</dt>
 <dd><p>the starting temperature for the simulated annealing. Higher temperatures results in the chain sampling a much wider space initially. The default of 5320 is based on the default of the GenSA package. For larger trees setting this value higher in conjunction with more sann.its can drastically improve performance.</p></dd>
+
 <dt>bounded.search</dt>
 <dd><p>a logical indicating whether or not bounds should
   be enforced during optimization. The default is <code>TRUE</code>.</p></dd>
+
 <dt>starting.vals</dt>
 <dd><p>a numeric vector of length 3 with starting values for the
   model. Position [1] sets turnover, [2] sets extinction fraction, and
   [3] transition rates between distinct diversification rates.</p></dd>
+
 <dt>turnover.upper</dt>
 <dd><p>sets the upper bound for the turnover parameters.</p></dd>
+
 <dt>eps.upper</dt>
 <dd><p>sets the upper bound for the eps parameters.</p></dd>
+
 <dt>trans.upper</dt>
 <dd><p>sets the upper bound for the transition rate parameters.</p></dd>
+
 <dt>restart.obj</dt>
 <dd><p>an object of class  that contains everything to restart an optimization.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -128,7 +143,7 @@ to simply identify poorly identify models and/or rerun them.</p>
     </div>
     <div id="references">
     <h2>References</h2>
-    <p>Vascancelos, T, B.C. O'Meara, and J.M. Beaulieu. In prep.</p>
+    <p>Vasconcelos, T., B.C. O'Meara, and J.M. Beaulieu. 2022. A flexible method for estimating tip diversification rates across a range of speciation and extinction scenarios. Evolution, 76:1420-1433.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -147,7 +162,7 @@ to simply identify poorly identify models and/or rerun them.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

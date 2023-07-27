@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -75,42 +75,56 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">SimulateHisse</span><span class="op">(</span><span class="va">turnover.rates</span>, <span class="va">eps.values</span>, <span class="va">transition.rates</span>, max.taxa<span class="op">=</span><span class="cn">Inf</span>, max.t<span class="op">=</span><span class="cn">Inf</span>, 
-max.wall.time<span class="op">=</span><span class="cn">Inf</span>, <span class="va">x0</span>, nstart<span class="op">=</span><span class="fl">1</span>, checkpoint.file<span class="op">=</span><span class="cn">NULL</span>, checkpoint.frequency<span class="op">=</span><span class="fl">100</span>, 
-checkpoint.start.object<span class="op">=</span><span class="cn">NULL</span>, override.safeties<span class="op">=</span><span class="cn">FALSE</span>, mass.extinction.heights<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,
-mass.extinction.magnitudes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">SimulateHisse</span><span class="op">(</span><span class="va">turnover.rates</span>, <span class="va">eps.values</span>, <span class="va">transition.rates</span>, max.taxa<span class="op">=</span><span class="cn">Inf</span>, max.t<span class="op">=</span><span class="cn">Inf</span>, </span>
+<span>max.wall.time<span class="op">=</span><span class="cn">Inf</span>, <span class="va">x0</span>, nstart<span class="op">=</span><span class="fl">1</span>, checkpoint.file<span class="op">=</span><span class="cn">NULL</span>, checkpoint.frequency<span class="op">=</span><span class="fl">100</span>, </span>
+<span>checkpoint.start.object<span class="op">=</span><span class="cn">NULL</span>, override.safeties<span class="op">=</span><span class="cn">FALSE</span>, mass.extinction.heights<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>mass.extinction.magnitudes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>turnover.rates</dt>
 <dd><p>a vector of turnover rates.</p></dd>
+
 <dt>eps.values</dt>
 <dd><p>a vector of extinction fractions.</p></dd>
+
 <dt>transition.rates</dt>
 <dd><p>a matrix of transition rates.</p></dd>
+
 <dt>max.taxa</dt>
 <dd><p>have the simulation stop at <code>max.taxa</code> surviving taxa.</p></dd>
+
 <dt>max.t</dt>
 <dd><p>have the simulation stop at <code>max.t</code> height (including stem).</p></dd>
+ 
 <dt>max.wall.time</dt>
 <dd><p>have the simulation stop at this many seconds of running.</p></dd>
+ 
 <dt>x0</dt>
 <dd><p>the starting state.</p></dd>
+
 <dt>nstart</dt>
 <dd><p>how many taxa you want to start from. Usual values are 1 (start with single lineage) or 2 (crown group).</p></dd>
+
 <dt>checkpoint.file</dt>
 <dd><p>if you want to save progress (so you can restart from last saved point) include the name of a file.</p></dd>
+
 <dt>checkpoint.frequency</dt>
 <dd><p>if there is a checkpoint file, frequency (in terms of number of steps: births, deaths, or transitions) at which this is saved.</p></dd>
+
 <dt>checkpoint.start.object</dt>
 <dd><p>if you are starting from a checkpointed.file, the object loaded from that file. Typically called <code>checkpoint.result</code>.</p></dd>
+
 <dt>override.safeties</dt>
 <dd><p>simulate even if there is no limit on number of taxa, depth of tree, or wall time.</p></dd>
+
 <dt>mass.extinction.heights</dt>
 <dd><p>vector of times above the root [NOT from the present] to have a mass extinction.</p></dd>
+
 <dt>mass.extinction.magnitudes</dt>
 <dd><p>vector of per species extinction probability at mass extinctions.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -121,19 +135,27 @@ mass.extinction.magnitudes<span class="op">=</span><span class="fu"><a href="htt
     </div>
     <div id="value">
     <h2>Value</h2>
-    <p>This returns a list, with the following elements:</p>
+    
+
+<p>This returns a list, with the following elements:</p>
 <dl><dt>$results</dt>
 <dd><p>a dataframe containing the simulation output: states at nodes and tips, ancestor-descendant pairs, branch lengths.</p></dd>
-<dt>$birth.counts</dt>
+
+	<dt>$birth.counts</dt>
 <dd><p>a vector, in the same state order as turnover.rates et al., that includes the counts for the number of times species in each state speciated.</p></dd>
-<dt>$death.counts</dt>
+
+	<dt>$death.counts</dt>
 <dd><p>same as birth.counts, but counting extinction events in each state outside of mass extinctions.</p></dd>
-<dt>$mass.extinction.death.counts</dt>
+
+	<dt>$mass.extinction.death.counts</dt>
 <dd><p>total number of species that went extinct during a mass extinction event (which is assumed to be trait-independent).</p></dd>
-<dt>$transition.counts</dt>
+
+	<dt>$transition.counts</dt>
 <dd><p>matrix of counts of transitions from one state to another.</p></dd>
-<dt>$n.surviving</dt>
+
+	<dt>$n.surviving</dt>
 <dd><p>the number of taxa alive at the end of the simulation.</p></dd>
+
 </dl></div>
     <div id="references">
     <h2>References</h2>
@@ -146,14 +168,14 @@ mass.extinction.magnitudes<span class="op">=</span><span class="fu"><a href="htt
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"><span class="va">simulated.result</span> <span class="op">&lt;-</span> <span class="fu">SimulateHisse</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.3</span>, <span class="fl">.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>, <span class="fl">0</span><span class="op">)</span>, </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">0.2</span>, <span class="fl">.3</span>, <span class="cn">NA</span><span class="op">)</span>, nrow<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, max.taxa<span class="op">=</span><span class="fl">35</span>, x0<span class="op">=</span><span class="fl">1</span><span class="op">)</span>  </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfcol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="simToPhylo.html">SimToPhylo</a></span><span class="op">(</span><span class="va">simulated.result</span><span class="op">$</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="simToPhylo.html">SimToPhylo</a></span><span class="op">(</span><span class="va">simulated.result</span><span class="op">$</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="va">simulated.result</span> <span class="op">&lt;-</span> <span class="fu">SimulateHisse</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.3</span>, <span class="fl">.1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>, <span class="fl">0</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">0.2</span>, <span class="fl">.3</span>, <span class="cn">NA</span><span class="op">)</span>, nrow<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, max.taxa<span class="op">=</span><span class="fl">35</span>, x0<span class="op">=</span><span class="fl">1</span><span class="op">)</span>  </span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfcol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="simToPhylo.html">SimToPhylo</a></span><span class="op">(</span><span class="va">simulated.result</span><span class="op">$</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="simToPhylo.html">SimToPhylo</a></span><span class="op">(</span><span class="va">simulated.result</span><span class="op">$</span><span class="va">results</span>, include.extinct<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="simulateHisse-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="co"># }   </span></span>
+<span class="r-in"><span><span class="co"># }   </span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -168,7 +190,7 @@ mass.extinction.magnitudes<span class="op">=</span><span class="fu"><a href="htt
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

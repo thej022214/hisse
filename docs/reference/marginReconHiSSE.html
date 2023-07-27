@@ -19,7 +19,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -78,50 +78,65 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">MarginReconHiSSE</span><span class="op">(</span><span class="va">phy</span>, <span class="va">data</span>, <span class="va">f</span>, <span class="va">pars</span>, hidden.states<span class="op">=</span><span class="fl">1</span>, 
-condition.on.survival<span class="op">=</span><span class="cn">TRUE</span>, root.type<span class="op">=</span><span class="st">"madfitz"</span>, root.p<span class="op">=</span><span class="cn">NULL</span>, includes.fossils <span class="op">=</span> <span class="cn">FALSE</span>,
-k.samples <span class="op">=</span> <span class="cn">NULL</span>, AIC<span class="op">=</span><span class="cn">NULL</span>, get.tips.only<span class="op">=</span><span class="cn">FALSE</span>, verbose<span class="op">=</span><span class="cn">TRUE</span>, n.cores<span class="op">=</span><span class="cn">NULL</span>, dt.threads<span class="op">=</span><span class="fl">1</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">MarginReconHiSSE</span><span class="op">(</span><span class="va">phy</span>, <span class="va">data</span>, <span class="va">f</span>, <span class="va">pars</span>, hidden.states<span class="op">=</span><span class="fl">1</span>, </span>
+<span>condition.on.survival<span class="op">=</span><span class="cn">TRUE</span>, root.type<span class="op">=</span><span class="st">"madfitz"</span>, root.p<span class="op">=</span><span class="cn">NULL</span>, includes.fossils <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>k.samples <span class="op">=</span> <span class="cn">NULL</span>, AIC<span class="op">=</span><span class="cn">NULL</span>, get.tips.only<span class="op">=</span><span class="cn">FALSE</span>, verbose<span class="op">=</span><span class="cn">TRUE</span>, n.cores<span class="op">=</span><span class="cn">NULL</span>, dt.threads<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>phy</dt>
 <dd><p>a phylogenetic tree, in <code>ape</code> “phylo” format and with internal nodes labeled denoting the ancestral selective regimes.</p></dd>
+
 <dt>data</dt>
 <dd><p>a matrix (or dataframe) with three columns. The first column 
   containing the species names and the second and third containing the binary 
   character information. Character "0" is on column 2 and chracter "1" is on 
   column 3. A value of 0 means character absent and a value of 1 character 
   present. The input of data follows a Pagel model. See 'Details'.</p></dd>
+
 <dt>f</dt>
 <dd><p>vector of length 2 with the estimated proportion of extant species in 
   state 0 and 1 that are included in the phylogeny. A value of c(0.25, 0.5) means 
   that 25 percent of species in state 0 and 50 percent of species in state 1 are 
   included in the phylogeny. By default all species are assumed to be sampled.</p></dd>
+
 <dt>pars</dt>
 <dd><p>vector containing the MLE of the parameters.</p></dd>
+
 <dt>hidden.states</dt>
 <dd><p>a numeric indicating the number of shifts. The default is <code>1</code> meaning a standard BiSSE model.</p></dd>
+ 
 <dt>condition.on.survival</dt>
 <dd><p>a logical indicating whether the likelihood should be conditioned on the survival of two lineages and the speciation event subtending them (Nee et al. 1994). The default is <code>TRUE</code>.</p></dd>
+
 <dt>root.type</dt>
 <dd><p>indicates whether root prior assumption should based the procedure described by FitzJohn et al. 2009, “madfitz”, assumed equal, “equal”, or set to user, “user”.</p></dd>
+
 <dt>root.p</dt>
 <dd><p>a vector indicating fixed root state probabilities. The default is <code>NULL</code>.</p></dd>
+
 <dt>includes.fossils</dt>
 <dd><p>a logical indicating whether the tree contains fossil taxa. The default is <code>FALSE</code>.</p></dd>
+
 <dt>k.samples</dt>
 <dd><p>a table of extinct individuals with sampled descendants. See details for how the table must be formatted.</p></dd>
+
 <dt>AIC</dt>
 <dd><p>the AIC for the model being used for the reconstruction. This is used by the plotting function. The default is <code>NULL</code>.</p></dd>
+
 <dt>get.tips.only</dt>
 <dd><p>a logical indicating whether just tip reconstructions should be output. The default is <code>FALSE</code>.</p></dd>
+
 <dt>verbose</dt>
 <dd><p>a logical indicating whether progress should be printed to screen. The default is <code>TRUE</code>.</p></dd>
+
 <dt>n.cores</dt>
 <dd><p>specifies the number of independent processors to conduct the analysis.. The default is <code>NULL</code>.</p></dd>
+
 <dt>dt.threads</dt>
 <dd><p>sets the number of threads available to data.table. In practice this need not change from the default of 1 thread, as we have not seen any speedup from allowing more threads.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -130,15 +145,21 @@ k.samples <span class="op">=</span> <span class="cn">NULL</span>, AIC<span class
     </div>
     <div id="value">
     <h2>Value</h2>
-    <p><code>MarginReconHiSSE</code> returns an object of class <code>hisse.states</code>. This is a list with elements:</p>
+    
+
+<p><code>MarginReconHiSSE</code> returns an object of class <code>hisse.states</code>. This is a list with elements:</p>
 <dl><dt>$node.mat</dt>
 <dd><p>the marginal probabilities calculated for each node. They are ordered based on the elements in the edge matrix in “phylo” format.</p></dd>
+
 <dt>$tip.mat</dt>
 <dd><p>the marginal probabilities calculated for each tip. They are ordered based on the order of tip labels in the tree.</p></dd>
+
 <dt>$rate.mat</dt>
 <dd><p>a matrix that details the rates for each state combination. This is used by the plotting function.</p></dd>
+
 <dt>$phy</dt>
 <dd><p>a phylogenetic tree in the “phylo” format that contains the states with the highest marginal probability at each internal node.</p></dd>
+
 </dl></div>
     <div id="references">
     <h2>References</h2>
@@ -164,7 +185,7 @@ k.samples <span class="op">=</span> <span class="cn">NULL</span>, AIC<span class
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

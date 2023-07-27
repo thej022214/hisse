@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.11</span>
       </span>
     </div>
 
@@ -75,27 +75,34 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># S3 method for muhisse.states</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, rate.param <span class="op">=</span> <span class="st">"net.div"</span>, type <span class="op">=</span> <span class="st">"fan"</span>,
-show.tip.label <span class="op">=</span> <span class="cn">TRUE</span>, fsize <span class="op">=</span> <span class="fl">1.0</span>, legend <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for muhisse.states</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, rate.param <span class="op">=</span> <span class="st">"net.div"</span>, type <span class="op">=</span> <span class="st">"fan"</span>,</span>
+<span>show.tip.label <span class="op">=</span> <span class="cn">TRUE</span>, fsize <span class="op">=</span> <span class="fl">1.0</span>, legend <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p>a <code>muhisse.states</code> object or a list of such objects.</p></dd>
+
 <dt>rate.param</dt>
 <dd><p>indicates the type of rates to plot. Options include: “turnover”, “net.div”, “speciation”,  “extinction”,  “extinction.fraction”.</p></dd>
+
 <dt>type</dt>
 <dd><p>a character string specifying the type of phylogeny to be drawn. Options are "fan" (default) or "phylogram".</p></dd>
+
 <dt>show.tip.label</dt>
 <dd><p>a logical indicating whether tip names should be included. Default is TRUE</p></dd>
+
 <dt>fsize</dt>
 <dd><p>sets the font size for the tip labels.</p></dd>
+
 <dt>legend</dt>
 <dd><p>indicates if the legend is to be plotted. TRUE or FALSE.</p></dd>
+
 <dt>...</dt>
 <dd><p>Additional parameters to control the plot. See “Details”.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
@@ -163,7 +170,7 @@ function. See more details in help page for <code><a href="plotHisse.html">hisse
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
