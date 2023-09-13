@@ -1129,6 +1129,7 @@ MarginReconPolySSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     
     #Can delete given that I am now making a copy inside DownPass():
     #dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
+    
     TipEval <- function(tip){
         setkey(dat.tab, DesNode)
         marginal.probs.tmp <- numeric(8)
@@ -1153,7 +1154,7 @@ MarginReconPolySSE <- function(phy, data, f, pars, hidden.states=1, condition.on
         marginal.probs[nstates[1:hidden.states]] <- exp(marginal.probs.rescaled) / sum(exp(marginal.probs.rescaled))
         return(c(tip, marginal.probs))
     }
-    
+
     if(hidden.states>1){
         cat(paste("Finished. Calculating marginal probabilities for ", nb.tip, " tips...", sep=""), "\n")
         tip.marginals <- mclapply(1:nb.tip, TipEval, mc.cores=n.cores)

@@ -1021,9 +1021,7 @@ DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type,
         obj = NULL
         obj$compD.root = compD.root/sum(compD.root)
         obj$compE = compE.root
-        print(root.p)
         obj$root.p = root.p
-        print(obj)
         return(obj)
     }else{
         return(loglik)
