@@ -8,9 +8,10 @@ on a phylogeny and character distribution.}
 hisse(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), 
 hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, 
 root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, 
-strat.intervals=NULL, sann=TRUE, sann.its=5000, bounded.search=TRUE, 
-max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3,
-trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1)
+strat.intervals=NULL, tip.fog=NULL, sann=TRUE, sann.its=5000, 
+bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, 
+turnover.upper=10000, eps.upper=3,trans.upper=100, restart.obj=NULL, ode.eps=0, 
+dt.threads=1)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
@@ -39,6 +40,7 @@ trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1)
 \item{includes.fossils}{a logical indicating whether the tree contains fossil taxa. The default is \code{FALSE}.}
 \item{k.samples}{a table of extinct individuals with sampled descendants. See details for how the table must be formatted.}
 \item{strat.intervals}{a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.}
+\item{tip.fog}{a fixed value or vector of free parameters to estimate the probability that an observed state is not actually in the state it is assigned. By default \code{tip.fog=NULL}. To estimate tip fog probabilities a vector of integers designating the number of free parameters is needed as input. See vignette for details on how to carry this out.}
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using

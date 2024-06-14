@@ -1695,3 +1695,162 @@ test_that("MiSSE_interval_test5", {
     expect_true(comparison)
 })
 
+
+######################################################################################################################################
+######################################################################################################################################
+### Simple tests of tip fog
+######################################################################################################################################
+######################################################################################################################################
+
+test_that("Simple test of estimated fog vs fixed fog",{
+	skip_on_cran()
+	
+	set.seed(1980)
+	pars <- c(0.2, 0.3, .20*.75, .3*.75, 0.01, 0.01)
+	phy <- NULL
+	while( is.null( phy ) ){
+	  phy <- tree.bisse(pars, max.taxa=100, x0=0)
+	}
+	error <- 0.10
+	error.absolute <- round(length(phy$tip.state)*error)
+	taxa.sample <- sample(1:length(phy$tip.state), error.absolute)
+	tip.state.new <- phy$tip.state
+	for(tip.index in 1:length(taxa.sample)){
+	  state <- tip.state.new[taxa.sample[tip.index]]
+	  if(state == 0){
+		state <- 1
+	  }else{
+		state <- 0
+	  }
+	  tip.state.new[taxa.sample[tip.index]] <- state
+	}
+	phy.error <- phy
+	phy.error$tip.state <- tip.state.new
+
+	states <- data.frame(taxon=names(phy.error$tip.state), state=phy.error$tip.state)
+
+	trans.mat <- TransMatMakerHiSSE(make.null=TRUE)
+	trans.mat[1,2] <- 1
+
+	hisse.fog.est <- hisse(phy, states, turnover=c(1,2), eps=c(1,1), trans.rate=trans.mat, sann=FALSE, tip.fog=c(1,1))
+
+	hidden.states=FALSE
+	states <- data.frame(phy.error$tip.state, phy.error$tip.state, row.names=names(phy.error$tip.state))
+	states <- states[phy.error$tip.label,]
+	gen <- hisse:::FindGenerations(phy.error)
+	dat.tab <- hisse:::OrganizeDataHiSSE(states, phy=phy.error, f=c(1,1), hidden.states=FALSE, includes.fossils=FALSE)
+	model.vec <- numeric(48)
+	model.vec[1:6] <- hisse.fog.est$solution[1:6]
+	phy$node.label = NULL
+	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
+	cache$psi <- 0
+	cache$tip.fog <- hisse.fog.est$tip.fog.probs
+	hisse.fog.fixed <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL, set.fog=TRUE)
+
+	comparison <- identical(round(hisse.fog.fixed,3), round(hisse.fog.est$loglik,3))
+
+	expect_true(comparison)
+
+})
+
+
+test_that("Simple test of estimated fog vs fixed fog 2",{
+	skip_on_cran()
+	
+	set.seed(1980)
+	pars <- c(0.2, 0.3, .20*.75, .3*.75, 0.01, 0.01)
+	phy <- NULL
+	while( is.null( phy ) ){
+	  phy <- tree.bisse(pars, max.taxa=100, x0=0)
+	}
+	error <- 0.10
+	error.absolute <- round(length(phy$tip.state)*error)
+	taxa.sample <- sample(1:length(phy$tip.state), error.absolute)
+	tip.state.new <- phy$tip.state
+	for(tip.index in 1:length(taxa.sample)){
+	  state <- tip.state.new[taxa.sample[tip.index]]
+	  if(state == 0){
+		state <- 1
+	  }else{
+		state <- 0
+	  }
+	  tip.state.new[taxa.sample[tip.index]] <- state
+	}
+	phy.error <- phy
+	phy.error$tip.state <- tip.state.new
+
+	states <- data.frame(taxon=names(phy.error$tip.state), state=phy.error$tip.state)
+
+	trans.mat <- TransMatMakerHiSSE(make.null=TRUE)
+	trans.mat[1,2] <- 1
+
+	hisse.fog.est <- hisse(phy, states, turnover=c(1,2), eps=c(1,1), trans.rate=trans.mat, sann=FALSE, tip.fog=c(1,2))
+
+	hidden.states=FALSE
+	states <- data.frame(phy.error$tip.state, phy.error$tip.state, row.names=names(phy.error$tip.state))
+	states <- states[phy.error$tip.label,]
+	gen <- hisse:::FindGenerations(phy.error)
+	dat.tab <- hisse:::OrganizeDataHiSSE(states, phy=phy.error, f=c(1,1), hidden.states=FALSE, includes.fossils=FALSE)
+	model.vec <- numeric(48)
+	model.vec[1:6] <- hisse.fog.est$solution[1:6]
+	phy$node.label = NULL
+	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
+	cache$psi <- 0
+	cache$tip.fog <- hisse.fog.est$tip.fog.probs
+	hisse.fog.fixed <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL, set.fog=TRUE)
+
+	comparison <- identical(round(hisse.fog.fixed,3), round(hisse.fog.est$loglik,3))
+
+	expect_true(comparison)
+
+})
+
+
+
+test_that("Simple test of estimated fog vs fixed fog 3",{
+	skip_on_cran()
+	
+	set.seed(1980)
+	pars <- c(0.2, 0.3, .20*.75, .3*.75, 0.01, 0.01)
+	phy <- NULL
+	while( is.null( phy ) ){
+	  phy <- tree.bisse(pars, max.taxa=100, x0=0)
+	}
+	error <- 0.10
+	error.absolute <- round(length(phy$tip.state)*error)
+	taxa.sample <- sample(1:length(phy$tip.state), error.absolute)
+	tip.state.new <- phy$tip.state
+	for(tip.index in 1:length(taxa.sample)){
+	  state <- tip.state.new[taxa.sample[tip.index]]
+	  if(state == 0){
+		state <- 1
+	  }else{
+		state <- 0
+	  }
+	  tip.state.new[taxa.sample[tip.index]] <- state
+	}
+	phy.error <- phy
+	phy.error$tip.state <- tip.state.new
+
+	states <- data.frame(taxon=names(phy.error$tip.state), state=phy.error$tip.state)
+	trans.mat <- TransMatMakerHiSSE(make.null=TRUE)
+	trans.mat[1,2] <- 1
+	hisse.fog.est <- hisse(phy, states, turnover=c(1,2), eps=c(1,1), trans.rate=trans.mat, sann=FALSE, tip.fog=c(1,1))
+
+	hidden.states=TRUE
+	states <- data.frame(phy.error$tip.state, phy.error$tip.state, row.names=names(phy.error$tip.state))
+	states <- states[phy.error$tip.label,]
+	gen <- hisse:::FindGenerations(phy.error)
+	dat.tab <- hisse:::OrganizeDataHiSSE(states, phy=phy.error, f=c(1,1), hidden.states=hidden.states, includes.fossils=FALSE)
+	model.vec <- numeric(48)
+	model.vec[1:24] <- c(hisse.fog.est$solution[1:6], 1, 0, 0, 1, 0, 0, hisse.fog.est$solution[1:6], 1, 0, 0, 1, 0, 0)
+	phy$node.label = NULL
+	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
+	cache$psi <- 0
+	cache$tip.fog <- c(hisse.fog.est$tip.fog.probs, hisse.fog.est$tip.fog.probs)
+	hisse.fog.fixed <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL, set.fog=TRUE)
+
+	comparison <- identical(round(hisse.fog.fixed,3), round(hisse.fog.est$loglik,3))
+
+	expect_true(comparison)
+})

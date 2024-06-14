@@ -5,18 +5,10 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, sann=TRUE, sann.its=5000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, tip.fog=NULL, sann=TRUE, sann.its=5000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
-    
-    #if(!is.ultrametric(phy) & includes.fossils == FALSE){
-    #    warning("Tree is not ultrametric. Used force.ultrametric() function to coerce the tree to be ultrametric - see note above.")
-    #    edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
-    #    if(any(edge_details$type == "extinct_tip")){
-    #        phy <- force.ultrametric(phy)
-    #    }
-    #}
 
     if(!is.null(root.p)) {
         if(hidden.states ==TRUE){
@@ -69,7 +61,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
     if( length(turnover) == 2 & hidden.states ){
         stop("Turnover has only 2 elements but 'hidden.states' was set to TRUE. Please set 'hidden.states' to FALSE if the model does not include hidden rate classes.")
     }
-    
+	
     pars <- numeric(48)
     
     if(dim(trans.rate)[2]==2){
@@ -168,7 +160,9 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
     
     np <- max(pars)
     pars[pars==0] <- np+1
-    
+	set.fog <- FALSE
+	fog.vec <- NULL
+	
     cat("Initializing...", "\n")
     
     # Some new prerequisites #
@@ -250,6 +244,26 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
     nb.node <- phy$Nnode
     ##########################
     
+	if(!is.null(tip.fog)){
+		if(sum(tip.fog) < 1){
+			if(length(tip.fog) == 1){
+				#Default option, but need to replicate these values across the observed states
+				tip.fog <- rep(tip.fog, 2)
+			}
+			if(hidden.states == TRUE){
+				tip.fog <- rep(tip.fog, 4)
+			}
+			dat.tab <- AddFogDatTab(dat.tab, f=f, nb.tip=nb.tip, tip.fog=tip.fog, hidden.states=hidden.states)
+			set.fog <- FALSE
+		}else{
+			fog.vec <- tip.fog
+			if(hidden.states == TRUE){
+				fog.vec <- rep(fog.vec=4)
+			}
+			set.fog <- TRUE
+		}
+	}
+	
     #This is used to scale starting values to account for sampling:
     if(length(f) == 2){
         freqs <- table(apply(data.new, 1, function(x) switch(paste0(x, collapse=""), "00" = 1, "11" = 2, "22"=1)))
@@ -265,6 +279,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             stop("The vector of sampling frequencies does not match the number of tips in the tree.")
         }
     }
+	
     if(is.null(restart.obj)){
         if(sum(eps)==0){
             if(includes.fossils == TRUE){
@@ -339,6 +354,11 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             }
             lower <- rep(-20, length(ip))
         }
+		if(set.fog == TRUE){
+			ip <- c(rep(log(0.01), length(unique(fog.vec))), ip)
+			lower <- c(rep(-20, length(unique(fog.vec))), lower)
+			upper <- c(rep(log(0.25), length(unique(fog.vec))), upper)
+		}
     }else{
         upper <- restart.obj$upper.bounds
         lower <- restart.obj$lower.bounds
@@ -347,46 +367,90 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         for(k in 1:length(ip)){
             ip[k] <- log(restart.obj$solution[which(restart.obj$index.par==k)][1])
         }
+		if(set.fog == TRUE){
+			ip <- c(log(restart.obj$tip.fog.probs), ip)
+			lower <- c(rep(-20, length(unique(restart.obj$fog.vec))), lower)
+			upper <- c(rep(log(0.50), length(unique(restart.obj$fog.vec))), upper)
+		}
     }
     
     if(sann == FALSE){
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+            out <- nloptr(x0=ip, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
             sann.counts <- NULL
-            solution <- numeric(length(pars))
-            solution[] <- c(exp(out$solution), 0)[pars]
-            loglik = -out$objective
+			if(set.fog == TRUE){
+				solution.tmp <- exp(out$solution)
+				fog.est <- solution.tmp[1:length(unique(fog.vec))]
+				solution.tmp <- solution.tmp[-c(1:length(unique(fog.vec)))]
+				tip.fog.probs <- numeric(length(fog.vec))
+				tip.fog.probs[] <- c(fog.est, 0)[fog.vec]
+				names(tip.fog.probs) <- c("0", "1")
+				np <- np + length(unique(fog.vec))
+				solution <- numeric(length(pars))
+				solution[] <- c(solution.tmp, 0)[pars]
+				loglik <- -out$objective
+			}else{
+				tip.fog.probs <- NULL
+				solution <- numeric(length(pars))
+				solution[] <- c(exp(out$solution), 0)[pars]
+				loglik <- -out$objective
+			}
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizefHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+            out <- subplex(ip, fn=DevOptimizefHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
             sann.counts <- NULL
-            solution <- numeric(length(pars))
-            solution[] <- c(exp(out$par), 0)[pars]
-            loglik = -out$value
+			if(set.fog == TRUE){
+				solution.tmp <- exp(out$par)
+				fog.est <- solution.tmp[1:length(unique(fog.vec))]
+				solution.tmp <- solution.tmp[-c(1:length(unique(fog.vec)))]
+				tip.fog.probs <- numeric(length(fog.vec))
+				tip.fog.probs[] <- c(fog.est, 0)[fog.vec]
+				names(tip.fog.probs) <- c("0", "1")
+				np <- np + length(unique(fog.vec))
+				solution <- numeric(length(pars))
+				solution[] <- c(solution.tmp, 0)[pars]
+				loglik <- -out$value
+			}else{
+				tip.fog.probs <- NULL
+				solution <- numeric(length(pars))
+				solution[] <- c(exp(out$par), 0)[pars]
+				loglik <- -out$value
+			}
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        opts <- list("algorithm"="NLOPT_GD_STOGO", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out.sann = GenSA(ip, fn=DevOptimizefHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+        out.sann <- GenSA(ip, fn=DevOptimizefHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
         sann.counts <- out.sann$counts
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, f=f, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
-        solution <- numeric(length(pars))
-        solution[] <- c(exp(out$solution), 0)[pars]
-        
-        loglik = -out$objective
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, f=f, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
+		if(set.fog == TRUE){
+			solution.tmp <- exp(out$solution)
+			fog.est <- solution.tmp[1:length(unique(fog.vec))]
+			solution.tmp <- solution.tmp[-c(1:length(unique(fog.vec)))]
+			tip.fog.probs <- numeric(length(fog.vec))
+			tip.fog.probs[] <- c(fog.est, 0)[fog.vec]
+			names(tip.fog.probs) <- c("0", "1")
+			np <- np + length(unique(fog.vec))
+			solution <- numeric(length(pars))
+			solution[] <- c(solution.tmp, 0)[pars]
+			loglik <- -out$objective
+		}else{
+			tip.fog.probs <- NULL
+			solution <- numeric(length(pars))
+			solution[] <- c(exp(out$solution), 0)[pars]
+			loglik <- -out$objective
+		}
     }
     
-    names(solution) <- c("turnover0A","turnover1A","eps0A","eps1A","q0A1A","q1A0A","q0A0B","q0A0C","q0A0D","q1A1B","q1A1C","q1A1D","turnover0B","turnover1B","eps0B","eps1B","q0B1B","q1B0B","q0B0A","q0B0C","q0B0D","q1B1A","q1B1C","q1B1D","turnover0C","turnover1C","eps0C","eps1C","q0C1C","q1C0C","q0C0A","q0C0B","q0C0D","q1C1A","q1C1B","q1C1D","turnover0D","turnover1D","eps0D","eps1D","q0D1D","q1D0D","q0D0A","q0D0B","q0D0C","q1D1A","q1D1B","q1D1C","psi")
+	names(solution) <- c("turnover0A","turnover1A","eps0A","eps1A","q0A1A","q1A0A","q0A0B","q0A0C","q0A0D","q1A1B","q1A1C","q1A1D","turnover0B","turnover1B","eps0B","eps1B","q0B1B","q1B0B","q0B0A","q0B0C","q0B0D","q1B1A","q1B1C","q1B1D","turnover0C","turnover1C","eps0C","eps1C","q0C1C","q1C0C","q0C0A","q0C0B","q0C0D","q1C1A","q1C1B","q1C1D","turnover0D","turnover1D","eps0D","eps1D","q0D1D","q1D0D","q0D0A","q0D0B","q0D0C","q1D1A","q1D1B","q1D1C","psi")
     
-    cat("Finished. Summarizing results...", "\n")
+	cat("Finished. Summarizing results...", "\n")
     
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy.og, phy.w.k=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, k.samples=k.samples, strat.intervals=strat.intervals, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
+    obj <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, tip.fog.probs=tip.fog.probs, index.par=pars, fog.vec=fog.vec, set.fog=set.fog, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy.og, phy.w.k=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, k.samples=k.samples, strat.intervals=strat.intervals, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
     class(obj) <- append(class(obj), "hisse.fit")
-    return(obj)
     
     return(obj)
 }
@@ -399,21 +463,35 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
 ######################################################################################################################################
 
 #Function used for optimizing parameters:
-DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, f, ode.eps, fossil.taxa, fix.type, strat.cache) {
-    #Generates the final vector with the appropriate parameter estimates in the right place:
+DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, f, ode.eps, fossil.taxa, fix.type, strat.cache, set.fog, fog.vec) {
+    
+	#Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
+	
+	#Sets up the dat.tab to account for tip fog:
+	if(set.fog == TRUE){
+		tip.fog.tmp <- p.new[1:length(unique(fog.vec))]
+		p.new <- p.new[-c(1:length(unique(fog.vec)))]
+		tip.fog <- numeric(length(fog.vec))
+		tip.fog[] <- c(tip.fog.tmp, 0)[fog.vec]
+		model.vec <- numeric(length(pars))
+		model.vec[] <- c(p.new, 0)[pars]
+		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
+		cache$tip.fog <- tip.fog
+	}else{
+		model.vec <- numeric(length(pars))
+		model.vec[] <- c(p.new, 0)[pars]
+		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
+	}
     ## print(p.new)
-    model.vec <- numeric(length(pars))
-    model.vec[] <- c(p.new, 0)[pars]
-    cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
     if(!is.null(fix.type)){
         if(!is.null(strat.cache)){
-            logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2]) + (strat.cache$k*log(cache$psi)) + (cache$psi*strat.cache$l_s)
+            logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2], set.fog=set.fog) + (strat.cache$k*log(cache$psi)) + (cache$psi*strat.cache$l_s)
         }else{
-            logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+            logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2], set.fog=set.fog)
         }
     }else{
-        logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
+        logl <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL, set.fog=set.fog)
     }
     return(-logl)
 }
@@ -498,6 +576,31 @@ OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FA
         #set(dat.tab, 1:nb.tip, cols[38+j], compE[,j])
     }
     return(dat.tab)
+}
+
+
+AddFogDatTab <- function(dat.tab, nb.tip, f=f, tip.fog, hidden.states=FALSE){
+	### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+	DesNode = NULL
+	. = NULL
+  setkey(dat.tab, DesNode)
+  rows <- 1:nb.tip
+  cols <- names(dat.tab)
+  tip.fog <- c(tip.fog, tip.fog)
+  if(hidden.states == TRUE){
+	dimD <- 1:8
+  }else{
+	dimD <- 1:2
+  }
+  for(j in dimD){
+	  if((j %% 2) == 0){#column is an even one
+		set(dat.tab, dat.tab[rows, which(get(cols[6+j]) != 0)], 6L+j, f[2] * (1 - tip.fog[j-1]))
+	  }else{#column is an odd one
+		set(dat.tab, dat.tab[rows, which(get(cols[6+j]) != 0)], 6L+j, f[1] * (1 - tip.fog[j+1]))
+	  }
+		set(dat.tab, dat.tab[rows, which(get(cols[6+j]) == 0)], 6L+j, tip.fog[j])
+  }
+  return(dat.tab)
 }
 
 
@@ -887,7 +990,7 @@ GetFossilInitialsHiSSE <- function(cache, pars, lambdas, dat.tab, fossil.taxa){
 ######################################################################################################################################
 ######################################################################################################################################
 
-DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, fossil.taxa=NULL, fix.type=NULL) {
+DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type, root.p, get.phi=FALSE, node=NULL, state=NULL, fossil.taxa=NULL, fix.type=NULL, set.fog=FALSE) {
     
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
@@ -911,6 +1014,10 @@ DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type,
         dat.tab.copy <- copy(dat.tab)
     }
     
+	if(set.fog == TRUE){
+		dat.tab.copy <- AddFogDatTab(dat.tab.copy, f=cache$f, nb.tip=cache$nb.tip, tip.fog=cache$tip.fog, hidden.states=cache$hidden.states)
+	}
+	
     TIPS <- 1:cache$nb.tip
     for(i in 1:length(gen)){
         if(i == length(gen)){
@@ -1136,5 +1243,11 @@ print.hisse.fit <- function(x,...){
             cat("psi estimate reflects both fossil edge and tip sampling. \n")
         }
     }
+	if(!is.null(x$tip.fog.probs)){
+		cat("Tip fog\n")
+		print(x$tip.fog.probs)
+		cat("\n")
+	}
 }
+
 
