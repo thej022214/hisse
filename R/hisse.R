@@ -386,6 +386,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
 				solution.tmp <- solution.tmp[-c(1:length(unique(fog.vec)))]
 				tip.fog.probs <- numeric(length(fog.vec))
 				tip.fog.probs[] <- c(fog.est, 0)[fog.vec]
+				tip.fog.probs <- tip.fog.probs[1:2]
 				names(tip.fog.probs) <- c("0", "1")
 				np <- np + length(unique(fog.vec))
 				solution <- numeric(length(pars))
@@ -407,6 +408,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
 				solution.tmp <- solution.tmp[-c(1:length(unique(fog.vec)))]
 				tip.fog.probs <- numeric(length(fog.vec))
 				tip.fog.probs[] <- c(fog.est, 0)[fog.vec]
+				tip.fog.probs <- tip.fog.probs[1:2]
 				names(tip.fog.probs) <- c("0", "1")
 				np <- np + length(unique(fog.vec))
 				solution <- numeric(length(pars))
@@ -432,6 +434,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
 			solution.tmp <- solution.tmp[-c(1:length(unique(fog.vec)))]
 			tip.fog.probs <- numeric(length(fog.vec))
 			tip.fog.probs[] <- c(fog.est, 0)[fog.vec]
+			tip.fog.probs <- tip.fog.probs[1:2]
 			names(tip.fog.probs) <- c("0", "1")
 			np <- np + length(unique(fog.vec))
 			solution <- numeric(length(pars))
