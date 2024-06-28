@@ -258,7 +258,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
 		}else{
 			fog.vec <- tip.fog
 			if(hidden.states == TRUE){
-				fog.vec <- rep(fog.vec=4)
+				fog.vec <- rep(fog.vec, 4)
 			}
 			set.fog <- TRUE
 		}
@@ -357,7 +357,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
 		if(set.fog == TRUE){
 			ip <- c(rep(log(0.01), length(unique(fog.vec))), ip)
 			lower <- c(rep(-20, length(unique(fog.vec))), lower)
-			upper <- c(rep(log(0.25), length(unique(fog.vec))), upper)
+			upper <- c(rep(log(0.50), length(unique(fog.vec))), upper)
 		}
     }else{
         upper <- restart.obj$upper.bounds
