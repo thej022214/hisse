@@ -382,15 +382,15 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     ##########################
     
 	if(!is.null(tip.fog)){
-		if(length(tip.fog)<1){
+		if(length(tip.fog)<2){
 			tip.fog <- rep(tip.fog, 2)
 		}
-		if(hidden.states == TRUE){
+		if(hidden.states > 1){
 			if(length(tip.fog) == 2){
 				tip.fog <- rep(tip.fog, 4)
 			}
 		}
-		dat.tab <- AddFogDatTab(dat.tab, f=f, nb.tip=nb.tip, tip.fog=tip.fog, hidden.states=hidden.states)
+		dat.tab <- AddFogDatTab(dat.tab, f=f, nb.tip=nb.tip, tip.fog=tip.fog, hidden.states=TRUE)
 		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=0)
 		cache$tip.fog <- tip.fog
 		set.fog <- TRUE
@@ -466,27 +466,58 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     #Can delete given that I am now making a copy inside DownPass():
     #dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE)
     TipEval <- function(tip){
-        setkey(dat.tab, DesNode)
-        marginal.probs.tmp <- numeric(8)
-        nstates = which(!dat.tab[tip,7:14] == 0)
-        cache$states.keep <- as.data.frame(dat.tab[tip,7:14])
-        for (j in nstates[1:hidden.states]){
-            cache$to.change <- cache$states.keep
-            tmp.state <- 1 * c(cache$to.change[1,j])
-            cache$to.change[1,] <- 0
-            cache$to.change[1,j] <- tmp.state
-            for (k in 1:dim(cache$to.change)[2]){
-                dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
-            }
-            if(!is.null(k.samples)){
-                marginal.probs.tmp[j] <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2], set.fog=set.fog)
-            }else{
-                marginal.probs.tmp[j] <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL, set.fog=set.fog)
-            }
-        }
-        for (k in 1:dim(cache$to.change)[2]){
-            dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
-        }
+		#I broke this out because when doing a reconstruction of a tip you have to include the state of the possible error as well.
+		if(!is.null(tip.fog)){
+			setkey(dat.tab, DesNode)
+			marginal.probs.tmp <- numeric(8)
+			nstates <- c()
+			for(state.index in c(7,9,11,13)){
+				tmp.location <- c(state.index, state.index+1)
+				tmp.state <- which.max(dat.tab[tip, tmp.location, with=FALSE])
+				nstates <- c(nstates, tmp.location[tmp.state] - 6)
+			}
+			cache$states.keep <- as.data.frame(dat.tab[tip,7:14])
+			for (j in nstates[1:hidden.states]){
+				cache$to.change <- cache$states.keep
+				tmp.state <- 1 * cache$to.change[1,c(j, j+1)]
+				cache$to.change[1,] <- 0
+				cache$to.change[1,c(j, j+1)] <- tmp.state
+				for (k in 1:dim(cache$to.change)[2]){
+					dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
+				}
+				if(!is.null(k.samples)){
+					marginal.probs.tmp[j] <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2], set.fog=set.fog)
+				}else{
+					marginal.probs.tmp[j] <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL, set.fog=set.fog)
+				}
+			}
+			for (k in 1:dim(cache$to.change)[2]){
+				dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
+			}
+		}else{
+			setkey(dat.tab, DesNode)
+			marginal.probs.tmp <- numeric(8)
+			nstates = which(!dat.tab[tip,7:14] == 0)
+			cache$states.keep <- as.data.frame(dat.tab[tip,7:14])
+			for (j in nstates[1:hidden.states]){
+				cache$to.change <- cache$states.keep
+				tmp.state <- 1 * c(cache$to.change[1,j])
+				cache$to.change[1,] <- 0
+				cache$to.change[1,j] <- tmp.state
+				for (k in 1:dim(cache$to.change)[2]){
+					dat.tab[tip, paste("compD", k, sep="_") := cache$to.change[,k]]
+				}
+				if(!is.null(k.samples)){
+					marginal.probs.tmp[j] <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=as.numeric(fix.type[,1]), state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2], set.fog=set.fog)
+				}else{
+					marginal.probs.tmp[j] <- DownPassHiSSE(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL, set.fog=set.fog)
+				}
+			}
+			for (k in 1:dim(cache$to.change)[2]){
+				dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
+			}
+		}
+		
         best.probs <- max(marginal.probs.tmp[nstates[1:hidden.states]])
         marginal.probs.rescaled <- marginal.probs.tmp[nstates[1:hidden.states]] - best.probs
         marginal.probs <- numeric(8)

@@ -1155,14 +1155,15 @@ ConvertToRate <- function(x, rate.vector) {
     x.trimmed <- x.trimmed / rowSums(x.trimmed) #normalize to 1 (which it should be already)
     result.vector <- rep(0, dim(x.trimmed)[1])
     for (i in sequence(dim(x.trimmed)[2])) {
-        result.vector <- result.vector + rate.vector[i] * x.trimmed[,i]    #get weighted mean
+        result.vector <- result.vector + rate.vector[i] * x.trimmed[,i] 
     }
     names(result.vector) <- x[,1]
     return(result.vector)
 }
 
+
 ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weights=NULL) {
-    if( is.null(AIC.weights) ){
+	if( is.null(AIC.weights) ){
         AIC.weights <- GetAICWeights(hisse.results)
     }
     storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
@@ -1174,6 +1175,14 @@ ConvertManyToRate <- function(hisse.results, rate.param, which.element, AIC.weig
     return(final.results)
 }
 
+
+GetWeightedHarmonic <- function(x, w){
+	x.new <- 1 / sum((w * (1/x)))
+	return(x.new)
+}
+
+
+#harmonic goes here:
 CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix){
     ## Check if every column of the matrices in the list x is within the bounds set to the each of the parameters.
     ## Drop all the models that are not. Models are the columns in each of the matrices in the list x.
@@ -1189,7 +1198,8 @@ CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix){
         warning( paste0(" Models in position ", paste(which(!keep.mod), collapse=", ")," have parameters outside the bounds defined by 'bound.matrix' argument. These will NOT be included in the reconstruction.") )
     }
     if( sum( keep.mod ) > 1 ){
-        final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, weighted.mean, w=AIC.weights[keep.mod]) )
+        #final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, weighted.mean, w=AIC.weights[keep.mod]) )
+		final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, GetWeightedHarmonic, w=AIC.weights[keep.mod]) )
     }
     if( sum( keep.mod ) == 1 ){
         final.results <- lapply(x, function(y) y[,keep.mod]) ## No need to make the weighted.mean
@@ -1197,6 +1207,7 @@ CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix){
     if( sum( keep.mod ) < 1 ) stop( "No models left to reconstruct! Check if parameter estimates for models are outside the bounds defined by 'bound.matrix'." )
     return( final.results )
 }
+
 
 ConvertManyToRate_ModelAve <- function(hisse.results, rate.param, which.element) {
     storage.matrix <- matrix(nrow=dim(hisse.results[[1]][[which.element]])[1], ncol=0)
@@ -1221,7 +1232,7 @@ ConvertManyToBinaryState <- function(hisse.results, which.element, AIC.weights=N
         storage.matrix <- cbind(storage.matrix, ConvertToBinaryState(x=hisse.results[[i]][[which.element]]))
     }
     final.results <- apply(storage.matrix, 1, weighted.mean, w=AIC.weights)
-    return(final.results)
+	return(final.results)
 }
 
 
