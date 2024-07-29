@@ -1847,7 +1847,7 @@ test_that("Simple test of estimated fog vs fixed fog 3",{
 	phy$node.label = NULL
 	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
 	cache$psi <- 0
-	cache$tip.fog <- c(hisse.fog.est$tip.fog.probs, hisse.fog.est$tip.fog.probs)
+	cache$tip.fog <- rep(hisse.fog.est$tip.fog.probs, 4)
 	hisse.fog.fixed <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL, set.fog=TRUE)
 
 	comparison <- identical(round(hisse.fog.fixed,3), round(hisse.fog.est$loglik,3))

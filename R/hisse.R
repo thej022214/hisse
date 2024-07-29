@@ -589,7 +589,7 @@ AddFogDatTab <- function(dat.tab, nb.tip, f=f, tip.fog, hidden.states=FALSE){
   setkey(dat.tab, DesNode)
   rows <- 1:nb.tip
   cols <- names(dat.tab)
-  tip.fog <- c(tip.fog, tip.fog)
+  #tip.fog <- c(tip.fog, tip.fog)
   if(hidden.states == TRUE){
 	dimD <- 1:8
   }else{
@@ -598,10 +598,11 @@ AddFogDatTab <- function(dat.tab, nb.tip, f=f, tip.fog, hidden.states=FALSE){
   for(j in dimD){
 	  if((j %% 2) == 0){#column is an even one
 		set(dat.tab, dat.tab[rows, which(get(cols[6+j]) != 0)], 6L+j, f[2] * (1 - tip.fog[j-1]))
+		set(dat.tab, dat.tab[rows, which(get(cols[6+j]) == 0)], 6L+j, f[1] * tip.fog[j])
 	  }else{#column is an odd one
 		set(dat.tab, dat.tab[rows, which(get(cols[6+j]) != 0)], 6L+j, f[1] * (1 - tip.fog[j+1]))
+		set(dat.tab, dat.tab[rows, which(get(cols[6+j]) == 0)], 6L+j, f[2] * tip.fog[j])
 	  }
-		set(dat.tab, dat.tab[rows, which(get(cols[6+j]) == 0)], 6L+j, tip.fog[j])
   }
   return(dat.tab)
 }

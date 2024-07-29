@@ -5,7 +5,8 @@
 ######################################################################################################################################
 
 GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"), bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000))){
-    hisse.results <- x
+    
+	hisse.results <- x
 
     if (!type %in% c("tips", "nodes", "both")) stop("Argument 'type' needs to be one of 'tips', 'nodes', or 'both'.")
 
