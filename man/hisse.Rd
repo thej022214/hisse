@@ -10,8 +10,8 @@ hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE,
 root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, 
 strat.intervals=NULL, tip.fog=NULL, sann=TRUE, sann.its=5000, 
 bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, 
-turnover.upper=10000, eps.upper=3,trans.upper=100, restart.obj=NULL, ode.eps=0, 
-dt.threads=1)
+fog.ip=0.01, turnover.upper=10000, eps.upper=3,trans.upper=100, 
+restart.obj=NULL, ode.eps=0, dt.threads=1)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
@@ -48,12 +48,14 @@ dt.threads=1)
 \item{sann.its}{a numeric indicating the number of times the simulated
   annealing algorithm should call the objective function.}
 \item{bounded.search}{a logical indicating whether or not bounds should
-  be enforced during optimization. The default is is \code{TRUE}.}
+  be enforced during optimization. The default is \code{TRUE}.}
 \item{max.tol}{supplies the relative optimization tolerance to
   \code{subplex}.}
 \item{starting.vals}{a numeric vector of length 3 with starting values for the
   model for all areas and hidden states. Position [1] sets turnover, [2]
   sets extinction fraction, and [3] transition rates.}
+\item{fog.ip}{a numeric that specifies thes starting parameter for the tip fog 
+probability parameter. The default value is 0.01.}
 \item{turnover.upper}{sets the upper bound for the turnover parameters.}
 \item{eps.upper}{sets the upper bound for the eps parameters.}
 \item{trans.upper}{sets the upper bound for the transition rate parameters.}
