@@ -1183,7 +1183,7 @@ GetWeightedHarmonic <- function(x, w){
 
 
 #harmonic goes here:
-CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix){
+CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix, mean.type){
     ## Check if every column of the matrices in the list x is within the bounds set to the each of the parameters.
     ## Drop all the models that are not. Models are the columns in each of the matrices in the list x.
     
@@ -1198,7 +1198,7 @@ CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix){
         warning( paste0(" Models in position ", paste(which(!keep.mod), collapse=", ")," have parameters outside the bounds defined by 'bound.matrix' argument. These will NOT be included in the reconstruction.") )
     }
     if( sum( keep.mod ) > 1 ){
-		if(type == "harmonic"){
+		if(mean.type == "harmonic"){
 			final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, GetWeightedHarmonic, w=AIC.weights[keep.mod]) )
 		}else{
 			final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, weighted.mean, w=AIC.weights[keep.mod]) )

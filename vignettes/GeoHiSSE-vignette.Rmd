@@ -222,7 +222,7 @@ recon.models <- list(recon.mod1, recon.mod2, recon.mod3, recon.mod4)
 model.ave.rates <- GetModelAveRates(x = recon.models, type = "tips")
 ```
 
-The result of the reconstrution is a matrix with the parameter estimates for each of the tips species averaged over all models. Note that for the GeoSSE model there is no "extinction" parameter associated with widespread (01) lineages. Also not that one can change the type of model averaging (between tips, nodes, and both) when callin the `GetModelAveRates` function.
+The result of the reconstruction is a matrix with the parameter estimates for each of the tips species averaged over all models. Note that for the GeoSSE model there is no "extinction" parameter associated with widespread (01) lineages. Also not that one can change the type of model averaging (between tips, nodes, and both) when callin the `GetModelAveRates` function.
 ```{r, eval=TRUE}
 head( model.ave.rates )
 ```
