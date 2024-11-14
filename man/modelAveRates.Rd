@@ -4,7 +4,8 @@
 \description{Summarizes reconstructions from a single model or a set of models and returns model averaged rates.}
 \usage{
 GetModelAveRates(x, AIC.weights=NULL, type=c("tips", "nodes", "both"),
-bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000)) )
+bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000)),
+mean.type="arithmetic")
 }       
 \arguments{
 \item{x}{a \code{hisse.states} object, a \code{hisse.states.geosse}
@@ -25,6 +26,7 @@ bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000)) )
   inclusive). The rows are the model parameter in this fixed order:
   turnover, net diversification, speciation, extinction fraction, and
   extinction.}
+\item{mean.type}{Designates what type of weighted mean should be calculated. As of now there are only two options, "arithmetic" or "harmonic". By default this is set to "arithmetic", but feel that "harmonic" is best when summarizing rates.}
 }
 \details{
 Provides a data frame model-averaged rates for all possible configurations of the model parameters (i.e., turnover, net.div, speciation, extinction, or extinction.fraction), either for all tips or for all nodes.

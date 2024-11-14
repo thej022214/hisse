@@ -4,7 +4,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"), bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000))){
+GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"), bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000)), mean.type="arithmetic"){
     
 	hisse.results <- x
 
@@ -92,7 +92,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         rates.tips.extinction <- ConvertManyToRate_ModelAve(hisse.results, rate.param="extinction", which.element="tip.mat")
 
         ## Here 'averaged.rates' is a list with the vector of results.
-        averaged.tip.rates <- CheckReconBounds(x=list(rates.tips.turnover, rates.tips.net.div, rates.tips.speciation, rates.tips.extinct.fraction, rates.tips.extinction), n.models = length(hisse.results), AIC.weights, bound.par.matrix)
+        averaged.tip.rates <- CheckReconBounds(x=list(rates.tips.turnover, rates.tips.net.div, rates.tips.speciation, rates.tips.extinct.fraction, rates.tips.extinction), n.models = length(hisse.results), AIC.weights, bound.par.matrix, mean.type=mean.type)
         
         ## Objects will always be of list class here.
         if(inherits(hisse.results[[1]], what="hisse.states")){
@@ -128,7 +128,7 @@ GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"
         rates.nodes.extinction <- ConvertManyToRate_ModelAve(hisse.results, rate.param="extinction", which.element="node.mat")
 
         ## Here 'averaged.node.rates' is a list with the vector of results.
-        averaged.node.rates <- CheckReconBounds(x=list(rates.nodes.turnover, rates.nodes.net.div, rates.nodes.speciation, rates.nodes.extinct.fraction, rates.nodes.extinction), n.models = length(hisse.results), AIC.weights, bound.par.matrix)
+        averaged.node.rates <- CheckReconBounds(x=list(rates.nodes.turnover, rates.nodes.net.div, rates.nodes.speciation, rates.nodes.extinct.fraction, rates.nodes.extinction), n.models = length(hisse.results), AIC.weights, bound.par.matrix, mean.type=mean.type)
         
         ## Objects will always be of list class here.
         if(inherits(hisse.results[[1]], what="hisse.states")){

@@ -1198,8 +1198,11 @@ CheckReconBounds <- function(x, n.models, AIC.weights, bound.par.matrix){
         warning( paste0(" Models in position ", paste(which(!keep.mod), collapse=", ")," have parameters outside the bounds defined by 'bound.matrix' argument. These will NOT be included in the reconstruction.") )
     }
     if( sum( keep.mod ) > 1 ){
-        #final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, weighted.mean, w=AIC.weights[keep.mod]) )
-		final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, GetWeightedHarmonic, w=AIC.weights[keep.mod]) )
+		if(type == "harmonic"){
+			final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, GetWeightedHarmonic, w=AIC.weights[keep.mod]) )
+		}else{
+			final.results <- lapply(x, function(y) apply(y[,keep.mod], 1, weighted.mean, w=AIC.weights[keep.mod]) )
+		}
     }
     if( sum( keep.mod ) == 1 ){
         final.results <- lapply(x, function(y) y[,keep.mod]) ## No need to make the weighted.mean
