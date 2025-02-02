@@ -4,7 +4,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"), bound.par.matrix=cbind(c(0,-1000,0,0,0),c(1000,1000,1000,3,1000)), mean.type="arithmetic"){
+GetModelAveRates <- function(x, AIC.weights=NULL, type=c("tips", "nodes", "both"), bound.par.matrix=cbind(c(0,-1000,0,0,0),c(10000,10000,10000,3,10000)), mean.type="arithmetic"){
     
 	hisse.results <- x
 
