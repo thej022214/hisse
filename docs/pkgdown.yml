@@ -1,14 +1,13 @@
-pandoc: 3.1.6
-pkgdown: 2.0.7
+pandoc: 3.6.2
+pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
+  adding_fossils: adding_fossils.html
   Clade-specific-sampling: Clade-specific-sampling.html
   GeoHiSSE-vignette: GeoHiSSE-vignette.html
-  MiSSE-vignette: MiSSE-vignette.html
-  MuHiSSE-vignette: MuHiSSE-vignette.html
-  adding_fossils: adding_fossils.html
   hisse-fisse-type1-vignette: hisse-fisse-type1-vignette.html
   hisse-new-vignette: hisse-new-vignette.html
   hisse-vignette: hisse-vignette.html
-last_built: 2023-07-27T22:00Z
-
+  MiSSE-vignette: MiSSE-vignette.html
+  MuHiSSE-vignette: MuHiSSE-vignette.html
+last_built: 2025-02-03T17:58Z
