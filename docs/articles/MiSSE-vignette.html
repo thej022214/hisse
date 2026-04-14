@@ -219,7 +219,7 @@ rate classes return nearly identical estimates (not shown).</p>
 <p>I have already fit these models. Figure 1 shows the improvement in
 AIC as we increase the complexity of the model.</p>
 <div class="figure">
-<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-6-1.png" alt="The fit of an incremental increase in the number of rate classes estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009). There is a clear reduction in AIC from one to three rate classes, which levels off at four rate classes and five rate classes returns an AIC that is about 1 unit higher than either the three and four rate class." width="700"><p class="caption">
+<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="The fit of an incremental increase in the number of rate classes estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009). There is a clear reduction in AIC from one to three rate classes, which levels off at four rate classes and five rate classes returns an AIC that is about 1 unit higher than either the three and four rate class." width="700"><p class="caption">
 The fit of an incremental increase in the number of rate classes
 estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et
 al. (2009). There is a clear reduction in AIC from one to three rate
@@ -271,7 +271,7 @@ Figure 2).</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotMiSSE.html">plot.misse.states</a></span><span class="op">(</span><span class="va">two.rate.recon</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">TRUE</span>, type<span class="op">=</span><span class="st">"phylogram"</span>,</span>
 <span>                  fsize<span class="op">=</span><span class="fl">.25</span>, legend<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
-<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-9-1.png" alt="A two-rate class MiSSE analysis and reconstruction of the cetacean phylogeny of Steeman et al. (2009) shows a clear increase in the net diversification rate within the Delphinidae (dolphins) relative to all other cetaceans; there also seems to be a slightly elevated rates in the sister group of Delphinidae, the Monodontidae+Phocenidae. Overall, this particular MiSSE model seems to correctly identify the source of 'trait-independent' diversification that can plague BiSSE analyses of simulated data sets on the cetacean tree (see Rabosky and Goldberg, 2015)." width="700"><p class="caption">
+<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="A two-rate class MiSSE analysis and reconstruction of the cetacean phylogeny of Steeman et al. (2009) shows a clear increase in the net diversification rate within the Delphinidae (dolphins) relative to all other cetaceans; there also seems to be a slightly elevated rates in the sister group of Delphinidae, the Monodontidae+Phocenidae. Overall, this particular MiSSE model seems to correctly identify the source of 'trait-independent' diversification that can plague BiSSE analyses of simulated data sets on the cetacean tree (see Rabosky and Goldberg, 2015)." width="700"><p class="caption">
 A two-rate class MiSSE analysis and reconstruction of the cetacean
 phylogeny of Steeman et al. (2009) shows a clear increase in the net
 diversification rate within the Delphinidae (dolphins) relative to all
@@ -311,7 +311,7 @@ Figure 3).</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotMiSSE.html">plot.misse.states</a></span><span class="op">(</span><span class="va">misse.results.list</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">TRUE</span>, type<span class="op">=</span><span class="st">"phylogram"</span>,</span>
 <span>                  fsize<span class="op">=</span><span class="fl">.25</span>, legend<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
-<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-12-1.png" alt="A model-averaged MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009) shows an apparent slow down in the net diversification through time." width="700"><p class="caption">
+<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="A model-averaged MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009) shows an apparent slow down in the net diversification through time." width="700"><p class="caption">
 A model-averaged MiSSE analysis of the cetacean phylogeny of Steeman et
 al. (2009) shows an apparent slow down in the net diversification
 through time.
@@ -465,7 +465,7 @@ point is in terms of adding further model complexity. We implemented
 a set of <code><a href="../reference/MiSSE.html">MiSSE()</a></code> models. It first runs a chunk of models,
 determines the “best” based on AIC, then it continues on from that
 complexity until the a more complex model is less than some user defined
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>AIC
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>AIC
 than the <em>current</em> best model. At that point,
 <code><a href="../reference/MiSSEGreedy.html">MiSSEGreedy()</a></code> stops running new models. Since this is based
 on current best AICc, and we start with simplest models. However, note
@@ -619,7 +619,7 @@ oceans. Syst. Biol. 58:573-585.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>

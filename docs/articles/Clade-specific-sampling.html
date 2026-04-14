@@ -108,7 +108,7 @@ what we believe is an incorrect likelihood behavior. In an SSE model,
 the sampling fraction,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>i</mi></msub><annotation encoding="application/x-tex">f_i</annotation></semantics></math>
 sets the initial conditions for both
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>D</mi><msub><mi>N</mi><mi>i</mi></msub></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">D_{N_i}(0)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>D</mi><msub><mi>N</mi><mi>i</mi></msub></msub><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">D_{N_i}(0)</annotation></semantics></math>
 – the probability that a lineage in state
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
 at time
@@ -116,35 +116,35 @@ at time
 would evolve into the extant clade N as observed – and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><msub><mi>f</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">1-f_i</annotation></semantics></math>
 sets the initial conditions for
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">E_i(0)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">E_i(0)</annotation></semantics></math>
 – the probability that a lineage in state
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
 at time
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
 would go completely extinct by the present. The important variable to
 pay attention to is
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>,
 which does not depend on the tree structure, only on time. Thus, unlike
 with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>D</mi><msub><mi>N</mi><mi>i</mi></msub></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">D_{N_i}(t)</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>D</mi><msub><mi>N</mi><mi>i</mi></msub></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">D_{N_i}(t)</annotation></semantics></math>,
 at a node (termed N here) the probability for the left and right
 descendants (L and R, respectively) are not combined. Instead, because
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>
 at any node is anchored by the character states,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>
 for the L and R descendants converge to the exact probabilities, and so
 it is arbitrary which set is carried down the subtending branch.
 However, as Moore et al. (2016) pointed out with BAMM, when the
 diversification parameters vary between the L and R descendants, due to
 a shift in diversification along one branch,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>
 does not converge at the node.</p>
 <p>The same problem occurs when the sampling fraction is allowed to vary
 across the tree because it actually transforms the speciation and
 extinction rates to account for the missing diversity. Stadler (2013)
 showed that the relationship between sampling fraction and
 speciation/extinction rates is as follows:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>λ</mi><mi>i</mi><mo>*</mo></msubsup><mo>=</mo><msub><mi>λ</mi><mi>i</mi></msub><mi>/</mi><msub><mi>f</mi><mi>i</mi></msub><mo>;</mo><msubsup><mi>μ</mi><mi>i</mi><mo>*</mo></msubsup><mo>=</mo><msub><mi>μ</mi><mi>i</mi></msub><mo>−</mo><msub><mi>λ</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mn>1</mn><mi>/</mi><msub><mi>f</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\lambda_i^* = \lambda_i / f_i; \mu_i^* = \mu_i - \lambda_i(1-1/f_i)</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>λ</mi><mi>i</mi><mo>*</mo></msubsup><mo>=</mo><msub><mi>λ</mi><mi>i</mi></msub><mi>/</mi><msub><mi>f</mi><mi>i</mi></msub><mo>;</mo><msubsup><mi>μ</mi><mi>i</mi><mo>*</mo></msubsup><mo>=</mo><msub><mi>μ</mi><mi>i</mi></msub><mo>−</mo><msub><mi>λ</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mn>1</mn><mi>/</mi><msub><mi>f</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\lambda_i^* = \lambda_i / f_i; \mu_i^* = \mu_i - \lambda_i(1-1/f_i)</annotation></semantics></math></p>
 <p>In other words, rescaling a global set of speciation and extinction
 rate parameters in different parts of the tree due to different sampling
 fractions effectively creates “rate shifts” in the tree. This also means
@@ -152,13 +152,11 @@ that wherever in the tree any two clades that differ in their sampling
 fractions coalesce it is not possible to simply arbitrarily choose one
 set of extinction probabilities to carry down in the likelihood
 calculation.</p>
-<pre><code><span><span class="co">## Warning: package 'ape' was built under R version 4.4.1</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: package 'GenSA' was built under R version 4.4.1</span></span></code></pre>
 <p>We can demonstrate this behavior using a slightly involved but
 straightforward example. Here we will use a three-taxon tree to show
 that even after combining probabilities at a nested node, under ideal
 conditions,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>i</mi></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">E_i(t)</annotation></semantics></math>
 for a L and R descendant branches should converge at a node. We will
 assume the tree has a total height of 20 time units, and we will also
 assume that the character states of the unsampled species are unknown
@@ -166,7 +164,7 @@ completely, which means
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mi>i</mi></msub><annotation encoding="application/x-tex">f_i</annotation></semantics></math>
 simply reflects the number of extant species sampled. We will use the
 following function to conduct our branch calculations:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">GetProbs</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span><span class="op">{</span></span>
 <span>        <span class="va">times</span><span class="op">=</span><span class="va">times</span></span>
 <span>        <span class="va">prob.subtree.cal.full</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/deSolve/man/lsoda.html" class="external-link">lsoda</a></span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span>, func <span class="op">=</span> <span class="st">"maddison_DE_bisse"</span>, </span>
@@ -179,7 +177,7 @@ following function to conduct our branch calculations:</p>
 50<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>%</mi><annotation encoding="application/x-tex">\%</annotation></semantics></math>,
 we can calculate the probability of the left lineage, L, which is a
 single branch of length 20, the extinction probabilities would be:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">times</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span><span class="op">)</span></span>
 <span><span class="va">yini</span> <span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>E0<span class="op">=</span><span class="fl">1</span><span class="op">-</span><span class="fl">0.5</span>, E1<span class="op">=</span><span class="fl">1</span><span class="op">-</span><span class="fl">0.5</span>, D0<span class="op">=</span><span class="fl">0.5</span>, D1<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">left.branch.probs</span> <span class="op">&lt;-</span> <span class="fu">GetProbs</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span></span>
@@ -190,7 +188,7 @@ single branch of length 20, the extinction probabilities would be:</p>
 which contains two taxa that coalesce at 10 time units, is a bit more
 involved. We first have to combine the probabilities of the two tip
 branches at node R:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">times</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">yini</span> <span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>E0<span class="op">=</span><span class="fl">1</span><span class="op">-</span><span class="fl">0.5</span>, E1<span class="op">=</span><span class="fl">1</span><span class="op">-</span><span class="fl">0.5</span>, D0<span class="op">=</span><span class="fl">0.5</span>, D1<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">right.subA.probs</span> <span class="op">&lt;-</span> <span class="fu">GetProbs</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span></span>
@@ -202,7 +200,7 @@ branches at node R:</p>
 <p>But, from here we simply use these probabilities as the initial
 conditions when calculating probabilities for the subtending branch
 representing the remaining 10 time units down to the root:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">times</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span></span>
 <span><span class="va">yini</span> <span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>E0<span class="op">=</span><span class="va">phi_A</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, E1<span class="op">=</span><span class="va">phi_A</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, D0<span class="op">=</span><span class="va">nodeR</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, D1<span class="op">=</span><span class="va">nodeR</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">right.branch.probs</span> <span class="op">&lt;-</span> <span class="fu">GetProbs</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span></span>
@@ -212,7 +210,7 @@ representing the remaining 10 time units down to the root:</p>
 <p>As expected, the probabilities of the left and right lineages
 converge to the same extinction probabilities (note, there may be slight
 precision issues due to our reliance on ode integration):</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">left.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,<span class="fl">4</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">right.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,<span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   E0   E1 </span></span>
 <span><span class="co">## TRUE TRUE</span></span></code></pre>
@@ -220,7 +218,7 @@ precision issues due to our reliance on ode integration):</p>
 25<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>%</mi><annotation encoding="application/x-tex">\%</annotation></semantics></math>,
 and the left clade is still sampled at
 50<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>%</mi><annotation encoding="application/x-tex">\%</annotation></semantics></math>:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">times</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">yini</span> <span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>E0<span class="op">=</span><span class="fl">1</span><span class="op">-</span><span class="fl">0.25</span>, E1<span class="op">=</span><span class="fl">1</span><span class="op">-</span><span class="fl">0.25</span>, D0<span class="op">=</span><span class="fl">0.25</span>, D1<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">right.subA.probs</span> <span class="op">&lt;-</span> <span class="fu">GetProbs</span><span class="op">(</span><span class="va">yini</span>, <span class="va">times</span><span class="op">)</span></span>
@@ -235,11 +233,11 @@ and the left clade is still sampled at
 <span><span class="va">right.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">##     E0.E0     E1.E1 </span></span>
 <span><span class="co">## 0.4846120 0.2302621</span></span></code></pre>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">left.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">##        E0        E1 </span></span>
 <span><span class="co">## 0.3453536 0.1793777</span></span></code></pre>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">left.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,<span class="fl">4</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">right.branch.probs</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,<span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    E0    E1 </span></span>
 <span><span class="co">## FALSE FALSE</span></span></code></pre>
@@ -281,7 +279,7 @@ rate estimates? Systematic Biology, 68:321-329.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer>

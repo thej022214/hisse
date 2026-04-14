@@ -465,9 +465,9 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         
         if(batch_index<total.chunks) {
             if(stop.deltaAICc>min.deltaAICc.this.chunk) {
-                print(paste0("Best AICc in this set of parallel runs was ", round(min.deltaAICc.this.chunk,2), " which is less than the cutoff to stop running (",stop.deltaAICc,"), so starting another set of parallel runs"))
+                print(paste0("Best delta AICc in this set of parallel runs was ", round(min.deltaAICc.this.chunk,2), " which is less than the cutoff to stop running (",stop.deltaAICc,"), so starting another set of parallel runs"))
             } else {
-                print(paste0("Best AICc in this set of parallel runs was ", round(min.deltaAICc.this.chunk,2), " which is greater than the cutoff to stop running (",stop.deltaAICc,"), so stopping here"))
+                print(paste0("Best delta AICc in this set of parallel runs was ", round(min.deltaAICc.this.chunk,2), " which is greater than the cutoff to stop running (",stop.deltaAICc,"), so stopping here"))
                 break()
             }
         }
