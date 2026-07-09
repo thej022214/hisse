@@ -80,6 +80,7 @@ c2 <- function(lambda, mu, psi, rho){
     return(-(lambda-mu-(2*lambda*rho)-psi)/c1(lambda, mu, psi))
 }
 
+
 #This is Master equation from Stalder 2010, pg. 398.
 p_0 <- function(x, lambda, mu, psi, rho, log=TRUE){
     c1_val <- c1(lambda=lambda, mu=mu, psi=psi)
@@ -100,6 +101,27 @@ p_one <- function(x,lambda, mu, psi, rho){
 }
 
 
+#p_one_censored_bad <- function(x, lambda, mu, psi, rho) {
+#	out <- integrate(
+#	f <- function(t) {
+#		-(lambda + mu) +2 * lambda * p_0(t, lambda, mu, psi, rho, log = FALSE)
+#	},
+#	lower = 0,
+#	upper = x
+#	)$value
+#
+#	return(log(rho) + out)
+#}
+
+
+p_one_censored <- function(x, lambda, mu, psi, rho){
+	c1_val <- c1(lambda=lambda, mu=mu, psi=psi)
+	c2_val <- c2(lambda=lambda, mu=mu, psi=psi, rho=rho)
+	B <- exp(-c1_val * x) * (1 - c2_val) + (1 + c2_val)
+	return(log(rho) + (psi - c1_val) * x - 2 * log(B / 2))
+}
+
+
 starting.point.tree.fossils <- function(x, rho, n, m, k, x_times, y_times){
     x <- exp(x)
     lambda <- x[1] / (1 + x[2])
@@ -108,8 +130,11 @@ starting.point.tree.fossils <- function(x, rho, n, m, k, x_times, y_times){
     
     #Equation 5 from Stadler 2010, pg. 400 -- need to readjust the likelihood equation for logspace.
     #loglik <- log( (((lambda^(n+m-2)) * (psi^m))/(1-p_0(max(x_times),lambda,mu,psi,rho))^2) * p_one(max(x_times), lambda, mu, psi, rho) * prod(p_one(x_times, lambda,mu,psi,rho)) * prod(p_0(y_times,lambda,mu,psi,rho)/p_one(y_times,lambda,mu,psi,rho)) )
-    loglik <- (((n+m-2) * log(lambda)) + ((k+m) * log(psi))) - log(1-p_0(max(x_times),lambda,mu,psi=0,rho, log=FALSE))*2 + p_one(max(x_times), lambda, mu, psi, rho) + sum(p_one(x_times, lambda,mu,psi,rho)) + (sum(p_0(y_times,lambda,mu,psi,rho)) - sum(p_one(y_times,lambda,mu,psi,rho)))
-    
+    if(is.null(k)){
+		loglik <- (((n+m-2) * log(lambda)) + (m * log(psi))) - log(1-p_0(max(x_times),lambda,mu,psi=0,rho, log=FALSE))*2 + p_one_censored(max(x_times), lambda, mu, psi, rho) + sum(p_one_censored(x_times, lambda,mu,psi,rho)) + (sum(p_0(y_times,lambda,mu,psi,rho)) - sum(p_one_censored(y_times,lambda,mu,psi,rho)))
+	}else{
+		loglik <- (((n+m-2) * log(lambda)) + ((k+m) * log(psi))) - log(1-p_0(max(x_times),lambda,mu,psi=0,rho, log=FALSE))*2 + p_one(max(x_times), lambda, mu, psi, rho) + sum(p_one(x_times, lambda,mu,psi,rho)) + (sum(p_0(y_times,lambda,mu,psi,rho)) - sum(p_one(y_times,lambda,mu,psi,rho)))
+	}
     return(-loglik)
 }
 

@@ -109,7 +109,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     if(includes.fossils == TRUE){
         if(!is.null(k.samples)){
             phy.og <- phy
-            psi.type <- "m+k"
+            #psi.type <- "m+k"
             split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
             strat.cache <- NULL
             k.samples <- k.samples[order(as.numeric(k.samples[,3]), decreasing=FALSE),]
@@ -126,7 +126,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         }else{
             if(!is.null(strat.intervals)){
                 phy.og <- phy
-                psi.type <- "m+int"
+                #psi.type <- "m+int"
                 split.times.plus.tips <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
                 split.times <- split.times.plus.tips[-c(1:Ntip(phy))]
                 strat.cache <- GetStratInfo(strat.intervals=strat.intervals)
@@ -146,7 +146,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-dim(fix.type)[1]
             }else{
                 phy.og <- phy
-                psi.type <- "m_only"
+                #psi.type <- "m_only"
                 fix.type <- NULL
                 split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
                 strat.cache <- NULL
@@ -160,7 +160,6 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
             }
         }
-
     }else{
         phy.og <- phy
         gen <- FindGenerations(phy)
@@ -204,7 +203,11 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
                     seg.map <- seg.map[branch.type != 2]
                     init.pars <- starting.point.generator.intervals(k=2, samp.freq.tree, n.tax=n.tax.starting, seg_map=seg.map, split.times=split.times, fossil.ages=fossil.ages, strat.cache=strat.cache)
                 }else{
-                    init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+					if(psi.type == "m_only"){
+						init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=NULL, split.times=split.times)
+					}else{
+						init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+					}
                 }
                 psi.start <- init.pars[length(init.pars)]
             }else{
@@ -305,14 +308,14 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+            out = nloptr(x0=ip, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type, strat.cache=strat.cache)
             sann.counts <- NULL
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeMiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+            out = subplex(ip, fn=DevOptimizeMiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type, strat.cache=strat.cache)
             sann.counts <- NULL
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
@@ -320,11 +323,11 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann = GenSA(ip, fn=DevOptimizeMiSSE, lower=log(exp(lower)+0.0000000001), upper=log(exp(upper)-0.0000000001), control=list(max.call=sann.its, temperature=sann.temp, seed=sann.seed), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+        out.sann = GenSA(ip, fn=DevOptimizeMiSSE, lower=log(exp(lower)+0.0000000001), upper=log(exp(upper)-0.0000000001), control=list(max.call=sann.its, temperature=sann.temp, seed=sann.seed), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type, strat.cache=strat.cache)
         sann.counts <- out.sann$counts
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache)
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type, strat.cache=strat.cache)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         
@@ -512,6 +515,7 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
     }
 }
 
+
 SummarizeMiSSEGreedy <- function(greedy.result, min.weight=0.01, n.cores=1, recon=TRUE) {
 	parameters <- c("turnover", "net.div", "speciation", "extinction", "extinction.fraction")
 	AICc_weights <- GetAICWeights(greedy.result, criterion="AICc")
@@ -565,7 +569,6 @@ SummarizeMiSSEGreedy <- function(greedy.result, min.weight=0.01, n.cores=1, reco
 
 	return(list(overview=overview, rates=rates))
 }
-
 
 
 generateMiSSEGreedyCombinations <- function(max.param=52, turnover.tries=sequence(26), eps.tries=sequence(26), fixed.eps.tries=NA, vary.both=TRUE, shuffle.start=TRUE) {
@@ -647,17 +650,17 @@ MiSSEGreedyOLD <- function(phy, f=1, turnover.tries=sequence(26), eps.constant=c
 ######################################################################################################################################
 ######################################################################################################################################
 
-DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, fixed.eps, nb.tip, nb.node, condition.on.survival, root.type, root.p, np, ode.eps, fossil.taxa, fix.type, strat.cache) {
+DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, fixed.eps, nb.tip, nb.node, condition.on.survival, root.type, root.p, np, ode.eps, fossil.taxa, psi.type, fix.type, strat.cache) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=ode.eps)
+    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, psi.type=psi.type, fix.type=fix.type, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=ode.eps)
     if(!is.null(fix.type)){
         if(!is.null(strat.cache)){
             logl <- DownPassMisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2]) + (strat.cache$k*log(cache$psi)) + (cache$psi*strat.cache$l_s)
         }else{
-            logl <- DownPassMisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
+			logl <- DownPassMisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
         }
     }else{
         logl <- DownPassMisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
@@ -844,7 +847,11 @@ SingleChildProbMiSSE <- function(cache, pars, compD, compE, start.time, end.time
         if(branch.type == 3){
             capture.output(res <- lsoda(yini, times, func = "misse_strat_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8))
         }else{
-            capture.output(res <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+			if(cache$psi.type == "m_only"){
+				capture.output(res <- lsoda(yini, times, func = "misse_kcensor_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+			}else{
+				capture.output(res <- lsoda(yini, times, func = "misse_derivs", pars, initfunc="initmod_misse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+			}
         }
         res
     }
@@ -917,7 +924,11 @@ FocalNodeProbMiSSE <- function(cache, pars, lambdas, dat.tab, generations){
                     lambdas.check <- lambdas
                     lambdas.check[which(lambdas==0)] <- 1
                     #The initial condition for a k.sample is D(t)*psi
-                    v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                    if(cache$psi.type == "m_only"){
+						v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+					}else{
+						v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+					}
                 }else{
                     if(cache$fix.type[fix.index] == "interval"){
                         lambdas.check <- lambdas
@@ -1003,7 +1014,7 @@ GetFossilInitialsMiSSE <- function(cache, pars, lambdas, dat.tab, fossil.taxa){
     setkey(dat.tab, DesNode)
     CurrentGenData <- dat.tab[fossils]
     tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbMiSSE(cache, pars, z[7:32], z[33:58], 0, z[2], 1)))
-    tmp.probs <- matrix(tmp[,1:26], length(fossil.taxa), 26) * as.matrix(CurrentGenData[,7:32]) * cache$psi
+	tmp.probs <- matrix(tmp[,1:26], length(fossil.taxa), 26) * as.matrix(CurrentGenData[,7:32]) * cache$psi
     phi.mat <- matrix(tmp[,1:26], length(fossil.taxa), 26)
     setkey(dat.tab, DesNode)
     rows <- dat.tab[.(fossils), which=TRUE]
@@ -1141,7 +1152,8 @@ DownPassMisse <- function(dat.tab, gen, cache, condition.on.survival, root.type,
 ######################################################################################################################################
 ######################################################################################################################################
 
-ParametersToPassMiSSE <- function(model.vec, hidden.states, fixed.eps, nb.tip, nb.node, bad.likelihood, ode.eps){
+
+ParametersToPassMiSSE <- function(model.vec, hidden.states, fixed.eps, nb.tip, nb.node, psi.type, bad.likelihood, ode.eps){
     #Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
     obj <- NULL
     
@@ -1150,7 +1162,8 @@ ParametersToPassMiSSE <- function(model.vec, hidden.states, fixed.eps, nb.tip, n
     obj$nb.node <- nb.node
     obj$bad.likelihood <- bad.likelihood
     obj$ode.eps <- ode.eps
-    
+	obj$psi.type <- psi.type
+	
     if(is.null(fixed.eps)){
         ##Hidden State A
         obj$lambda0A = model.vec[1] / (1 + model.vec[2])

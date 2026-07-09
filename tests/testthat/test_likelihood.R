@@ -852,7 +852,7 @@ test_that("MiSSE_fossil_test2", {
     nb.node <- phy$Nnode
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(lambda+mu, mu/lambda, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+k", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi = psi
     gen <- hisse:::FindGenerations(phy)
     k.samples <- hisse:::GetKSampleMRCA(phy, k.samples)
@@ -901,13 +901,61 @@ test_that("MiSSE_fossil_test3", {
     nb.node <- phy$Nnode
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2, includes.fossils=TRUE)
     model.vec <- c(lambda+mu, mu/lambda, lambda+mu, mu/lambda, rep(0,48), 0.01, psi)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+k", bad.likelihood=exp(-300), ode.eps=0)#
     gen <- hisse:::FindGenerations(phy)
     k.samples <- NULL
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=NULL, fix.type=NULL)
     comparison <- identical(round(logLikLogSpace,3), round(MiSSE.logL,3))
 
     expect_true(comparison)
+})
+
+
+test_that("MiSSE_fossil_test4", {
+	skip_on_cran()
+
+	#Tests the loglikehood when there are only m samples and we censor equations for lack of k fossils:
+	set.seed(8)
+	phy <- TreeSim::sim.bd.taxa(n = 100, numbsim = 1, lambda = 0.3, mu = 0.2)[[1]]
+	f <- hisse:::GetFossils(phy, psi=0.05)
+	pp <- hisse:::ProcessSimSample(phy, f)
+
+	dat.tab <- hisse:::OrganizeDataMiSSE(phy=pp$phy, f=1, hidden.states=2, includes.fossils=TRUE)
+	edge_details <- hisse:::GetEdgeDetails(phy=pp$phy, intervening.intervals=strat.cache$intervening.intervals)
+	fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
+	#This is for starting values:
+	fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
+	#Drop all k.samples to get split times:
+	k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
+	phy.no.k <- drop.tip(pp$phy, k.sample.tip.no)
+	split.times <- paleotree:::dateNodes(phy.no.k, rootAge=max(node.depth.edgelength(phy.no.k)))[-c(1:Ntip(phy.no.k))]
+	n <- Ntip(phy.no.k)-length(fossil.taxa)
+	m <- length(fossil.taxa)
+	x_times <- split.times
+	y_times <- fossil.ages
+	k <- 0
+
+	starting.point.code <- hisse:::starting.point.generator.fossils(n.tax=n, k=1, samp.freq.tree=1, q.div=5, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=k, split.times=split.times, get.likelihood=TRUE)
+
+	rho=1
+	lambda <- starting.point.code[1]
+	mu <-  starting.point.code[2]
+	psi <- starting.point.code[3]
+
+	logLikLogSpace <- (((n+m-2) * log(lambda)) + (m * log(psi))) - log(1-hisse:::p_0(max(x_times),lambda,mu,psi=0,rho, log=FALSE))*2 + hisse:::p_one_censored(max(x_times), lambda, mu, psi, rho) + sum(hisse:::p_one_censored(x_times, lambda,mu,psi,rho)) + (sum(hisse:::p_0(y_times,lambda,mu,psi,rho)) - sum(hisse:::p_one_censored(y_times,lambda,mu,psi,rho)))
+
+	phy <- pp$phy
+	nb.tip <- Ntip(phy)
+	nb.node <- phy$Nnode
+	dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2, includes.fossils=TRUE)
+	model.vec <- c(lambda+mu, mu/lambda, lambda+mu, mu/lambda, rep(0,48), 0.01, psi)
+	cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m_only", bad.likelihood=exp(-300), ode.eps=0)#
+	gen <- hisse:::FindGenerations(phy)
+	k.samples <- NULL
+	MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=NULL, fix.type=NULL)
+	comparison <- identical(round(logLikLogSpace,3), round(MiSSE.logL,3))
+
+	expect_true(comparison)
 })
 
 
