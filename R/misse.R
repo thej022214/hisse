@@ -109,7 +109,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     if(includes.fossils == TRUE){
         if(!is.null(k.samples)){
             phy.og <- phy
-            #psi.type <- "m+k"
+            psi.type <- "m+k"
             split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
             strat.cache <- NULL
             k.samples <- k.samples[order(as.numeric(k.samples[,3]), decreasing=FALSE),]
@@ -126,7 +126,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         }else{
             if(!is.null(strat.intervals)){
                 phy.og <- phy
-                #psi.type <- "m+int"
+                psi.type <- "m+int"
                 split.times.plus.tips <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
                 split.times <- split.times.plus.tips[-c(1:Ntip(phy))]
                 strat.cache <- GetStratInfo(strat.intervals=strat.intervals)
@@ -147,7 +147,8 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             }else{
                 phy.og <- phy
                 #psi.type <- "m_only"
-                fix.type <- NULL
+				psi.type <- "m+k"
+				fix.type <- NULL
                 split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
                 strat.cache <- NULL
                 no.k.samples <- 0
@@ -166,7 +167,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
         fix.type <- NULL
-        psi.type <- NULL
+        psi.type <- "none"
         strat.cache <- NULL
     }
     nb.tip <- Ntip(phy)
@@ -655,7 +656,7 @@ DevOptimizeMiSSE <- function(p, pars, dat.tab, gen, hidden.states, fixed.eps, nb
     p.new <- exp(p)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, psi.type=psi.type, fix.type=fix.type, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=ode.eps)
+    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, psi.type=psi.type, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=ode.eps)
     if(!is.null(fix.type)){
         if(!is.null(strat.cache)){
             logl <- DownPassMisse(dat.tab=dat.tab, gen=gen, cache=cache, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2]) + (strat.cache$k*log(cache$psi)) + (cache$psi*strat.cache$l_s)

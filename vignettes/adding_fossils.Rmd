@@ -240,7 +240,7 @@ dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.f
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, 
             fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, 
-            bad.likelihood=exp(-500), ode.eps=0)#
+            psi.type="m+k", bad.likelihood=exp(-500), ode.eps=0)#
 cache$psi <- 0.01
 gen <- hisse:::FindGenerations(phy.k)
 MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, 
@@ -342,7 +342,7 @@ dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1,   includes
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, 
             fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, 
-            bad.likelihood=exp(-500), ode.eps=0)#
+            psi.type="m+k", bad.likelihood=exp(-500), ode.eps=0)#
 cache$psi <- 0.01
 edge_details <- hisse:::GetEdgeDetails(phy=phy.k, 
             intervening.intervals=strat.cache$intervening.intervals)

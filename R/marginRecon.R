@@ -916,6 +916,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     if(includes.fossils == TRUE){
         if(!is.null(k.samples)){
             #m and k fossils
+			psi.type <- "m+k"
             strat.cache <- NULL
             k.samples <- k.samples[order(as.numeric(k.samples[,3]), decreasing=FALSE),]
             phy <- AddKNodes(phy, k.samples)
@@ -942,6 +943,8 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
             }else{
                 #Just m fossils only.
+				#psi.type <- "m_only"
+				psi.type <- "m+k"
                 fix.type <- NULL
                 strat.cache <- NULL
                 gen <- FindGenerations(phy)
@@ -952,6 +955,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
             }
         }
     }else{
+		psi.type <- "none"
         fix.type <- NULL
         gen <- FindGenerations(phy)
         dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
@@ -964,8 +968,9 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
-    if(includes.fossils == FALSE){
+    cache <- ParametersToPassMiSSE(model.vec=model.vec, hidden.states=hidden.states, fixed.eps=fixed.eps, nb.tip=nb.tip, nb.node=nb.node, psi.type=psi.type, bad.likelihood=exp(-300), ode.eps=0)
+    
+	if(includes.fossils == FALSE){
         cache$psi <- 0
     }
     

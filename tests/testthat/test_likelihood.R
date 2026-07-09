@@ -491,7 +491,7 @@ test_that("MiSSE_test1", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(0.103624, 5.207178e-09, rep(0,52), 0)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="none", bad.likelihood=exp(-300), ode.eps=0)
     logl.one.rate <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     right.logl <- -277.6942
     comparison <- round(logl.one.rate,4) == round(right.logl,4)
@@ -508,7 +508,7 @@ test_that("MiSSE_test2", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(0.103624, 5.207178e-09, 0.103624, 5.207178e-09, 0.103624, 5.207178e-09, rep(0,46), 1, 0, 0)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=3, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=3, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="none", bad.likelihood=exp(-300), ode.eps=0)
     logl.three.rate <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL)
     right.logl <- -277.6942
     comparison <- round(logl.three.rate,4) == round(right.logl,4)
@@ -528,7 +528,7 @@ test_that("MiSSE_test3", {
     
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=2, includes.fossils=FALSE)
     model.vec <- c(pp.hisse$solution[1], pp.hisse$solution[3], pp.hisse$solution[13], pp.hisse$solution[15], rep(0,48),  pp.hisse$solution[17],0)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="none", bad.likelihood=exp(-300), ode.eps=0)#
     gen <- hisse:::FindGenerations(phy)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, node=NULL, fix.type=NULL)
     
@@ -1035,7 +1035,7 @@ test_that("HiSSE_fossil_test1", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+k", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
     edge_details <- hisse:::GetEdgeDetails(phy=phy.k, includes.intervals=FALSE, intervening.intervals=NULL)
     fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
@@ -1068,7 +1068,7 @@ test_that("HiSSE_fossil_test1", {
 
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.extant, f=1, hidden.states=1, includes.fossils=FALSE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), psi.type="none", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.0
     gen <- hisse:::FindGenerations(phy.extant)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=NULL, node=NULL, fix.type=NULL)
@@ -1124,7 +1124,7 @@ test_that("HiSSE_fossil_test2", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+k", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
     gen <- hisse:::FindGenerations(phy)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=NULL, fix.type=NULL)
@@ -1210,7 +1210,7 @@ test_that("MuHiSSE_fossil_test1", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+k", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
     edge_details <- hisse:::GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
     fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
@@ -1247,7 +1247,7 @@ test_that("MuHiSSE_fossil_test1", {
     
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.extant, f=1, hidden.states=1, includes.fossils=FALSE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), psi.type="none", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.0
     edge_details <- hisse:::GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
     fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
@@ -1328,7 +1328,7 @@ test_that("MuHiSSE_fossil_test2", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+k", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
     edge_details <- hisse:::GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
     fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
@@ -1392,7 +1392,7 @@ test_that("MiSSE_fossil_test4", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=2, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, 0.2+0.03, 0.03/0.2, rep(0,48), 0.01, 0.02)
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=2, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+int", bad.likelihood=exp(-300), ode.eps=0)#
     gen <- hisse:::FindGenerations(phy.k)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
     
@@ -1432,7 +1432,7 @@ test_that("interval_branch_test1", {
     eps = .1 / .2
     psi = 0.05
     model.vec <- c(turnover, eps, rep(0,51))
-    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=1, nb.node=1, bad.likelihood=exp(-300), ode.eps=0)#
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=1, nb.node=1, psi.type="m+int", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- psi
     strat.range.calc <- hisse:::SingleChildProbMiSSE(cache, pars, compD, compE,  0, 10, 3)
     comparison <- identical(round(unname(strat.range.calc[27]),4), round(stad.1,4))
@@ -1466,7 +1466,7 @@ test_that("interval_branch_test2", {
     eps = .1 / .2
     psi = 0.05
     model.vec <- c(turnover, eps, rep(0,51))
-    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=1, nb.node=1, bad.likelihood=exp(-300), ode.eps=0)#
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=1, nb.node=1, psi.type="m+int", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- psi
     strat.range.calc <- hisse:::SingleChildProbMiSSE(cache, pars, compD, compE,  0, 10, 3)
     comparison <- identical(round(unname(strat.range.calc[27]),4), round(stad.1,4))
@@ -1525,7 +1525,7 @@ test_that("MiSSE_interval_test1", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(turnover, eps, rep(0,51))
-    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+int", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- psi
     
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type) + (strat.cache$k*log(psi)) + (psi*strat.cache$l_s)
@@ -1575,7 +1575,7 @@ test_that("MiSSE_interval_test2", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(turnover, eps, rep(0,51))
-    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+int", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- psi
     
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type) + (strat.cache$k*log(psi)) + (psi*strat.cache$l_s)
@@ -1627,7 +1627,7 @@ test_that("MiSSE_interval_test3", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(turnover, eps, rep(0,51))
-    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+int", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- psi
     
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type) + (strat.cache$k*log(psi)) + (psi*strat.cache$l_s)
@@ -1680,7 +1680,7 @@ test_that("MiSSE_interval_test4", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(turnover, eps, rep(0,51))
-    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+int", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- psi
     
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type) + (strat.cache$k*log(psi)) + (psi*strat.cache$l_s)
@@ -1733,7 +1733,7 @@ test_that("MiSSE_interval_test5", {
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
     model.vec <- c(turnover, eps, rep(0,51))
-    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), ode.eps=0)#
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+int", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- psi
     
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type) + (strat.cache$k*log(psi)) + (psi*strat.cache$l_s)
