@@ -146,8 +146,8 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-dim(fix.type)[1]
             }else{
                 phy.og <- phy
-                psi.type <- "m_only"
-				#psi.type <- "m+k"
+                #psi.type <- "m_only"
+				psi.type <- "m+k"
 				fix.type <- NULL
                 split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
                 strat.cache <- NULL
