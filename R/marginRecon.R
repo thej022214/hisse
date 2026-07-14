@@ -928,6 +928,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
         }else{
             if(!is.null(strat.intervals)){
                 #strat intervals
+				psi.type <- "m+int"
                 split.times.plus.tips <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))
                 strat.cache <- GetStratInfo(strat.intervals=strat.intervals)
                 k.samples <- GetIntervalToK(strat.intervals, intervening.intervals=strat.cache$intervening.intervals)
@@ -943,8 +944,8 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
             }else{
                 #Just m fossils only.
-				#psi.type <- "m_only"
-				psi.type <- "m+k"
+				psi.type <- "m_only"
+				#psi.type <- "m+k"
                 fix.type <- NULL
                 strat.cache <- NULL
                 gen <- FindGenerations(phy)
