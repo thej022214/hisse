@@ -146,8 +146,8 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-dim(fix.type)[1]
             }else{
                 phy.og <- phy
-                #psi.type <- "m_only"
-				psi.type <- "m+k"
+                psi.type <- "m_only"
+				#psi.type <- "m+k"
 				fix.type <- NULL
                 split.times <- dateNodes(phy, rootAge=max(node.depth.edgelength(phy)))[-c(1:Ntip(phy))]
                 strat.cache <- NULL
@@ -284,7 +284,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         if(rate.cats > 1){
             if(includes.fossils == TRUE){
                 ip <- c(ip, trans.start, log(psi.start))
-                upper <- c(upper, log(trans.upper), log(trans.upper))
+                upper <- c(upper, log(trans.upper), log(1))
             }else{
                 ip <- c(ip, trans.start)
                 upper <- c(upper, log(trans.upper))
@@ -292,7 +292,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
         }else{
             if(includes.fossils == TRUE){
                 ip <- c(ip, log(psi.start))
-                upper <- c(upper, log(trans.upper))
+                upper <- c(upper, log(1))
             }
         }
         lower <- rep(-20, length(ip))
