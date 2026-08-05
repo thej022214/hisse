@@ -100,6 +100,7 @@ p_one <- function(x,lambda, mu, psi, rho){
     return(log((4*rho)/(2*(1-c2_val^2) + exp(-c1_val*x)*(1-c2_val)^2 + exp(c1_val*x) * (1+c2_val)^2)))
 }
 
+
 # This is the full derivation, but it is unnecessarily complicated.
 #p_one_censored <- function(x, lambda, mu, psi, rho){
 #	c1_val <- c1(lambda=lambda, mu=mu, psi=psi)
@@ -110,8 +111,8 @@ p_one <- function(x,lambda, mu, psi, rho){
 
 
 p_one_censored <- function(x, lambda, mu, psi, rho){
-	new <- p_one(x=x, lambda=lambda, mu=mu, psi=psi, rho=rho)
-	return(log(exp(new)*exp(x*psi)))
+	p1_stad <- p_one(x=x, lambda=lambda, mu=mu, psi=psi, rho=rho)
+	return(log(exp(p1_stad)*exp(x*psi)))
 }
 
 

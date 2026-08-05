@@ -944,9 +944,6 @@ test_that("MiSSE_fossil_test4", {
 
 	logLikLogSpace <- (((n+m-2) * log(lambda)) + (m * log(psi))) - log(1-hisse:::p_0(max(x_times),lambda,mu,psi=0,rho, log=FALSE))*2 + hisse:::p_one_censored(max(x_times), lambda, mu, psi, rho) + sum(hisse:::p_one_censored(x_times, lambda,mu,psi,rho)) + (sum(hisse:::p_0(y_times,lambda,mu,psi,rho)) - sum(hisse:::p_one_censored(y_times,lambda,mu,psi,rho)))
 
-	logLikLogSpace2 <- (((n+m-2) * log(lambda)) + (m * log(psi))) - log(1-hisse:::p_0(max(x_times),lambda,mu,psi=0,rho, log=FALSE))*2 + p_one_censored2(max(x_times), lambda, mu, psi, rho) + sum(p_one_censored2(x_times, lambda,mu,psi,rho)) + (sum(hisse:::p_0(y_times,lambda,mu,psi,rho)) - sum(p_one_censored2(y_times,lambda,mu,psi,rho)))
-
-	
 	phy <- pp$phy
 	nb.tip <- Ntip(phy)
 	nb.node <- phy$Nnode
