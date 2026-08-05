@@ -100,25 +100,18 @@ p_one <- function(x,lambda, mu, psi, rho){
     return(log((4*rho)/(2*(1-c2_val^2) + exp(-c1_val*x)*(1-c2_val)^2 + exp(c1_val*x) * (1+c2_val)^2)))
 }
 
-
-#p_one_censored_bad <- function(x, lambda, mu, psi, rho) {
-#	out <- integrate(
-#	f <- function(t) {
-#		-(lambda + mu) +2 * lambda * p_0(t, lambda, mu, psi, rho, log = FALSE)
-#	},
-#	lower = 0,
-#	upper = x
-#	)$value
-#
-#	return(log(rho) + out)
+# This is the full derivation, but it is unnecessarily complicated.
+#p_one_censored <- function(x, lambda, mu, psi, rho){
+#	c1_val <- c1(lambda=lambda, mu=mu, psi=psi)
+#	c2_val <- c2(lambda=lambda, mu=mu, psi=psi, rho=rho)
+#	B <- exp(-c1_val * x) * (1 - c2_val) + (1 + c2_val)
+#	return(log(rho) + (psi - c1_val) * x - 2 * log(B / 2))
 #}
 
 
 p_one_censored <- function(x, lambda, mu, psi, rho){
-	c1_val <- c1(lambda=lambda, mu=mu, psi=psi)
-	c2_val <- c2(lambda=lambda, mu=mu, psi=psi, rho=rho)
-	B <- exp(-c1_val * x) * (1 - c2_val) + (1 + c2_val)
-	return(log(rho) + (psi - c1_val) * x - 2 * log(B / 2))
+	new <- p_one(x=x, lambda=lambda, mu=mu, psi=psi, rho=rho)
+	return(log(exp(new)*exp(x*psi)))
 }
 
 
