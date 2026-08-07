@@ -193,7 +193,7 @@ plot.hisse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
     state.tree$cols[]<- state.colors
     
     par(fig=c(0,1, 0, 1), new=FALSE)
-    plot.contMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
+    plotContMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
     , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
     , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
     , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
@@ -463,7 +463,7 @@ plot.geohisse.states <- function(x, rate.param = "net.div", type = "fan", show.t
     ## Make the plot.
     ## This is NOT using the phytools version.
     ## This is a special plotting function for HiSSE.
-    plot.contMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
+    plotContMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
     , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
     , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
     , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
@@ -688,7 +688,7 @@ plot.muhisse.states <- function(x, rate.param = "net.div", type = "fan", show.ti
     ## Make the plot.
     ## This is NOT using the phytools version.
     ## This is a special plotting function for HiSSE.
-    plot.contMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
+    plotContMapHisse(A=rate.tree, B=state.tree, lwd.factor=width.factor, fsize=fsize,
     , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
     , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
     , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
@@ -912,7 +912,7 @@ plot.misse.states <- function(x, rate.param = "net.div", type = "fan", show.tip.
     #state.tree$cols[]<- state.colors
     
     par(fig=c(0,1, 0, 1), new=FALSE)
-    plot.contMapHisse(A=rate.tree, B=rate.tree, lwd.factor=width.factor, fsize=fsize,
+    plotContMapHisse(A=rate.tree, B=rate.tree, lwd.factor=width.factor, fsize=fsize,
     , add=FALSE, lwd=edge.width, type=type, mar=mar, direction="rightwards"
     , offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=swap.underscore
     , outline=outline, outline.color=outline.color, show.tiplabels=show.tip.label)
@@ -1072,7 +1072,7 @@ plot=TRUE,anc.states=NULL,...){
     xx<-list(tree=tree,cols=cols,lims=lims)
     class(xx) <- "contMap"
     if(plot){
-        plot.contMapHisse(xx, fsize=fsize, ftype=ftype, lwd=lwd, outline=outline
+        plotContMapHisse(xx, fsize=fsize, ftype=ftype, lwd=lwd, outline=outline
         , type=type, mar=mar, direction=direction, offset=offset
         , hold=hold, swap.underscore=TRUE, show.tiplabels=TRUE)
     }

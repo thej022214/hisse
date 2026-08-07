@@ -3,7 +3,7 @@
 ## These have been adapted to this package.
 ## For general use, besides internal usage in package "hisse", please use and cite "phytools".
 
-plot.contMapHisse <- function(A, B, lwd.factor = 0.5, fsize=1, ftype="reg", add=FALSE, lwd=4, type="phylogram", mar=rep(0.3,4), direction="rightwards", offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=TRUE, outline = TRUE, outline.color = "black", show.tiplabels=TRUE){
+plotContMapHisse <- function(A, B, lwd.factor = 0.5, fsize=1, ftype="reg", add=FALSE, lwd=4, type="phylogram", mar=rep(0.3,4), direction="rightwards", offset=NULL, xlim=NULL, ylim=NULL, hold=TRUE, swap.underscore=TRUE, outline = TRUE, outline.color = "black", show.tiplabels=TRUE){
     
     ## This will plot the cont map for a HiSSE model.
     ## A$tree
@@ -100,7 +100,7 @@ plotSimmapHiSSE <- function(treeA, colorsA, treeB, colorsB, fsize=1.0, ftype="re
 ## Some helping functions:
 
 reorderSimmapHiSSE <- function(tree, order="cladewise", index.only=FALSE, ...){
-    ii<-reorder.phylo(tree,order,index.only=TRUE,...)
+    ii <- reorder.phylo(tree,order,index.only=TRUE,...)
     if(!index.only){
         if(inherits(ii,"phylo")) ii<-whichorder(ii$edge[,2],tree$edge[,2]) ## bug workaround
         tree$edge<-tree$edge[ii,]
