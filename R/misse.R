@@ -976,11 +976,19 @@ GetRootProbMiSSE <- function(cache, pars, lambdas, dat.tab, generations){
         if(any(cache$node %in% generations)){
             for(fix.index in 1:length(cache$node)){
                 if(cache$fix.type[fix.index] == "event"){
-                    #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                    lambdas.check <- lambdas
-                    lambdas.check[which(lambdas==0)] <- 1
-                    #The initial condition for a k.sample is D(t)*psi
-                    v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+					if(cache$psi.type == "m_only"){
+						#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+						lambdas.check <- lambdas
+						lambdas.check[which(lambdas==0)] <- 1
+						#The initial condition for a k.sample is D(t)*psi
+						v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+					}else{
+						#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+						lambdas.check <- lambdas
+						lambdas.check[which(lambdas==0)] <- 1
+						#The initial condition for a k.sample is D(t)*psi
+						v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+					}
                 }else{
                     if(cache$fix.type[fix.index] == "interval"){
                         #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.

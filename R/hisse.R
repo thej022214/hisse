@@ -237,7 +237,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
         fix.type <- NULL
-        psi.type <- NULL
+        psi.type <- "none"
         strat.cache <- NULL
     }
     nb.tip <- Ntip(phy)
@@ -299,7 +299,11 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
                     seg.map <- seg.map[branch.type != 2]
                     init.pars <- starting.point.generator.intervals(k=2, samp.freq.tree, n.tax=n.tax.starting, seg_map=seg.map, split.times=split.times, fossil.ages=fossil.ages, strat.cache=strat.cache)
                 }else{
-                    init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+					if(psi.type == "m_only"){
+						init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=NULL, split.times=split.times)
+					}else{
+						init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=2, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+					}
                 }
                 psi.start <- init.pars[length(init.pars)]
             }else{
@@ -342,7 +346,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
                 upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
             }
             ip <- c(ip, log(psi.start))
-            upper <- c(upper, log(trans.upper))
+            upper <- c(upper, log(1))
             lower <- rep(-20, length(ip))
         }else{
             np.sequence <- 1:(np)
@@ -378,7 +382,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out <- nloptr(x0=ip, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
+            out <- nloptr(x0=ip, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
             sann.counts <- NULL
 			if(set.fog == TRUE){
 				solution.tmp <- exp(out$solution)
@@ -400,7 +404,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
 			}
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out <- subplex(ip, fn=DevOptimizefHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
+            out <- subplex(ip, fn=DevOptimizefHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
             sann.counts <- NULL
 			if(set.fog == TRUE){
 				solution.tmp <- exp(out$par)
@@ -423,11 +427,11 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann <- GenSA(ip, fn=DevOptimizefHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
+        out.sann <- GenSA(ip, fn=DevOptimizefHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
         sann.counts <- out.sann$counts
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, f=f, fossil.taxa=fossil.taxa, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizefHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, ode.eps=ode.eps, f=f, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type, strat.cache=strat.cache, set.fog=set.fog, fog.vec=fog.vec)
 		if(set.fog == TRUE){
 			solution.tmp <- exp(out$solution)
 			fog.est <- solution.tmp[1:length(unique(fog.vec))]
@@ -466,7 +470,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
 ######################################################################################################################################
 
 #Function used for optimizing parameters:
-DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, f, ode.eps, fossil.taxa, fix.type, strat.cache, set.fog, fog.vec) {
+DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, f, ode.eps, fossil.taxa, psi.type, fix.type, strat.cache, set.fog, fog.vec) {
     
 	#Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
@@ -479,12 +483,12 @@ DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.ti
 		tip.fog[] <- c(tip.fog.tmp, 0)[fog.vec]
 		model.vec <- numeric(length(pars))
 		model.vec[] <- c(p.new, 0)[pars]
-		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
+		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, psi.type=psi.type, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
 		cache$tip.fog <- tip.fog
 	}else{
 		model.vec <- numeric(length(pars))
 		model.vec[] <- c(p.new, 0)[pars]
-		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
+		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=hidden.states, psi.type=psi.type, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
 	}
     ## print(p.new)
     if(!is.null(fix.type)){
@@ -627,7 +631,11 @@ SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time
             if(branch.type == 3){
                 capture.output(res <- lsoda(yini, times, func = "maddison_DE_strat_fhisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
             }else{
-                capture.output(res <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+				if(cache$psi.type == "m_only"){
+					capture.output(res <- lsoda(yini, times, func = "maddison_DE_kcensor_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+				}else{
+					capture.output(res <- lsoda(yini, times, func = "maddison_DE_fhisse", pars, initfunc="initmod_fhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+				}
             }
             res
         }
@@ -647,7 +655,11 @@ SingleChildProbHiSSE <- function(cache, pars, compD, compE, start.time, end.time
             if(branch.type == 3){
                 capture.output(res <- lsoda(yini, times, func = "maddison_DE_strat_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
             }else{
-                capture.output(res <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+				if(cache$psi.type == "m_only"){
+					capture.output(res <- lsoda(yini, times, func = "maddison_DE_kcensor_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+				}else{
+					capture.output(res <- lsoda(yini, times, func = "maddison_DE_fbisse", pars, initfunc="initmod_fbisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+				}
             }
             res
         }
@@ -767,12 +779,20 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
                             #The initial condition for a k.sample is D(t)*psi
                             v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
                         }else{
-                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                            lambdas.check <- lambdas
-                            lambdas.check[which(lambdas==0)] <- 1
-                            #The initial condition for a k.sample is D(t)*psi
-                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
-                            }
+							if(cache$psi.type == "m_only"){
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+							}else{
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							}
+						}
                     }else{
                         if(cache$fix.type[fix.index] == "interval"){
                             lambdas.check <- lambdas
@@ -815,11 +835,19 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
                             #The initial condition for a k.sample is D(t)*psi
                             v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
                         }else{
-                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                            lambdas.check <- lambdas
-                            lambdas.check[which(lambdas==0)] <- 1
-                            #The initial condition for a k.sample is D(t)*psi
-                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							if(cache$psi.type == "m_only"){
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+							}else{
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							}
                         }
                     }else{
                         if(cache$fix.type[fix.index] == "interval"){
@@ -878,11 +906,19 @@ GetRootProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
                             #The initial condition for a k.sample is D(t)*psi
                             v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
                         }else{
-                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                            lambdas.check <- lambdas
-                            lambdas.check[which(lambdas==0)] <- 1
-                            #The initial condition for a k.sample is D(t)*psi
-                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							if(cache$psi.type == "m_only"){
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+							}else{
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							}
                         }
                     }else{
                         if(cache$fix.type[fix.index] == "interval"){
@@ -914,11 +950,19 @@ GetRootProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
                             #The initial condition for a k.sample is D(t)*psi
                             v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
                         }else{
-                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                            lambdas.check <- lambdas
-                            lambdas.check[which(lambdas==0)] <- 1
-                            #The initial condition for a k.sample is D(t)*psi
-                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							if(cache$psi.type == "m_only"){
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+							}else{
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							}
                         }
                     }else{
                         if(cache$fix.type[fix.index] == "interval"){
@@ -1146,7 +1190,7 @@ DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type,
 ######################################################################################################################################
 ######################################################################################################################################
 
-ParametersToPassfHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, bad.likelihood, f, ode.eps){
+ParametersToPassfHiSSE <- function(model.vec, hidden.states, psi.type, nb.tip, nb.node, bad.likelihood, f, ode.eps){
     #Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
     obj <- NULL
     
@@ -1156,7 +1200,8 @@ ParametersToPassfHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, ba
     obj$bad.likelihood <- bad.likelihood
     obj$ode.eps <- ode.eps
     obj$f <- f
-    
+	obj$psi.type <- psi.type
+
     ##Hidden State A
     obj$lambda0A <- model.vec[1] / (1 + model.vec[3])
     obj$lambda1A <- model.vec[2] / (1 + model.vec[4])

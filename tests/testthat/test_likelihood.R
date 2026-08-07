@@ -565,7 +565,7 @@ test_that("BiSSE_fHiSSE_test1", {
     model.vec <- numeric(48)
     model.vec[1:6] = pars.bisse
     phy$node.label = NULL
-    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(.4,.6), ode.eps=0)
+    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(.4,.6), ode.eps=0)
     cache$psi <- 0
     hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL)
     comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
@@ -596,7 +596,7 @@ test_that("BiSSE_fHiSSE_test2", {
     model.vec <- numeric(48)
     model.vec[1:24] = pars.hisse
     phy$node.label = NULL
-    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=-300, f=c(.4,.6), ode.eps=0)
+    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=-300, f=c(.4,.6), ode.eps=0)
     cache$psi <- 0
     hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(hisse.full,4), round(diversitree.full,4))
@@ -634,7 +634,7 @@ test_that("HiSSE_Null_Four_fHiSSE_test", {
     model.vec <- numeric(48)
     model.vec[1:48] = pars.hisse
     phy$node.label = NULL
-    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=-300, f=c(1,1), ode.eps=0)
+    cache = hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=-300, f=c(1,1), ode.eps=0)
     cache$psi <- 0
     hisse.null.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL)
     comparison <- identical(round(hisse.nullOG.full,4), round(hisse.null.full,4))
@@ -1026,7 +1026,7 @@ test_that("HiSSE_fossil_test1", {
     model.vec <- numeric(48)
     model.vec[1:6] = pars.bisse
     phy$node.label = NULL
-    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=-300, f=c(1,1), ode.eps=0)
+    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, psi.type="m+k", nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=-300, f=c(1,1), ode.eps=0)
     cache$psi <- 0.01
     hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, node=fix.type$node, state=fix.type$state, fossil.taxa=fossil.taxa, fix.type=fix.type$type)
     
@@ -1062,7 +1062,7 @@ test_that("HiSSE_fossil_test1", {
     model.vec <- numeric(48)
     model.vec[1:6] = pars.bisse
     phy$node.label = NULL
-    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=-300, f=c(1,1), ode.eps=0)
+    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, psi.type="none", nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=-300, f=c(1,1), ode.eps=0)
     cache$psi <- 0
     hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL)
 
@@ -1115,7 +1115,7 @@ test_that("HiSSE_fossil_test2", {
     model.vec <- numeric(48)
     model.vec[1:6] = pars.bisse
     phy$node.label = NULL
-    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=-300, f=c(1,1), ode.eps=0)
+    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states,  psi.type="m+k", nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=-300, f=c(1,1), ode.eps=0)
     cache$psi <- 0.01
     hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
     
@@ -1136,6 +1136,63 @@ test_that("HiSSE_fossil_test2", {
     
     comparison <- identical(round(hisse.full,3), round(tot.logL,3))
     expect_true(comparison)
+})
+
+
+test_that("HiSSE_fossil_test3", {
+	skip_on_cran()
+	
+	#Tests when there are no ksamples -- but now we are going to use k_censor version.
+	library(diversitree)
+	pars <- c(0.1, 0.2, 0.03, 0.03, 0.01, 0.01)
+	set.seed(4)
+	phy <- NULL
+	while( is.null( phy ) ){
+		phy <- tree.bisse(pars, max.t=30, x0=0, include.extinct=TRUE)
+	}
+	#h <- history.from.sim.discrete(phy, 0:1)
+	#plot(h, phy)
+	
+	hidden.states=FALSE
+	
+	fix.type <- NULL
+	nb.tip <- Ntip(phy)
+	nb.node <- phy$Nnode
+	gen <- hisse:::FindGenerations(phy)
+	
+	data <- data.frame(taxon=names(phy$tip.state), phy$tip.state, stringsAsFactors=FALSE)
+	data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
+	data.new <- data.new[phy$tip.label,]
+	
+	dat.tab <- hisse:::OrganizeDataHiSSE(data.new, phy=phy, f=c(1,1), hidden.states=FALSE, includes.fossils=TRUE)
+	edge_details <- hisse:::GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+	fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
+	pars.bisse <- c(0.1+0.03, 0.1+0.03, 0.03/0.1, 0.03/0.1, 0.01, 0.01)
+	
+	model.vec <- numeric(48)
+	model.vec[1:6] = pars.bisse
+	phy$node.label = NULL
+	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states,  psi.type="m_only", nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=-300, f=c(1,1), ode.eps=0)
+	cache$psi <- 0.01
+	hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, node=NULL, state=NULL, fossil.taxa=fossil.taxa, fix.type=NULL)
+	
+	## Trait independent model should be loglik_tree + loglik_character ##
+	
+	#Part 1: MiSSE loglik:
+	dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.fossils=TRUE)
+	model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
+	cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m_only", bad.likelihood=exp(-300), ode.eps=0)#
+	cache$psi <- 0.01
+	gen <- hisse:::FindGenerations(phy)
+	MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=NULL, fix.type=NULL)
+	
+	#Part 2: corHMM loglik:
+	library(corHMM)
+	char.logL <- corHMM(phy, data, rate.cat=1, model = "ER", node.states = "none", fixed.nodes=FALSE, p=0.01, root.p="maddfitz")
+	tot.logL <- char.logL$loglik + MiSSE.logL
+	
+	comparison <- identical(round(hisse.full,3), round(tot.logL,3))
+	expect_true(comparison)
 })
 
 
@@ -1383,7 +1440,7 @@ test_that("MiSSE_fossil_test4", {
     model.vec[1:24] = pars.hisse
     
     phy$node.label = NULL
-    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=-300, f=c(1,1), ode.eps=0)
+    cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, psi.type="m+k", nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=-300, f=c(1,1), ode.eps=0)
     cache$psi <- 0.02
     hisse.full <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, node=fix.type$node, state=fix.type$state, fossil.taxa=fossil.taxa, fix.type=fix.type$type)
     
@@ -1790,7 +1847,7 @@ test_that("Simple test of estimated fog vs fixed fog",{
 	model.vec <- numeric(48)
 	model.vec[1:6] <- hisse.fog.est$solution[1:6]
 	phy$node.label = NULL
-	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
+	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states,  psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
 	cache$psi <- 0
 	cache$tip.fog <- hisse.fog.est$tip.fog.probs
 	hisse.fog.fixed <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL, set.fog=TRUE)
@@ -1842,7 +1899,7 @@ test_that("Simple test of estimated fog vs fixed fog 2",{
 	model.vec <- numeric(48)
 	model.vec[1:6] <- hisse.fog.est$solution[1:6]
 	phy$node.label = NULL
-	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
+	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states,  psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
 	cache$psi <- 0
 	cache$tip.fog <- hisse.fog.est$tip.fog.probs
 	hisse.fog.fixed <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL, set.fog=TRUE)
@@ -1893,7 +1950,7 @@ test_that("Simple test of estimated fog vs fixed fog 3",{
 	model.vec <- numeric(48)
 	model.vec[1:24] <- c(hisse.fog.est$solution[1:6], 1, 0, 0, 1, 0, 0, hisse.fog.est$solution[1:6], 1, 0, 0, 1, 0, 0)
 	phy$node.label = NULL
-	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states, nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
+	cache <- hisse:::ParametersToPassfHiSSE(model.vec, hidden.states=hidden.states,  psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy),  bad.likelihood=-300, f=c(1,1), ode.eps=0)
 	cache$psi <- 0
 	cache$tip.fog <- rep(hisse.fog.est$tip.fog.probs, 4)
 	hisse.fog.fixed <- hisse:::DownPassHiSSE(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL, set.fog=TRUE)

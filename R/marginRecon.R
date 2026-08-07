@@ -356,11 +356,13 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
     ##########################
     if(includes.fossils == TRUE){
         if(!is.null(k.samples)){
+			psi.type <- "m+k"
             k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
             phy <- AddKNodes(phy, k.samples)
             fix.type <- GetKSampleMRCA(phy, k.samples)
             data <- AddKData(data, k.samples, muhisse=FALSE)
         }else{
+			psi.type <- "m_only"
             fix.type <- NULL
         }
         gen <- FindGenerations(phy)
@@ -370,7 +372,8 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
         #These are all inputs for generating starting values:
         fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{
-        gen <- FindGenerations(phy)
+		psi.type <- "none"
+		gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
         dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
@@ -391,11 +394,11 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
 			}
 		}
 		dat.tab <- AddFogDatTab(dat.tab, f=f, nb.tip=nb.tip, tip.fog=tip.fog, hidden.states=TRUE)
-		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=0)
+		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=TRUE, psi.type=psi.type, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=0)
 		cache$tip.fog <- tip.fog
 		set.fog <- TRUE
 	}else{
-		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=0)
+		cache <- ParametersToPassfHiSSE(model.vec=model.vec, hidden.states=TRUE, psi.type=psi.type, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=0)
 		set.fog <- FALSE
 	}
 	
@@ -517,7 +520,6 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
 				dat.tab[tip, paste("compD", k, sep="_") := cache$states.keep[,k]]
 			}
 		}
-		
         best.probs <- max(marginal.probs.tmp[nstates[1:hidden.states]])
         marginal.probs.rescaled <- marginal.probs.tmp[nstates[1:hidden.states]] - best.probs
         marginal.probs <- numeric(8)
