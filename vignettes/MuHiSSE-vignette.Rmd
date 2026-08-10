@@ -27,7 +27,6 @@ suppressWarnings(library(diversitree))
 ## Simulating a practice data set
 
 Here I will simulate a simple four-state model using `diversitree`.
-
 ```{r, eval=TRUE}
 pars <- c(.1,  .15,  .2, .1, # lambda 1, 2, 3, 4
 .03, .045, .06, 0.03, # mu 1, 2, 3, 4
@@ -41,7 +40,6 @@ states <- phy$tip.state
 ```
 
 Now let's get the likelihood using the same parameters we used to simulate the data:
-
 ```{r, eval=TRUE}
 lik <- make.musse(phy, states, 4)
 #lik <- make.musse(phy, states, 3)
@@ -50,7 +48,6 @@ print(diversitree.free)
 ```
 
 Now we can use machinery inside MuHiSSE to demonstrate that we generate the same likelihood. Unfortunately, it takes a little bit of code to get everything into the right format to run properly. This is what is shown below. Note, too, that I am transforming $\lambda_i$ and $\mu_i$ into turnover and extinction fraction:
-
 ```{r, eval=TRUE}
 states <- data.frame(phy$tip.state, phy$tip.state, 
                      row.names=names(phy$tip.state))
@@ -81,20 +78,19 @@ model.vec = rep(0,384)
 model.vec[1:20] = pars.hisse
 phy$node.label = NULL
 cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, 
-                                         nb.tip=Ntip(phy), nb.node=Nnode(phy), 
-                                         bad.likelihood=exp(-300), f=c(1,1,1,1), ode.eps=0)
+                psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy), 
+                bad.likelihood=exp(-300), f=c(1,1,1,1), ode.eps=0)
 cache$psi <- 0
 gen <- hisse:::FindGenerations(phy)
 dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,1), hidden.states=TRUE)
 hisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, 
-                                             root.type="madfitz", condition.on.survival=TRUE,
-                                             root.p=NULL)
+                        root.type="madfitz", condition.on.survival=TRUE,
+                        root.p=NULL)
 comparison <- identical(round(hisse.constrained,4), round(diversitree.free,4))
 print(comparison)
 ```
 
 The implementation is correct. However, in the above case, we did not actually use any hidden states. We can also show that the likelihoods are identical to MuSSE so as long as the dynamics are the same among all included hidden states. Here we will just use hidden states A and B:
-
 ```{r, eval=TRUE}
 pars.hisse <- rep(c(pars[1]+pars[5],pars[2]+pars[6],pars[3]+pars[7],pars[4]+pars[8], 
                 pars[5]/pars[1],pars[6]/pars[2],pars[7]/pars[3],pars[8]/pars[4], 
@@ -104,15 +100,14 @@ model.vec = rep(0,384)
 model.vec[1:96] = pars.hisse
 phy$node.label = NULL
 cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, 
-                                         nb.tip=Ntip(phy), nb.node=Nnode(phy), 
-                                         bad.likelihood=exp(-300), f=c(1,1,1,1),
-                                         ode.eps=0)
+                      psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy), 
+                      bad.likelihood=exp(-300), f=c(1,1,1,1),ode.eps=0)
 cache$psi <- 0
 gen <- hisse:::FindGenerations(phy)
 dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,1), hidden.states=TRUE)
 hisse.constrained <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache, 
-                                             root.type="madfitz", condition.on.survival=TRUE,
-                                             root.p=NULL)
+                        root.type="madfitz", condition.on.survival=TRUE,
+                        root.p=NULL)
 comparison <- identical(round(hisse.constrained,4), round(diversitree.free,4))
 print(comparison)
 ```
@@ -130,14 +125,12 @@ f = c(1,1,1,1)
 ```
 
 Next, we have to set up a transition matrix. There is a function provided to make this easy, and allows users to customize the matrix to fit particular hypotheses. Be sure to look at the options on this function call, for allowing diagonals and for customizing the matrix when you have character independent model. 
-
 ```{r, eval=TRUE}
 trans.rate <- TransMatMakerMuHiSSE(hidden.traits=0)
 print(trans.rate)
 ```
 
 Now, we can call MuHiSSE and estimate the parameters under this model using the default settings:
-
 ```{r, eval=FALSE}
 states.trans <- cbind(phy$tip.label, states.trans)
 dull.null <- MuHiSSE(phy=phy, data=states.trans, f=f, turnover=turnover, 
@@ -146,7 +139,6 @@ dull.null <- MuHiSSE(phy=phy, data=states.trans, f=f, turnover=turnover,
 ```
 
 If you wanted to set up a true MuSSE model, where the turnover rate parameters are unlinked across the observed state combinations, you would simply do the following:
-
 ```{r, eval=FALSE}
 turnover <- c(1,2,3,4)
 extinction.fraction <- c(1,1,1,1)
@@ -159,7 +151,6 @@ MuSSE <- MuHiSSE(phy=phy, data=states.trans, f=f, turnover=turnover,
 ## Setting up a character-dependent MuHiSSE model
 
 Setting up a character-dependent MuHiSSE model is relatively straightforward, and relies on all the same tools as above. One important thing to bear in mind, is that again, the states are ordered by state combination within each hidden state. For example, if you want two hidden states, A and B, the order of the parameters in the model is 00A, 01A, 10A, 11A, 00B, 01B, 10B, and 11B. So, in this case, we just need to specify the free parameters we want for diversification. Here we are just going assume turnover varies across the different states:
-
 ```{r, eval=FALSE}
 turnover <- c(1,2,3,4,5,6,7,8)
 extinction.fraction <- rep(1, 8) 
@@ -167,14 +158,12 @@ f = c(1,1,1,1)
 ```
 
 We also have to extend the transition rate matrix. This is done by specifying the number of hidden states:
-
 ```{r, eval=TRUE}
 trans.rate <- TransMatMakerMuHiSSE(hidden.traits=1)
 print(trans.rate)
 ```
 
 Now, we can just plug these options into MuHiSSE:
-
 ```{r, eval=FALSE}
 MuHiSSE <- MuHiSSE(phy=phy, data=states.trans, f=f, turnover=turnover, 
                      eps=extinction.fraction, hidden.states=TRUE, 
@@ -184,7 +173,6 @@ MuHiSSE <- MuHiSSE(phy=phy, data=states.trans, f=f, turnover=turnover,
 ## Setting up a character-independent MuHiSSE model
 
 Remember, for any character-independent model, the diversification rates *must* be decoupled from the observed states. So, to do this, we simply set the diversification rates to be equal for all states for a given hidden state. Below, I will show how to do this for a character-independent model with two rate shifts in the tree:
-
 ```{r, eval=FALSE}
 turnover <- c(1,1,1,1,2,2,2,2)
 extinction.fraction <- rep(1, 8) 
@@ -192,14 +180,12 @@ f = c(1,1,1,1)
 ```
 
 For the transition rate matrix, I included a setting called `make.null` that simply replicates the transition model across the hidden states. This way the transition rates are not impacted by changes in the diversification rate regime -- that is, $q_{MB,A\rightarrow MP,A} = q_{MB,B\rightarrow MP,B}$. 
-
 ```{r, eval=TRUE}
 trans.rate <- TransMatMakerMuHiSSE(hidden.traits=1, make.null=TRUE)
 print(trans.rate)
 ```
 
 Here is a how you would set up the diversification rates for models with three hidden state all the way to eight hidden states: 
-
 ```{r, eval=FALSE}
 ## Three hidden states
 turnover <- c(rep(1,4), rep(2,4), rep(3,4))
@@ -239,7 +225,6 @@ trans.rate <- TransMatMakerMuHiSSE(hidden.traits=7, make.null=TRUE)
 As of June 2017, I have implemented a three-state MuSSE model as part of the model set for GeoHiSSE (see Caetano et al., 2018). If cladogenetic changes are disallowed, then the geographic model essentially reverts back to three-state MuSSE model. Below I will show how the likelihoods are equivalent between `diversitree`, `GeoHiSSE`, and `MuHiSSE` in the three-state case.
 
 First, let's simulate a three-state model:
-
 ```{r, eval=TRUE}
 pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
 .03, .045, .06, # mu 1, 2, 3
@@ -256,14 +241,12 @@ q13 ~ 0, q21 ~ q12, q23 ~ q12, q31 ~ 0.03, q32 ~ q12)
 ```
 
 Here is the likelihood for a maximally constrained model using `diversitree`:
-
 ```{r, eval=TRUE}
 diversitree.constrained = lik.base(c(.1, .03, .05))
 print(diversitree.constrained)
 ```
 
 Now, let's compare the likelihood using a three-state model in `GeoHiSSE`:
-
 ```{r, eval=TRUE}
 states <- data.frame(phy$tip.state, phy$tip.state, row.names=names(phy$tip.state))
 states <- states[phy$tip.label,]
@@ -281,7 +264,6 @@ print(comparison)
 ```
 
 We can show that you can obtain the same likelihood using `MuHiSSE`. Warning: as before it's a bit convoluted to format the data properly, but it can be done:
-
 ```{r, eval=TRUE}
 states.trans <- states
 for(i in 1:Ntip(phy)){
@@ -305,9 +287,8 @@ model.vec = rep(0,384)
 model.vec[1:20] = pars.hisse
 phy$node.label = NULL
 cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, 
-                                         nb.tip=Ntip(phy), nb.node=Nnode(phy), 
-                                         bad.likelihood=exp(-300), f=c(1,1,1,0),
-                                         ode.eps=0)
+                    psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy), 
+                    bad.likelihood=exp(-300), f=c(1,1,1,0), ode.eps=0)
 cache$psi <- 0
 gen <- hisse:::FindGenerations(phy)
 dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,0), hidden.states=TRUE)
@@ -323,7 +304,6 @@ As you can see, in the absence of hidden states, all three implementations provi
 It is also easy to show how you would set up a three-state model using MuHiSSE. This may be beneficial with rather large trees. With `MuHiSSE`, as well as `fGeoHiSSE`, I've implemented a much more efficient and rather fast tree traversal algorithm. Eventually, both functions will allow for multicore processing during the tree traversal stage. 
 
 For this example, note that we are going to assume we do not have a fourth state (i.e., $11$).
-
 ```{r, eval=FALSE}
 turnover <- c(1,2,3,0)
 extinction.fraction <- c(1,1,1,0)
@@ -331,21 +311,18 @@ f = c(1,1,1,0)
 ```
 
 Next, we have to generate, and then modify the transition rate matrix:
-
 ```{r, eval=TRUE}
 trans.rate <- TransMatMakerMuHiSSE(hidden.traits=0)
 print(trans.rate)
 ```
 
 We can use the `ParDrop()` function to remove transitions to and from the fourth state in the model:
-
 ```{r, eval=TRUE}
 trans.rate.mod <- ParDrop(trans.rate, c(4,6,7,8))
 print(trans.rate.mod)
 ```
 
 From there the function call is all the same:
-
 ```{r, eval=FALSE}
 MuHiSSE <- MuHiSSE(phy=phy, data=states.trans, f=f, turnover=turnover, 
                      eps=extinction.fraction, hidden.states=FALSE, 
@@ -353,7 +330,6 @@ MuHiSSE <- MuHiSSE(phy=phy, data=states.trans, f=f, turnover=turnover,
 ```
 
 If you wanted to set up a three-state model, but include hidden states, you would do the following:
-
 ```{r, eval=FALSE}
 turnover <- c(1,2,3,0, 4,5,6,0)
 extinction.fraction <- c(1,1,1,0, 1,1,1,0)

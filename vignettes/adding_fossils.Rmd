@@ -303,8 +303,8 @@ pars.muhisse <- c(rep(0.1+0.03,4), rep(0.03/.1, 4), 0.05,0.05,0, 0.05,0,0.05,
 model.vec = rep(0,384)
 model.vec[1:20] = pars.muhisse
 cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=FALSE, 
-            nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=exp(-500), 
-            f=c(1,1,1,1), ode.eps=0)
+            psi.type="m+k", nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), 
+            bad.likelihood=exp(-500), f=c(1,1,1,1), ode.eps=0)
 cache$psi <- 0.01
 gen <- hisse:::FindGenerations(phy.k)
 dat.tab <- hisse:::OrganizeData(data.new, phy.k, f=c(1,1,1,1), 
@@ -318,7 +318,7 @@ muhisse.full <- hisse:::DownPassMuHisse(dat.tab, gen=gen, cache=cache,
 
 ## Trait independent model should be loglik_tree + loglik_character ##
 #Part 1: MiSSE loglik:
-dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1,   includes.fossils=TRUE)
+dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy.k, f=1, hidden.states=1, includes.fossils=TRUE)
 model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
 cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, 
             fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, 
