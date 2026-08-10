@@ -32,7 +32,9 @@ extern void geohisse_derivs(void *, void *, void *, void *, void *, void *);
 extern void notclasse_derivs(void *, void *, void *, void *, void *, void *);
 extern void notclasse_more_derivs(void *, void *, void *, void *, void *, void *);
 extern void musse_derivs(void *, void *, void *, void *, void *, void *);
+extern void musse_kcensor_derivs(void *, void *, void *, void *, void *, void *);
 extern void muhisse_derivs(void *, void *, void *, void *, void *, void *);
+extern void muhisse_kcensor_derivs(void *, void *, void *, void *, void *, void *);
 extern void fgeohisse_derivs(void *, void *, void *, void *, void *, void *);
 extern void fnotclasse_more_derivs(void *, void *, void *, void *, void *, void *);
 extern void fclasse_geosse_equivalent_derivs(void *, void *, void *, void *, void *, void *);
@@ -76,7 +78,9 @@ static const R_CMethodDef CEntries[] = {
     {"notclasse_derivs",                (DL_FUNC) &notclasse_derivs,                6},
     {"notclasse_more_derivs",           (DL_FUNC) &notclasse_more_derivs,           6},
     {"musse_derivs",                    (DL_FUNC) &musse_derivs,                    6},
+    {"musse_kcensor_derivs",            (DL_FUNC) &musse_kcensor_derivs,            6},
     {"muhisse_derivs",                  (DL_FUNC) &muhisse_derivs,                  6},
+    {"muhisse_kcensor_derivs",          (DL_FUNC) &muhisse_kcensor_derivs,          6},
     {"fgeohisse_derivs",                (DL_FUNC) &fgeohisse_derivs,                6},
     {"fnotclasse_more_derivs",          (DL_FUNC) &fnotclasse_more_derivs,          6},
     {"fclasse_geosse_equivalent_derivs",(DL_FUNC) &fclasse_geosse_equivalent_derivs,6},

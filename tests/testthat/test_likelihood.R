@@ -419,7 +419,7 @@ test_that("MuHiSSE_test1", {
     model.vec = rep(0,384)
     model.vec[1:20] = pars.hisse
     phy$node.label = NULL
-    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), f=c(1,1,1,1), ode.eps=0)
+    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), f=c(1,1,1,1), ode.eps=0)
     cache$psi <- 0
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,1), hidden.states=TRUE)
@@ -472,7 +472,7 @@ test_that("MuHiSSE_test2", {
     model.vec = rep(0,384)
     model.vec[1:20] = pars.hisse
     phy$node.label = NULL
-    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), f=c(1,1,1,0), ode.eps=0)
+    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, psi.type="none", nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), f=c(1,1,1,0), ode.eps=0)
     cache$psi <- 0
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(states.trans, phy, f=c(1,1,1,0), hidden.states=TRUE)
@@ -1254,7 +1254,7 @@ test_that("MuHiSSE_fossil_test1", {
     pars.muhisse <- c(rep(0.1+0.03,4), rep(0.03/.1, 4), 0.05,0.05,0, 0.05,0,0.05, 0.05,0,.05, 0,0.05,.05)
     model.vec = rep(0,384)
     model.vec[1:20] = pars.muhisse
-    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=FALSE, nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=exp(-300), f=c(1,1,1,1), ode.eps=0)
+    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=FALSE, psi.type="m+k", nb.tip=Ntip(phy.k), nb.node=Nnode(phy.k), bad.likelihood=exp(-300), f=c(1,1,1,1), ode.eps=0)
     cache$psi <- 0.01
     gen <- hisse:::FindGenerations(phy.k)
     dat.tab <- hisse:::OrganizeData(data.new, phy.k, f=c(1,1,1,1), hidden.states=FALSE, includes.fossils=TRUE)
@@ -1269,7 +1269,7 @@ test_that("MuHiSSE_fossil_test1", {
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
     cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+k", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
-    edge_details <- hisse:::GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
+    edge_details <- hisse:::GetEdgeDetails(phy, intervening.intervals=NULL)
     fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
     gen <- hisse:::FindGenerations(phy.k)
     MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, fossil.taxa=fossil.taxa, node=fix.type$node, fix.type=fix.type$type)
@@ -1298,7 +1298,7 @@ test_that("MuHiSSE_fossil_test1", {
     pars.muhisse <- c(rep(0.1+0.03,4), rep(0.03/.1, 4), 0.05,0.05,0, 0.05,0,0.05, 0.05,0,.05, 0,0.05,.05)
     model.vec = rep(0,384)
     model.vec[1:20] = pars.muhisse
-    cache <- hisse:::ParametersToPassMuHiSSE(model.vec, hidden.states=FALSE, nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=-300, f=c(1,1), ode.eps=0)
+    cache <- hisse:::ParametersToPassMuHiSSE(model.vec, hidden.states=FALSE, psi.type="none", nb.tip=Ntip(phy.extant), nb.node=Nnode(phy.extant), bad.likelihood=-300, f=c(1,1), ode.eps=0)
     cache$psi <- 0
     muhisse.full <- hisse:::DownPassMuHisse(dat.tab, gen, cache, root.type="madfitz", condition.on.survival=TRUE, root.p=NULL, fossil.taxa=NULL)
     
@@ -1371,8 +1371,8 @@ test_that("MuHiSSE_fossil_test2", {
     
     pars.muhisse <- c(rep(0.1+0.03,4), rep(0.03/.1, 4), 0.05,0.05,0, 0.05,0,0.05, 0.05,0,.05, 0,0.05,.05)
     model.vec = rep(0,384)
-    model.vec[1:20] = pars.muhisse
-    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=FALSE, nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), f=c(1,1,1,1), ode.eps=0)
+    model.vec[1:20] <- pars.muhisse
+    cache <- hisse:::ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=FALSE, psi.type="m_only", nb.tip=Ntip(phy), nb.node=Nnode(phy), bad.likelihood=exp(-300), f=c(1,1,1,1), ode.eps=0)
     cache$psi <- 0.01
     gen <- hisse:::FindGenerations(phy)
     dat.tab <- hisse:::OrganizeData(data.new, phy, f=c(1,1,1,1), hidden.states=FALSE, includes.fossils=TRUE)
@@ -1385,7 +1385,7 @@ test_that("MuHiSSE_fossil_test2", {
     #Part 1: MiSSE loglik:
     dat.tab <- hisse:::OrganizeDataMiSSE(phy=phy, f=1, hidden.states=1, includes.fossils=TRUE)
     model.vec <- c(0.1+0.03, 0.03/0.1, rep(0,51))
-    cache = hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m+k", bad.likelihood=exp(-300), ode.eps=0)#
+    cache <- hisse:::ParametersToPassMiSSE(model.vec=model.vec, hidden.states=1, fixed.eps=NULL, nb.tip=nb.tip, nb.node=nb.node, psi.type="m_only", bad.likelihood=exp(-300), ode.eps=0)#
     cache$psi <- 0.01
     edge_details <- hisse:::GetEdgeDetails(phy, intervening.intervals=strat.cache$intervening.intervals)
     fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]

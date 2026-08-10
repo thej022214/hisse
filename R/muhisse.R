@@ -323,7 +323,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
         fossil.taxa <- NULL
         fix.type <- NULL
-        psi.type <- NULL
+        psi.type <- "none"
     }
     nb.tip <- Ntip(phy)
     nb.node <- phy$Nnode
@@ -353,7 +353,11 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
             }
         }else{
             if(includes.fossils == TRUE){
-                init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=4, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+				if(psi.type == "m_only"){
+					init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=4, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=NULL, split.times=split.times)
+				}else{
+					init.pars <- starting.point.generator.fossils(n.tax=n.tax.starting, k=4, samp.freq.tree, fossil.taxa=fossil.taxa, fossil.ages=fossil.ages, no.k.samples=no.k.samples, split.times=split.times)
+				}
                 psi.start <- init.pars[length(init.pars)]
             }else{
                 init.pars <- starting.point.generator(phy, 4, samp.freq.tree, yule=FALSE)
@@ -420,14 +424,14 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         if(bounded.search == TRUE){
             cat("Finished. Beginning bounded subplex routine...", "\n")
             opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-            out = nloptr(x0=ip, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+            out = nloptr(x0=ip, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type)
             sann.counts <- NULL
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$solution), 0)[pars]
             loglik = -out$objective
         }else{
             cat("Finished. Beginning subplex routine...", "\n")
-            out = subplex(ip, fn=DevOptimizeMuHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+            out = subplex(ip, fn=DevOptimizeMuHiSSE, control=list(reltol=max.tol, parscale=rep(0.1, length(ip))), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type)
             sann.counts <- NULL
             solution <- numeric(length(pars))
             solution[] <- c(exp(out$par), 0)[pars]
@@ -435,11 +439,11 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }
     }else{
         cat("Finished. Beginning simulated annealing...", "\n")
-        out.sann = GenSA(ip, fn=DevOptimizeMuHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+        out.sann = GenSA(ip, fn=DevOptimizeMuHiSSE, lower=lower, upper=upper, control=list(max.call=sann.its), pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type)
         sann.counts <- out.sann$counts
         cat("Finished. Refining using subplex routine...", "\n")
         opts <- list("algorithm" = "NLOPT_LN_SBPLX", "maxeval" = 100000, "ftol_rel" = max.tol)
-        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, fix.type=fix.type)
+        out <- nloptr(x0=out.sann$par, eval_f=DevOptimizeMuHiSSE, ub=upper, lb=lower, opts=opts, pars=pars, dat.tab=dat.tab, gen=gen, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, np=np, f=f, ode.eps=ode.eps, fossil.taxa=fossil.taxa, psi.type=psi.type, fix.type=fix.type)
         solution <- numeric(length(pars))
         solution[] <- c(exp(out$solution), 0)[pars]
         
@@ -450,7 +454,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     
     cat("Finished. Summarizing results...", "\n")
     
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, fix.type=fix.type, psi.type=psi.type, sann)
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
     class(obj) <- append(class(obj), "muhisse.fit")
     return(obj)
 }
@@ -462,13 +466,13 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
 ######################################################################################################################################
 
 #Function used for optimizing parameters:
-DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, f, ode.eps, fossil.taxa, fix.type) {
+DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.tip, nb.node=nb.node, condition.on.survival, root.type, root.p, np, f, ode.eps, fossil.taxa, psi.type, fix.type) {
     #Generates the final vector with the appropriate parameter estimates in the right place:
     p.new <- exp(p)
     ## print(p.new)
     model.vec <- numeric(length(pars))
     model.vec[] <- c(p.new, 0)[pars]
-    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
+    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=hidden.states, psi.type=psi.type, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=ode.eps)
     if(!is.null(fix.type)){
         logl <- DownPassMuHisse(dat.tab=dat.tab, cache=cache, gen=gen, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, node=fix.type[,1], state=NULL, fossil.taxa=fossil.taxa, fix.type=fix.type[,2])
     }else{
@@ -631,7 +635,11 @@ SingleChildProb <- function(cache, pars, compD, compE, start.time, end.time, bra
         runSilent <- function() {
             options(warn = -1)
             on.exit(options(warn = 0))
-            capture.output(res <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+			if(cache$psi.type == "m_only"){
+				capture.output(res <- lsoda(yini, times, func = "muhisse_kcensor_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+			}else{
+				capture.output(res <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+			}
             res
         }
         #prob.subtree.cal.full <- lsoda(yini, times, func = "muhisse_derivs", pars, initfunc="initmod_muhisse", dll = "muhisse-ext-derivs", rtol=1e-8, atol=1e-8, hini=10)
@@ -647,7 +655,11 @@ SingleChildProb <- function(cache, pars, compD, compE, start.time, end.time, bra
         runSilent <- function() {
             options(warn = -1)
             on.exit(options(warn = 0))
-            capture.output(res <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+			if(cache$psi.type == "m_only"){
+				capture.output(res <- lsoda(yini, times, func = "musse_kcensor_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+			}else{
+				capture.output(res <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dllname = "hisse", rtol=1e-8, atol=1e-8))
+			}
             res
         }
         #prob.subtree.cal.full <- lsoda(yini, times, func = "musse_derivs", pars, initfunc="initmod_musse", dll = "canonical-musse-ext-derivs", rtol=1e-8, atol=1e-8)
@@ -741,11 +753,27 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
-                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                        lambdas.check <- lambdas
-                        lambdas.check[which(lambdas==0)] <- 1
-                        #The initial condition for a k.sample is D(t)*psi
-                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+						if(cache$psi == 0){
+							#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here -- when psi=0, then we got fake taxa for fixing states.
+							lambdas.check <- lambdas
+							lambdas.check[which(lambdas==0)] <- 1
+							#The initial condition for a k.sample is D(t)*psi
+							v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+						}else{
+							if(cache$psi.type == "m_only"){
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+							}else{
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							}
+						}
                     }else{
                         #Fixes the state at the node nothing needs to be done other than fix the node
                         fixer <- numeric(32)
@@ -778,11 +806,28 @@ FocalNodeProb <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
-                        #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                        lambdas.check <- lambdas
-                        lambdas.check[which(lambdas==0)] <- 1
-                        #The initial condition for a k.sample is D(t)*psi
-                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                        if(cache$psi == 0){
+							#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+							lambdas.check <- lambdas
+							lambdas.check[which(lambdas==0)] <- 1
+							#The initial condition for a k.sample is D(t)*psi
+							v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+
+						}else{
+							if(cache$psi.type == "m_only"){
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#We have removed the k-sample.
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+							}else{
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							}
+						}
                     }else{
                         fixer <- numeric(4)
                         fixer[cache$state[fix.index]] = 1
@@ -829,11 +874,27 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
                 for(fix.index in 1:length(cache$node)){
                     for(fix.index in 1:length(cache$node)){
                         if(cache$fix.type[fix.index] == "event"){
-                            #basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
-                            lambdas.check <- lambdas
-                            lambdas.check[which(lambdas==0)] <- 1
-                            #The initial condition for a k.sample is D(t)*psi
-                            v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                            if(cache$psi == 0){
+								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+							}else{
+								if(cache$psi.type == "m_only"){
+									#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+									lambdas.check <- lambdas
+									lambdas.check[which(lambdas==0)] <- 1
+									#We have removed the k-sample
+									v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+								}else{
+									#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
+									lambdas.check <- lambdas
+									lambdas.check[which(lambdas==0)] <- 1
+									#The initial condition for a k.sample is D(t)*psi
+									v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+								}
+							}
                         }else{
                             #Fixes the state at the node nothing needs to be done other than fix the node
                             fixer = numeric(32)
@@ -853,10 +914,24 @@ GetRootProb <- function(cache, pars, lambdas, dat.tab, generations){
             if(any(cache$node %in% generations)){
                 for(fix.index in 1:length(cache$node)){
                     if(cache$fix.type[fix.index] == "event"){
-                        lambdas.check <- lambdas
-                        lambdas.check[which(lambdas==0)] <- 1
-                        #The initial condition for a k.sample is D(t)*psi
-                        v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+                        if(cache$psi == 0){
+							lambdas.check <- lambdas
+							lambdas.check[which(lambdas==0)] <- 1
+							#The initial condition for a k.sample is D(t)*psi
+							v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+						}else{
+							if(cache$psi.type == "m_only"){
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#We have removed the k-sample
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
+							}else{
+								lambdas.check <- lambdas
+								lambdas.check[which(lambdas==0)] <- 1
+								#The initial condition for a k.sample is D(t)*psi
+								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check) * cache$psi
+							}
+						}
                     }else{
                         fixer = numeric(4)
                         fixer[cache$state[fix.index]] = 1
@@ -1077,7 +1152,7 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
 ######################################################################################################################################
 ######################################################################################################################################
 
-ParametersToPassMuHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, bad.likelihood, f, ode.eps){
+ParametersToPassMuHiSSE <- function(model.vec, hidden.states, psi.type, nb.tip, nb.node, bad.likelihood, f, ode.eps){
     #Provides an initial object that contains all the parameters to be passed among functions. This will also be used to pass other things are we move down the tree (see DownPassGeoSSE):
     obj <- NULL
     
@@ -1087,7 +1162,8 @@ ParametersToPassMuHiSSE <- function(model.vec, hidden.states, nb.tip, nb.node, b
     obj$bad.likelihood <- bad.likelihood
     obj$ode.eps <- ode.eps
     obj$f <- f
-    
+    obj$psi.type <- psi.type
+	
     ##Hidden State A
     obj$lambda00A = model.vec[1] / (1 + model.vec[5])
     obj$lambda01A = model.vec[2] / (1 + model.vec[6])

@@ -290,7 +290,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         }else{
             if(includes.fossils == TRUE){
                 if(!is.null(strat.intervals)){
-                    branch.type = NULL
+                    branch.type <- NULL
                     cols <- c("FocalNode","DesNode", "RootwardAge", "TipwardAge", "branch.type")
                     seg.map <- dat.tab[, cols, with=FALSE]
                     #remove k tips -- we do not do anything with them.
@@ -783,7 +783,7 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
 								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
 								lambdas.check <- lambdas
 								lambdas.check[which(lambdas==0)] <- 1
-								#The initial condition for a k.sample is D(t)*psi
+								#We have removed the k-sample
 								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
 							}else{
 								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
@@ -839,7 +839,7 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
 								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
 								lambdas.check <- lambdas
 								lambdas.check[which(lambdas==0)] <- 1
-								#The initial condition for a k.sample is D(t)*psi
+								#The k-samples are now removed:
 								v.mat[which(generations == cache$node[fix.index]),] <- (v.mat[which(generations == cache$node[fix.index]),] / lambdas.check)
 							}else{
 								#basically we are using the node to fix the state along a branch, but we do not want to assume a true speciation event occurred here.
