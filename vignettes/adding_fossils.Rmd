@@ -19,12 +19,15 @@ As of version 2.1.14, we have added the ability for HiSSE, MuHiSSE, and MiSSE to
 
 Before getting started, there are two important terms that need to be clearly understood. Under the canonical FBD there are actually two types of fossils that are sampled. The first are referred to as *m* fossils, which represent extinct tips -- that is, they represent distinct branches that went extinct before the present. The second are referred *k* fossils, which represent samples of lineages that eventually made it to the present. In most real world cases, both fossil types must be present for the FBD to work well, though having *k* fossils is not absolutely critical for *hisse* whereas *m* fossils are. In cases where *k* fossils are absent `hisse` automatically defaults to the FBDT model.
 
+```{r, echo=FALSE, eval=TRUE}
+suppressPackageStartupMessages(library(hisse))
+suppressPackageStartupMessages(library(diversitree))
+```
 
 ## Simulating a practice data set under MiSSE
 
 Be sure to load the `hisse` and `TreeSim` packages. I will first simulate a tree with fossil samples under a simple fossilized birth-death model. This will be used as input into MiSSE, which sets up and executes a completely trait-free version of a HiSSE model (i.e., hidden states only). The first step is to simulate a tree that contains the complete history of the trees -- that is, includes both taxa that survived to the present and those that did not:
 ```{r, eval=TRUE}
-suppressPackageStartupMessages(library(hisse))
 set.seed(42)
 phy <- TreeSim::sim.bd.taxa(n = 100, numbsim = 1, lambda = 0.3, mu = 0.2)[[1]]
 ```
@@ -333,6 +336,7 @@ MiSSE.logL <- hisse:::DownPassMisse(dat.tab=dat.tab, cache=cache, gen=gen,
             fossil.taxa=fossil.taxa,node=fix.type$node, fix.type=fix.type$type)
     
 #Part 2: corHMM loglik:
+phy.k$node.label <- NULL
 char.logL <- corHMM(phy.k, data, rate.cat=1, model = "ER", node.states = "none", 
             fixed.nodes=FALSE, p=0.05, root.p="maddfitz")
 tot.logL <- char.logL$loglik + MiSSE.logL

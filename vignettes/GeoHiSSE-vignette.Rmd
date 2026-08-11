@@ -43,18 +43,11 @@ Also, note that the output from `GeoHiSSE` can be used and processed using avail
 
 The GeoHiSSE models can be used to infer ancestral ranges, rates of dispersion and extirpation, as well as testing hypotheses about range-dependent diversification processes. The main difference between GeoSSE and GeoHiSSE is that here we implement models that allow for diversification rate variation both within and between geographical areas. Such models are more adequate to empirical data then homogeneous diversification rates implied by GeoSSE (as well as BiSSE). The GeoHiSSE models belong to the same category of Hidden-Markov models as HiSSE. Thus, the concepts will be familiar to you if you have some experience with HiSSE (and vice-versa).
 
-The best place to install the package with the new functions provided here is from our github repository using the package `devtools`:
-```{r, eval=FALSE}
-library( devtools )
-install_github(repo = "thej022214/hisse", ref = "master")
+Before getting started, be sure to load the `hisse` and `diversitree` packages.
+```{r, echo=FALSE, eval=TRUE}
+suppressPackageStartupMessages(library(hisse))
+suppressPackageStartupMessages(library(diversitree))
 ```
-
-Before getting started, be sure to load the `hisse` and `diversitree` packages:
-```{r, eval=TRUE}
-suppressWarnings(library(hisse))
-suppressWarnings(library(diversitree))
-```
-
 
 ## Simulating a range-independent process
 
@@ -228,7 +221,7 @@ head( model.ave.rates )
 ```
 
 Finally, we can plot the use the resulting data matrix to make a plot of the results.
-```{r fig1, fig.height = 15, fig.width = 5}
+```{r fig1, fig.height = 10, fig.width = 10}
 plot.geohisse.states(x = recon.models, rate.param = "net.div", type = "fan",
                      show.tip.label = FALSE, legend = FALSE)
 ```

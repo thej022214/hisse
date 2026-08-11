@@ -18,10 +18,10 @@ In Nakov et al. (2018), we extended the HiSSE and CID model framework to handle 
 
 The set of models included range from (1) the "trivial null" model that assume no variation in diversification, to (2) a multistate speciation and extinction model (MuSSE; FitzJohn 2012) that linked diversification rates to the four character states, but assumed no variation within regimes, to (3) multistate-dependent speciation and extinction models with hidden traits (MuHiSSE) and (4) a set of multistate character-independent models (MuCID) with increasing numbers of hidden traits (MuCID2 through MuCID8). The most complex MuCID8 model has, at it's most complex, eight parameters for turnover and eight parameters for extinction fraction, matching the complexity of the MuHiSSE model, but with diversification parameters unlinked to the observed character states. For any model, we allow the transition rates between alternative state combinations to differ (e.g., $q_{MB\rightarrow MP} \ne q_{MP\rightarrow MB}$), or constrained to be equal (e.g., $q_{MB\rightarrow MP} = q_{MP\rightarrow MB}$). In the analyses presented in Nakov et al. (2018), we disallowed dual transitions (e.g., $q_{MB\rightarrow FP} = 0$), though this need not always be the case.
 
-Below I will demonstrate how to set up various models, and how the likelihoods compare against those from `diversitree` whenever possible. In the end, I will also show how a three-state model can be set up from MuHiSSE and compare the likelihoods against the three-state MuSSE implemented in GeoHiSSE. However, before getting started, be sure to load the `hisse` and `diversitree` packages:
-```{r, eval=TRUE}
-suppressWarnings(library(hisse))
-suppressWarnings(library(diversitree))
+Below I will demonstrate how to set up various models, and how the likelihoods compare against those from `diversitree` whenever possible. In the end, I will also show how a three-state model can be set up from MuHiSSE and compare the likelihoods against the three-state MuSSE implemented in GeoHiSSE. However, before getting started, be sure to load the `hisse` and `diversitree` packages.
+```{r, echo=FALSE, eval=TRUE}
+suppressPackageStartupMessages(library(hisse))
+suppressPackageStartupMessages(library(diversitree))
 ```
 
 ## Simulating a practice data set

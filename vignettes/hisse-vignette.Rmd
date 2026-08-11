@@ -14,13 +14,13 @@ vignette: >
 
 As of version 1.9.6, we now provide a new set of functions that execute more complex and potentially faster version of the HiSSE model described by Beaulieu and O'Meara (2016). One of the main differences here is that the model allows up to 8 hidden categories, which means that both the character-independent model (hisse.null4) is called from the same function as the BiSSE and HiSSE models. We also implement a more efficient means of carrying out branch calculations, so it is exceptionally faster than in previous versions. Nevertheless, we have maintained the original implementation of the hisse model, and we have kept this tutorial to gives some basic information on how to set up and execute the original hisse function. For information about how to use the new `hisse()` function see the *A newer, faster HiSSE function* vignette. We highly recommend you use the newer version.
 
-Before getting started, be sure to load the hisse package:
-```{r, eval=TRUE}
-suppressWarnings(library(hisse))
+```{r, echo=FALSE, eval=TRUE}
+suppressPackageStartupMessages(library(hisse))
+suppressPackageStartupMessages(library(diversitree))
 ```
-And also be sure to load diversitree. We can simulate data using the multistate (MuSSE) model that can be used to create a binary character that has a relation to a "hidden" state:
+
+Before getting started, be sure to load the `hisse` and `diversitree packages. We can simulate data using the multistate (MuSSE) model that can be used to create a binary character that has a relation to a "hidden" state:
 ```{r, eval=TRUE}
-suppressWarnings(library(diversitree))
 set.seed(4)
 # Essentially we are setting up a model that models the evolution of two binary characters
 # Thus, we are assuming the following state combinations 1=00, 2=10, 3=01, 4=11:
@@ -34,10 +34,12 @@ sim.dat[sim.dat[,2]==4,2] = 2
 # This next step simply forces the character to be binary:
 sim.dat[,2] = sim.dat[,2] - 1
 ```
+
 In the end you have a data set that has a single binary character:
 ```{r, eval=TRUE}
 head(sim.dat)
 ```
+
 However, this binary character has actually evolved under a much more complex process than what would be reflected by estimates from a BiSSE model. It is this complexity that HiSSE is trying estimate.
 
 ##Specifying the diversification parameters

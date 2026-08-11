@@ -398,7 +398,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
                 upper[i] <- upper.full[which(pars == np.sequence[i])[1]]
             }
             ip <- c(ip, log(psi.start))
-            upper <- c(upper, log(trans.upper))
+            upper <- c(upper, log(1))
             lower <- rep(-20, length(ip))
         }else{
             np.sequence <- 1:np

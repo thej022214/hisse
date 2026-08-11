@@ -109,7 +109,7 @@ p_one <- function(x,lambda, mu, psi, rho){
 #	return(log(rho) + (psi - c1_val) * x - 2 * log(B / 2))
 #}
 
-
+#This scales the master equation from Stadler 2010 -- Beaulieu and OMeara.
 p_one_censored <- function(x, lambda, mu, psi, rho){
 	p1_stad <- p_one(x=x, lambda=lambda, mu=mu, psi=psi, rho=rho)
 	return(log(exp(p1_stad)*exp(x*psi)))

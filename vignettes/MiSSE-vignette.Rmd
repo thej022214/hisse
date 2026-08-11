@@ -15,12 +15,16 @@ In Beaulieu and O'Meara (2016) we pointed out that the trait-independent HiSSE m
 
 Note that we refer to "hidden state" simply as a shorthand. We do not mean that there is a single, discrete character that is solely driving diversification differences. There is some heritable "thing" that affects rates, such as a combination of body size, oxygen concentration, trophic level, and, say, how many total species are competing for resources in an area. In other words, it could be that there is some single discrete trait that drives everything. However, it is more likely that a whole range of factors play a role, and we just slice them up into discrete categories, the same way we slice up mammals into carnivore / omnivore / herbivore or plants into woody / herbaceous when the reality is more continuous. This is true for HiSSE, but this concept is especially important to grasp for MiSSE.
 
+```{r, echo=FALSE, eval=TRUE}
+suppressPackageStartupMessages(library(hisse))
+suppressPackageStartupMessages(library(diversitree))
+```
+
 ## Setting up a MiSSE model
 
 The set up is similar to other functions in `hisse`, except there is no need to set up a transition model For the following example, we will use the cetacean phylogeny (e.g., whales and relatives) of Steeman et al. (2009). 
 
 ```{r, eval=TRUE}
-suppressWarnings(library(hisse))
 phy <- read.tree("whales_Steemanetal2009.tre")
 ```
 

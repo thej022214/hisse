@@ -15,12 +15,11 @@ vignette: >
 
 As of version 1.9.6, we now provide a new set of functions that execute a faster version of the HiSSE model described by Beaulieu and O'Meara (2016). Here we implement a more efficient means of carrying out branch calculations, so it is exceptionally faster than in previous versions. Specifically, we break up the tree into sets of branches whose branch calculations are independent of one another. We then carry out all descendent branch calculations simultaneously, combine the probabilities based on their shared ancestry, then repeat for the next set of descendent branches. In testing, we've found that as the number of taxa increases, the calculation becomes much more efficient. Another main differences here is that the new `hisse()` function allows up to four hidden categories, which means that both the character-independent model (`hisse.null4()`) is no longer a standalone function and can be set up directly in the same way as we can setup a BiSSE, HiSSE, or CID-2 models. It is our hope that this will emphasize to users the direct connection between BiSSE, HiSSE, and our CID models.
 
-Below I will demonstrate how to set up various models, and how the likelihoods compare against those from `diversitree` whenever possible. Before getting started, be sure to load the `hisse` and `diversitree` packages:
-```{r, eval=TRUE, echo=FALSE}
-suppressWarnings(library(hisse))
-suppressWarnings(library(diversitree))
+Below I will demonstrate how to set up various models, and how the likelihoods compare against those from `diversitree` whenever possible. Before getting started, be sure to load the `hisse` and `diversitree` packages.
+```{r, echo=FALSE, eval=TRUE}
+suppressPackageStartupMessages(library(hisse))
+suppressPackageStartupMessages(library(diversitree))
 ```
-
 
 ## Simulating a practice data set
 
