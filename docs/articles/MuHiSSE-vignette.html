@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.14</span>
       </span>
     </div>
 
@@ -49,7 +49,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/adding_fossils.html">Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE</a>
+      <a href="../articles/adding_fossils.html">Incorporating Fossils</a>
     </li>
     <li>
       <a href="../articles/Clade-specific-sampling.html">The Problem with Clade-specific Sampling Fractions</a>
@@ -172,23 +172,14 @@ possible. In the end, I will also show how a three-state model can be
 set up from MuHiSSE and compare the likelihoods against the three-state
 MuSSE implemented in GeoHiSSE. However, before getting started, be sure
 to load the <code>hisse</code> and <code>diversitree</code>
-packages:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hisse</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Loading required package: ape</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: deSolve</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: GenSA</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: subplex</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: nloptr</span></span></code></pre>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.zoology.ubc.ca/prog/diversitree/" class="external-link">diversitree</a></span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+packages.</p>
 </div>
 <div class="section level2">
 <h2 id="simulating-a-practice-data-set">Simulating a practice data set<a class="anchor" aria-label="anchor" href="#simulating-a-practice-data-set"></a>
 </h2>
 <p>Here I will simulate a simple four-state model using
 <code>diversitree</code>.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>,  <span class="fl">.15</span>,  <span class="fl">.2</span>, <span class="fl">.1</span>, <span class="co"># lambda 1, 2, 3, 4</span></span>
 <span><span class="fl">.03</span>, <span class="fl">.045</span>, <span class="fl">.06</span>, <span class="fl">0.03</span>, <span class="co"># mu 1, 2, 3, 4</span></span>
 <span><span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.00</span>,        <span class="co"># q12, q13, q14</span></span>
@@ -200,7 +191,7 @@ packages:</p>
 <span><span class="va">states</span> <span class="op">&lt;-</span> <span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span></span></code></pre></div>
 <p>Now let’s get the likelihood using the same parameters we used to
 simulate the data:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lik</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/diversitree/man/make.musse.html" class="external-link">make.musse</a></span><span class="op">(</span><span class="va">phy</span>, <span class="va">states</span>, <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#lik &lt;- make.musse(phy, states, 3)</span></span>
 <span><span class="va">diversitree.free</span> <span class="op">=</span> <span class="fu">lik</span><span class="op">(</span><span class="va">pars</span><span class="op">)</span></span>
@@ -214,7 +205,7 @@ what is shown below. Note, too, that I am transforming
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>i</mi></msub><annotation encoding="application/x-tex">\mu_i</annotation></semantics></math>
 into turnover and extinction fraction:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">states</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span>, <span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span>, </span>
 <span>                     row.names<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">states</span> <span class="op">&lt;-</span> <span class="va">states</span><span class="op">[</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.label</span>,<span class="op">]</span></span>
@@ -244,14 +235,14 @@ into turnover and extinction fraction:</p>
 <span><span class="va">model.vec</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">]</span> <span class="op">=</span> <span class="va">pars.hisse</span></span>
 <span><span class="va">phy</span><span class="op">$</span><span class="va">node.label</span> <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">ParametersToPassMuHiSSE</span><span class="op">(</span>model.vec<span class="op">=</span><span class="va">model.vec</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, </span>
-<span>                                         nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, </span>
-<span>                                         bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">300</span><span class="op">)</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
+<span>                psi.type<span class="op">=</span><span class="st">"none"</span>, nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, </span>
+<span>                bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">300</span><span class="op">)</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">cache</span><span class="op">$</span><span class="va">psi</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">FindGenerations</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span></span>
 <span><span class="va">dat.tab</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">OrganizeData</span><span class="op">(</span><span class="va">states.trans</span>, <span class="va">phy</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">hisse.constrained</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">DownPassMuHisse</span><span class="op">(</span><span class="va">dat.tab</span>, gen<span class="op">=</span><span class="va">gen</span>, cache<span class="op">=</span><span class="va">cache</span>, </span>
-<span>                                             root.type<span class="op">=</span><span class="st">"madfitz"</span>, condition.on.survival<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>                                             root.p<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span>                        root.type<span class="op">=</span><span class="st">"madfitz"</span>, condition.on.survival<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>                        root.p<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hisse.constrained</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">diversitree.free</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
@@ -259,7 +250,7 @@ into turnover and extinction fraction:</p>
 actually use any hidden states. We can also show that the likelihoods
 are identical to MuSSE so as long as the dynamics are the same among all
 included hidden states. Here we will just use hidden states A and B:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pars.hisse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">pars</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">+</span><span class="va">pars</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">+</span><span class="va">pars</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">+</span><span class="va">pars</span><span class="op">[</span><span class="fl">7</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span><span class="op">+</span><span class="va">pars</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span>, </span>
 <span>                <span class="va">pars</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">/</span><span class="va">pars</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span><span class="op">/</span><span class="va">pars</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">7</span><span class="op">]</span><span class="op">/</span><span class="va">pars</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>,<span class="va">pars</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span><span class="op">/</span><span class="va">pars</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span>, </span>
 <span>                <span class="fl">0.05</span>,<span class="fl">0.05</span>,<span class="fl">0</span>, <span class="fl">0.05</span>,<span class="fl">0</span>,<span class="fl">0.05</span>, <span class="fl">0.05</span>,<span class="fl">0</span>,<span class="fl">.05</span>, <span class="fl">0</span>,<span class="fl">0.05</span>,<span class="fl">.05</span>, <span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">6</span><span class="op">)</span>, <span class="fl">1</span>,</span>
@@ -268,15 +259,14 @@ included hidden states. Here we will just use hidden states A and B:</p>
 <span><span class="va">model.vec</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">96</span><span class="op">]</span> <span class="op">=</span> <span class="va">pars.hisse</span></span>
 <span><span class="va">phy</span><span class="op">$</span><span class="va">node.label</span> <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">ParametersToPassMuHiSSE</span><span class="op">(</span>model.vec<span class="op">=</span><span class="va">model.vec</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, </span>
-<span>                                         nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, </span>
-<span>                                         bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">300</span><span class="op">)</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>,</span>
-<span>                                         ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
+<span>                      psi.type<span class="op">=</span><span class="st">"none"</span>, nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, </span>
+<span>                      bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">300</span><span class="op">)</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>,ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">cache</span><span class="op">$</span><span class="va">psi</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">FindGenerations</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span></span>
 <span><span class="va">dat.tab</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">OrganizeData</span><span class="op">(</span><span class="va">states.trans</span>, <span class="va">phy</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">hisse.constrained</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">DownPassMuHisse</span><span class="op">(</span><span class="va">dat.tab</span>, gen<span class="op">=</span><span class="va">gen</span>, cache<span class="op">=</span><span class="va">cache</span>, </span>
-<span>                                             root.type<span class="op">=</span><span class="st">"madfitz"</span>, condition.on.survival<span class="op">=</span><span class="cn">TRUE</span>,</span>
-<span>                                             root.p<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span>                        root.type<span class="op">=</span><span class="st">"madfitz"</span>, condition.on.survival<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>                        root.p<span class="op">=</span><span class="cn">NULL</span><span class="op">)</span></span>
 <span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hisse.constrained</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">diversitree.free</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
@@ -308,7 +298,7 @@ same for all observed state combinations. Note the “f” represents the
 sampling fraction for each observed state combination, which is a vector
 ordered in the same manner as for turnover and extinction fraction
 vectors:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span></code></pre></div>
@@ -317,7 +307,7 @@ provided to make this easy, and allows users to customize the matrix to
 fit particular hypotheses. Be sure to look at the options on this
 function call, for allowing diagonals and for customizing the matrix
 when you have character independent model.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##      (00) (01) (10) (11)</span></span>
@@ -327,7 +317,7 @@ when you have character independent model.</p>
 <span><span class="co">## (11)    0    4    6   NA</span></span></code></pre>
 <p>Now, we can call MuHiSSE and estimate the parameters under this model
 using the default settings:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">states.trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.label</span>, <span class="va">states.trans</span><span class="op">)</span></span>
 <span><span class="va">dull.null</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MuHiSSE.html">MuHiSSE</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">states.trans</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, </span>
 <span>                     eps<span class="op">=</span><span class="va">extinction.fraction</span>, hidden.states<span class="op">=</span><span class="cn">FALSE</span>, </span>
@@ -335,7 +325,7 @@ using the default settings:</p>
 <p>If you wanted to set up a true MuSSE model, where the turnover rate
 parameters are unlinked across the observed state combinations, you
 would simply do the following:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span><span class="op">)</span></span>
 <span><span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">MuSSE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MuHiSSE.html">MuHiSSE</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">states.trans</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, </span>
@@ -353,13 +343,13 @@ two hidden states, A and B, the order of the parameters in the model is
 00A, 01A, 10A, 11A, 00B, 01B, 10B, and 11B. So, in this case, we just
 need to specify the free parameters we want for diversification. Here we
 are just going assume turnover varies across the different states:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span>,<span class="fl">5</span>,<span class="fl">6</span>,<span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span></span>
 <span><span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">8</span><span class="op">)</span> </span>
 <span><span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p>We also have to extend the transition rate matrix. This is done by
 specifying the number of hidden states:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       (00A) (01A) (10A) (11A) (00B) (01B) (10B) (11B)</span></span>
@@ -372,7 +362,7 @@ specifying the number of hidden states:</p>
 <span><span class="co">## (10B)    NA    NA    17    NA    10     0    NA    16</span></span>
 <span><span class="co">## (11B)    NA    NA    NA    17     0    12    14    NA</span></span></code></pre>
 <p>Now, we can just plug these options into MuHiSSE:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">MuHiSSE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MuHiSSE.html">MuHiSSE</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">states.trans</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, </span>
 <span>                     eps<span class="op">=</span><span class="va">extinction.fraction</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, </span>
 <span>                     trans.rate<span class="op">=</span><span class="va">trans.rate</span><span class="op">)</span></span></code></pre></div>
@@ -385,7 +375,7 @@ rates <em>must</em> be decoupled from the observed states. So, to do
 this, we simply set the diversification rates to be equal for all states
 for a given hidden state. Below, I will show how to do this for a
 character-independent model with two rate shifts in the tree:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">8</span><span class="op">)</span> </span>
 <span><span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span></code></pre></div>
@@ -394,7 +384,7 @@ character-independent model with two rate shifts in the tree:</p>
 across the hidden states. This way the transition rates are not impacted
 by changes in the diversification rate regime – that is,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>q</mi><mrow><mi>M</mi><mi>B</mi><mo>,</mo><mi>A</mi><mo>→</mo><mi>M</mi><mi>P</mi><mo>,</mo><mi>A</mi></mrow></msub><mo>=</mo><msub><mi>q</mi><mrow><mi>M</mi><mi>B</mi><mo>,</mo><mi>B</mi><mo>→</mo><mi>M</mi><mi>P</mi><mo>,</mo><mi>B</mi></mrow></msub></mrow><annotation encoding="application/x-tex">q_{MB,A\rightarrow MP,A} = q_{MB,B\rightarrow MP,B}</annotation></semantics></math>.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">1</span>, make.null<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       (00A) (01A) (10A) (11A) (00B) (01B) (10B) (11B)</span></span>
@@ -408,7 +398,7 @@ by changes in the diversification rate regime – that is,
 <span><span class="co">## (11B)    NA    NA    NA     9     0     4     6    NA</span></span></code></pre>
 <p>Here is a how you would set up the diversification rates for models
 with three hidden state all the way to eight hidden states:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Three hidden states</span></span>
 <span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">12</span><span class="op">)</span> </span>
@@ -453,7 +443,7 @@ how the likelihoods are equivalent between <code>diversitree</code>,
 <code>GeoHiSSE</code>, and <code>MuHiSSE</code> in the three-state
 case.</p>
 <p>First, let’s simulate a three-state model:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>,  <span class="fl">.15</span>,  <span class="fl">.2</span>,  <span class="co"># lambda 1, 2, 3</span></span>
 <span><span class="fl">.03</span>, <span class="fl">.045</span>, <span class="fl">.06</span>, <span class="co"># mu 1, 2, 3</span></span>
 <span><span class="fl">.05</span>, <span class="fl">0</span>,         <span class="co"># q12, q13</span></span>
@@ -468,13 +458,13 @@ case.</p>
 <span><span class="va">q13</span> <span class="op">~</span> <span class="fl">0</span>, <span class="va">q21</span> <span class="op">~</span> <span class="va">q12</span>, <span class="va">q23</span> <span class="op">~</span> <span class="va">q12</span>, <span class="va">q31</span> <span class="op">~</span> <span class="fl">0.03</span>, <span class="va">q32</span> <span class="op">~</span> <span class="va">q12</span><span class="op">)</span></span></code></pre></div>
 <p>Here is the likelihood for a maximally constrained model using
 <code>diversitree</code>:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diversitree.constrained</span> <span class="op">=</span> <span class="fu">lik.base</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.1</span>, <span class="fl">.03</span>, <span class="fl">.05</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">diversitree.constrained</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] -111.1472</span></span></code></pre>
 <p>Now, let’s compare the likelihood using a three-state model in
 <code>GeoHiSSE</code>:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">states</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span>, <span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span>, row.names<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.state</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">states</span> <span class="op">&lt;-</span> <span class="va">states</span><span class="op">[</span><span class="va">phy</span><span class="op">$</span><span class="va">tip.label</span>,<span class="op">]</span></span>
 <span><span class="va">states</span><span class="op">[</span><span class="va">states</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">==</span><span class="fl">3</span>,<span class="op">]</span> <span class="op">=</span> <span class="fl">4</span></span>
@@ -492,7 +482,7 @@ case.</p>
 <p>We can show that you can obtain the same likelihood using
 <code>MuHiSSE</code>. Warning: as before it’s a bit convoluted to format
 the data properly, but it can be done:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">states.trans</span> <span class="op">&lt;-</span> <span class="va">states</span></span>
 <span><span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="kw">if</span><span class="op">(</span><span class="va">states</span><span class="op">[</span><span class="va">i</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">{</span></span>
@@ -515,9 +505,8 @@ the data properly, but it can be done:</p>
 <span><span class="va">model.vec</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">]</span> <span class="op">=</span> <span class="va">pars.hisse</span></span>
 <span><span class="va">phy</span><span class="op">$</span><span class="va">node.label</span> <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">ParametersToPassMuHiSSE</span><span class="op">(</span>model.vec<span class="op">=</span><span class="va">model.vec</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, </span>
-<span>                                         nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, </span>
-<span>                                         bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">300</span><span class="op">)</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>,</span>
-<span>                                         ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
+<span>                    psi.type<span class="op">=</span><span class="st">"none"</span>, nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy</span><span class="op">)</span>, </span>
+<span>                    bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">300</span><span class="op">)</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">cache</span><span class="op">$</span><span class="va">psi</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">FindGenerations</span><span class="op">(</span><span class="va">phy</span><span class="op">)</span></span>
 <span><span class="va">dat.tab</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">OrganizeData</span><span class="op">(</span><span class="va">states.trans</span>, <span class="va">phy</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
@@ -538,13 +527,13 @@ processing during the tree traversal stage.</p>
 <p>For this example, note that we are going to assume we do not have a
 fourth state (i.e.,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>11</mn><annotation encoding="application/x-tex">11</annotation></semantics></math>).</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span></span></code></pre></div>
 <p>Next, we have to generate, and then modify the transition rate
 matrix:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span>hidden.traits<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##      (00) (01) (10) (11)</span></span>
@@ -554,7 +543,7 @@ matrix:</p>
 <span><span class="co">## (11)    0    4    6   NA</span></span></code></pre>
 <p>We can use the <code><a href="../reference/transMat.html">ParDrop()</a></code> function to remove transitions
 to and from the fourth state in the model:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rate.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMat.html">ParDrop</a></span><span class="op">(</span><span class="va">trans.rate</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">6</span>,<span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">trans.rate.mod</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##      (00) (01) (10) (11)</span></span>
@@ -563,13 +552,13 @@ to and from the fourth state in the model:</p>
 <span><span class="co">## (10)    2    0   NA    0</span></span>
 <span><span class="co">## (11)    0    0    0   NA</span></span></code></pre>
 <p>From there the function call is all the same:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">MuHiSSE</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MuHiSSE.html">MuHiSSE</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">states.trans</span>, f<span class="op">=</span><span class="va">f</span>, turnover<span class="op">=</span><span class="va">turnover</span>, </span>
 <span>                     eps<span class="op">=</span><span class="va">extinction.fraction</span>, hidden.states<span class="op">=</span><span class="cn">FALSE</span>, </span>
 <span>                     trans.rate<span class="op">=</span><span class="va">trans.rate.mod</span><span class="op">)</span></span></code></pre></div>
 <p>If you wanted to set up a three-state model, but include hidden
 states, you would do the following:</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">0</span>, <span class="fl">4</span>,<span class="fl">5</span>,<span class="fl">6</span>,<span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">extinction.fraction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span>, <span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span></span>
@@ -603,7 +592,7 @@ provided with <code>starting.vals</code> option for these purposes. In
 the case of Nakov et al. (2018), we wrote our own custom function, which
 I have provided below using a MuCID3 model. Note that the following
 function was designed for multicore use:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">StartingValueTry</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">phy</span>, <span class="va">data</span>, <span class="va">f</span>, <span class="va">trans.rate</span><span class="op">)</span><span class="op">{</span></span>
 <span></span>
 <span>    <span class="va">freqs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">data</span><span class="op">[</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span>, <span class="fl">1</span>, </span>
@@ -662,7 +651,7 @@ doi: <a href="https://doi.org/10.1111/evo.13832" class="external-link uri">https
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer>

@@ -18,7 +18,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.14</span>
       </span>
     </div>
 
@@ -33,7 +33,7 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/adding_fossils.html">Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE</a>
+      <a href="../articles/adding_fossils.html">Incorporating Fossils</a>
     </li>
     <li>
       <a href="../articles/Clade-specific-sampling.html">The Problem with Clade-specific Sampling Fractions</a>
@@ -109,8 +109,8 @@
     <p>This creates the set of combinations of models to run through MiSSEGreedy as a data.frame. It has columns for the number of rates to estimate for turnover, the number of values to estimate for eps, and any fixed values for eps to apply to the whole tree. You can add your own rows or delete some to this data.frame to add more or fewer combinations. By default, this comes out ordered so that simpler models are run first in <code>MiSSEGreedy</code> but that is not required (but wise for most use cases), and you can reorder if you wish.</p>
 <p>It can be worth considering how much information your tree has for diversification rates. A fully resolved tree with N taxa has 2N-2 branches and only N-1 internal node heights, which is more relevant for diversification models.  So on a 50 taxon tree, there are 49 node heights – it's a bit ambitious to think you can extract, say, 5 different parameters (3 turnover rates, 1 eps value, 1 transition rate) from such a tree. People clearly try to extract more – some methods claim to use information in a tree to extract a different speciation or net diversification rate for every single tip – but that could be a tad ambitious. So setting <code>max.param</code> to a low value makes a lot of sense. <code>max.param = floor(ape::Ntip(phy)/10)</code> is ridiculously optimistic (dividing by 100 or more is probably more conservative) but if things are running well <code>MiSSEGreedy</code> should stop before getting to the models that are too complex.</p>
 <p><code>turnover.tries</code> and <code>eps.tries</code> set how many turnover and eps hidden states to try, respectively. If you wanted to try only 1, 3, and 7 hidden states for turnover you would set <code>turnover.tries = c(1, 3, 7)</code> for example.</p>
-<p>Estimating extinction rates is hard. This affects all diversification models (even if all you want and look at is speciation rate, extinction rate estimates still affect what this is as they affect the likelihood). It is most noticeable in MiSSE with eps, the extinction fraction (extinction rate divided by speciation rate). One option, following Magallon &amp; Sanderson (2001), is to set extinction fraction at set values. By default, we use theirs, 0 (meaning a Yule model - no extinction) or 0.9 (a lot of extinction, though still less than paleontoligists find). You can set your own in <code>fixed.eps.tries</code>. If you only want to use fixed values, and not estimate, get rid of the NA, as well. However, don't “cheat” – if you use a range of values for fixed.eps, it's basically doing a search for this, though the default AICc calculation doesn't dQuoteknow this to penalize it for another parameter.</p>
-<p>HiSSE and thus MiSSE assume that a taxon has a particular hidden state (though they recognize that there can be uncertainty in which state it actually has). Thus, they're written to assume that we dQuotepaint these states on the tree and a given state affects both turnover and eps. So if turnover has four hidden states, eps has four hidden states. They can be constrained: the easiest way is to have, say, turnover having an independent rate for each hidden state and eps having the same rate for all the hidden states. If <code>vary.both</code> is set to FALSE, all models are of this sort: if turnover varies, eps is constant across all hidden states, or vice versa. Jeremy Beaulieu prefers this. If <code>vary.both</code> is set to TRUE, both can vary: for example, there could be five hidden states for both turnover and eps, but turnover lets each of these have a different rate, but eps only allows three values (so that eps_A and eps_D might be forced to be equal, and eps_B and eps_E might be forced to be equal). Brian O'Meara would consider allowing this, while cautioning you about the risks of too many parameters.</p>
+<p>Estimating extinction rates is hard. This affects all diversification models (even if all you want and look at is speciation rate, extinction rate estimates still affect what this is as they affect the likelihood). It is most noticeable in MiSSE with eps, the extinction fraction (extinction rate divided by speciation rate). One option, following Magallon &amp; Sanderson (2001), is to set extinction fraction at set values. By default, we use theirs, 0 (meaning a Yule model - no extinction) or 0.9 (a lot of extinction, though still less than paleontoligists find). You can set your own in <code>fixed.eps.tries</code>. If you only want to use fixed values, and not estimate, get rid of the NA, as well. However, do not “cheat” – if you use a range of values for fixed.eps, it's basically doing a search for this, though the default AICc calculation does not “know” this to penalize it for another parameter.</p>
+<p>HiSSE and thus MiSSE assume that a taxon has a particular hidden state (though they recognize that there can be uncertainty in which state it actually has). Thus, they're written to assume that we “paint” these states on the tree and a given state affects both turnover and eps. So if turnover has four hidden states, eps has four hidden states. They can be constrained: the easiest way is to have, say, turnover having an independent rate for each hidden state and eps having the same rate for all the hidden states. If <code>vary.both</code> is set to FALSE, all models are of this sort: if turnover varies, eps is constant across all hidden states, or vice versa. Jeremy Beaulieu prefers this. If <code>vary.both</code> is set to TRUE, both can vary: for example, there could be five hidden states for both turnover and eps, but turnover lets each of these have a different rate, but eps only allows three values (so that eps_A and eps_D might be forced to be equal, and eps_B and eps_E might be forced to be equal). Brian O'Meara would consider allowing this, while cautioning you about the risks of too many parameters.</p>
     </div>
     <div id="value">
     <h2>Value</h2>
@@ -146,7 +146,7 @@ Trans. R. Soc. Lond. B Biol. Sci. 344:305-311.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

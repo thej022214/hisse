@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.14</span>
       </span>
     </div>
 
@@ -49,7 +49,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/adding_fossils.html">Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE</a>
+      <a href="../articles/adding_fossils.html">Incorporating Fossils</a>
     </li>
     <li>
       <a href="../articles/Clade-specific-sampling.html">The Problem with Clade-specific Sampling Fractions</a>
@@ -117,20 +117,12 @@ execute the original hisse function. For information about how to use
 the new <code><a href="../reference/hisse.html">hisse()</a></code> function see the <em>A newer, faster HiSSE
 function</em> vignette. We highly recommend you use the newer
 version.</p>
-<p>Before getting started, be sure to load the hisse package:</p>
+<p>Before getting started, be sure to load the <code>hisse</code> and
+`diversitree packages. We can simulate data using the multistate (MuSSE)
+model that can be used to create a binary character that has a relation
+to a “hidden” state:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hisse</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Loading required package: ape</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: deSolve</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: GenSA</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: subplex</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: nloptr</span></span></code></pre>
-<p>And also be sure to load diversitree. We can simulate data using the
-multistate (MuSSE) model that can be used to create a binary character
-that has a relation to a “hidden” state:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.zoology.ubc.ca/prog/diversitree/" class="external-link">diversitree</a></span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co"># Essentially we are setting up a model that models the evolution of two binary characters</span></span>
 <span><span class="co"># Thus, we are assuming the following state combinations 1=00, 2=10, 3=01, 4=11:</span></span>
 <span><span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>,<span class="fl">0.1</span>,<span class="fl">0.1</span>,<span class="fl">0.2</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0.03</span>, <span class="fl">4</span><span class="op">)</span>, <span class="fl">0.01</span>,<span class="fl">0.01</span>,<span class="fl">0</span>,<span class="fl">0.01</span>,<span class="fl">0</span>,<span class="fl">0.01</span>,<span class="fl">0.01</span>,<span class="fl">0</span>,<span class="fl">0.01</span>,<span class="fl">0</span>,<span class="fl">0.01</span>,<span class="fl">0.01</span><span class="op">)</span></span>
@@ -144,7 +136,7 @@ that has a relation to a “hidden” state:</p>
 <span><span class="va">sim.dat</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span> <span class="op">=</span> <span class="va">sim.dat</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span> <span class="op">-</span> <span class="fl">1</span></span></code></pre></div>
 <p>In the end you have a data set that has a single binary
 character:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim.dat</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##      names.phy.tip.state. phy.tip.state</span></span>
 <span><span class="co">## sp3                   sp3             1</span></span>
@@ -181,7 +173,7 @@ index vector can also be set up such that parameters are linked among
 states or even dropped from the model entirely.</p>
 <p>Let’s walk through a couple of examples. Take, for instance, the
 following index vectors:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover.anc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">eps.anc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span></span></code></pre></div>
 <p>In this example, turnover.anc has a single free parameter for both 0A
@@ -190,17 +182,17 @@ extinction fraction. This is equivalent to a BiSSE model with a fixed
 turnover and extinction rates across the observed states 0 an 1. Now,
 say we want to include separate turnover rates for both states 0A and
 1A:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover.anc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span></span></code></pre></div>
 <p>Thus, a full hisse model would thus be,</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover.anc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <p>which corresponds to four separate net turnover rates for 1=0A, 2=1A,
 3=0B, 4=1B. Extinction fraction, needless to say, follows the same
 format, though including a zero for a state we want to include in the
 model corresponds to no extinction, which is the Yule (pure birth)
 equivalent:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">eps.anc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span></span></code></pre></div>
 <p>Fairly straightforward, but why do we do it this way? This particular
 format makes it easier to generate a large set of nested models to test.
@@ -219,7 +211,7 @@ this reason that we depict the transition rates in the canonical
 <strong>Q</strong> matrix format.</p>
 <p>To generate the index matrix describing the free parameters in the
 transition model, we use the <code>TransMatMaker()</code> function:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rates</span> <span class="op">=</span> <span class="fu"><a href="../reference/transMat.html">TransMatMaker.old</a></span><span class="op">(</span>hidden.states<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">trans.rates</span></span></code></pre></div>
 <pre><code><span><span class="co">##      (0A) (1A) (0B) (1B)</span></span>
@@ -232,7 +224,7 @@ includes dual transitions between both the observed trait and the hidden
 trait (e.g., q0A&lt;-&gt;q1B). Personally, I’m skeptical about such
 transitions and always remove them from the model entirely. I accomplish
 this by using the internal function <code><a href="../reference/transMat.html">ParDrop()</a></code>:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rates.nodual</span> <span class="op">=</span> <span class="fu"><a href="../reference/transMat.html">ParDrop</a></span><span class="op">(</span><span class="va">trans.rates</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">5</span>,<span class="fl">8</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">trans.rates.nodual</span></span></code></pre></div>
 <pre><code><span><span class="co">##      (0A) (1A) (0B) (1B)</span></span>
@@ -248,7 +240,7 @@ internal function, <code><a href="../reference/transMat.html">ParEqual()</a></co
 indexes and sets the two equal based on the index of the first entry.
 Take our example above and let’s set parameter 1 and 6 to have the same
 rate:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rates.nodual.equal16</span> <span class="op">=</span> <span class="fu"><a href="../reference/transMat.html">ParEqual</a></span><span class="op">(</span><span class="va">trans.rates.nodual</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">6</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">trans.rates.nodual.equal16</span></span></code></pre></div>
 <pre><code><span><span class="co">##      (0A) (1A) (0B) (1B)</span></span>
@@ -259,7 +251,7 @@ rate:</p>
 <p>Note that the index for parameter 6 has become 1 – in other words,
 their rate will take the same value. Now, let’s set all rates to be
 equal using this function:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rates.nodual.allequal</span> <span class="op">=</span> <span class="fu"><a href="../reference/transMat.html">ParEqual</a></span><span class="op">(</span><span class="va">trans.rates.nodual</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">1</span>,<span class="fl">3</span>,<span class="fl">1</span>,<span class="fl">4</span>,<span class="fl">1</span>,<span class="fl">5</span>,<span class="fl">1</span>,<span class="fl">6</span>,<span class="fl">1</span>,<span class="fl">7</span>,<span class="fl">1</span>,<span class="fl">8</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">trans.rates.nodual.allequal</span></span></code></pre></div>
 <pre><code><span><span class="co">##      (0A) (1A) (0B) (1B)</span></span>
@@ -270,7 +262,7 @@ equal using this function:</p>
 <p>Here we’ve set the index 2 to equal 1, 3 to equal 1, 4 to equal 1,
 etc. Of course, if this function is confusing, there are other ways to
 do the same thing. For example, one could do:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rates.nodual.allequal</span> <span class="op">=</span> <span class="va">trans.rates.nodual</span></span>
 <span><span class="va">trans.rates.nodual.allequal</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">trans.rates.nodual.allequal</span><span class="op">)</span> <span class="op">&amp;</span> </span>
 <span>                              <span class="op">!</span><span class="va">trans.rates.nodual.allequal</span> <span class="op">==</span> <span class="fl">0</span><span class="op">]</span> <span class="op">=</span> <span class="fl">1</span></span>
@@ -282,7 +274,7 @@ do the same thing. For example, one could do:</p>
 <span><span class="co">## (1B)    0    1    1   NA</span></span></code></pre>
 <p>Also note that in order to run a BiSSE model in HiSSE, the matrix set
 up would look like this:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rates.bisse</span> <span class="op">=</span> <span class="fu"><a href="../reference/transMat.html">TransMatMaker.old</a></span><span class="op">(</span>hidden.states<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">trans.rates.bisse</span></span></code></pre></div>
 <pre><code><span><span class="co">##     (0) (1)</span></span>
@@ -290,7 +282,7 @@ up would look like this:</p>
 <span><span class="co">## (1)   1  NA</span></span></code></pre>
 <p>Whatever transition matrix is designed, it is supplied to the
 <code>trans.rate=</code> argument in the <code><a href="../reference/hisse.html">hisse()</a></code> call:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pp</span> <span class="op">=</span> <span class="fu"><a href="../reference/hisse.old.html">hisse.old</a></span><span class="op">(</span><span class="va">phy</span>, <span class="va">sim.dat</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, turnover.anc<span class="op">=</span><span class="va">turnover.anc</span>, </span>
 <span>           eps.anc<span class="op">=</span><span class="va">eps.anc</span>, trans.rate<span class="op">=</span><span class="va">trans.rates.nodual.allequal</span>, sann<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -302,14 +294,14 @@ correspondence with several users. It may be of interest to test a model
 where the hidden state is associated with only a single observed state,
 such that the model contains states 0A, 1A, and 1B. The diversification
 parameters might look something like this:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover.anc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">0</span>,<span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">eps.anc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">0</span>,<span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p>The 0 in the 3rd entry for state 0B designates that the parameter is
 removed entirely from the model. A common mistake is that the
 transitions to and from 0B are not removed from the transition matrix.
 This needs to be done manually:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMat.html">TransMatMaker.old</a></span><span class="op">(</span>hidden.states<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">trans.rates.nodual.no0B</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMat.html">ParDrop</a></span><span class="op">(</span><span class="va">trans.rates</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">5</span>,<span class="fl">7</span>,<span class="fl">8</span>,<span class="fl">9</span>,<span class="fl">10</span>,<span class="fl">12</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">trans.rates.nodual.no0B</span></span></code></pre></div>
@@ -335,7 +327,7 @@ speciation
 and exinction
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>i</mi></msub><annotation encoding="application/x-tex">\mu_i</annotation></semantics></math>).
 Thus, to output net diversification:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pp</span> <span class="op">=</span> <span class="fu"><a href="../reference/hisse.old.html">hisse.old</a></span><span class="op">(</span><span class="va">phy</span>, <span class="va">sim.dat</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, turnover.anc<span class="op">=</span><span class="va">turnover.anc</span>, </span>
 <span>           eps.anc<span class="op">=</span><span class="va">eps.anc</span>, trans.rate<span class="op">=</span><span class="va">trans.rates.nodual.allequal</span>, output.type<span class="op">=</span><span class="st">"net.div"</span>, sann<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -369,7 +361,7 @@ trait. In other words, diversification rate differences, if they exist,
 will only be associated with one of the hidden states (A or B)
 regardless of the state of the focal trait. Thus, the free parameters
 for diversification would look like this:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover.anc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">eps.anc</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p>In other words, we are specifying that both 0A and 1A have one set of
@@ -377,7 +369,7 @@ diversification rates, and 0B and 1B have another. That’s it. This is
 the “null-two” model.</p>
 <p>In regards to the transition rates, there are various ways in which
 they can be set up. We could also assume all rates are equal:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rates</span> <span class="op">=</span> <span class="fu"><a href="../reference/transMat.html">TransMatMaker.old</a></span><span class="op">(</span>hidden.states<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">trans.rates.nodual</span> <span class="op">=</span> <span class="fu"><a href="../reference/transMat.html">ParDrop</a></span><span class="op">(</span><span class="va">trans.rates</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">5</span>,<span class="fl">8</span>,<span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">trans.rates.nodual.allequal</span> <span class="op">=</span> <span class="fu"><a href="../reference/transMat.html">ParEqual</a></span><span class="op">(</span><span class="va">trans.rates.nodual</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">1</span>,<span class="fl">3</span>,<span class="fl">1</span>,<span class="fl">4</span>,<span class="fl">1</span>,<span class="fl">5</span>,<span class="fl">1</span>,<span class="fl">6</span>,<span class="fl">1</span>,<span class="fl">7</span>,<span class="fl">1</span>,<span class="fl">8</span><span class="op">)</span><span class="op">)</span></span>
@@ -393,7 +385,7 @@ intrepreted as the rate by which shifts in diversification occur), and
 two rates for transitions between the observed character states (0-&gt;1
 or 1-&gt;0). Unfortunately, this requires a little bit of clunky
 coding:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Now we want three specific rates:</span></span>
 <span><span class="va">trans.rates.nodual.threerates</span> <span class="op">&lt;-</span> <span class="va">trans.rates.nodual</span></span>
 <span><span class="co"># Set all transitions from 0-&gt;1 to be governed by a single rate:</span></span>
@@ -414,7 +406,7 @@ coding:</p>
 <span><span class="co">## (1B)    0    3    2   NA</span></span></code></pre>
 <p>As before, turnover.anc, eps.anc, and the transition rate matrix are
 supplied as arguments to <code><a href="../reference/hisse.html">hisse()</a></code>:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pp</span> <span class="op">=</span> <span class="fu"><a href="../reference/hisse.old.html">hisse.old</a></span><span class="op">(</span><span class="va">phy</span>, <span class="va">sim.dat</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, turnover.anc<span class="op">=</span><span class="va">turnover.anc</span>, </span>
 <span>           eps.anc<span class="op">=</span><span class="va">eps.anc</span>, trans.rate<span class="op">=</span><span class="va">trans.rates.nodual.allequal</span>, sann<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>and the results can be compared against any model in the hisse set,
@@ -436,13 +428,13 @@ above. This particular model assumed two diversification rate parameters
 – i.e., turnover.anc=c(1,1,1,2), and eps.anc=c(1,1,1,1). Let’s load this
 file and check that everything has loaded correctly and is of the proper
 <code>hisse.states</code> class:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># pp.recon &lt;- MarginRecon.old(phy=phy, data=sim.dat, f = pp$f, pars = pp$solution</span></span>
 <span><span class="co">#                         , hidden.states = pp$hidden.states, AIC = pp$AIC)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"testrecon1.Rsave"</span><span class="op">)</span> <span class="co"># Line above shows the command to create this result.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">pp.recon</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "hisse.states"</span></span></code></pre>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pp.recon</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Phylogenetic tree with 50 tips and 49 internal nodes.</span></span>
@@ -455,7 +447,7 @@ file and check that everything has loaded correctly and is of the proper
 <span><span class="co">## Rooted; includes branch length(s).</span></span></code></pre>
 <p>Now that we have the right files and information, let’s plot net
 diversification rates:</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotHisse.html">plot.hisse.states</a></span><span class="op">(</span><span class="va">pp.recon</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="hisse-vignette_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="" width="672"></p>
 <pre><code><span><span class="co">## $rate.tree</span></span>
@@ -495,7 +487,7 @@ color. However, users may want to use the same color scale across
 models, even if some of them have a smaller range than others. A vector
 with the minimum and maximum rate across all models can be passed to the
 visualization:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotHisse.html">plot.hisse.states</a></span><span class="op">(</span><span class="va">pp.recon</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">FALSE</span>, </span>
 <span>                  rate.range<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0.072</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="hisse-vignette_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" alt="" width="672"></p>
@@ -528,14 +520,14 @@ model).</p>
 make sure that the <code>hisse.states</code> objects contain the AIC
 from the model fit embedded in it. The plotting function will not work
 without it:</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pp.recon</span><span class="op">$</span><span class="va">AIC</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 364.8615</span></span></code></pre>
 <p>If this returns a NULL, then something has gone wrong and you should
 check how you performed the reconstructions. The AIC for the model can
 be supplied as an argument in the <code><a href="../reference/marginRecon.old.html">MarginRecon.old()</a></code>
 function (using the <code>pp</code> object we defined above):</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pp.recon</span> <span class="op">=</span> <span class="fu"><a href="../reference/marginRecon.old.html">MarginRecon.old</a></span><span class="op">(</span><span class="va">phy</span>, <span class="va">sim.dat</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, hidden.states<span class="op">=</span><span class="cn">TRUE</span>, pars<span class="op">=</span><span class="va">pp</span><span class="op">$</span><span class="va">solution</span>, </span>
 <span>                       AIC<span class="op">=</span><span class="va">pp</span><span class="op">$</span><span class="va">AIC</span>, n.cores<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p>I’ve created two additional <code>hisse.states</code> objects that I
@@ -547,7 +539,7 @@ and equal extinction fractions. I recognize that there are many ways to
 generate a list. But here is one way, where I’m assuming that the
 marginal reconstructions from three models are saved to the directory we
 are working from:</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hisse.results.list</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"testrecon1.Rsave"</span><span class="op">)</span></span>
 <span><span class="va">hisse.results.list</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">pp.recon</span></span>
@@ -579,7 +571,7 @@ can be adjusted in <code><a href="../reference/plotHisse.html">plot.hisse.states
 in detail in the manual.</p>
 <p>Note that the above code is obviously a pretty lame way of generating
 a list. An even easier way would be to do something like this:</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># First, suck in all the files with .Rsave line ending in your working directory:</span></span>
 <span><span class="co"># files = system("ls -1 | grep .Rsave", intern=TRUE) # This will not run in a Windows system.</span></span>
 <span><span class="va">files</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">dir</a></span><span class="op">(</span> pattern <span class="op">=</span> <span class="st">"*.Rsave"</span> <span class="op">)</span> <span class="co"># This is system independent.</span></span>
@@ -618,7 +610,7 @@ diversification in R. Methods in Ecology and Evolution 3:1084-1092.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer>
