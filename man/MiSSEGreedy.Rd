@@ -8,10 +8,10 @@ MiSSEGreedy(phy, f=1, possible.combos =
 generateMiSSEGreedyCombinations(shuffle.start=TRUE), stop.deltaAICc=10, save.file=NULL, 
 n.cores=NULL, chunk.size=10, check.fits=FALSE, remove.bad=FALSE, n.tries=2, 
 condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, 
-k.samples=NULL, strat.intervals=NULL, sann=TRUE, sann.its=5000, sann.temp=5230, 
-sann.seed=-100377,bounded.search=TRUE, max.tol=.Machine$double.eps^.50, 
-starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, 
-ode.eps=0)
+k.samples=NULL, strat.intervals=NULL, extinct.tol=.Machine$double.eps^.50, sann=TRUE, 
+sann.its=5000, sann.temp=5230, sann.seed=-100377,bounded.search=TRUE, 
+max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, 
+trans.upper=100, restart.obj=NULL, ode.eps=0)
 }
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format. If \code{includes.fossils=TRUE} then the input phy object must include extinct tips.}
@@ -34,6 +34,7 @@ ode.eps=0)
 \item{includes.fossils}{a logical indicating whether the tree contains fossil taxa. The default is \code{FALSE}.}
 \item{k.samples}{a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.}
 \item{strat.intervals}{a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.}
+\item{extinct.tol}{a numeric value specifying the tolerance used to distinguish surviving from extinct tips. Tips whose ages are less than \code{extinct.tol} from the present are considered surviving. The default is \code{.Machine$double.eps^.50}.}
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using

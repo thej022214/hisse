@@ -6,8 +6,8 @@
 \usage{
 MarginReconHiSSE(phy, data, f, pars, hidden.states=1, 
 condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, 
-includes.fossils = FALSE, k.samples = NULL, tip.fog=NULL, AIC=NULL, 
-get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
+includes.fossils = FALSE, k.samples = NULL, extinct.tol=.Machine$double.eps^.50, 
+tip.fog=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format and with internal nodes labeled denoting the ancestral selective regimes.}
@@ -27,6 +27,7 @@ get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1)
 \item{root.p}{a vector indicating fixed root state probabilities. The default is \code{NULL}.}
 \item{includes.fossils}{a logical indicating whether the tree contains fossil taxa. The default is \code{FALSE}.}
 \item{k.samples}{a table of extinct individuals with sampled descendants. See details for how the table must be formatted.}
+\item{extinct.tol}{a numeric value specifying the tolerance used to distinguish surviving from extinct tips. Tips whose ages are less than \code{extinct.tol} from the present are considered surviving. The default is \code{.Machine$double.eps^.50}.}
 \item{tip.fog}{provides the probability that an observed state is not actually in the state it is assigned to the reconstruction algorithm. These values are assumed either optimized in \dQuote{hisse} or supplied by the user.}
 \item{AIC}{the AIC for the model being used for the reconstruction. This is used by the plotting function. The default is \code{NULL}.}
 \item{get.tips.only}{a logical indicating whether just tip reconstructions should be output. The default is \code{FALSE}.}

@@ -5,7 +5,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, tip.fog=NULL, sann=TRUE, sann.its=5000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, fog.ip=0.01, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, extinct.tol=.Machine$double.eps^.50, tip.fog=NULL, sann=TRUE, sann.its=5000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, fog.ip=0.01, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -180,9 +180,9 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
             data <- AddKData(data, k.samples)
             data.new <- data.frame(data[,2], data[,2], row.names=data[,1], stringsAsFactors=FALSE)
             data.new <- data.new[phy$tip.label,]
-            dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
+            dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
             #These are all inputs for generating starting values:
-            edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+            edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL, extinct.tol=extinct.tol)
             fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
             fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
             n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
@@ -204,9 +204,9 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
                 data <- AddKData(data, k.samples)
                 data.new <- data.frame(data[,2], data[,2], row.names=data[,1], stringsAsFactors=FALSE)
                 data.new <- data.new[phy$tip.label,]
-                dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, includes.fossils=includes.fossils)
+                dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
                 #These are all inputs for generating starting values:
-                edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, extinct.tol=extinct.tol)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
                 fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-dim(fix.type)[1]
@@ -221,9 +221,9 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
                 data <- AddKData(data, k.samples)
                 data.new <- data.frame(data[,2], data[,2], row.names=data[,1], stringsAsFactors=FALSE)
                 data.new <- data.new[phy$tip.label,]
-                dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
+                dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
                 #These are all inputs for generating starting values:
-                edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL, extinct.tol=extinct.tol)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
                 fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
@@ -234,7 +234,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1], stringsAsFactors=FALSE)
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
         fossil.taxa <- NULL
         fix.type <- NULL
         psi.type <- "none"
@@ -456,7 +456,7 @@ hisse <- function(phy, data, f=c(1,1), turnover=c(1,2), eps=c(1,2), hidden.state
     
 	cat("Finished. Summarizing results...", "\n")
     
-    obj <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, tip.fog.probs=tip.fog.probs, index.par=pars, fog.vec=fog.vec, set.fog=set.fog, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy.og, phy.w.k=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, k.samples=k.samples, strat.intervals=strat.intervals, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
+    obj <- list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, tip.fog.probs=tip.fog.probs, index.par=pars, fog.vec=fog.vec, set.fog=set.fog, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy.og, phy.w.k=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, k.samples=k.samples, strat.intervals=strat.intervals, extinct.tol=extinct.tol, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
     class(obj) <- append(class(obj), "hisse.fit")
     
     return(obj)
@@ -510,7 +510,7 @@ DevOptimizefHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.ti
 ######################################################################################################################################
 ######################################################################################################################################
 
-OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=FALSE){
+OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=FALSE, extinct.tol=.Machine$double.eps^.50){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     
@@ -556,7 +556,7 @@ OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FA
     }
     
     #This seems stupid but I cannot figure out how to get data.table to not make this column a factor. When a factor this is not right. For posterity, let it be known Jeremy would rather just retain the character instead of this mess:
-    edge_details <- GetEdgeDetails(phy, includes.intervals=includes.intervals, intervening.intervals=intervening.intervals)
+    edge_details <- GetEdgeDetails(phy, includes.intervals=includes.intervals, intervening.intervals=intervening.intervals, extinct.tol=extinct.tol)
     if(includes.fossils == TRUE){
         branch.type <- edge_details$type
         branch.type[which(branch.type == "extant_tip")] <- 0

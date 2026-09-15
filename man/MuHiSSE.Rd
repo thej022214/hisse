@@ -6,10 +6,10 @@
 \usage{
 MuHiSSE(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), 
 hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, 
-root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, sann=TRUE, 
-sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, 
-turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, 
-dt.threads=1)
+root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, 
+extinct.tol=.Machine$double.eps^.50, sann=TRUE,  sann.its=1000, bounded.search=TRUE, 
+max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, 
+trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1)
 }       
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format.}
@@ -47,6 +47,7 @@ dt.threads=1)
   default is \code{NULL}.}
 \item{includes.fossils}{a logical indicating whether the tree contains fossil taxa. The default is \code{FALSE}.}
 \item{k.samples}{a table of extinct individuals with sampled descendants. See details for how the table must be formatted.}
+\item{extinct.tol}{a numeric value specifying the tolerance used to distinguish surviving from extinct tips. Tips whose ages are less than \code{extinct.tol} from the present are considered surviving. The default is \code{.Machine$double.eps^.50}.}
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using

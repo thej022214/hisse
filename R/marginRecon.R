@@ -327,7 +327,7 @@ MarginReconGeoSSE.old <- function(phy, data, f, pars, hidden.areas=TRUE, assume.
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, tip.fog=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, extinct.tol=.Machine$double.eps^.50, tip.fog=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
 
@@ -368,7 +368,7 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
         #These are all inputs for generating starting values:
         fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{
@@ -376,7 +376,7 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
 		gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,2], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeDataHiSSE(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
         fossil.taxa <- NULL
         fix.type <- NULL
     }
@@ -566,7 +566,7 @@ MarginReconHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.s
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, extinct.tol=.Machine$double.eps^.50, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
     
@@ -595,24 +595,27 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     ##########################
     if(includes.fossils == TRUE){
         if(!is.null(k.samples)){
+			psi.type <- "m+k"
             k.samples <- k.samples[order(as.numeric(k.samples[,3]),decreasing=FALSE),]
             phy <- AddKNodes(phy, k.samples)
             fix.type <- GetKSampleMRCA(phy, k.samples)
             data <- AddKData(data, k.samples, muhisse=TRUE)
         }else{
+			psi.type <- "m_only"
             fix.type <- NULL
         }
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
         #These are all inputs for generating starting values:
         fossil.taxa <- which(dat.tab$branch.type == 1)
     }else{
+		psi.type <- "none"
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=TRUE, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
         fossil.taxa <- NULL
         fix.type <- NULL
     }
@@ -624,7 +627,7 @@ MarginReconMuHiSSE <- function(phy, data, f, pars, hidden.states=1, condition.on
     DesNode = NULL
     ##########################
     
-    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=0)
+    cache <- ParametersToPassMuHiSSE(model.vec=model.vec, hidden.states=TRUE, psi.type=psi.type, nb.tip=nb.tip, nb.node=nb.node, bad.likelihood=exp(-300), f=f, ode.eps=0)
     
     nstates <- 32
     nstates.to.eval <- 4 * hidden.states
@@ -906,7 +909,7 @@ MarginReconGeoSSE <- function(phy, data, f, pars, hidden.states=1, assume.cladog
 ######################################################################################################################################
 ######################################################################################################################################
 
-MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
+MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, extinct.tol=.Machine$double.eps^.50, AIC=NULL, get.tips.only=FALSE, verbose=TRUE, n.cores=NULL, dt.threads=1){
     
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
 
@@ -924,8 +927,8 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
             phy <- AddKNodes(phy, k.samples)
             fix.type <- GetKSampleMRCA(phy, k.samples)
             gen <- FindGenerations(phy)
-            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
-            edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
+            edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL, extinct.tol=extinct.tol)
             fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
         }else{
             if(!is.null(strat.intervals)){
@@ -941,8 +944,8 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
                 phy <- AddKNodes(phy, k.samples)
                 fix.type <- GetKSampleMRCA(phy, k.samples, strat.intervals=TRUE)
                 gen <- FindGenerations(phy)
-                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, includes.fossils=includes.fossils)
-                edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
+                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, extinct.tol=extinct.tol)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
             }else{
                 #Just m fossils only.
@@ -951,9 +954,9 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
                 fix.type <- NULL
                 strat.cache <- NULL
                 gen <- FindGenerations(phy)
-                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
+                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
                 #These are all inputs for generating starting values:
-                edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL, extinct.tol=extinct.tol)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
             }
         }
@@ -961,7 +964,7 @@ MarginReconMiSSE <- function(phy, f, pars, hidden.states=1, fixed.eps=NULL, cond
 		psi.type <- "none"
         fix.type <- NULL
         gen <- FindGenerations(phy)
-        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states)
+        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, extinct.tol=extinct.tol)
         fossil.taxa <- NULL
     }
 

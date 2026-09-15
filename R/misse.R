@@ -6,7 +6,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, sann=TRUE, sann.its=5000, sann.temp=5230, sann.seed=-100377, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1, expand.mode=FALSE){
+MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, extinct.tol=.Machine$double.eps^.50, sann=TRUE, sann.its=5000, sann.temp=5230, sann.seed=-100377, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1, expand.mode=FALSE){
     
     misse_start_time <- Sys.time()
     
@@ -117,9 +117,9 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
             fix.type <- GetKSampleMRCA(phy, k.samples)
             no.k.samples <- length(k.samples[,1])
             gen <- FindGenerations(phy)
-            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
+            dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
             #These are all inputs for generating starting values:
-            edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+            edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL, extinct.tol=extinct.tol)
             fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
             fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
             n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
@@ -138,9 +138,9 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
                 phy <- AddKNodes(phy, k.samples)
                 fix.type <- GetKSampleMRCA(phy, k.samples, strat.intervals=TRUE)
                 gen <- FindGenerations(phy)
-                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, includes.fossils=includes.fossils)
+                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
                 #These are all inputs for generating starting values:
-                edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=TRUE, intervening.intervals=strat.cache$intervening.intervals, extinct.tol=extinct.tol)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip" | edge_details$type == "k_extinct_interval")]
                 fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-dim(fix.type)[1]
@@ -153,9 +153,9 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
                 strat.cache <- NULL
                 no.k.samples <- 0
                 gen <- FindGenerations(phy)
-                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
+                dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
                 #These are all inputs for generating starting values:
-                edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL)
+                edge_details <- GetEdgeDetails(phy, includes.intervals=FALSE, intervening.intervals=NULL, extinct.tol=extinct.tol)
                 fossil.taxa <- edge_details$tipward_node[which(edge_details$type == "extinct_tip")]
                 fossil.ages <- dat.tab$TipwardAge[which(dat.tab$DesNode %in% fossil.taxa)]
                 n.tax.starting <- Ntip(phy)-length(fossil.taxa)-no.k.samples
@@ -164,7 +164,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     }else{
         phy.og <- phy
         gen <- FindGenerations(phy)
-        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeDataMiSSE(phy=phy, f=f, hidden.states=hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
         fossil.taxa <- NULL
         fix.type <- NULL
         psi.type <- "none"
@@ -339,7 +339,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
     
     cat("Finished. Summarizing results...", "\n")
     misse_end_time <- Sys.time()
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, fixed.eps=fixed.eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy.og, phy.w.k=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, turnover=turnover, eps=eps, elapsed.minutes=difftime(misse_end_time, misse_start_time, units="min"), includes.fossils=includes.fossils, k.samples=k.samples, strat.intervals=strat.intervals, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, fixed.eps=fixed.eps, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy.og, phy.w.k=phy, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, turnover=turnover, eps=eps, elapsed.minutes=difftime(misse_end_time, misse_start_time, units="min"), includes.fossils=includes.fossils, k.samples=k.samples, strat.intervals=strat.intervals, extinct.tol=extinct.tol, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
     class(obj) <- append(class(obj), "misse.fit")
     return(obj)
 }
@@ -354,7 +354,7 @@ MiSSE <- function(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, conditi
 
 # options(error = utils::recover)
 # a <- hisse:::MiSSEGreedyNew(ape::rcoal(50), possible.combos=hisse:::generateMiSSEGreedyCombinations(4), n.cores=4, save.file='~/Downloads/greedy.rda')
-MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(shuffle.start=TRUE), stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=10, check.fits=FALSE, remove.bad=FALSE, n.tries=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, sann=TRUE, sann.its=5000, sann.temp=5230, sann.seed=-100377, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
+MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinations(shuffle.start=TRUE), stop.deltaAICc=10, save.file=NULL, n.cores=NULL, chunk.size=10, check.fits=FALSE, remove.bad=FALSE, n.tries=2, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, strat.intervals=NULL, extinct.tol=.Machine$double.eps^.50, sann=TRUE, sann.its=5000, sann.temp=5230, sann.seed=-100377, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0) {
     
     misse.list <- list()
     chunk.size <- ifelse(is.null(chunk.size),ifelse(is.null(n.cores),1,n.cores), chunk.size)
@@ -416,7 +416,8 @@ MiSSEGreedy <- function(phy, f=1, possible.combos = generateMiSSEGreedyCombinati
         includes.fossils=includes.fossils,
         k.samples=k.samples,
         strat.intervals=strat.intervals,
-        sann=sann,
+		extinct.tol=extinct.tol,
+		sann=sann,
         sann.its=sann.its,
         sann.temp=sann.temp,
         sann.seed=sann.seed,
@@ -529,7 +530,7 @@ SummarizeMiSSEGreedy <- function(greedy.result, min.weight=0.01, n.cores=1, reco
 		for(i in sequence(length(good_enough))){
 			local_model <- greedy.result[[good_enough[i]]]
 			
-			recons[[i]] <- MarginReconMiSSE(phy=local_model$phy, f=local_model$f, pars=local_model$solution[local_model$index.par], hidden.states=local_model$hidden.states, fixed.eps=local_model$fixed.eps, condition.on.survival=local_model$condition.on.survival, root.type=local_model$root.type, root.p=local_model$root.p, includes.fossils=local_model$includes.fossils, k.samples=local_model$k.samples, strat.intervals=local_model$strat.intervals, AIC=local_model$AICc, get.tips.only=FALSE, verbose=FALSE, n.cores=n.cores)
+			recons[[i]] <- MarginReconMiSSE(phy=local_model$phy, f=local_model$f, pars=local_model$solution[local_model$index.par], hidden.states=local_model$hidden.states, fixed.eps=local_model$fixed.eps, condition.on.survival=local_model$condition.on.survival, root.type=local_model$root.type, root.p=local_model$root.p, includes.fossils=local_model$includes.fossils, k.samples=local_model$k.samples, strat.intervals=local_model$strat.intervals, extinct.tol=local_model$extinct.tol, AIC=local_model$AICc, get.tips.only=FALSE, verbose=FALSE, n.cores=n.cores)
 		}
 
 		for(param_index in sequence(length(parameters))) {
@@ -694,7 +695,7 @@ GetTreeTable <- function(phy, root.age=NULL){
 }
 
 
-GetEdgeDetails <- function(phy, includes.intervals=FALSE, intervening.intervals=NULL){
+GetEdgeDetails <- function(phy, includes.intervals=FALSE, intervening.intervals=NULL, extinct.tol=.Machine$double.eps^.5){
     table.info <- GetTreeTable(phy, root.age=NULL)
     edges_detail <- as.data.frame(table.info)
     colnames(edges_detail) <- c("rootward_age", "tipward_age", "edge.length", "rootward_node", "tipward_node")
@@ -702,7 +703,8 @@ GetEdgeDetails <- function(phy, includes.intervals=FALSE, intervening.intervals=
     edges_detail$type[which(edges_detail$tipward_node<=ape::Ntip(phy))] <- "extant_tip"
     for(row.index in 1:dim(table.info)[1]){
         if(table.info[row.index,5]<=ape::Ntip(phy)){
-            if(table.info[row.index,2] > .Machine$double.eps^.50){
+			#Note I changed this from .Machine$double.eps^.50 based on a few empirical trees that had extant tips that were technically not "alive":
+            if(table.info[row.index,2] > extinct.tol){
                 edges_detail$type[row.index] <- "extinct_tip"
             }
         }
@@ -774,7 +776,7 @@ GetEdgeDetails <- function(phy, includes.intervals=FALSE, intervening.intervals=
 }
 
 
-OrganizeDataMiSSE <- function(phy, f, hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=FALSE){
+OrganizeDataMiSSE <- function(phy, f, hidden.states, includes.intervals=FALSE, intervening.intervals=NULL, includes.fossils=FALSE, extinct.tol=.Machine$double.eps^.5){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     
@@ -798,7 +800,7 @@ OrganizeDataMiSSE <- function(phy, f, hidden.states, includes.intervals=FALSE, i
     }
     
     #This seems stupid but I cannot figure out how to get data.table to not make this column a factor. When a factor this is not right. For posterity, let it be known Jeremy would rather just retain the character instead of this mess:
-    edge_details <- GetEdgeDetails(phy, includes.intervals=includes.intervals, intervening.intervals=intervening.intervals)
+    edge_details <- GetEdgeDetails(phy, includes.intervals=includes.intervals, intervening.intervals=intervening.intervals, extinct.tol=extinct.tol)
     if(includes.fossils == TRUE){
         branch.type <- edge_details$type
         branch.type[which(branch.type == "extant_tip")] <- 0

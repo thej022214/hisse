@@ -6,10 +6,10 @@
 \usage{
 MiSSE(phy, f=1, turnover=c(1,2), eps=c(1,2), fixed.eps=NULL, condition.on.survival=TRUE,
 root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, 
-strat.intervals=NULL, sann=TRUE, sann.its=5000, sann.temp=5230, sann.seed=-100377, 
-bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, 
-turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, 
-dt.threads=1, expand.mode=FALSE)
+strat.intervals=NULL, extinct.tol=.Machine$double.eps^.50, sann=TRUE, sann.its=5000, 
+sann.temp=5230, sann.seed=-100377,  bounded.search=TRUE, max.tol=.Machine$double.eps^.50, 
+starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL,
+ode.eps=0, dt.threads=1, expand.mode=FALSE)
 }
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format. If \code{includes.fossils=TRUE} then the input phy object must include extinct tips.}
@@ -30,6 +30,7 @@ dt.threads=1, expand.mode=FALSE)
 \item{includes.fossils}{a logical indicating whether the tree contains fossil taxa. The default is \code{FALSE}.}
 \item{k.samples}{a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.}
 \item{strat.intervals}{a table of extinct individuals with sampled descendants. See vignette for how the table must be formatted.}
+\item{extinct.tol}{a numeric value specifying the tolerance used to distinguish surviving from extinct tips. Tips whose ages are less than \code{extinct.tol} from the present are considered surviving. The default is \code{.Machine$double.eps^.50}.}
 \item{sann}{a logical indicating whether a two-step optimization
   procedure is to be used. The first includes a simulate annealing
   approach, with the second involving a refinement using
@@ -114,27 +115,32 @@ root options.
 elements:
 \item{$loglik}{the maximum negative log-likelihood.}
 \item{$AIC}{Akaike information criterion.}
-\item{$AICc}{Akaike information criterion corrected for sample-size.}
+\item{$AICc}{Akaike information criterion corrected for sample size.}
 \item{$solution}{a matrix containing the maximum likelihood estimates of the model
 parameters.}
 \item{$index.par}{an index matrix of the parameters being estimated.}
-\item{$f}{user-supplied sampling frequencies.}
-\item{$hidden.states}{a logical indicating whether hidden states were included in the
-model.}
-\item{$condition.on.surivival}{a logical indicating whether the
-  likelihood was conditioned on the survival of two lineages and the speciation event
-subtending them.}
-\item{$root.type}{indicates the user-specified root prior assumption.}
-\item{$root.p}{indicates whether the user-specified fixed root probabilities.}
-\item{$phy}{user-supplied tree}
+\item{$f}{user-supplied sampling frequency.}
+\item{$hidden.states}{the number of hidden states included in the model.}
+\item{$condition.on.survival}{a logical indicating whether the likelihood was
+conditioned on the survival of two lineages and the speciation event subtending them.}
+\item{$root.type}{the user-specified root prior assumption.}
+\item{$root.p}{the user-specified fixed root probabilities, if provided.}
+\item{$phy}{the user-supplied phylogenetic tree.}
 \item{$max.tol}{relative optimization tolerance.}
-\item{$starting.vals}{The starting values for the optimization.}
-\item{$upper.bounds}{the vector of upper limits to the optimization search.}
-\item{$lower.bounds}{the vector of lower limits to the optimization
-  search.}
-\item{$ode.eps}{The ode.eps value used for the estimation.}
-\item{$turnover}{The turnover vector used.}
-\item{$eps}{The eps vector used.}
+\item{$starting.vals}{the starting values used for optimization.}
+\item{$upper.bounds}{the vector of upper limits for the optimization search.}
+\item{$lower.bounds}{the vector of lower limits for the optimization search.}
+\item{$ode.eps}{the \code{ode.eps} value used for estimation.}
+\item{$turnover}{the turnover vector used.}
+\item{$eps}{the extinction fraction vector used.}
+\item{$includes.fossils}{a logical indicating whether fossil taxa were included in
+the analysis.}
+\item{$k.samples}{the user-supplied sampled ancestor information, if provided.}
+\item{$strat.intervals}{the user-supplied stratigraphic interval information, if
+provided.}
+\item{$extinct.tol}{the tolerance used to distinguish surviving from extinct tips.}
+\item{psi.type}{lists whether m+k, m_only, or m_int psi was estimated.}
+\item{sann.count}{the number of simulated annealing iterations tried.}
 }
 \references{
 Beaulieu, J.M, and B.C. O'Meara. 2016. Detecting hidden diversification shifts in models

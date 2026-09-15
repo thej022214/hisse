@@ -6,7 +6,7 @@
 ######################################################################################################################################
 ######################################################################################################################################
 
-MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
+MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4), hidden.states=FALSE, trans.rate=NULL, condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=FALSE, k.samples=NULL, extinct.tol=.Machine$double.eps^.50, sann=TRUE, sann.its=1000, bounded.search=TRUE, max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1){
     
     ## Temporary fix for the current BUG:
     if( !is.null(phy$node.label) ) phy$node.label <- NULL
@@ -311,7 +311,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
         #These are all inputs for generating starting values:
         fossil.taxa <- which(dat.tab$branch.type == 1)
         fossil.ages <- dat.tab$TipwardAge[which(dat.tab$branch.type == 1)]
@@ -320,7 +320,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         gen <- FindGenerations(phy)
         data.new <- data.frame(data[,2], data[,3], row.names=data[,1])
         data.new <- data.new[phy$tip.label,]
-        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils)
+        dat.tab <- OrganizeData(data=data.new, phy=phy, f=f, hidden.states=hidden.states, includes.fossils=includes.fossils, extinct.tol=extinct.tol)
         fossil.taxa <- NULL
         fix.type <- NULL
         psi.type <- "none"
@@ -454,7 +454,7 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
     
     cat("Finished. Summarizing results...", "\n")
     
-    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
+    obj = list(loglik = loglik, AIC = -2*loglik+2*np, AICc = -2*loglik+(2*np*(Ntip(phy)/(Ntip(phy)-np-1))), solution=solution, index.par=pars, f=f, hidden.states=hidden.states, condition.on.survival=condition.on.survival, root.type=root.type, root.p=root.p, phy=phy, data=data, trans.matrix=trans.rate, max.tol=max.tol, starting.vals=ip, upper.bounds=upper, lower.bounds=lower, ode.eps=ode.eps, includes.fossils=includes.fossils, extinct.tol=extinct.tol, fix.type=fix.type, psi.type=psi.type, sann.counts=sann.counts)
     class(obj) <- append(class(obj), "muhisse.fit")
     return(obj)
 }
@@ -489,7 +489,7 @@ DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.t
 ######################################################################################################################################
 ######################################################################################################################################
 
-OrganizeData <- function(data, phy, f, hidden.states, includes.fossils=FALSE){
+OrganizeData <- function(data, phy, f, hidden.states, includes.fossils=FALSE, extinct.tol=.Machine$double.eps^.50){
     ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
     DesNode = NULL
     
@@ -579,7 +579,7 @@ OrganizeData <- function(data, phy, f, hidden.states, includes.fossils=FALSE){
         branch.type <- rep(0, dim(table.info)[1])
         for(row.index in 1:dim(table.info)[1]){
             if(table.info[row.index,5]<=nb.tip){
-                if(table.info[row.index,2] > .Machine$double.eps^.50){
+                if(table.info[row.index,2] > extinct.tol){
                     if(includes.fossils == TRUE){
                         branch.type[row.index] <- 1
                     }

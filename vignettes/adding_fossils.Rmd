@@ -85,6 +85,28 @@ margin.test <- MarginReconMiSSE(phy=fbd.tree$phy, f=1, pars=one.rate$solution,
           aic=one.rate$AIC)
 ```
 
+
+## A cautionary tale about empirical trees and what is considered 'surviving'
+
+Trees containing fossil taxa are necessarily non-ultrametric. However, numerical differences in branch lengths can sometimes cause surviving tips to terminate slightly before the present, potentially resulting in their incorrect classification as extinct. We now provide a function called `CheckFossilTree()`, which allows users to check how tips will be classified by `hisse` and determine whether the default `extinct.tol` should be adjusted before fitting a fossil model. The extinct.tol argument is now also included in the function calls to `MiSSE()`, `hisse()`, and `MuHiSSE()`. 
+
+As an example, here is Zamiaceae, pruned from a much larger empirical tree of cycads from Coiro et al. (2023) that includes many fossil tips. Within this subtree, there should be 11 extinct tips and 111 surviving tips. However, if we were to run `MiSSE()` using the default tolerance of `extinct.tol=.Machine$double.eps^.50`, we get the following:
+
+```{r, eval=TRUE}
+tree <- read.tree("zam.tre")
+CheckFossilTree(tree, return.list=FALSE)
+```
+
+Yikes -- only 2 taxa are considered surviving here. If this check was never used and we ran `MiSSE()` we would probably notice that something is off because the estimate of $\psi$ hits the upper bound of 1. However, since we did we can triage before fitting the model. Setting `return.list=TRUE` returns the estimated ages of the tips classified as surviving and extinct, which can help determine whether the default tolerance is too strict. In this case, many taxa known to be surviving have very small positive tip ages due to numerical differences in branch lengths. Here, `extinct.tol=.Machine$double.eps^.25` is a more appropriate tolerance:
+```{r, eval=TRUE}
+tree <- read.tree("zam.tre")
+CheckFossilTree(tree, extinct.tol=.Machine$double.eps^.25, return.list=FALSE)
+```
+
+This returns the expected numbers of 111 surviving and 11 extinct tips. **Note** -- if the tolerance is changed when calling `MiSSE()`, `hisse()`, or `MuHiSSE()`, the tolerance will also have to be adjusted reconstructing the states on the tree (e.g., `MarginReconMiSSE()`).
+
+
+
 ## Using HiSSE and MuHiSSE
 
 The general structure for running `hisse()` and `MuHiSSE()` is identical to running `MiSSE()`. Below are examples that assume that the tree contains extinct taxa and a properly formatted k.samples table (assuming there are edge samples).
@@ -353,6 +375,8 @@ Beaulieu, J.M., and B.C. O'Meara. (2023). Fossils do not substantially improve, 
 
 Caetano, D.S., B.C. O'Meara, and J.M. Beaulieu. (2018). Hidden state models improve state-dependent diversification approaches, including biogeographic models. Evolution, 72:2308-2324.
 
+Coiro, M., R. Allio, N. Mazet, L.J. Seyfullah, and F.L. Condamine. (2023). Reconciling fossils with phylogenies reveals the origin and macroevolutionary processes explaining the global cycad biodiversity. New Phytology, 240:1616-1635.
+
 Stadler, T. (2010). Sampling-through-time in birth-death trees. Journal of Theoretical Biology, 267:396-404.
 
-Stadler T., Gavryushkina A., Warnock R.C.M., Drummond A.J., Heath T.A. 2018. The fossilized birth-death model for analysis of stratigraphic range data under different speciation modes. Journal of Theoretical Biology 447:41-55.
+Stadler T., A. Gavryushkina, R.C.M. Warnock, A.J. Drummond, and T.A. Heath. (2018). The fossilized birth-death model for analysis of stratigraphic range data under different speciation modes. Journal of Theoretical Biology 447:41-55.

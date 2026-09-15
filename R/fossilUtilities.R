@@ -550,3 +550,23 @@ GetIntervalToK <- function(strat.intervals, intervening.intervals=NULL){
 }
 
 
+CheckFossilTree <- function(phy, extinct.tol=.Machine$double.eps^.50, return.list=FALSE, verbose=TRUE){
+	# distance from root to every node -- new function in ape I think
+	depths <- node.depth.edgelength(phy)
+	tree.height <- max(depths[1:Ntip(phy)])
+	tip.age <- tree.height - depths[1:Ntip(phy)]
+	names(tip.age) <- phy$tip.label
+	extant <- abs(tip.age) <= extinct.tol
+	#tip.age <- sort(tip.age)
+	if(verbose == TRUE){
+		cat("Extant:", sum(extant), "\n")
+		cat("Fossil:", sum(!extant), "\n")
+	}
+	if(return.list == TRUE){
+		tip.type <- NULL
+		tip.type$surviving.tip <- tip.age[extant]
+		tip.type$extinct.tip <- tip.age[!extant]
+		return(tip.type)
+		
+	}
+}
