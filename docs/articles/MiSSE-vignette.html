@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.14</span>
       </span>
     </div>
 
@@ -49,7 +49,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/adding_fossils.html">Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE</a>
+      <a href="../articles/adding_fossils.html">Incorporating Fossils</a>
     </li>
     <li>
       <a href="../articles/Clade-specific-sampling.html">The Problem with Clade-specific Sampling Fractions</a>
@@ -146,13 +146,6 @@ except there is no need to set up a transition model For the following
 example, we will use the cetacean phylogeny (e.g., whales and relatives)
 of Steeman et al. (2009).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">hisse</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Loading required package: ape</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: deSolve</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: GenSA</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: subplex</span></span></code></pre>
-<pre><code><span><span class="co">## Loading required package: nloptr</span></span></code></pre>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">phy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ape/man/read.tree.html" class="external-link">read.tree</a></span><span class="op">(</span><span class="st">"whales_Steemanetal2009.tre"</span><span class="op">)</span></span></code></pre></div>
 <p>As with <code>hisse</code>, rather than optimizing
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>i</mi></msub><annotation encoding="application/x-tex">\lambda_i</annotation></semantics></math>
@@ -173,13 +166,13 @@ pattern (see discussion of this issue in Beaulieu and O’Meara 2016). The
 number of free parameters in the model for both net turnover and
 extinction fraction are specified as index vectors provided to the
 function call. First, let us fit a single rate model:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">one.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span></code></pre></div>
 <p>Pretty simple. Now to fit a model that contains two rate classes, we
 will simply expand out the turnover vector:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">two.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span></code></pre></div>
@@ -188,7 +181,7 @@ diversification (denoted by A-Z), and in this example since we fit two
 rate classes, we have two hidden states, A and B, impacting turnover
 rates. Here is the rest of the model set applied to the whale data
 set:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#rate classes A:C</span></span>
 <span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span></span>
@@ -204,7 +197,7 @@ set:</p>
 <p>We can also let
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mi>i</mi></msub><annotation encoding="application/x-tex">\epsilon_i</annotation></semantics></math>
 vary across the tree:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">two.rate.weps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span><span class="op">)</span></span>
@@ -219,7 +212,7 @@ rate classes return nearly identical estimates (not shown).</p>
 <p>I have already fit these models. Figure 1 shows the improvement in
 AIC as we increase the complexity of the model.</p>
 <div class="figure">
-<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="The fit of an incremental increase in the number of rate classes estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009). There is a clear reduction in AIC from one to three rate classes, which levels off at four rate classes and five rate classes returns an AIC that is about 1 unit higher than either the three and four rate class." width="700"><p class="caption">
+<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="The fit of an incremental increase in the number of rate classes estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009). There is a clear reduction in AIC from one to three rate classes, which levels off at four rate classes and five rate classes returns an AIC that is about 1 unit higher than either the three and four rate class." width="700"><p class="caption">
 The fit of an incremental increase in the number of rate classes
 estimated under a MiSSE analysis of the cetacean phylogeny of Steeman et
 al. (2009). There is a clear reduction in AIC from one to three rate
@@ -245,13 +238,13 @@ our two rate model for cetaceans. But, again, for simplicity, I have a
 file that contains the reconstructions and we can check that everything
 has loaded correctly and is of the proper <code>misse.states</code>
 class:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># two.rate.recon &lt;- MarginReconMiSSE(phy=phy, f=1,  hidden.states=2, </span></span>
 <span>                <span class="co">#pars=two.rate$solution, n.cores=3, AIC=two.rate$AIC)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"misse.vignette.Rsave"</span><span class="op">)</span> <span class="co"># Line above shows the command to create this result.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">two.rate.recon</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "misse.states"</span></span></code></pre>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">two.rate.recon</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Phylogenetic tree with 87 tips and 86 internal nodes.</span></span>
@@ -267,11 +260,11 @@ model reconstruction. I will simply supply the reconstruction object if
 <code>misse.states</code> class to the plotting function,
 <code><a href="../reference/plotMiSSE.html">plot.misse.states()</a></code>, and plot net diversification (see
 Figure 2).</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotMiSSE.html">plot.misse.states</a></span><span class="op">(</span><span class="va">two.rate.recon</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">TRUE</span>, type<span class="op">=</span><span class="st">"phylogram"</span>,</span>
 <span>                  fsize<span class="op">=</span><span class="fl">.25</span>, legend<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
-<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="A two-rate class MiSSE analysis and reconstruction of the cetacean phylogeny of Steeman et al. (2009) shows a clear increase in the net diversification rate within the Delphinidae (dolphins) relative to all other cetaceans; there also seems to be a slightly elevated rates in the sister group of Delphinidae, the Monodontidae+Phocenidae. Overall, this particular MiSSE model seems to correctly identify the source of 'trait-independent' diversification that can plague BiSSE analyses of simulated data sets on the cetacean tree (see Rabosky and Goldberg, 2015)." width="700"><p class="caption">
+<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="A two-rate class MiSSE analysis and reconstruction of the cetacean phylogeny of Steeman et al. (2009) shows a clear increase in the net diversification rate within the Delphinidae (dolphins) relative to all other cetaceans; there also seems to be a slightly elevated rates in the sister group of Delphinidae, the Monodontidae+Phocenidae. Overall, this particular MiSSE model seems to correctly identify the source of 'trait-independent' diversification that can plague BiSSE analyses of simulated data sets on the cetacean tree (see Rabosky and Goldberg, 2015)." width="700"><p class="caption">
 A two-rate class MiSSE analysis and reconstruction of the cetacean
 phylogeny of Steeman et al. (2009) shows a clear increase in the net
 diversification rate within the Delphinidae (dolphins) relative to all
@@ -297,7 +290,7 @@ other <code>hisse</code> functions, we allow for plots to be
 model-averaging of the rates at nodes and tips. To do this, we simply
 supply all reconstructions you want to average as elements in a list.
 There are many ways to generate a list, but here is one way:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">misse.results.list</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">one.rate.recon</span></span>
 <span><span class="va">misse.results.list</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">=</span> <span class="va">two.rate.recon</span></span>
@@ -307,11 +300,11 @@ There are many ways to generate a list, but here is one way:</p>
 <p>And, as before, we simply supply this list to the plotting function,
 <code><a href="../reference/plotMiSSE.html">plot.misse.states()</a></code>, and plot net diversification (see
 Figure 3).</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotMiSSE.html">plot.misse.states</a></span><span class="op">(</span><span class="va">misse.results.list</span>, rate.param<span class="op">=</span><span class="st">"net.div"</span>, show.tip.label<span class="op">=</span><span class="cn">TRUE</span>, type<span class="op">=</span><span class="st">"phylogram"</span>,</span>
 <span>                  fsize<span class="op">=</span><span class="fl">.25</span>, legend<span class="op">=</span><span class="st">"none"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
-<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="A model-averaged MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009) shows an apparent slow down in the net diversification through time." width="700"><p class="caption">
+<img src="MiSSE-vignette_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="A model-averaged MiSSE analysis of the cetacean phylogeny of Steeman et al. (2009) shows an apparent slow down in the net diversification through time." width="700"><p class="caption">
 A model-averaged MiSSE analysis of the cetacean phylogeny of Steeman et
 al. (2009) shows an apparent slow down in the net diversification
 through time.
@@ -337,7 +330,7 @@ made this straightforward to do in the <code><a href="../reference/MiSSE.html">M
 call. The first step is to setup a Yule-based <code><a href="../reference/MiSSE.html">MiSSE()</a></code> run
 by supplying a vector of zeros for <code>eps</code> that is of equal
 length to the number of turnover rate classes:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span></span></code></pre></div>
 <p>In the function call, there is an option called
@@ -346,7 +339,7 @@ which indicates that extinction fraction is to be estimated. When a
 value is supplied to <code>fixed.eps</code> this will be the value used
 throughout the parameter search. Here we assume there are two rate
 classes and a fixed extinction fraction of 0.90:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">two.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span>, fixed.eps<span class="op">=</span><span class="fl">0.9</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -383,7 +376,7 @@ whether or not the parameters make sense. For example, in cetacean tree
 used above, I attemped to fit a model with three, four, and five hidden
 states, A, B, and C, but the reconstructions indicated a rather
 complicated, and highly uncertain, diversification history:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">two.rate</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Fit </span></span>
@@ -394,7 +387,7 @@ complicated, and highly uncertain, diversification history:</p>
 <span><span class="co">## </span></span>
 <span><span class="co">##   turnover0A        eps0A   turnover0B        eps0B           q0 </span></span>
 <span><span class="co">## 7.489769e-02 2.061154e-09 2.052022e-01 2.061154e-09 3.743782e-03</span></span></code></pre>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">three.rate</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Fit </span></span>
@@ -418,11 +411,11 @@ The same is true for the four and five rate class models. What does this
 mean? Well, we can convert this into the expected number of transitions
 by multiplying the rate by the sum of the branch lengths in the cetacean
 phylogeny:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expected.transitions.two</span> <span class="op">&lt;-</span> <span class="fl">0.004</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">two.rate</span><span class="op">$</span><span class="va">phy</span><span class="op">$</span><span class="va">edge.length</span><span class="op">)</span></span>
 <span><span class="va">expected.transitions.two</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 3.281109</span></span></code></pre>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">expected.transitions.three</span> <span class="op">&lt;-</span> <span class="fl">0.131</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">three.rate</span><span class="op">$</span><span class="va">phy</span><span class="op">$</span><span class="va">edge.length</span><span class="op">)</span></span>
 <span><span class="va">expected.transitions.three</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 107.4563</span></span></code></pre>
@@ -431,12 +424,12 @@ three-rate class model – e.g., 3 vs. 107 number of shifts among the
 different classes? However, examining the support region around the
 parameters can give an indication as to the overall reliability of these
 estimates:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="st">"misse.support.Rsave"</span><span class="op">)</span></span>
 <span><span class="va">two.rate.support</span><span class="op">$</span><span class="va">ci</span><span class="op">[</span>,<span class="st">"q0"</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">##           0%          25%          50%          75%         100% </span></span>
 <span><span class="co">## 0.0009535839 0.0036835840 0.0065180114 0.0106515654 0.0206332391</span></span></code></pre>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">three.rate.support</span><span class="op">$</span><span class="va">ci</span><span class="op">[</span>,<span class="st">"q0"</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">##         0%        25%        50%        75%       100% </span></span>
 <span><span class="co">## 0.06839226 0.11308939 0.13144716 0.15736921 0.22772718</span></span></code></pre>
@@ -498,7 +491,7 @@ linear regression between the number of free parameters and log(minutes
 to run). These are just estimates based on the runs so far, but it’s a
 stochastic search and can take more or less time. Here is a very
 straightforward <code><a href="../reference/MiSSEGreedy.html">MiSSEGreedy()</a></code> run:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ape/man/rtree.html" class="external-link">rcoal</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span>
 <span><span class="va">potential.combos</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generateMiSSEGreedyCombinations.html">generateMiSSEGreedyCombinations</a></span><span class="op">(</span>max.param<span class="op">=</span><span class="fl">4</span>, vary.both<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
@@ -517,7 +510,7 @@ straightforward <code><a href="../reference/MiSSEGreedy.html">MiSSEGreedy()</a><
 <p>The output in <code>model.set</code> is a list of models evaluated.
 From there you can just loop over each model and do the rate class
 reconstruction:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model.recons</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">model_index</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">nturnover</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">model.set</span><span class="op">[[</span><span class="va">model_index</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">turnover</span><span class="op">)</span><span class="op">)</span></span>
@@ -531,7 +524,7 @@ reconstruction:</p>
 <p>As with any other function contained within <code>hisse</code>, the
 output from the character reconstruction can be used to obtain model
 averaged rates, such the estimated rates for each tip in the tree:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tip.rates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelAveRates.html">GetModelAveRates</a></span><span class="op">(</span><span class="va">model.recons</span>, type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tips"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>We recommend also taking a look at the function
 <code>generateMiSSEFGreedyCombinations()</code>, which we used in the
@@ -619,7 +612,7 @@ oceans. Syst. Biol. 58:573-585.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer>

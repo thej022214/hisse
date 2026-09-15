@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE • hisse</title>
+<title>Incorporating Fossils • hisse</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Incorporating Fossils">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hisse</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.13</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.14</span>
       </span>
     </div>
 
@@ -49,7 +49,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/adding_fossils.html">Incorporating Fossils in HiSSE, MuHiSSE, and MiSSE</a>
+      <a href="../articles/adding_fossils.html">Incorporating Fossils</a>
     </li>
     <li>
       <a href="../articles/Clade-specific-sampling.html">The Problem with Clade-specific Sampling Fractions</a>
@@ -88,8 +88,7 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Incorporating Fossils in HiSSE, MuHiSSE, and
-MiSSE</h1>
+      <h1 data-toc-skip>Incorporating Fossils</h1>
                         <h4 data-toc-skip class="author">Jeremy M.
 Beaulieu</h4>
             
@@ -101,39 +100,40 @@ Beaulieu</h4>
 
     
     
-<p>As of version 2.1.1, we have added the ability for HiSSE, MuHiSSE,
-and MiSSE to handle fossils as well as stratigraphic ranges. Our
-fossilized birth-death model (FBD) closely follows that of Stadler
-(2010), and includes a new parameter,
+<p>As of version 2.1.14, we have added the ability for HiSSE, MuHiSSE,
+and MiSSE to handle fossils as well as stratigraphic ranges. The
+fossilized birth-death model (FBD) follows that of Stadler (2010), and
+includes a new parameter,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ψ</mi><annotation encoding="application/x-tex">\psi</annotation></semantics></math>,
-that estimates the rate of fossils preservation in a birth-death model.
-We have extended Stadler’s basic model to the SSE equations of Maddison
-et al. (2007), the details of which will be included in a forthcoming
-paper (Beaulieu and O’Meara, In prep). Below I will demonstrate how to
-set up HiSSE, MuHiSSE, and MiSSE models when the tree and data contain
-fossils. I will mainly focus on MiSSE, as it is the most straightforward
-and because it can be used to demonstrate that both the HiSSE and
-MuHiSSE likelihoods are correct.</p>
-<p>Before getting started, be sure to load the <code>hisse</code> and
-<code>TreeSim</code> packages.</p>
-<p>Also, there are two important terms that need to be understood. Under
-the FBD there are actually two types of fossils that are sampled. The
-first are referred to as <em>m</em> fossils, which represent extinct
-tips – that is, they represent distinct branches that went extinct
-before the present. The second are referred <em>k</em> fossils, which
-represent samples of lineages that eventually made it to the present. In
-most cases, both fossil types must be present for the FBD to work well,
-though having <em>k</em> fossils is not absolutely critical for
-<em>hisse</em> whereas <em>m</em> fossils are.</p>
+that estimates the rate of fossils preservation in a birth-death model
+(see Beaulieu and O’Meara 2023). We have also extended the canonical FBD
+model to deal with fossil sets that lack sampled ancestors (fossilized
+birth-death of terminal fossils only, FBDT), the details of which will
+be included in a forthcoming paper (Beaulieu and O’Meara, Submitted).
+Below I will demonstrate how to set up a MiSSE model when the tree and
+data contain fossils. I will also demonstrate a simple test to show that
+both the HiSSE and MuHiSSE likelihoods are correct.</p>
+<p>Before getting started, there are two important terms that need to be
+clearly understood. Under the canonical FBD there are actually two types
+of fossils that are sampled. The first are referred to as <em>m</em>
+fossils, which represent extinct tips – that is, they represent distinct
+branches that went extinct before the present. The second are referred
+<em>k</em> fossils, which represent samples of lineages that eventually
+made it to the present. In most real world cases, both fossil types must
+be present for the FBD to work well, though having <em>k</em> fossils is
+not absolutely critical for <em>hisse</em> whereas <em>m</em> fossils
+are. In cases where <em>k</em> fossils are absent <code>hisse</code>
+automatically defaults to the FBDT model.</p>
 <div class="section level2">
 <h2 id="simulating-a-practice-data-set-under-misse">Simulating a practice data set under MiSSE<a class="anchor" aria-label="anchor" href="#simulating-a-practice-data-set-under-misse"></a>
 </h2>
-<p>I will first simulate a tree with fossil samples under a simple
-birth-death model. This will be used as input into MiSSE, which sets up
-and executes a completely trait-free version of a HiSSE model (i.e.,
-hidden states only). The first step is to simulate a tree that contains
-the complete history of the trees – that is, includes both taxa that
-survived to the present and those that did not:</p>
+<p>Be sure to load the <code>hisse</code> and <code>TreeSim</code>
+packages. I will first simulate a tree with fossil samples under a
+simple fossilized birth-death model. This will be used as input into
+MiSSE, which sets up and executes a completely trait-free version of a
+HiSSE model (i.e., hidden states only). The first step is to simulate a
+tree that contains the complete history of the trees – that is, includes
+both taxa that survived to the present and those that did not:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">phy</span> <span class="op">&lt;-</span> <span class="fu">TreeSim</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/TreeSim/man/sim.bd.taxa.html" class="external-link">sim.bd.taxa</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">100</span>, numbsim <span class="op">=</span> <span class="fl">1</span>, lambda <span class="op">=</span> <span class="fl">0.3</span>, mu <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
@@ -172,12 +172,14 @@ taxon2=“sp12”). Internally, MiSSE will place these fossils for you. For
 <code><a href="../reference/hisse.html">hisse()</a></code> this table requires the state (if they are
 present):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">k.samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>taxon1<span class="op">=</span><span class="st">"sp12"</span>, taxon2<span class="op">=</span><span class="st">"sp12"</span>, timefrompresent<span class="op">=</span><span class="fl">3.164384</span>, </span>
-<span>          state<span class="op">=</span><span class="fl">1</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">k.samples.hisse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>taxon1<span class="op">=</span><span class="st">"sp12"</span>, taxon2<span class="op">=</span><span class="st">"sp12"</span>, timefrompresent<span class="op">=</span><span class="fl">3.164384</span>, </span>
+<span>          state<span class="op">=</span><span class="fl">1</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">k.samples.hisse</span><span class="op">)</span></span></code></pre></div>
 <p>and <code><a href="../reference/MuHiSSE.html">MuHiSSE()</a></code>,</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">k.samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>taxon1<span class="op">=</span><span class="st">"sp12"</span>, taxon2<span class="op">=</span><span class="st">"sp12"</span>, timefrompresent<span class="op">=</span><span class="fl">3.164384</span>,</span>
-<span>          state1<span class="op">=</span><span class="fl">0</span>, state2<span class="op">=</span><span class="fl">1</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">k.samples.muhisse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>taxon1<span class="op">=</span><span class="st">"sp12"</span>, taxon2<span class="op">=</span><span class="st">"sp12"</span>, timefrompresent<span class="op">=</span><span class="fl">3.164384</span>,</span>
+<span>          state1<span class="op">=</span><span class="fl">0</span>, state2<span class="op">=</span><span class="fl">1</span>, stringsAsFactors<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">k.samples.muhisse</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="setting-up-a-misse-model">Setting up a MiSSE model<a class="anchor" aria-label="anchor" href="#setting-up-a-misse-model"></a>
@@ -194,15 +196,17 @@ present):</p>
 <code>includes.fossils=TRUE</code>, which indicates that the tree
 contains at least <em>m</em> fossils, and <code>k.samples=</code> that
 takes the table of edge samples. If no edge samples exist, this can be
-set to <code>NULL</code>,</p>
+set to <code>NULL</code> and <code>hisse</code> will automatically
+default to the FBDT model:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">one.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MiSSE.html">MiSSE</a></span><span class="op">(</span><span class="va">fbd.tree</span><span class="op">$</span><span class="va">phy</span>, f<span class="op">=</span><span class="fl">1</span>, turnover<span class="op">=</span><span class="va">turnover</span>, eps<span class="op">=</span><span class="va">eps</span>, </span>
 <span>          includes.fossils<span class="op">=</span><span class="cn">TRUE</span>, k.samples<span class="op">=</span><span class="cn">NULL</span>, sann<span class="op">=</span><span class="cn">TRUE</span>, sann.its<span class="op">=</span><span class="fl">1000</span><span class="op">)</span></span></code></pre></div>
-<p>and the estimate of
+<p>In such cases, the estimate of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ψ</mi><annotation encoding="application/x-tex">\psi</annotation></semantics></math>
-will reflect sampling of extinct tips <em>only</em>. This actually has a
-pronounced effect on the parameter estimates generally and is a general
-violation of the fossilized birth-death model of Stadler (2010).</p>
+will <em>only</em> reflect sampling of extinct tips. As we show in
+Beaulieu and O’Meara (2023), assuming both <em>m</em> and <em>k</em>
+fossils, but setting <code>k.samples=NULL</code> has a rather pronounced
+effect on the parameter estimates generally.</p>
 <p>When reconstructing rates and/or states on the tree, the
 <code><a href="../reference/marginReconMiSSE.html">MarginReconMiSSE()</a></code> also requires the same inputs:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -231,8 +235,8 @@ samples).</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trans.rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transMatMakerMuHiSSE.html">TransMatMakerMuHiSSE</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">pp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MuHiSSE.html">MuHiSSE</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">fbd.tree</span><span class="op">$</span><span class="va">phy</span>, <span class="va">data</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, turnover<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, </span>
-<span>            eps<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, trans.rate<span class="op">=</span><span class="va">trans.rate</span>, k.samples<span class="op">=</span><span class="va">k.samples</span>, </span>
-<span>            includes.fossils<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>            eps<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, trans.rate<span class="op">=</span><span class="va">trans.rate</span>, includes.fossils<span class="op">=</span><span class="cn">TRUE</span>,</span>
+<span>            k.samples<span class="op">=</span><span class="va">fbd.tree</span><span class="op">$</span><span class="va">k.samples</span><span class="op">)</span></span>
 <span><span class="va">margin.test</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/marginReconMuHiSSE.html">MarginReconMuHiSSE</a></span><span class="op">(</span>phy<span class="op">=</span><span class="va">fbd.tree</span><span class="op">$</span><span class="va">phy</span>, data<span class="op">=</span><span class="va">data</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, </span>
 <span>            pars<span class="op">=</span><span class="va">pp</span><span class="op">$</span><span class="va">solution</span>, hidden.states<span class="op">=</span><span class="fl">1</span>, includes.fossils<span class="op">=</span><span class="cn">TRUE</span>,</span>
 <span>            k.samples<span class="op">=</span><span class="va">fbd.tree</span><span class="op">$</span><span class="va">k.samples</span><span class="op">)</span></span></code></pre></div>
@@ -272,12 +276,12 @@ the rootward end stratigraphic range (denoted by
 by Stadler et al. 2018) and <code>timefrompresenttip</code> is the time
 at the tipward end of range (denoted by
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>y</mi><mi>i</mi></msub><annotation encoding="application/x-tex">y_{i}</annotation></semantics></math>).
-Finally, the column <code>type</code> contains either an R for true
-stratigraphic ranges (i.e., o_{i} - y_{i} &gt; 0) or an S for singleton
-fossils (i.e., o_{i} - y_{i} = 0). Note, as with the canoical FBD
-implementation above, if the branch from which a range was sampled is a
-tip branch, simply list the tip taxon twice (e.g., taxon1=“sp12”,
-taxon2=“sp12”).</p>
+Finally, the column <code>type</code> contains either an <em>R</em> for
+true stratigraphic ranges (i.e., o_{i} - y_{i} &gt; 0) or an <em>S</em>
+for singleton fossils (i.e., o_{i} - y_{i} = 0). Note, as with the
+canonical FBD implementation above, if the branch from which a range was
+sampled is a tip branch, simply list the tip taxon twice (e.g.,
+taxon1=“sp12”, taxon2=“sp12”).</p>
 <p>A run proceeds exactly as before, except instead we supply the
 stratigraphic range table to the “strat.interval” option in the function
 call:</p>
@@ -377,8 +381,8 @@ states 0 and 1, on a simulated dataset that contains fossils:</p>
 <span><span class="va">model.vec</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span> <span class="op">=</span> <span class="va">pars.bisse</span></span>
 <span><span class="va">phy</span><span class="op">$</span><span class="va">node.label</span> <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">ParametersToPassfHiSSE</span><span class="op">(</span><span class="va">model.vec</span>, hidden.states<span class="op">=</span><span class="va">hidden.states</span>, </span>
-<span>            nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, bad.likelihood<span class="op">=</span><span class="op">-</span><span class="fl">300</span>, </span>
-<span>            f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
+<span>            nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, psi.type<span class="op">=</span><span class="st">"m+k"</span>, </span>
+<span>            bad.likelihood<span class="op">=</span><span class="op">-</span><span class="fl">300</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">cache</span><span class="op">$</span><span class="va">psi</span> <span class="op">&lt;-</span> <span class="fl">0.01</span></span>
 <span><span class="va">hisse.full</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">DownPassHiSSE</span><span class="op">(</span><span class="va">dat.tab</span>, <span class="va">gen</span>, <span class="va">cache</span>, root.type<span class="op">=</span><span class="st">"madfitz"</span>, </span>
 <span>            condition.on.survival<span class="op">=</span><span class="cn">TRUE</span>, root.p<span class="op">=</span><span class="cn">NULL</span>, node<span class="op">=</span><span class="va">fix.type</span><span class="op">$</span><span class="va">node</span>, </span>
@@ -391,7 +395,7 @@ states 0 and 1, on a simulated dataset that contains fossils:</p>
 <span><span class="va">model.vec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">+</span><span class="fl">0.03</span>, <span class="fl">0.03</span><span class="op">/</span><span class="fl">0.1</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">51</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cache</span> <span class="op">=</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">ParametersToPassMiSSE</span><span class="op">(</span>model.vec<span class="op">=</span><span class="va">model.vec</span>, hidden.states<span class="op">=</span><span class="fl">1</span>, </span>
 <span>            fixed.eps<span class="op">=</span><span class="cn">NULL</span>, nb.tip<span class="op">=</span><span class="va">nb.tip</span>, nb.node<span class="op">=</span><span class="va">nb.node</span>, </span>
-<span>            bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">500</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span><span class="co">#</span></span>
+<span>            psi.type<span class="op">=</span><span class="st">"m+k"</span>, bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">500</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span><span class="co">#</span></span>
 <span><span class="va">cache</span><span class="op">$</span><span class="va">psi</span> <span class="op">&lt;-</span> <span class="fl">0.01</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">FindGenerations</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span></span>
 <span><span class="va">MiSSE.logL</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">DownPassMisse</span><span class="op">(</span>dat.tab<span class="op">=</span><span class="va">dat.tab</span>, cache<span class="op">=</span><span class="va">cache</span>, gen<span class="op">=</span><span class="va">gen</span>, </span>
@@ -405,9 +409,9 @@ of <em>just</em> character data:</p>
 <span>           fixed.nodes<span class="op">=</span><span class="cn">FALSE</span>, p<span class="op">=</span><span class="fl">0.01</span>, root.p<span class="op">=</span><span class="st">"maddfitz"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## You specified 'fixed.nodes=FALSE' but included a phy object with node labels. These node labels have been removed.</span></span></code></pre>
 <pre><code><span><span class="co">## Warning in corHMM(phy.k, data, rate.cat = 1, model = "ER", node.states =</span></span>
-<span><span class="co">## "none", : Branch lengths of 0 detected. Adding 1.49011611938477e-08</span></span></code></pre>
+<span><span class="co">## "none", : Branch lengths of 0 detected. Adding 1e-5 to these branches.</span></span></code></pre>
 <pre><code><span><span class="co">## State distribution in data:</span></span>
-<span><span class="co">## States:  0   1   </span></span>
+<span><span class="co">## States:  1   2   </span></span>
 <span><span class="co">## Counts:  2   17  </span></span>
 <span><span class="co">## Calculating likelihood from a set of fixed parameters</span></span></code></pre>
 <p>We can compare the likelihoods obtained from <code><a href="../reference/hisse.html">hisse()</a></code>
@@ -476,8 +480,8 @@ using <code><a href="../reference/MuHiSSE.html">MuHiSSE()</a></code>:</p>
 <span><span class="va">model.vec</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">384</span><span class="op">)</span></span>
 <span><span class="va">model.vec</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">]</span> <span class="op">=</span> <span class="va">pars.muhisse</span></span>
 <span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">ParametersToPassMuHiSSE</span><span class="op">(</span>model.vec<span class="op">=</span><span class="va">model.vec</span>, hidden.states<span class="op">=</span><span class="cn">FALSE</span>, </span>
-<span>            nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">500</span><span class="op">)</span>, </span>
-<span>            f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
+<span>            psi.type<span class="op">=</span><span class="st">"m+k"</span>, nb.tip<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Ntip</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, nb.node<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/ape/man/summary.phylo.html" class="external-link">Nnode</a></span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span>, </span>
+<span>            bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">500</span><span class="op">)</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">cache</span><span class="op">$</span><span class="va">psi</span> <span class="op">&lt;-</span> <span class="fl">0.01</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">FindGenerations</span><span class="op">(</span><span class="va">phy.k</span><span class="op">)</span></span>
 <span><span class="va">dat.tab</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">OrganizeData</span><span class="op">(</span><span class="va">data.new</span>, <span class="va">phy.k</span>, f<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span>, </span>
@@ -491,11 +495,11 @@ using <code><a href="../reference/MuHiSSE.html">MuHiSSE()</a></code>:</p>
 <span></span>
 <span><span class="co">## Trait independent model should be loglik_tree + loglik_character ##</span></span>
 <span><span class="co">#Part 1: MiSSE loglik:</span></span>
-<span><span class="va">dat.tab</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">OrganizeDataMiSSE</span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy.k</span>, f<span class="op">=</span><span class="fl">1</span>, hidden.states<span class="op">=</span><span class="fl">1</span>,   includes.fossils<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">dat.tab</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">OrganizeDataMiSSE</span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy.k</span>, f<span class="op">=</span><span class="fl">1</span>, hidden.states<span class="op">=</span><span class="fl">1</span>, includes.fossils<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">model.vec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span><span class="op">+</span><span class="fl">0.03</span>, <span class="fl">0.03</span><span class="op">/</span><span class="fl">0.1</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">51</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cache</span> <span class="op">=</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">ParametersToPassMiSSE</span><span class="op">(</span>model.vec<span class="op">=</span><span class="va">model.vec</span>, hidden.states<span class="op">=</span><span class="fl">1</span>, </span>
 <span>            fixed.eps<span class="op">=</span><span class="cn">NULL</span>, nb.tip<span class="op">=</span><span class="va">nb.tip</span>, nb.node<span class="op">=</span><span class="va">nb.node</span>, </span>
-<span>            bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">500</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span><span class="co">#</span></span>
+<span>            psi.type<span class="op">=</span><span class="st">"m+k"</span>, bad.likelihood<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">500</span><span class="op">)</span>, ode.eps<span class="op">=</span><span class="fl">0</span><span class="op">)</span><span class="co">#</span></span>
 <span><span class="va">cache</span><span class="op">$</span><span class="va">psi</span> <span class="op">&lt;-</span> <span class="fl">0.01</span></span>
 <span><span class="va">edge_details</span> <span class="op">&lt;-</span> <span class="fu">hisse</span><span class="fu">:::</span><span class="fu">GetEdgeDetails</span><span class="op">(</span>phy<span class="op">=</span><span class="va">phy.k</span>, </span>
 <span>            intervening.intervals<span class="op">=</span><span class="va">strat.cache</span><span class="op">$</span><span class="va">intervening.intervals</span><span class="op">)</span></span>
@@ -506,16 +510,16 @@ using <code><a href="../reference/MuHiSSE.html">MuHiSSE()</a></code>:</p>
 <span>            fossil.taxa<span class="op">=</span><span class="va">fossil.taxa</span>,node<span class="op">=</span><span class="va">fix.type</span><span class="op">$</span><span class="va">node</span>, fix.type<span class="op">=</span><span class="va">fix.type</span><span class="op">$</span><span class="va">type</span><span class="op">)</span></span>
 <span>    </span>
 <span><span class="co">#Part 2: corHMM loglik:</span></span>
+<span><span class="va">phy.k</span><span class="op">$</span><span class="va">node.label</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
 <span><span class="va">char.logL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/corHMM/man/corHMM.html" class="external-link">corHMM</a></span><span class="op">(</span><span class="va">phy.k</span>, <span class="va">data</span>, rate.cat<span class="op">=</span><span class="fl">1</span>, model <span class="op">=</span> <span class="st">"ER"</span>, node.states <span class="op">=</span> <span class="st">"none"</span>, </span>
 <span>            fixed.nodes<span class="op">=</span><span class="cn">FALSE</span>, p<span class="op">=</span><span class="fl">0.05</span>, root.p<span class="op">=</span><span class="st">"maddfitz"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## You specified 'fixed.nodes=FALSE' but included a phy object with node labels. These node labels have been removed.</span></span></code></pre>
 <pre><code><span><span class="co">## Warning in corHMM(phy.k, data, rate.cat = 1, model = "ER", node.states =</span></span>
-<span><span class="co">## "none", : Branch lengths of 0 detected. Adding 1.49011611938477e-08</span></span></code></pre>
+<span><span class="co">## "none", : Branch lengths of 0 detected. Adding 1e-5 to these branches.</span></span></code></pre>
 <pre><code><span><span class="co">## State distribution in data:</span></span>
-<span><span class="co">## States:  0|0 1|0 0|1 1|1 </span></span>
-<span><span class="co">## Counts:  12  6   21  3   </span></span>
+<span><span class="co">## States:  1   2   3   4   </span></span>
+<span><span class="co">## Counts:  12  21  6   3   </span></span>
 <span><span class="co">## Calculating likelihood from a set of fixed parameters</span></span></code></pre>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tot.logL</span> <span class="op">&lt;-</span> <span class="va">char.logL</span><span class="op">$</span><span class="va">loglik</span> <span class="op">+</span> <span class="va">MiSSE.logL</span></span>
 <span>    </span>
 <span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">muhisse.full</span>,<span class="fl">3</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">tot.logL</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
@@ -525,6 +529,12 @@ using <code><a href="../reference/MuHiSSE.html">MuHiSSE()</a></code>:</p>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
+<p>Beaulieu, J.M., and B.C. O’Meara. (Submitted). A fossilized
+birth-death model for fossil records lacking sampled ancestors.
+Submitted.</p>
+<p>Beaulieu, J.M., and B.C. O’Meara. (2023). Fossils do not
+substantially improve, and may even hard, estimates of diversification
+rate heterogeneity. Systematic Biology, 72:50-61.</p>
 <p>Caetano, D.S., B.C. O’Meara, and J.M. Beaulieu. (2018). Hidden state
 models improve state-dependent diversification approaches, including
 biogeographic models. Evolution, 72:2308-2324.</p>
@@ -552,7 +562,7 @@ Theoretical Biology 447:41-55.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer>
