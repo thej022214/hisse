@@ -570,11 +570,12 @@ OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FA
     }else{
         branch.type <- rep(0, length(edge_details$type))
     }
-    
+	#Fossil tips are sampled in the past and should not be
+	#subject to sampling at the present:
     tmp.df <- cbind(edge_details[,1:5], 0, matrix(0, nrow(edge_details), ncol(compD)), matrix(0, nrow(edge_details), ncol(compE)), as.numeric(branch.type))
     colnames(tmp.df) <- c("RootwardAge", "TipwardAge", "BranchLength", "FocalNode", "DesNode", "comp", paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"), "branch.type")
     dat.tab <- as.data.table(tmp.df)
-    setkey(dat.tab, DesNode)
+	setkey(dat.tab, DesNode)
     cols <- names(dat.tab)
     for (j in 1:(dim(compD)[2])){
         dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
@@ -582,6 +583,18 @@ OrganizeDataHiSSE <- function(data, phy, f, hidden.states, includes.intervals=FA
         dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
         #set(dat.tab, 1:nb.tip, cols[38+j], compE[,j])
     }
+	if(includes.fossils){
+		fossil.rows <- which(
+			dat.tab$branch.type %in% c(1,2) &
+			dat.tab$DesNode <= nb.tip
+		)
+		if(length(fossil.rows) > 0){
+			fossil.nodes <- dat.tab$DesNode[fossil.rows]
+			for(j in 1:ncol(compD)){
+				set(dat.tab, fossil.rows,paste("compD", j, sep="_"), states[fossil.nodes,j])
+			}
+		}
+	}
     return(dat.tab)
 }
 
@@ -821,7 +834,7 @@ FocalNodeProbHiSSE <- function(cache, pars, lambdas, dat.tab, generations){
         dat.tab[gens, "comp" := tmp.comp]
     }else{
         tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:8], z[9:10], z[2], z[1], z[11])))
-        v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),3:4] * tmp[seq(2,nrow(tmp),2),3:4], length(unique(CurrentGenData$FocalNode)), 2)
+		v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),3:4] * tmp[seq(2,nrow(tmp),2),3:4], length(unique(CurrentGenData$FocalNode)), 2)
         v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 2, byrow=TRUE)
         phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:2], length(unique(CurrentGenData$FocalNode)), 2)
         if(!is.null(cache$node)){
@@ -1013,7 +1026,7 @@ GetFossilInitialsHiSSE <- function(cache, pars, lambdas, dat.tab, fossil.taxa){
         setkey(dat.tab, DesNode)
         CurrentGenData <- dat.tab[fossils]
         tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbHiSSE(cache, pars, z[7:8], z[9:10], 0, z[2], 1)))
-        tmp.probs <- matrix(tmp[,3:4], length(fossil.taxa), 2) * cache$psi
+		tmp.probs <- matrix(tmp[,3:4], length(fossil.taxa), 2) * cache$psi
         phi.mat <- matrix(tmp[,1:2], length(fossil.taxa), 2)
         
         setkey(dat.tab, DesNode)
@@ -1112,7 +1125,7 @@ DownPassHiSSE <- function(dat.tab, gen, cache, condition.on.survival, root.type,
             }
         }
     }
-    
+    	
     if(!is.null(fossil.taxa)){
         if(all(fix.type == "event")){
             if(cache$hidden.states == TRUE){

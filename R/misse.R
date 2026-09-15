@@ -801,7 +801,7 @@ OrganizeDataMiSSE <- function(phy, f, hidden.states, includes.intervals=FALSE, i
     
     #This seems stupid but I cannot figure out how to get data.table to not make this column a factor. When a factor this is not right. For posterity, let it be known Jeremy would rather just retain the character instead of this mess:
     edge_details <- GetEdgeDetails(phy, includes.intervals=includes.intervals, intervening.intervals=intervening.intervals, extinct.tol=extinct.tol)
-    if(includes.fossils == TRUE){
+	if(includes.fossils == TRUE){
         branch.type <- edge_details$type
         branch.type[which(branch.type == "extant_tip")] <- 0
         branch.type[which(branch.type == "internal")] <- 0
@@ -826,6 +826,15 @@ OrganizeDataMiSSE <- function(phy, f, hidden.states, includes.intervals=FALSE, i
         #dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
         set(dat.tab, 1:nb.tip, cols[32+j], compE[,j])
     }
+	if(includes.fossils == TRUE){
+		k.rows <- which(dat.tab$branch.type == 2)
+		if(length(k.rows) > 0){
+			for(j in 1:hidden.states){
+				set(dat.tab, k.rows, cols[6+j], 1)
+			}
+		}
+	}
+
     return(dat.tab)
 }
 
@@ -916,7 +925,7 @@ FocalNodeProbMiSSE <- function(cache, pars, lambdas, dat.tab, generations){
     setkey(dat.tab, FocalNode)
     CurrentGenData <- dat.tab[gens]
     tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbMiSSE(cache, pars, z[7:32], z[33:58],  z[2], z[1], z[59])))
-    v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),27:52] * tmp[seq(2,nrow(tmp),2),27:52], length(unique(CurrentGenData$FocalNode)), 26)
+	v.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),27:52] * tmp[seq(2,nrow(tmp),2),27:52], length(unique(CurrentGenData$FocalNode)), 26)
     v.mat <- v.mat * matrix(lambdas, length(unique(CurrentGenData$FocalNode)), 26, byrow=TRUE)
     phi.mat <- matrix(tmp[seq(1,nrow(tmp)-1,2),1:26], length(unique(CurrentGenData$FocalNode)), 26)
     if(!is.null(cache$node)){
@@ -1025,8 +1034,8 @@ GetFossilInitialsMiSSE <- function(cache, pars, lambdas, dat.tab, fossil.taxa){
     setkey(dat.tab, DesNode)
     CurrentGenData <- dat.tab[fossils]
     tmp <- t(apply(CurrentGenData, 1, function(z) SingleChildProbMiSSE(cache, pars, z[7:32], z[33:58], 0, z[2], 1)))
-	tmp.probs <- matrix(tmp[,1:26], length(fossil.taxa), 26) * as.matrix(CurrentGenData[,7:32]) * cache$psi
-    phi.mat <- matrix(tmp[,1:26], length(fossil.taxa), 26)
+	tmp.probs <- matrix(tmp[,1:26], length(fossil.taxa), 26) * cache$psi
+	phi.mat <- matrix(tmp[,1:26], length(fossil.taxa), 26)
     setkey(dat.tab, DesNode)
     rows <- dat.tab[.(fossils), which=TRUE]
     cols <- names(dat.tab)

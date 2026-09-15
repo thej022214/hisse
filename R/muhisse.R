@@ -489,131 +489,176 @@ DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.t
 ######################################################################################################################################
 ######################################################################################################################################
 
-OrganizeData <- function(data, phy, f, hidden.states, includes.fossils=FALSE, extinct.tol=.Machine$double.eps^.50){
-    ### Ughy McUgherson. This is a must in order to pass CRAN checks: http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
-    DesNode = NULL
-    
-    nb.tip <- length(phy$tip.label)
-    nb.node <- phy$Nnode
-    
-    if(hidden.states == FALSE){
-        states = matrix(0,Ntip(phy),4)
-        x <- data[,1]
-        y <- data[,2]
-        for(i in 1:Ntip(phy)){
-            if(x[i]==0 & y[i]==0){states[i,1]=1}
-            if(x[i]==0 & y[i]==1){states[i,2]=1}
-            if(x[i]==1 & y[i]==0){states[i,3]=1}
-            if(x[i]==1 & y[i]==1){states[i,4]=1}
-            if(x[i]==2 & y[i]==0){states[i,c(1,3)]=1}
-            if(x[i]==2 & y[i]==1){states[i,c(2,4)]=1}
-            if(x[i]==0 & y[i]==2){states[i,c(1,2)]=1}
-            if(x[i]==1 & y[i]==2){states[i,c(3,4)]=1}
-            if(x[i]==2 & y[i]==2){states[i,1:4]=1}
-        }
-        compD <- matrix(0, nrow=nb.tip, ncol=4)
-        compE <- matrix(0, nrow=nb.tip, ncol=4)
-    }
-    
-    if(hidden.states == TRUE){
-        states = matrix(0,Ntip(phy),32)
-        x <- data[,1]
-        y <- data[,2]
-        for(i in 1:Ntip(phy)){
-            if(x[i]==0 & y[i]==0){states[i,c(1,5,9,13,17,21,25,29)]=1}
-            if(x[i]==0 & y[i]==1){states[i,c(2,6,10,14,18,22,26,30)]=1}
-            if(x[i]==1 & y[i]==0){states[i,c(3,7,11,15,19,23,27,31)]=1}
-            if(x[i]==1 & y[i]==1){states[i,c(4,8,12,16,20,24,28,32)]=1}
-            if(x[i]==2 & y[i]==0){states[i,c(1,5,9,13,17,21,25,29, 3,7,11,15,19,23,27,31)]=1}
-            if(x[i]==2 & y[i]==1){states[i,c(2,6,10,14,18,22,26,30, 4,8,12,16,20,24,28,32)]=1}
-            if(x[i]==0 & y[i]==2){states[i,c(1,5,9,13,17,21,25,29, 2,6,10,14,18,22,26,30)]=1}
-            if(x[i]==1 & y[i]==2){states[i,c(3,7,11,15,19,23,27,31, 4,8,12,16,20,24,28,32)]=1}
-            if(x[i]==2 & y[i]==2){states[i,1:16]=1}
-        }
-        compD <- matrix(0, nrow=nb.tip, ncol=32)
-        compE <- matrix(0, nrow=nb.tip, ncol=32)
-    }
-    
-    if(hidden.states == "TEST1"){
-        states = matrix(0,Ntip(phy),32)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==1){states[i,c(1,5,9,13,17,21,25,29)]=1}
-            if(data[i]==2){states[i,c(2,6,10,14,18,22,26,30)]=1}
-            if(data[i]==3){states[i,c(3,7,11,15,19,23,27,31)]=1}
-            if(data[i]==4){states[i,c(4,8,12,16,20,24,28,32)]=1}
-        }
-        compD <- matrix(0, nrow=nb.tip, ncol=32)
-        compE <- matrix(0, nrow=nb.tip, ncol=32)
-    }
-    
-    if(hidden.states == "TEST2"){
-        states = matrix(0,Ntip(phy),4)
-        for(i in 1:Ntip(phy)){
-            if(data[i]==1){states[i,1]=1}
-            if(data[i]==2){states[i,2]=1}
-            if(data[i]==3){states[i,3]=1}
-            if(data[i]==4){states[i,4]=1}
-        }
-        compD <- matrix(0, nrow=nb.tip, ncol=4)
-        compE <- matrix(0, nrow=nb.tip, ncol=4)
-        
-    }
-    
-    #Initializes the tip sampling and sets internal nodes to be zero:
-    ncols = dim(compD)[2]
-    if(length(f) == 4){
-        for(i in 1:(nb.tip)){
-            compD[i,] <- f * states[i,]
-            compE[i,] <- rep((1-f), ncols/4)
-        }
-    }else{
-        for(i in 1:(nb.tip)){
-            compD[i,] <- f[i] * states[i,]
-            compE[i,] <- rep((1-f[i]), ncols/4)
-        }
-    }
-    
-    table.info <- GetTreeTable(phy, root.age=NULL)
-    if(includes.fossils == TRUE){
-        k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
-        branch.type <- rep(0, dim(table.info)[1])
-        for(row.index in 1:dim(table.info)[1]){
-            if(table.info[row.index,5]<=nb.tip){
-                if(table.info[row.index,2] > extinct.tol){
-                    if(includes.fossils == TRUE){
-                        branch.type[row.index] <- 1
-                    }
-                }
-                if(any(phy$edge[row.index,2]==k.sample.tip.no)){
-                    branch.type[row.index] <- 2
-                }
-            }
-        }
-    }else{
-        branch.type <- rep(0, dim(table.info)[1])
-    }
+OrganizeData <- function(data, phy, f, hidden.states,
+						 includes.fossils=FALSE,
+						 extinct.tol=.Machine$double.eps^.50){
 
-    tmp.df <- cbind(table.info, 0, matrix(0, nrow(table.info), ncol(compD)), matrix(0, nrow(table.info), ncol(compE)), branch.type)
-    colnames(tmp.df) <- c("RootwardAge", "TipwardAge", "BranchLength", "FocalNode", "DesNode", "comp", paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"), "branch.type")
-    dat.tab <- as.data.table(tmp.df)
-    setkey(dat.tab, DesNode)
-    cols <- names(dat.tab)
-    if(hidden.states == TRUE | hidden.states == "TEST1"){
-        for (j in 1:(dim(compD)[2])){
-            #dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
-            set(dat.tab, 1:nb.tip, cols[6+j], compD[,j])
-            #dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
-            set(dat.tab, 1:nb.tip, cols[38+j], compE[,j])
-        }
-    }else{
-        for (j in 1:(dim(compD)[2])){
-            #dat.tab[data.table(c(1:nb.tip)), paste("compD", j, sep="_") := compD[,j]]
-            set(dat.tab, 1:nb.tip, cols[6+j], compD[,j])
-            #dat.tab[data.table(c(1:nb.tip)), paste("compE", j, sep="_") := compE[,j]]
-            set(dat.tab, 1:nb.tip, cols[10+j], compE[,j])
-        }
-    }
-    return(dat.tab)
+	### Ughy McUgherson. This is a must in order to pass CRAN checks:
+	### http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
+	DesNode = NULL
+	nb.tip <- length(phy$tip.label)
+	nb.node <- phy$Nnode
+
+	if(hidden.states == FALSE){
+		states = matrix(0, Ntip(phy), 4)
+		x <- data[,1]
+		y <- data[,2]
+		for(i in 1:Ntip(phy)){
+			if(x[i]==0 & y[i]==0){states[i,1]=1}
+			if(x[i]==0 & y[i]==1){states[i,2]=1}
+			if(x[i]==1 & y[i]==0){states[i,3]=1}
+			if(x[i]==1 & y[i]==1){states[i,4]=1}
+
+			if(x[i]==2 & y[i]==0){states[i,c(1,3)]=1}
+			if(x[i]==2 & y[i]==1){states[i,c(2,4)]=1}
+			if(x[i]==0 & y[i]==2){states[i,c(1,2)]=1}
+			if(x[i]==1 & y[i]==2){states[i,c(3,4)]=1}
+
+			if(x[i]==2 & y[i]==2){states[i,1:4]=1}
+
+		}
+		compD <- matrix(0, nrow=nb.tip, ncol=4)
+		compE <- matrix(0, nrow=nb.tip, ncol=4)
+	}
+
+	if(hidden.states == TRUE){
+		states = matrix(0, Ntip(phy), 32)
+		x <- data[,1]
+		y <- data[,2]
+		for(i in 1:Ntip(phy)){
+			if(x[i]==0 & y[i]==0){
+				states[i,c(1,5,9,13,17,21,25,29)]=1
+			}
+			if(x[i]==0 & y[i]==1){
+				states[i,c(2,6,10,14,18,22,26,30)]=1
+			}
+			if(x[i]==1 & y[i]==0){
+				states[i,c(3,7,11,15,19,23,27,31)]=1
+			}
+			if(x[i]==1 & y[i]==1){
+				states[i,c(4,8,12,16,20,24,28,32)]=1
+			}
+			if(x[i]==2 & y[i]==0){
+				states[i,c(1,5,9,13,17,21,25,29,3,7,11,15,19,23,27,31)]=1
+			}
+
+			if(x[i]==2 & y[i]==1){
+				states[i,c(2,6,10,14,18,22,26,30,4,8,12,16,20,24,28,32)]=1
+			}
+
+			if(x[i]==0 & y[i]==2){
+				states[i,c(1,5,9,13,17,21,25,29,2,6,10,14,18,22,26,30)]=1
+			}
+
+			if(x[i]==1 & y[i]==2){
+				states[i,c(3,7,11,15,19,23,27,31,4,8,12,16,20,24,28,32)]=1
+			}
+
+			if(x[i]==2 & y[i]==2){
+				states[i,1:16]=1
+			}
+		}
+		compD <- matrix(0, nrow=nb.tip, ncol=32)
+		compE <- matrix(0, nrow=nb.tip, ncol=32)
+
+	}
+	if(hidden.states == "TEST1"){
+		states = matrix(0, Ntip(phy), 32)
+		for(i in 1:Ntip(phy)){
+			if(data[i]==1){
+				states[i,c(1,5,9,13,17,21,25,29)]=1
+			}
+			if(data[i]==2){
+				states[i,c(2,6,10,14,18,22,26,30)]=1
+			}
+			if(data[i]==3){
+				states[i,c(3,7,11,15,19,23,27,31)]=1
+			}
+			if(data[i]==4){
+				states[i,c(4,8,12,16,20,24,28,32)]=1
+			}
+		}
+		compD <- matrix(0, nrow=nb.tip, ncol=32)
+		compE <- matrix(0, nrow=nb.tip, ncol=32)
+
+	}
+	if(hidden.states == "TEST2"){
+		states = matrix(0, Ntip(phy), 4)
+		for(i in 1:Ntip(phy)){
+			if(data[i]==1){states[i,1]=1}
+			if(data[i]==2){states[i,2]=1}
+			if(data[i]==3){states[i,3]=1}
+			if(data[i]==4){states[i,4]=1}
+		}
+		compD <- matrix(0, nrow=nb.tip, ncol=4)
+		compE <- matrix(0, nrow=nb.tip, ncol=4)
+	}
+
+	#Initializes the tip sampling and sets internal nodes to be zero:
+	ncols = dim(compD)[2]
+	if(length(f) == 4){
+		for(i in 1:nb.tip){
+			compD[i,] <- f * states[i,]
+			compE[i,] <- rep((1-f), ncols/4)
+		}
+	}else{
+		for(i in 1:nb.tip){
+			compD[i,] <- f[i] * states[i,]
+			compE[i,] <- rep((1-f[i]), ncols/4)
+		}
+	}
+	table.info <- GetTreeTable(phy, root.age=NULL)
+	if(includes.fossils == TRUE){
+		k.sample.tip.no <- grep("Ksamp*", x=phy$tip.label)
+		branch.type <- rep(0, dim(table.info)[1])
+		for(row.index in 1:dim(table.info)[1]){
+			if(table.info[row.index,5] <= nb.tip){
+				if(table.info[row.index,2] > extinct.tol){
+					branch.type[row.index] <- 1
+				}
+				if(any(phy$edge[row.index,2] == k.sample.tip.no)){
+					branch.type[row.index] <- 2
+				}
+			}
+		}
+	}else{
+		branch.type <- rep(0, dim(table.info)[1])
+	}
+	tmp.df <- cbind(table.info,0,matrix(0, nrow(table.info), ncol(compD)),matrix(0, nrow(table.info), ncol(compE)),branch.type)
+	colnames(tmp.df) <- c("RootwardAge", "TipwardAge","BranchLength","FocalNode","DesNode","comp",paste("compD", 1:ncol(compD), sep="_"), paste("compE", 1:ncol(compE), sep="_"), "branch.type")
+	dat.tab <- as.data.table(tmp.df)
+	setkey(dat.tab, DesNode)
+	cols <- names(dat.tab)
+
+	#Match actual tip node numbers to rows after keying dat.tab:
+	tip.rows <- match(1:nb.tip, dat.tab$DesNode)
+	if(hidden.states == TRUE | hidden.states == "TEST1"){
+		for(j in 1:dim(compD)[2]){
+			set(dat.tab, tip.rows, cols[6+j], compD[,j])
+			set(dat.tab, tip.rows, cols[38+j], compE[,j])
+		}
+	}else{
+		for(j in 1:dim(compD)[2]){
+			set(dat.tab, tip.rows, cols[6+j], compD[,j])
+			set(dat.tab, tip.rows, cols[10+j], compE[,j])
+		}
+	}
+
+	#Fossil tips are sampled in the past and should not be
+	#subject to sampling at the present:
+	if(includes.fossils){
+		fossil.rows <- which(
+			dat.tab$branch.type %in% c(1,2) &
+			dat.tab$DesNode <= nb.tip
+		)
+		if(length(fossil.rows) > 0){
+			fossil.nodes <- dat.tab$DesNode[fossil.rows]
+			for(j in 1:ncol(compD)){
+				set(dat.tab, fossil.rows, paste("compD", j, sep="_"), states[fossil.nodes,j])
+			}
+		}
+	}
+	return(dat.tab)
 }
 
 
@@ -1074,24 +1119,26 @@ DownPassMuHisse <- function(dat.tab, gen, cache, condition.on.survival, root.typ
         }
     }
     
-    if(!is.null(fossil.taxa)){
-        if(cache$hidden.states == TRUE){
-            pars[length(pars)] <- 0
-            cache$psi <- 0
-            init.d <- rep(cache$f, 8)
-            init.e <- rep(1-cache$f, 8)
-            phi.mat <- SingleChildProb(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
-            compE.root <- matrix(phi.mat[1:32], 1, 32)
-        }else{
-            pars[length(pars)] <- 0
-            cache$psi <- 0
-            init.d <- cache$f
-            init.e <- 1-cache$f
-            phi.mat <- SingleChildProb(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
-            compE.root <- matrix(phi.mat[1:4], 1, 4)
-        }
-    }
-    
+	if(!is.null(fossil.taxa)){
+		if(all(fix.type == "event")){
+			if(cache$hidden.states == TRUE){
+				pars[length(pars)] <- 0
+				cache$psi <- 0
+				init.d <- rep(cache$f, 8)
+				init.e <- rep(1-cache$f, 8)
+				phi.mat <- SingleChildProb(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
+				compE.root <- matrix(phi.mat[1:32], 1, 32)
+			}else{
+				pars[length(pars)] <- 0
+				cache$psi <- 0
+				init.d <- cache$f
+				init.e <- 1-cache$f
+				phi.mat <- SingleChildProb(cache, pars, init.d, init.e, 0, max(dat.tab$RootwardAge), 0)
+				compE.root <- matrix(phi.mat[1:4], 1, 4)
+			}
+		}
+	}
+	
     if (is.na(sum(log(compD.root))) || is.na(log(sum(1-compE.root)))){
         return(log(cache$bad.likelihood)^13)
     }else{
