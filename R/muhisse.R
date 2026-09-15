@@ -26,7 +26,6 @@ MuHiSSE <- function(phy, data, f=c(1,1,1,1), turnover=c(1,2,3,4), eps=c(1,2,3,4)
         }else{
             ## All good:
             root.p <- root.p / sum(root.p)
-            
         }
     }
     
@@ -489,9 +488,7 @@ DevOptimizeMuHiSSE <- function(p, pars, dat.tab, gen, hidden.states, nb.tip=nb.t
 ######################################################################################################################################
 ######################################################################################################################################
 
-OrganizeData <- function(data, phy, f, hidden.states,
-						 includes.fossils=FALSE,
-						 extinct.tol=.Machine$double.eps^.50){
+OrganizeData <- function(data, phy, f, hidden.states, includes.fossils=FALSE, extinct.tol=.Machine$double.eps^.50){
 
 	### Ughy McUgherson. This is a must in order to pass CRAN checks:
 	### http://stackoverflow.com/questions/9439256/how-can-i-handle-r-cmd-check-no-visible-binding-for-global-variable-notes-when
@@ -515,7 +512,6 @@ OrganizeData <- function(data, phy, f, hidden.states,
 			if(x[i]==1 & y[i]==2){states[i,c(3,4)]=1}
 
 			if(x[i]==2 & y[i]==2){states[i,1:4]=1}
-
 		}
 		compD <- matrix(0, nrow=nb.tip, ncol=4)
 		compE <- matrix(0, nrow=nb.tip, ncol=4)
@@ -644,13 +640,9 @@ OrganizeData <- function(data, phy, f, hidden.states,
 		}
 	}
 
-	#Fossil tips are sampled in the past and should not be
-	#subject to sampling at the present:
+	#Fossil tips are sampled in the past and should not be subject to sampling at the present:
 	if(includes.fossils){
-		fossil.rows <- which(
-			dat.tab$branch.type %in% c(1,2) &
-			dat.tab$DesNode <= nb.tip
-		)
+		fossil.rows <- which(dat.tab$branch.type %in% c(1,2) & dat.tab$DesNode <= nb.tip)
 		if(length(fossil.rows) > 0){
 			fossil.nodes <- dat.tab$DesNode[fossil.rows]
 			for(j in 1:ncol(compD)){

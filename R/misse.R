@@ -834,7 +834,6 @@ OrganizeDataMiSSE <- function(phy, f, hidden.states, includes.intervals=FALSE, i
 			}
 		}
 	}
-
     return(dat.tab)
 }
 
