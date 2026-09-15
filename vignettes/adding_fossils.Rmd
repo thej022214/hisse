@@ -90,7 +90,7 @@ margin.test <- MarginReconMiSSE(phy=fbd.tree$phy, f=1, pars=one.rate$solution,
 
 Trees containing fossil taxa are necessarily non-ultrametric. However, numerical differences in branch lengths can sometimes cause surviving tips to terminate slightly before the present, potentially resulting in their incorrect classification as extinct. We now provide a function called `CheckFossilTree()`, which allows users to check how tips will be classified by `hisse` and determine whether the default `extinct.tol` should be adjusted before fitting a fossil model. The extinct.tol argument is now also included in the function calls to `MiSSE()`, `hisse()`, and `MuHiSSE()`. 
 
-As an example, here is Zamiaceae, pruned from a much larger empirical tree of cycads from Coiro et al. (2023) that includes many fossil tips. Within this subtree, there should be 11 extinct tips and 111 surviving tips. However, if we were to run `MiSSE()` using the default tolerance of `extinct.tol=.Machine$double.eps^.50`, we get the following:
+As an example, we use Zamiaceae, pruned from a much larger empirical tree of cycads from Coiro et al. (2023) that includes many fossil tips. Within this subtree, there should be 11 extinct tips and 111 surviving tips. However, if we were to run `MiSSE()` using the default tolerance of `extinct.tol=.Machine$double.eps^.50`, we get the following:
 
 ```{r, eval=TRUE}
 tree <- read.tree("zam.tre")
