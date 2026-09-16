@@ -166,6 +166,8 @@ There are other considerations that users should make when evaluating the robust
 ## References
 Beaulieu, J.M., and B.C. O'Meara. (2016). Detecting hidden diversification shifts in models of trait-dependent speciation and extinction. Syst. Biol. 65:583-601.
 
+Beaulieu, J.M., and B.C. O'Meara. (2025). Navigating "tip fog": embracing uncertainty in tip measurements. Evolition. 79:1131-1142.
+
 FitzJohn R.G. 2012. Diversitree: comparative phylogenetic analyses of diversification in R. Methods in Ecology and Evolution 3:1084-1092.
 
 
