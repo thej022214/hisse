@@ -11,7 +11,7 @@ condition.on.survival=TRUE, root.type="madfitz", root.p=NULL, includes.fossils=F
 k.samples=NULL, strat.intervals=NULL, extinct.tol=.Machine$double.eps^.50, sann=TRUE, 
 sann.its=5000, sann.temp=5230, sann.seed=-100377,bounded.search=TRUE, 
 max.tol=.Machine$double.eps^.50, starting.vals=NULL, turnover.upper=10000, eps.upper=3, 
-trans.upper=100, restart.obj=NULL, ode.eps=0)
+trans.upper=100, restart.obj=NULL, ode.eps=0, dt.threads=1, expand.mode=TRUE)
 }
 \arguments{
 \item{phy}{a phylogenetic tree, in \code{ape} \dQuote{phylo} format. If \code{includes.fossils=TRUE} then the input phy object must include extinct tips.}
@@ -59,6 +59,8 @@ trans.upper=100, restart.obj=NULL, ode.eps=0)
   then it assumes the results are unstable and discards them. The
   default is set to zero, but in testing a value of 1e-8 can sometimes
   produce stable solutions for both easy and very difficult optimization problems.}
+\item{dt.threads}{sets the number of threads available to data.table. In practice this need not change from the default of 1 thread, as we have not seen any speedup from allowing more threads.}
+\item{expand.mode}{allows passing in the number of free parameters for turnover and eps and creates vectors to permit this.}
 }
 
 \value{
