@@ -1,0 +1,72 @@
+---
+title: "Prune redundant models"
+author: "Brian C. O'Meara"
+output:
+  pdf_document:
+    fig_caption: yes
+vignette: >
+   %\VignetteEngine{knitr::rmarkdown}
+   %\VignetteIndexEntry{Prune redundant models}
+   \usepackage[utf8]{inputenc}
+---
+
+
+### DRAFT
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(cache=FALSE)
+```
+
+A recent article by close colleagues ([Tarasov and Uyeda (2026)](https://doi.org/10.1038/s41467-026-75829-5)) created a more complex model (HiClaSSE) and then showed that there can be various ways to construct different simplified models that make different conclusions about biology but have identical likelihood. The article also points to cases where 
+
+In this world where a lot of diversification models have come, rightly, under suspicion, reading through this paper is worthwhile for all users of `hisse`, especially if you want to build upon it for more complexity. However, it was reassuring to see that Tarasov and Uyeda (2026) note that:
+
+> Ideally, a computational algorithm should be developed to automatically test irreducibility. In the meantime, since lumpability conditions (L1-L3) are complex, we provide practical tips: (1) Models without hidden states are always irreducible. (2) Constraining models helps—for example, avoiding dual transitions or giving each hidden trait its own speciation rate. (3) Hidden characters can also be treated as diversification-regime categories, as adopted in HiSSE framework, where each hidden category receives parameters for (i) speciation/extinction, (ii) within-category transitions, and (iii) between-category transitions. We did not detect any reducible models resulting from this construction.
+
+[Louca and Pennell (2020)](https://doi.org/10.1038/s41586-020-2176-1) has inspired a lot of discussion of congruence in diversification models. This is important when it affects the inferences we make. For example, given the results of Louca and Pennell (2020), we (Jeremy & Brian) put very little stock in *any* analysis seeking to look at change in speciation, extinction, and/or diversification rate over time using modern data ("pulled rates" are justifiable, but biological interpretation can be hard). However, as we showed ([O'Meara and Beaulieu 2021](https://doi.org/10.32942/osf.io/w5nvd); note this is a preprint; reviewers found it interesting but wanted a more focused message), and have an R package and website to demonstrate (<http://flippedcoin.info>), **even coin flipping has multiple congruent models**. Because a model of decreasing chance of heads fits as well as the standard binomial model does not mean coin flips can no longer be modeled, but rather that we have to understand the limits of what we are choosing to model. (Note that it is *not* that the Tarasov and Uyeda (2026) article argues for tossing models when there are other congruent models; we're just concerned about a misreading of this sort).
+
+However, congruent models can already affect analyses in hisse (and in many other areas in phylogenetics). We first noticed this when developing MiSSEGreedy, a way of examining various MiSSE models for estimating diversification rate parameters (similar use case to BAMM, clads, and the DR statistic, and with [good performance](https://doi.org/10.1111/evo.14517)). Sometimes we can get two models with the same likelihood, or models with the same parameter values but different labels. For this reason, in [2021](https://github.com/thej022214/hisse/commits/master/R/PruneRedundantModels.R) we added a `PruneRedundantModels()` function to hisse. More about its use is discussed in [Vasconcelos et al. (2022)](https://doi.org/10.1111/evo.14517). But here we have an example:
+
+
+```{r, echo=FALSE, eval=TRUE}
+suppressPackageStartupMessages(library(hisse))
+```
+
+```{r, eval=TRUE}
+phy <- ape::read.tree("https://raw.githubusercontent.com/thej022214/hisse/refs/heads/master/vignettes/whales_Steemanetal2009.tre")
+
+greedy_run <- hisse::MiSSEGreedy(phy, n.cores=max(1, -1+parallel::detectCores()))
+```
+
+We can look inside PruneRedundantModels() to see how it identifies models for deletion. Basically, it goes through four steps:
+
+Compute the number of free parameters per model:
+
+```
+models <- greedy_run
+mod.nparameters <- simplify2array(lapply(lapply(models, "[[", "starting.vals"),length)) 
+```
+
+Reorder models from simplest to most complex:
+
+```
+models <- models[order(mod.nparameters, decreasing=FALSE)]
+```
+
+Extract the negative log likelihoods from the sorted models
+
+```
+mod.loglik <- simplify2array(lapply(models, "[[", "loglik"))
+```
+
+And then go through all the models to see if the likelihood is the same (within the specified precision) of a previous model (which will have the same or fewer parameters). If so, it selects the model for deletion.
+
+So we start with `r length(greedy_run)` examined models, and then using the following command:
+
+```{r, eval=TRUE}
+greedy_pruned <- hisse::PruneRedundantModels(greedy_run)
+```
+
+reduce this to `r length(greedy_pruned)` models. This is especially important for removing models where a parameter is at a bound. For example, one could have the extinction rate in hidden states A, B, and C all be estimated to be essentially zero in a model where they are free to vary, but also in submodels where two or more of the rates are constrained to be equal to each other or fixed at zero. So all these models will have the same likelihood, but they can differ by the number of free parameters (all free has three more parameters than all fixed at zero and has two more parameters than a model with the extinction rates constrained to be equal to each other but free). Those with different numbers of free parameters will have different but similar AIC values (different by 2 for every additional free parameter), but they're all essentially the same model, so when it comes to Akaike weights, the same model is "counted" multiple times. Pruning corrects for that, only including the simplest equivalent model.
+
