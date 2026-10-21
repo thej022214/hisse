@@ -1031,6 +1031,10 @@ GetFossilInitialsMiSSE <- function(cache, pars, lambdas, dat.tab, fossil.taxa){
     DesNode = NULL
     . = NULL
     
+	if (is.null(fossil.taxa) || length(fossil.taxa) == 0L) {
+		return(dat.tab)
+	}
+
     fossils <- data.table(c(fossil.taxa))
     setkey(dat.tab, DesNode)
     CurrentGenData <- dat.tab[fossils]
